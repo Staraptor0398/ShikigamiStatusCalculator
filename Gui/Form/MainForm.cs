@@ -604,12 +604,15 @@ namespace ShikigamiApp
 
 		private void btnSave_Click(object sender, EventArgs e)
 		{
-			using(var sfd=new SaveFileDialog())
+			using (var sfd = new SaveFileDialog())
 			{
-				sfd.Filter = "JSON (*.json)|*json";
-				sfd.Title = "保存先を選択";
+				sfd.Filter =
+					"ビルド保存データ (*.build.json)|*.build.json|" +
+					"御魂セット保存データ (*.mitama.json)|*.mitama.json";
 
-				if(sfd.ShowDialog()!= DialogResult.OK)
+				//sfd.Title = "保存先を選択";
+
+				if (sfd.ShowDialog() != DialogResult.OK)
 				{
 					return;
 				}
@@ -618,8 +621,16 @@ namespace ShikigamiApp
 
 				try
 				{
-					var data = buildSaveData();
-					SaveDataAccess.Save(sfd.FileName, data);
+					if (sfd.FilterIndex == 1)
+					{
+						var data = createCurrentBuildSaveData();
+						SaveDataAccess.SaveBuild(sfd.FileName, data);
+					}
+					else if (sfd.FilterIndex == 2)
+					{
+						var data = createCurrentMitamaSetSaveData();
+						SaveDataAccess.SaveMitamaSet(sfd.FileName, data);
+					}
 				}
 				finally
 				{
@@ -628,18 +639,26 @@ namespace ShikigamiApp
 			}
 		}
 
-		private SaveData buildSaveData()
+		private BuildSaveData createCurrentBuildSaveData()
 		{
-			return new SaveData
+			return new BuildSaveData
 			{
 				ShikigamiName = cmbShikigami.Text,
-				Mitamas = buildMitamaSaveDataList(),
-				SetEffects = buildSetEffectSaveData(),
-				UniqueEffects = buildUniqueEffectSaveData()
+				MitamaSet = createCurrentMitamaSetSaveData()
 			};
 		}
 
-		private MitamaSaveData buildMitamaSaveData(
+		private MitamaSetSaveData createCurrentMitamaSetSaveData()
+		{
+			return new MitamaSetSaveData
+			{
+				Mitamas = createMitamaSaveDataList(),
+				SetEffects = createSetEffectSaveData(),
+				UniqueEffects = createUniqueEffectSaveData()
+			};
+		}
+
+		private MitamaSaveData createMitamaSaveData(
 			int slot,
 			ComboBox cmbMain,
 			ComboBox cmbSub1, TextBox txt1,
@@ -657,50 +676,50 @@ namespace ShikigamiApp
 				},
 				SubStats = new List<EffectSaveData>
 				{
-					buildEffectSaveData(cmbSub1,txt1),
-					buildEffectSaveData(cmbSub2,txt2),
-					buildEffectSaveData(cmbSub3,txt3),
-					buildEffectSaveData(cmbSub4,txt4)
+					createEffectSaveData(cmbSub1,txt1),
+					createEffectSaveData(cmbSub2,txt2),
+					createEffectSaveData(cmbSub3,txt3),
+					createEffectSaveData(cmbSub4,txt4)
 				}
 
 			};
 		}
 
-		private List<MitamaSaveData> buildMitamaSaveDataList()
+		private List<MitamaSaveData> createMitamaSaveDataList()
 		{
 			return new List<MitamaSaveData>
 			{
-				buildMitamaSaveData(1, cmbMainStat1,
+				createMitamaSaveData(1, cmbMainStat1,
 					cmbSubStat11, txtSubVal11,
 					cmbSubStat21, txtSubVal21,
 					cmbSubStat31, txtSubVal31,
 					cmbSubStat41, txtSubVal41),
 
-				buildMitamaSaveData(2, cmbMainStat2,
+				createMitamaSaveData(2, cmbMainStat2,
 					cmbSubStat12, txtSubVal12,
 					cmbSubStat22, txtSubVal22,
 					cmbSubStat32, txtSubVal32,
 					cmbSubStat42, txtSubVal42),
 
-				buildMitamaSaveData(3, cmbMainStat3,
+				createMitamaSaveData(3, cmbMainStat3,
 					cmbSubStat13, txtSubVal13,
 					cmbSubStat23, txtSubVal23,
 					cmbSubStat33, txtSubVal33,
 					cmbSubStat43, txtSubVal43),
 
-				buildMitamaSaveData(4, cmbMainStat4,
+				createMitamaSaveData(4, cmbMainStat4,
 					cmbSubStat14, txtSubVal14,
 					cmbSubStat24, txtSubVal24,
 					cmbSubStat34, txtSubVal34,
 					cmbSubStat44, txtSubVal44),
 
-				buildMitamaSaveData(5, cmbMainStat5,
+				createMitamaSaveData(5, cmbMainStat5,
 					cmbSubStat15, txtSubVal15,
 					cmbSubStat25, txtSubVal25,
 					cmbSubStat35, txtSubVal35,
 					cmbSubStat45, txtSubVal45),
 
-				buildMitamaSaveData(6, cmbMainStat6,
+				createMitamaSaveData(6, cmbMainStat6,
 					cmbSubStat16, txtSubVal16,
 					cmbSubStat26, txtSubVal26,
 					cmbSubStat36, txtSubVal36,
@@ -708,7 +727,7 @@ namespace ShikigamiApp
 			};
 		}
 
-		private EffectSaveData buildEffectSaveData(ComboBox cmb, TextBox txt)
+		private EffectSaveData createEffectSaveData(ComboBox cmb, TextBox txt)
 		{
 			double.TryParse(txt.Text, out double value);
 
@@ -719,26 +738,26 @@ namespace ShikigamiApp
 			};
 		}
 
-		private List<EffectSaveData> buildSetEffectSaveData()
+		private List<EffectSaveData> createSetEffectSaveData()
 		{
 			return new List<EffectSaveData>
 			{
-				buildEffectSaveData(cmbSetBonus1, new TextBox()),
-				buildEffectSaveData(cmbSetBonus2, new TextBox()),
-				buildEffectSaveData(cmbSetBonus3 , new TextBox())
+				createEffectSaveData(cmbSetBonus1, new TextBox()),
+				createEffectSaveData(cmbSetBonus2, new TextBox()),
+				createEffectSaveData(cmbSetBonus3 , new TextBox())
 			};
 		}
 
-		private List<EffectSaveData> buildUniqueEffectSaveData()
+		private List<EffectSaveData> createUniqueEffectSaveData()
 		{
 			return new List<EffectSaveData>
 			{
-				buildEffectSaveData(cmbUnique1, new TextBox()),
-				buildEffectSaveData(cmbUnique2, new TextBox()),
-				buildEffectSaveData(cmbUnique3, new TextBox()),
-				buildEffectSaveData(cmbUnique4, new TextBox()),
-				buildEffectSaveData(cmbUnique5, new TextBox()),
-				buildEffectSaveData(cmbUnique6, new TextBox())
+				createEffectSaveData(cmbUnique1, new TextBox()),
+				createEffectSaveData(cmbUnique2, new TextBox()),
+				createEffectSaveData(cmbUnique3, new TextBox()),
+				createEffectSaveData(cmbUnique4, new TextBox()),
+				createEffectSaveData(cmbUnique5, new TextBox()),
+				createEffectSaveData(cmbUnique6, new TextBox())
 			};
 		}
 
@@ -751,8 +770,10 @@ namespace ShikigamiApp
 			using (var ofd = new OpenFileDialog())
 			{
 
-				ofd.Filter = "JSON (*.json)|*json";
-				ofd.Title = "読み込むデータを選択";
+				ofd.Filter =
+					"ビルド保存データ (*.build.json)|*.build.json|" +
+					"御魂セット保存データ (*.mitama.json)|*.mitama.json";
+				//ofd.Title = "読み込むデータを選択";
 
 				if (ofd.ShowDialog() != DialogResult.OK)
 				{
@@ -763,8 +784,16 @@ namespace ShikigamiApp
 
 				try
 				{
-					var data = SaveDataAccess.Load(ofd.FileName);
-					applySaveDataToUI(data);
+					if (ofd.FilterIndex == 1)
+					{
+						var data = SaveDataAccess.LoadBuild(ofd.FileName);
+						applyBuildSaveDataToUI(data);
+					}
+					else if (ofd.FilterIndex == 2)
+					{
+						var data = SaveDataAccess.LoadMitamaSet(ofd.FileName);
+						applyMitamaSetSaveDataToUI(data);
+					}
 				}
 				finally
 				{
@@ -839,7 +868,7 @@ namespace ShikigamiApp
 				return;
 			}
 
-			foreach(var m in list)
+			foreach (var m in list)
 			{
 				switch (m.Slot)
 				{
@@ -904,11 +933,11 @@ namespace ShikigamiApp
 				return;
 			}
 
-			foreach(var item in cmbShikigami.Items)
+			foreach (var item in cmbShikigami.Items)
 			{
 				var shikigami = item as ShikigamiDto;
 
-				if(shikigami != null && shikigami.Name == name)
+				if (shikigami != null && shikigami.Name == name)
 				{
 					cmbShikigami.SelectedItem = shikigami;
 					return;
@@ -918,14 +947,24 @@ namespace ShikigamiApp
 			MessageBox.Show($"式神が見つかりません： {name}");
 		}
 
-		private void applySaveDataToUI(SaveData data)
+		private void applyBuildSaveDataToUI(BuildSaveData data)
 		{
-			if(data== null)
+			if (data == null)
 			{
 				return;
 			}
 
 			applyShikigami(data.ShikigamiName);
+			applyMitamaSetSaveDataToUI(data.MitamaSet);
+		}
+
+		private void applyMitamaSetSaveDataToUI(MitamaSetSaveData data)
+		{
+			if (data == null)
+			{
+				return;
+			}
+
 			applyMitama(data.Mitamas);
 			applySetEffect(data.SetEffects);
 			applyUniqueEffect(data.UniqueEffects);
@@ -944,7 +983,7 @@ namespace ShikigamiApp
 		{
 			var selectedShikigami = cmbShikigami.SelectedItem as ShikigamiDto;
 
-			using(var form= new ShikigamiResisterForm())
+			using (var form = new ShikigamiResisterForm())
 			{
 				if (form.ShowDialog() == DialogResult.OK)
 				{
@@ -966,7 +1005,7 @@ namespace ShikigamiApp
 				MessageBoxButtons.YesNo,
 				MessageBoxIcon.Question);
 
-			if(result!= DialogResult.Yes)
+			if (result != DialogResult.Yes)
 			{
 				return;
 			}
@@ -1020,15 +1059,16 @@ namespace ShikigamiApp
 		{
 			TextBox[] textBoxes =
 			{
-				txtSubVal11,	txtSubVal21,	txtSubVal31,	txtSubVal41,
-				txtSubVal12,	txtSubVal22,	txtSubVal32,	txtSubVal42,
-				txtSubVal13,	txtSubVal23,	txtSubVal33,	txtSubVal43,
-				txtSubVal14,	txtSubVal24,	txtSubVal34,	txtSubVal44,
-				txtSubVal15,	txtSubVal25,	txtSubVal35,	txtSubVal45,
-				txtSubVal16,	txtSubVal26,	txtSubVal36,	txtSubVal46
+				txtSubVal11,    txtSubVal21,    txtSubVal31,    txtSubVal41,
+				txtSubVal12,    txtSubVal22,    txtSubVal32,    txtSubVal42,
+				txtSubVal13,    txtSubVal23,    txtSubVal33,    txtSubVal43,
+				txtSubVal14,    txtSubVal24,    txtSubVal34,    txtSubVal44,
+				txtSubVal15,    txtSubVal25,    txtSubVal35,    txtSubVal45,
+				txtSubVal16,    txtSubVal26,    txtSubVal36,    txtSubVal46
 			};
 
-			foreach (var textBox in textBoxes) {
+			foreach (var textBox in textBoxes)
+			{
 				textBox.Text = "";
 			}
 		}

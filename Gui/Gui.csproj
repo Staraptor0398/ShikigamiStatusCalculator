@@ -57,9 +57,10 @@
     <Compile Include="IO\SaveDataAccess.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveData\BuildSaveData.cs" />
     <Compile Include="SaveData\EffectSaveData.cs" />
     <Compile Include="SaveData\MitamaSaveData.cs" />
-    <Compile Include="SaveData\SaveData.cs" />
+    <Compile Include="SaveData\MitamaSetSaveData.cs" />
     <EmbeddedResource Include="Form\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
