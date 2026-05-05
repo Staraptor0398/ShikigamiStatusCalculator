@@ -34,7 +34,6 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  式神ステータス表示
 		****************************************************************************************************/
-
 		private void cmbShikigami_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			ShikigamiDto selected = cmbShikigami.SelectedItem as ShikigamiDto;
@@ -58,7 +57,6 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  ステータス計算
 		****************************************************************************************************/
-
 		private void btnCalc_Click(object sender, EventArgs e)
 		{
 			var baseStatus = getSelectedShikigamiStatus();
@@ -99,7 +97,6 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  Dto作成
 		****************************************************************************************************/
-
 		private StatTypeDto convertStatType(string text)
 		{
 			StatTypeDto ret = StatTypeDto.None;
@@ -350,7 +347,6 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  計算結果表示
 		****************************************************************************************************/
-
 		private void showCalculationResult(CalculationResultDto result)
 		{
 			if (result == null)
@@ -406,7 +402,6 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  式神データ再読み込み
 		****************************************************************************************************/
-
 		private void btnReLoad_Click(object sender, EventArgs e)
 		{
 			initializeShikigamiComboBox();
@@ -415,7 +410,6 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  ComboBox初期化
 		****************************************************************************************************/
-
 		private void setComboItems(ComboBox comboBox, params string[] items)
 		{
 			comboBox.Items.Clear();
@@ -563,7 +557,6 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		　メインステータス表示
 		****************************************************************************************************/
-
 		private void cmbMainStat1_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			var value = getMainStatValue(cmbMainStat1.SelectedItem.ToString(), 1);
@@ -603,7 +596,6 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  SaveData保存
 		****************************************************************************************************/
-
 		private void btnSave_Click(object sender, EventArgs e)
 		{
 			using (var sfd = new SaveFileDialog())
@@ -612,7 +604,6 @@ namespace ShikigamiApp
 					"ビルド保存データ (*.build.json)|*.build.json|" +
 					"御魂セット保存データ (*.mitama.json)|*.mitama.json";
 
-				//sfd.Title = "保存先を選択";
 
 				if (sfd.ShowDialog() != DialogResult.OK)
 				{
@@ -766,7 +757,6 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  SaveData適用
 		****************************************************************************************************/
-
 		private void btnLoad_Click(object sender, EventArgs e)
 		{
 			using (var ofd = new OpenFileDialog())
@@ -775,7 +765,6 @@ namespace ShikigamiApp
 				ofd.Filter =
 					"ビルド保存データ (*.build.json)|*.build.json|" +
 					"御魂セット保存データ (*.mitama.json)|*.mitama.json";
-				//ofd.Title = "読み込むデータを選択";
 
 				if (ofd.ShowDialog() != DialogResult.OK)
 				{
@@ -996,9 +985,40 @@ namespace ShikigamiApp
 		}
 
 		/****************************************************************************************************
+		  式神編集
+		****************************************************************************************************/
+		private void btnEditShikigami_Click(object sender, EventArgs e)
+		{
+			var selectedShikigami = cmbShikigami.SelectedItem as ShikigamiDto;
+
+			if(selectedShikigami == null)
+			{
+				MessageBox.Show(
+					"編集する式神を選択してください。",
+					"式神データ編集",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Information);
+
+				return;
+			}
+
+			using (var form = new ShikigamiResisterForm(selectedShikigami))
+			{
+				if (form.ShowDialog() == DialogResult.OK)
+				{
+					initializeShikigamiComboBox();
+
+					if (form.EditedShikigami != null)
+					{
+						applyShikigami(form.EditedShikigami.Name);
+					}
+				}
+			}
+		}
+
+		/****************************************************************************************************
 		  入力クリア
 		****************************************************************************************************/
-
 		private void btnClear_Click(object sender, EventArgs e)
 		{
 			var result = MessageBox.Show(
@@ -1090,7 +1110,6 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  計算結果表示
 		****************************************************************************************************/
-
 		private void btnResultView_Click(object sender, EventArgs e)
 		{
 			if (_lastCalculationResult == null)

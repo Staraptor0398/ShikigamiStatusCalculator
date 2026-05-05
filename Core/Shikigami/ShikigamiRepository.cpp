@@ -11,3 +11,8 @@ void ShikigamiRepository::add_Shikigami(const std::string& filePath, const Shiki
 {
 	FileAccess::insert_Shikigami(filePath, shikigami);
 }
+
+void ShikigamiRepository::update_Shikigami(const std::string& filePath, const Shikigami& oldData, const Shikigami& newData)
+{
+	FileAccess::update_Shikigami(filePath, oldData, newData);
+}

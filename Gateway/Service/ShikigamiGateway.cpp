@@ -27,3 +27,14 @@ void ShikigamiGateway::AddShikigami(String^ filePath, ShikigamiDto^ dto)
 
 	ShikigamiRepository::add_Shikigami(nativePath, native);
 }
+
+void ShikigamiGateway::UpdateShikigami(String^ filePath, ShikigamiDto^ oldDto, ShikigamiDto^ newDto)
+{
+	std::string nativePath = StringConverter::toStdString(filePath);
+
+	Shikigami oldData = ShikigamiConverter::toNative(oldDto);
+
+	Shikigami newData = ShikigamiConverter::toNative(newDto);
+
+	ShikigamiRepository::update_Shikigami(nativePath, oldData, newData);
+}

@@ -116,5 +116,25 @@ void FileAccess::insert_Shikigami(const std::string& filePath, const Shikigami& 
 	list.insert(list.begin() + insertIndex, newData);
 
 	save_Shikigami(filePath, list);
+}
 
+void FileAccess::update_Shikigami(const std::string& filePath, const Shikigami& oldData, const Shikigami& newData)
+{
+	auto list = load_Shikigami(filePath);
+
+	bool isUpdated = false;
+
+	for (auto& s : list) {
+		if (s.Rarity == oldData.Rarity && s.Name == oldData.Name) {
+			s = newData;
+			isUpdated = true;
+			break;
+		}
+	}
+
+	if (!isUpdated) {
+		return;
+	}
+
+	save_Shikigami(filePath, list);
 }

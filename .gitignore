@@ -180,3 +180,6 @@
 /.vs/ShikigamiApp.slnx/FileContentIndex/*.vsidx
 /.vs/ShikigamiApp.slnx/v18/Insiders/ipch/*.ipch
 /Gui/obj/x64/Debug/ShikigamiApp.ResultViewForm.resources
+/.vs/ShikigamiApp.slnx/v18/Insiders/*.db-shm
+/.vs/ShikigamiApp.slnx/v18/Insiders/*.db-wal
+/.vs/ShikigamiApp.slnx/v18/Insiders/*.opendb

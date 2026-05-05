@@ -13,9 +13,77 @@ namespace ShikigamiApp
 {
 	public partial class ShikigamiResisterForm : Form
 	{
+
+		private enum ShikigamiFormMode
+		{
+			Resister,
+			Edit
+		}
+
+		private readonly ShikigamiFormMode _mode;
+
+		private readonly ShikigamiDto _editTarget;
+
+		public ShikigamiDto EditedShikigami { get; private set; }
+
 		public ShikigamiResisterForm()
 		{
 			InitializeComponent();
+
+			_mode = ShikigamiFormMode.Resister;
+			_editTarget = null;
+		}
+
+		public ShikigamiResisterForm(ShikigamiDto editTarget)
+		{
+			InitializeComponent();
+
+			_mode = ShikigamiFormMode.Edit;
+			_editTarget = editTarget;
+		}
+
+		private void ShikigamiResisterForm_Load(object sender, EventArgs e)
+		{
+			initializeRarityComboBox();
+
+			if (_mode == ShikigamiFormMode.Resister)
+			{
+				initializeResisterMode();
+			}
+			else
+			{
+				initializeEditMode();
+			}
+		}
+
+		private void initializeResisterMode()
+		{
+			this.Text = "式神登録";
+			btnResister.Text = "登録";
+		}
+
+		private void initializeEditMode()
+		{
+			this.Text = "式神編集";
+			btnResister.Text = "更新";
+
+			if(_editTarget == null)
+			{
+				return;
+			}
+
+			cmbRarity.SelectedItem = _editTarget.Rarity;
+			txtName.Text = _editTarget.Name;
+
+			txtAttck.Text = _editTarget.Attack.ToString();
+			txtHP.Text = _editTarget.HP.ToString();
+			txtDeffense.Text = _editTarget.Defense.ToString();
+			txtSpeed.Text = _editTarget.Speed.ToString();
+
+			txtCritRate.Text = _editTarget.CritRate.ToString();
+			txtCritDamage.Text = _editTarget.CritDamage.ToString();
+			txtEffectHit.Text = _editTarget.EffectHit.ToString();
+			txtEffectResist.Text= _editTarget.EffectResist.ToString();
 		}
 
 		private void btnResister_Click(object sender, EventArgs e)
@@ -25,10 +93,22 @@ namespace ShikigamiApp
 				return;
 			}
 
+			if (_mode == ShikigamiFormMode.Resister)
+			{
+				registerShikigami(dto);
+			}
+			else
+			{
+				updateShikigami(dto);
+			}
+		}
+
+		private void registerShikigami(ShikigamiDto dto)
+		{
 			if (existsSameShikigami(dto))
 			{
 				MessageBox.Show("同じレアリティ・同じ式神名のデータが既に存在します。",
-					"登録確認",
+					"式神データ登録",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning);
 
@@ -41,9 +121,33 @@ namespace ShikigamiApp
 			this.Close();
 		}
 
-		private void ShikigamiResisterForm_Load(object sender, EventArgs e)
+		private void updateShikigami(ShikigamiDto newDto)
 		{
-			initializeRarityComboBox();
+			if (_editTarget == null)
+			{
+				MessageBox.Show("編集対象の式神データが取得できませんでした。",
+					"式神データ編集",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error);
+				return;
+			}
+
+			if(existsSameShikigamiExceptSelf(_editTarget, newDto))
+			{
+				MessageBox.Show("変更後の式紙データと同じデータが既に存在します。",
+					"式神データ編集",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
+
+				return;
+			}
+
+			ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, _editTarget, newDto);
+
+			EditedShikigami = newDto;
+
+			this.DialogResult = DialogResult.OK;
+			this.Close();
 		}
 
 		private void initializeRarityComboBox()
@@ -144,6 +248,26 @@ namespace ShikigamiApp
 			foreach (var s in list)
 			{
 				if(s.Rarity == dto.Rarity && s.Name == dto.Name)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private bool existsSameShikigamiExceptSelf(ShikigamiDto oldDto, ShikigamiDto newDto)
+		{
+			var list = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath);
+
+			foreach (var s in list)
+			{
+				if (s.Rarity == oldDto.Rarity && s.Name == oldDto.Name)
+				{
+					continue;
+				}
+
+				if (s.Rarity == newDto.Rarity && s.Name == newDto.Name)
 				{
 					return true;
 				}
