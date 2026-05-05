@@ -19,6 +19,8 @@ namespace ShikigamiApp
 	{
 		private List<ShikigamiDto> _shikigamiList;
 
+		private CalculationResultDto _lastCalculationResult;
+
 		public MainForm()
 		{
 			InitializeComponent();
@@ -62,9 +64,9 @@ namespace ShikigamiApp
 			var baseStatus = getSelectedShikigamiStatus();
 			var mitamaSet = buildMitamaSetDto();
 
-			var result = CalculationGateway.calclutate(baseStatus, mitamaSet);
+			_lastCalculationResult = CalculationGateway.calclutate(baseStatus, mitamaSet);
 
-			showCalculationResult(result);
+			showCalculationResult(_lastCalculationResult);
 		}
 
 		private StatusDto getSelectedShikigamiStatus()
@@ -1085,5 +1087,26 @@ namespace ShikigamiApp
 			txtFinalStats.Text = "";
 		}
 
+		/****************************************************************************************************
+		  計算結果表示
+		****************************************************************************************************/
+
+		private void btnResultView_Click(object sender, EventArgs e)
+		{
+			if (_lastCalculationResult == null)
+			{
+				MessageBox.Show(
+					"先に計算を実行してください。",
+					"確認",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Information);
+				return;
+			}
+
+			using (var form = new ResultViewForm(_lastCalculationResult))
+			{
+				form.ShowDialog();
+			}
+		}
 	}
 }

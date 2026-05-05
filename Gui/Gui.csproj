@@ -48,6 +48,12 @@
     <Compile Include="Form\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Form\ResultViewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\ResultViewForm.Designer.cs">
+      <DependentUpon>ResultViewForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form\ShikigamiResisterForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -63,6 +69,9 @@
     <Compile Include="SaveData\MitamaSetSaveData.cs" />
     <EmbeddedResource Include="Form\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\ResultViewForm.resx">
+      <DependentUpon>ResultViewForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form\ShikigamiResisterForm.resx">
       <DependentUpon>ShikigamiResisterForm.cs</DependentUpon>

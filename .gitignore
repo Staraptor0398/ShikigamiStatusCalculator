@@ -179,3 +179,4 @@
 /.vs/ShikigamiApp.slnx/FileContentIndex/c7eb8b6a-8c46-4b86-be2a-67c40a6ccfb7.vsidx
 /.vs/ShikigamiApp.slnx/FileContentIndex/*.vsidx
 /.vs/ShikigamiApp.slnx/v18/Insiders/ipch/*.ipch
+/Gui/obj/x64/Debug/ShikigamiApp.ResultViewForm.resources
