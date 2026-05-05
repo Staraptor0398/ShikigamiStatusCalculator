@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Core/Core.vcxproj" Id="c481e209-9418-4f52-ae70-a338066710db" />
+  <Project Path="Gateway/Gateway.vcxproj" Id="f992adf3-3f2f-4c05-b8e0-9364edf3657b" />
+  <Project Path="Gui/Gui.csproj" Id="81d5d86e-e574-4aea-9fb0-87288e81e48e">
+    <Platform Solution="*|x64" Project="x64" />
+    <Build Solution="*|x86" Project="false" />
+  </Project>
+</Solution>

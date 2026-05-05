@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Mitama">
+      <UniqueIdentifier>{c298aab5-6d4a-436d-84b1-f74834a1ee94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Shikigami">
+      <UniqueIdentifier>{7ef2796c-a689-4892-beec-dc0eff9c6acc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Mitama">
+      <UniqueIdentifier>{e3eafd1d-a511-491d-a5f0-7035bc52ed37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Shikigami">
+      <UniqueIdentifier>{36899f5b-a863-428f-9076-697d850ab82c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Model">
+      <UniqueIdentifier>{291c1e61-0127-469a-9fd3-db9223a65a73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\IO">
+      <UniqueIdentifier>{5fbb4a7d-fdc1-4d7c-b7d3-6e66497c006b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\IO">
+      <UniqueIdentifier>{4bc439e5-afc8-4cbd-98ca-a87039b7e14a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Service">
+      <UniqueIdentifier>{40ca1737-b414-4ddb-b632-bb84217d9cbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Service">
+      <UniqueIdentifier>{b994ac6e-c088-4a4b-a0df-929f18154cf7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Status">
+      <UniqueIdentifier>{e9874dd7-abc3-4e4f-a22e-2a03e1c45411}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Status">
+      <UniqueIdentifier>{7eb9ba56-4c53-4797-ac9c-c5c900b02a5f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="IO\FileAccess.h">
+      <Filter>ヘッダー ファイル\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="Mitama\Mitama.h">
+      <Filter>ヘッダー ファイル\Mitama</Filter>
+    </ClInclude>
+    <ClInclude Include="Mitama\MitamaCalculator.h">
+      <Filter>ヘッダー ファイル\Mitama</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\StatType.h">
+      <Filter>ヘッダー ファイル\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\Status.h">
+      <Filter>ヘッダー ファイル\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\StatValue.h">
+      <Filter>ヘッダー ファイル\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Shikigami\Shikigami.h">
+      <Filter>ヘッダー ファイル\Shikigami</Filter>
+    </ClInclude>
+    <ClInclude Include="Shikigami\ShikigamiRepository.h">
+      <Filter>ヘッダー ファイル\Shikigami</Filter>
+    </ClInclude>
+    <ClInclude Include="Mitama\SetEffect.h">
+      <Filter>ヘッダー ファイル\Mitama</Filter>
+    </ClInclude>
+    <ClInclude Include="Mitama\MitamaSet.h">
+      <Filter>ヘッダー ファイル\Mitama</Filter>
+    </ClInclude>
+    <ClInclude Include="Service\CalculationService.h">
+      <Filter>ヘッダー ファイル\Service</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\CalculationResult.h">
+      <Filter>ヘッダー ファイル\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Status\StatusCalculator.h">
+      <Filter>ヘッダー ファイル\Status</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="IO\FileAccess.cpp">
+      <Filter>ソース ファイル\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="Mitama\MitamaCalculator.cpp">
+      <Filter>ソース ファイル\Mitama</Filter>
+    </ClCompile>
+    <ClCompile Include="Shikigami\ShikigamiRepository.cpp">
+      <Filter>ソース ファイル\Shikigami</Filter>
+    </ClCompile>
+    <ClCompile Include="Service\CalculationService.cpp">
+      <Filter>ソース ファイル\Service</Filter>
+    </ClCompile>
+    <ClCompile Include="Status\StatusCalculator.cpp">
+      <Filter>ソース ファイル\Status</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
