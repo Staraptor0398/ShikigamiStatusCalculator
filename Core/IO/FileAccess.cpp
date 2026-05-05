@@ -5,6 +5,9 @@
 #include <sstream>
 
 namespace {
+
+	const std::string SHIKIGAMI_CSV_HEADER = "レア度,式神名,攻撃力,HP,防御力,素早さ,会心率,会心DMG,効果命中,効果抵抗";
+
 	std::vector<std::string> spilit_CsvLine(const std::string& line) {
 		std::vector<std::string> values;
 		std::stringstream stream(line);
@@ -38,6 +41,7 @@ std::vector<Shikigami> FileAccess::load_Shikigami(const std::string& filePath)
 
 	std::string line;
 
+	// ヘッダー行を読み飛ばす
 	std::getline(file, line);
 
 	while (std::getline(file, line)) {
@@ -70,6 +74,33 @@ std::vector<Shikigami> FileAccess::load_Shikigami(const std::string& filePath)
 	return shikigamiList;
 }
 
+void FileAccess::save_Shikigami(const std::string& filePath, const std::vector<Shikigami> shikigamis)
+{
+	std::ofstream file(filePath, std::ios::trunc);
+
+	if (!file.is_open()) {
+		return;
+	}
+
+	// ヘッダー行を書き戻す
+	file << SHIKIGAMI_CSV_HEADER << std::endl;
+
+	for (const auto& s : shikigamis) {
+		file
+			<< s.Rarity << ","
+			<< s.Name << ","
+			<< s.Attack << ","
+			<< s.HP << ","
+			<< s.Defense << ","
+			<< s.Speed << ","
+			<< s.CritRate << ","
+			<< s.CritDamage << ","
+			<< s.EffectHit << ","
+			<< s.EffectResist
+			<< std::endl;
+	}
+}
+
 void FileAccess::insert_Shikigami(const std::string& filePath, const Shikigami& newData)
 {
 	auto list = load_Shikigami(filePath);
@@ -84,24 +115,6 @@ void FileAccess::insert_Shikigami(const std::string& filePath, const Shikigami& 
 
 	list.insert(list.begin() + insertIndex, newData);
 
-	std::ofstream file(filePath, std::ios::trunc);
+	save_Shikigami(filePath, list);
 
-	if (!file.is_open()) {
-		return;
-	}
-
-	for (const auto& s : list) {
-		file
-			<< s.Rarity << ","
-			<< s.Name << ","
-			<< s.Attack << ","
-			<< s.HP << ","
-			<< s.Defense << ","
-			<< s.Speed << ","
-			<< s.CritRate << ","
-			<< s.CritDamage << ","
-			<< s.EffectHit << ","
-			<< s.EffectResist
-			<< std::endl;
-	}
 }
