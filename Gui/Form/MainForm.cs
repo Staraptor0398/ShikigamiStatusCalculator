@@ -43,13 +43,13 @@ namespace ShikigamiApp
 			}
 
 			txtBaseStats.Text =
-					$"{DisplayText.Attack}: {selected.Attack:F2}  " +
-					$"{DisplayText.HP}: {selected.HP:F2}  " +
-					$"{DisplayText.Deffense}: {selected.Defense:F2}  " +
-					$"{DisplayText.Speed}: {selected.Speed:F2}  " +
-					$"{DisplayText.CritRate}: {selected.CritRate:F2}%  " +
-					$"{DisplayText.CritDamage}: {selected.CritDamage:F2}%  " +
-					$"{DisplayText.EffectHit}: {selected.EffectHit:F2}%  " +
+					$"{DisplayText.Attack}: {selected.Attack:F2} " +
+					$"{DisplayText.HP}: {selected.HP:F2} " +
+					$"{DisplayText.Deffense}: {selected.Defense:F2} " +
+					$"{DisplayText.Speed}: {selected.Speed:F2} " +
+					$"{DisplayText.CritRate}: {selected.CritRate:F2}% " +
+					$"{DisplayText.CritDamage}: {selected.CritDamage:F2}% " +
+					$"{DisplayText.EffectHit}: {selected.EffectHit:F2}% " +
 					$"{DisplayText.EffectResist}: {selected.EffectResist:F2}%";
 		}
 

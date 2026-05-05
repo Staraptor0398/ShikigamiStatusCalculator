@@ -137,7 +137,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbShikigami.FormattingEnabled = true;
 			this.cmbShikigami.Location = new System.Drawing.Point(31, 29);
-			this.cmbShikigami.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbShikigami.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbShikigami.Name = "cmbShikigami";
 			this.cmbShikigami.Size = new System.Drawing.Size(92, 20);
 			this.cmbShikigami.TabIndex = 1;
@@ -146,7 +146,7 @@ namespace ShikigamiApp
 			// txtBaseStats
 			// 
 			this.txtBaseStats.Location = new System.Drawing.Point(132, 29);
-			this.txtBaseStats.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtBaseStats.Margin = new System.Windows.Forms.Padding(2);
 			this.txtBaseStats.Multiline = true;
 			this.txtBaseStats.Name = "txtBaseStats";
 			this.txtBaseStats.ReadOnly = true;
@@ -167,7 +167,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbMainStat1.FormattingEnabled = true;
 			this.cmbMainStat1.Location = new System.Drawing.Point(31, 83);
-			this.cmbMainStat1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbMainStat1.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbMainStat1.Name = "cmbMainStat1";
 			this.cmbMainStat1.Size = new System.Drawing.Size(92, 20);
 			this.cmbMainStat1.TabIndex = 4;
@@ -176,7 +176,7 @@ namespace ShikigamiApp
 			// txtMainVal1
 			// 
 			this.txtMainVal1.Location = new System.Drawing.Point(131, 83);
-			this.txtMainVal1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtMainVal1.Margin = new System.Windows.Forms.Padding(2);
 			this.txtMainVal1.Name = "txtMainVal1";
 			this.txtMainVal1.ReadOnly = true;
 			this.txtMainVal1.Size = new System.Drawing.Size(92, 19);
@@ -185,7 +185,7 @@ namespace ShikigamiApp
 			// txtMainVal2
 			// 
 			this.txtMainVal2.Location = new System.Drawing.Point(131, 106);
-			this.txtMainVal2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtMainVal2.Margin = new System.Windows.Forms.Padding(2);
 			this.txtMainVal2.Name = "txtMainVal2";
 			this.txtMainVal2.ReadOnly = true;
 			this.txtMainVal2.Size = new System.Drawing.Size(92, 19);
@@ -195,7 +195,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbMainStat2.FormattingEnabled = true;
 			this.cmbMainStat2.Location = new System.Drawing.Point(31, 106);
-			this.cmbMainStat2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbMainStat2.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbMainStat2.Name = "cmbMainStat2";
 			this.cmbMainStat2.Size = new System.Drawing.Size(92, 20);
 			this.cmbMainStat2.TabIndex = 7;
@@ -214,7 +214,7 @@ namespace ShikigamiApp
 			// txtMainVal3
 			// 
 			this.txtMainVal3.Location = new System.Drawing.Point(131, 128);
-			this.txtMainVal3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtMainVal3.Margin = new System.Windows.Forms.Padding(2);
 			this.txtMainVal3.Name = "txtMainVal3";
 			this.txtMainVal3.ReadOnly = true;
 			this.txtMainVal3.Size = new System.Drawing.Size(92, 19);
@@ -224,7 +224,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbMainStat3.FormattingEnabled = true;
 			this.cmbMainStat3.Location = new System.Drawing.Point(31, 128);
-			this.cmbMainStat3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbMainStat3.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbMainStat3.Name = "cmbMainStat3";
 			this.cmbMainStat3.Size = new System.Drawing.Size(92, 20);
 			this.cmbMainStat3.TabIndex = 10;
@@ -243,7 +243,7 @@ namespace ShikigamiApp
 			// txtMainVal4
 			// 
 			this.txtMainVal4.Location = new System.Drawing.Point(131, 151);
-			this.txtMainVal4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtMainVal4.Margin = new System.Windows.Forms.Padding(2);
 			this.txtMainVal4.Name = "txtMainVal4";
 			this.txtMainVal4.ReadOnly = true;
 			this.txtMainVal4.Size = new System.Drawing.Size(92, 19);
@@ -253,7 +253,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbMainStat4.FormattingEnabled = true;
 			this.cmbMainStat4.Location = new System.Drawing.Point(31, 151);
-			this.cmbMainStat4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbMainStat4.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbMainStat4.Name = "cmbMainStat4";
 			this.cmbMainStat4.Size = new System.Drawing.Size(92, 20);
 			this.cmbMainStat4.TabIndex = 13;
@@ -272,7 +272,7 @@ namespace ShikigamiApp
 			// txtMainVal5
 			// 
 			this.txtMainVal5.Location = new System.Drawing.Point(131, 174);
-			this.txtMainVal5.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtMainVal5.Margin = new System.Windows.Forms.Padding(2);
 			this.txtMainVal5.Name = "txtMainVal5";
 			this.txtMainVal5.ReadOnly = true;
 			this.txtMainVal5.Size = new System.Drawing.Size(92, 19);
@@ -282,7 +282,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbMainStat5.FormattingEnabled = true;
 			this.cmbMainStat5.Location = new System.Drawing.Point(31, 173);
-			this.cmbMainStat5.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbMainStat5.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbMainStat5.Name = "cmbMainStat5";
 			this.cmbMainStat5.Size = new System.Drawing.Size(92, 20);
 			this.cmbMainStat5.TabIndex = 16;
@@ -301,7 +301,7 @@ namespace ShikigamiApp
 			// txtMainVal6
 			// 
 			this.txtMainVal6.Location = new System.Drawing.Point(131, 196);
-			this.txtMainVal6.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtMainVal6.Margin = new System.Windows.Forms.Padding(2);
 			this.txtMainVal6.Name = "txtMainVal6";
 			this.txtMainVal6.ReadOnly = true;
 			this.txtMainVal6.Size = new System.Drawing.Size(92, 19);
@@ -311,7 +311,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbMainStat6.FormattingEnabled = true;
 			this.cmbMainStat6.Location = new System.Drawing.Point(31, 196);
-			this.cmbMainStat6.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbMainStat6.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbMainStat6.Name = "cmbMainStat6";
 			this.cmbMainStat6.Size = new System.Drawing.Size(92, 20);
 			this.cmbMainStat6.TabIndex = 19;
@@ -331,7 +331,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat11.FormattingEnabled = true;
 			this.cmbSubStat11.Location = new System.Drawing.Point(226, 83);
-			this.cmbSubStat11.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat11.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat11.Name = "cmbSubStat11";
 			this.cmbSubStat11.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat11.TabIndex = 21;
@@ -339,7 +339,7 @@ namespace ShikigamiApp
 			// txtSubVal11
 			// 
 			this.txtSubVal11.Location = new System.Drawing.Point(321, 83);
-			this.txtSubVal11.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal11.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal11.Name = "txtSubVal11";
 			this.txtSubVal11.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal11.TabIndex = 22;
@@ -347,7 +347,7 @@ namespace ShikigamiApp
 			// txtSubVal21
 			// 
 			this.txtSubVal21.Location = new System.Drawing.Point(512, 83);
-			this.txtSubVal21.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal21.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal21.Name = "txtSubVal21";
 			this.txtSubVal21.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal21.TabIndex = 24;
@@ -356,7 +356,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat21.FormattingEnabled = true;
 			this.cmbSubStat21.Location = new System.Drawing.Point(417, 83);
-			this.cmbSubStat21.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat21.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat21.Name = "cmbSubStat21";
 			this.cmbSubStat21.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat21.TabIndex = 23;
@@ -364,7 +364,7 @@ namespace ShikigamiApp
 			// txtSubVal31
 			// 
 			this.txtSubVal31.Location = new System.Drawing.Point(703, 83);
-			this.txtSubVal31.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal31.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal31.Name = "txtSubVal31";
 			this.txtSubVal31.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal31.TabIndex = 26;
@@ -373,7 +373,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat31.FormattingEnabled = true;
 			this.cmbSubStat31.Location = new System.Drawing.Point(607, 83);
-			this.cmbSubStat31.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat31.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat31.Name = "cmbSubStat31";
 			this.cmbSubStat31.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat31.TabIndex = 25;
@@ -381,7 +381,7 @@ namespace ShikigamiApp
 			// txtSubVal41
 			// 
 			this.txtSubVal41.Location = new System.Drawing.Point(893, 83);
-			this.txtSubVal41.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal41.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal41.Name = "txtSubVal41";
 			this.txtSubVal41.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal41.TabIndex = 28;
@@ -390,7 +390,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat41.FormattingEnabled = true;
 			this.cmbSubStat41.Location = new System.Drawing.Point(798, 83);
-			this.cmbSubStat41.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat41.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat41.Name = "cmbSubStat41";
 			this.cmbSubStat41.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat41.TabIndex = 27;
@@ -398,7 +398,7 @@ namespace ShikigamiApp
 			// txtSubVal42
 			// 
 			this.txtSubVal42.Location = new System.Drawing.Point(893, 106);
-			this.txtSubVal42.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal42.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal42.Name = "txtSubVal42";
 			this.txtSubVal42.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal42.TabIndex = 36;
@@ -407,7 +407,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat42.FormattingEnabled = true;
 			this.cmbSubStat42.Location = new System.Drawing.Point(798, 106);
-			this.cmbSubStat42.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat42.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat42.Name = "cmbSubStat42";
 			this.cmbSubStat42.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat42.TabIndex = 35;
@@ -415,7 +415,7 @@ namespace ShikigamiApp
 			// txtSubVal32
 			// 
 			this.txtSubVal32.Location = new System.Drawing.Point(703, 106);
-			this.txtSubVal32.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal32.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal32.Name = "txtSubVal32";
 			this.txtSubVal32.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal32.TabIndex = 34;
@@ -424,7 +424,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat32.FormattingEnabled = true;
 			this.cmbSubStat32.Location = new System.Drawing.Point(607, 106);
-			this.cmbSubStat32.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat32.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat32.Name = "cmbSubStat32";
 			this.cmbSubStat32.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat32.TabIndex = 33;
@@ -432,7 +432,7 @@ namespace ShikigamiApp
 			// txtSubVal22
 			// 
 			this.txtSubVal22.Location = new System.Drawing.Point(512, 106);
-			this.txtSubVal22.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal22.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal22.Name = "txtSubVal22";
 			this.txtSubVal22.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal22.TabIndex = 32;
@@ -441,7 +441,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat22.FormattingEnabled = true;
 			this.cmbSubStat22.Location = new System.Drawing.Point(417, 106);
-			this.cmbSubStat22.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat22.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat22.Name = "cmbSubStat22";
 			this.cmbSubStat22.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat22.TabIndex = 31;
@@ -449,7 +449,7 @@ namespace ShikigamiApp
 			// txtSubVal12
 			// 
 			this.txtSubVal12.Location = new System.Drawing.Point(321, 106);
-			this.txtSubVal12.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal12.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal12.Name = "txtSubVal12";
 			this.txtSubVal12.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal12.TabIndex = 30;
@@ -458,7 +458,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat12.FormattingEnabled = true;
 			this.cmbSubStat12.Location = new System.Drawing.Point(226, 106);
-			this.cmbSubStat12.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat12.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat12.Name = "cmbSubStat12";
 			this.cmbSubStat12.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat12.TabIndex = 29;
@@ -466,7 +466,7 @@ namespace ShikigamiApp
 			// txtSubVal43
 			// 
 			this.txtSubVal43.Location = new System.Drawing.Point(893, 128);
-			this.txtSubVal43.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal43.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal43.Name = "txtSubVal43";
 			this.txtSubVal43.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal43.TabIndex = 44;
@@ -475,7 +475,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat43.FormattingEnabled = true;
 			this.cmbSubStat43.Location = new System.Drawing.Point(798, 128);
-			this.cmbSubStat43.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat43.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat43.Name = "cmbSubStat43";
 			this.cmbSubStat43.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat43.TabIndex = 43;
@@ -483,7 +483,7 @@ namespace ShikigamiApp
 			// txtSubVal33
 			// 
 			this.txtSubVal33.Location = new System.Drawing.Point(703, 128);
-			this.txtSubVal33.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal33.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal33.Name = "txtSubVal33";
 			this.txtSubVal33.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal33.TabIndex = 42;
@@ -492,7 +492,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat33.FormattingEnabled = true;
 			this.cmbSubStat33.Location = new System.Drawing.Point(607, 128);
-			this.cmbSubStat33.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat33.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat33.Name = "cmbSubStat33";
 			this.cmbSubStat33.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat33.TabIndex = 41;
@@ -500,7 +500,7 @@ namespace ShikigamiApp
 			// txtSubVal23
 			// 
 			this.txtSubVal23.Location = new System.Drawing.Point(512, 128);
-			this.txtSubVal23.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal23.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal23.Name = "txtSubVal23";
 			this.txtSubVal23.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal23.TabIndex = 40;
@@ -509,7 +509,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat23.FormattingEnabled = true;
 			this.cmbSubStat23.Location = new System.Drawing.Point(417, 128);
-			this.cmbSubStat23.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat23.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat23.Name = "cmbSubStat23";
 			this.cmbSubStat23.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat23.TabIndex = 39;
@@ -517,7 +517,7 @@ namespace ShikigamiApp
 			// txtSubVal13
 			// 
 			this.txtSubVal13.Location = new System.Drawing.Point(321, 128);
-			this.txtSubVal13.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal13.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal13.Name = "txtSubVal13";
 			this.txtSubVal13.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal13.TabIndex = 38;
@@ -526,7 +526,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat13.FormattingEnabled = true;
 			this.cmbSubStat13.Location = new System.Drawing.Point(226, 128);
-			this.cmbSubStat13.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat13.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat13.Name = "cmbSubStat13";
 			this.cmbSubStat13.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat13.TabIndex = 37;
@@ -534,7 +534,7 @@ namespace ShikigamiApp
 			// txtSubVal44
 			// 
 			this.txtSubVal44.Location = new System.Drawing.Point(893, 151);
-			this.txtSubVal44.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal44.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal44.Name = "txtSubVal44";
 			this.txtSubVal44.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal44.TabIndex = 52;
@@ -543,7 +543,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat44.FormattingEnabled = true;
 			this.cmbSubStat44.Location = new System.Drawing.Point(798, 151);
-			this.cmbSubStat44.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat44.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat44.Name = "cmbSubStat44";
 			this.cmbSubStat44.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat44.TabIndex = 51;
@@ -551,7 +551,7 @@ namespace ShikigamiApp
 			// txtSubVal34
 			// 
 			this.txtSubVal34.Location = new System.Drawing.Point(703, 151);
-			this.txtSubVal34.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal34.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal34.Name = "txtSubVal34";
 			this.txtSubVal34.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal34.TabIndex = 50;
@@ -560,7 +560,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat34.FormattingEnabled = true;
 			this.cmbSubStat34.Location = new System.Drawing.Point(607, 151);
-			this.cmbSubStat34.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat34.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat34.Name = "cmbSubStat34";
 			this.cmbSubStat34.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat34.TabIndex = 49;
@@ -568,7 +568,7 @@ namespace ShikigamiApp
 			// txtSubVal24
 			// 
 			this.txtSubVal24.Location = new System.Drawing.Point(512, 151);
-			this.txtSubVal24.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal24.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal24.Name = "txtSubVal24";
 			this.txtSubVal24.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal24.TabIndex = 48;
@@ -577,7 +577,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat24.FormattingEnabled = true;
 			this.cmbSubStat24.Location = new System.Drawing.Point(417, 151);
-			this.cmbSubStat24.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat24.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat24.Name = "cmbSubStat24";
 			this.cmbSubStat24.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat24.TabIndex = 47;
@@ -585,7 +585,7 @@ namespace ShikigamiApp
 			// txtSubVal14
 			// 
 			this.txtSubVal14.Location = new System.Drawing.Point(321, 151);
-			this.txtSubVal14.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal14.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal14.Name = "txtSubVal14";
 			this.txtSubVal14.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal14.TabIndex = 46;
@@ -594,7 +594,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat14.FormattingEnabled = true;
 			this.cmbSubStat14.Location = new System.Drawing.Point(226, 151);
-			this.cmbSubStat14.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat14.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat14.Name = "cmbSubStat14";
 			this.cmbSubStat14.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat14.TabIndex = 45;
@@ -602,7 +602,7 @@ namespace ShikigamiApp
 			// txtSubVal45
 			// 
 			this.txtSubVal45.Location = new System.Drawing.Point(893, 174);
-			this.txtSubVal45.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal45.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal45.Name = "txtSubVal45";
 			this.txtSubVal45.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal45.TabIndex = 60;
@@ -611,7 +611,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat45.FormattingEnabled = true;
 			this.cmbSubStat45.Location = new System.Drawing.Point(798, 174);
-			this.cmbSubStat45.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat45.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat45.Name = "cmbSubStat45";
 			this.cmbSubStat45.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat45.TabIndex = 59;
@@ -619,7 +619,7 @@ namespace ShikigamiApp
 			// txtSubVal35
 			// 
 			this.txtSubVal35.Location = new System.Drawing.Point(703, 174);
-			this.txtSubVal35.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal35.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal35.Name = "txtSubVal35";
 			this.txtSubVal35.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal35.TabIndex = 58;
@@ -628,7 +628,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat35.FormattingEnabled = true;
 			this.cmbSubStat35.Location = new System.Drawing.Point(607, 174);
-			this.cmbSubStat35.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat35.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat35.Name = "cmbSubStat35";
 			this.cmbSubStat35.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat35.TabIndex = 57;
@@ -636,7 +636,7 @@ namespace ShikigamiApp
 			// txtSubVal25
 			// 
 			this.txtSubVal25.Location = new System.Drawing.Point(512, 174);
-			this.txtSubVal25.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal25.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal25.Name = "txtSubVal25";
 			this.txtSubVal25.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal25.TabIndex = 56;
@@ -645,7 +645,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat25.FormattingEnabled = true;
 			this.cmbSubStat25.Location = new System.Drawing.Point(417, 174);
-			this.cmbSubStat25.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat25.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat25.Name = "cmbSubStat25";
 			this.cmbSubStat25.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat25.TabIndex = 55;
@@ -653,7 +653,7 @@ namespace ShikigamiApp
 			// txtSubVal15
 			// 
 			this.txtSubVal15.Location = new System.Drawing.Point(321, 174);
-			this.txtSubVal15.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal15.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal15.Name = "txtSubVal15";
 			this.txtSubVal15.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal15.TabIndex = 54;
@@ -662,7 +662,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat15.FormattingEnabled = true;
 			this.cmbSubStat15.Location = new System.Drawing.Point(226, 174);
-			this.cmbSubStat15.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat15.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat15.Name = "cmbSubStat15";
 			this.cmbSubStat15.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat15.TabIndex = 53;
@@ -670,7 +670,7 @@ namespace ShikigamiApp
 			// txtSubVal46
 			// 
 			this.txtSubVal46.Location = new System.Drawing.Point(893, 195);
-			this.txtSubVal46.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal46.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal46.Name = "txtSubVal46";
 			this.txtSubVal46.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal46.TabIndex = 68;
@@ -679,7 +679,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat46.FormattingEnabled = true;
 			this.cmbSubStat46.Location = new System.Drawing.Point(798, 195);
-			this.cmbSubStat46.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat46.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat46.Name = "cmbSubStat46";
 			this.cmbSubStat46.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat46.TabIndex = 67;
@@ -687,7 +687,7 @@ namespace ShikigamiApp
 			// txtSubVal36
 			// 
 			this.txtSubVal36.Location = new System.Drawing.Point(703, 195);
-			this.txtSubVal36.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal36.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal36.Name = "txtSubVal36";
 			this.txtSubVal36.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal36.TabIndex = 66;
@@ -696,7 +696,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat36.FormattingEnabled = true;
 			this.cmbSubStat36.Location = new System.Drawing.Point(607, 195);
-			this.cmbSubStat36.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat36.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat36.Name = "cmbSubStat36";
 			this.cmbSubStat36.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat36.TabIndex = 65;
@@ -704,7 +704,7 @@ namespace ShikigamiApp
 			// txtSubVal26
 			// 
 			this.txtSubVal26.Location = new System.Drawing.Point(512, 195);
-			this.txtSubVal26.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal26.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal26.Name = "txtSubVal26";
 			this.txtSubVal26.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal26.TabIndex = 64;
@@ -713,7 +713,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat26.FormattingEnabled = true;
 			this.cmbSubStat26.Location = new System.Drawing.Point(417, 195);
-			this.cmbSubStat26.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat26.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat26.Name = "cmbSubStat26";
 			this.cmbSubStat26.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat26.TabIndex = 63;
@@ -721,7 +721,7 @@ namespace ShikigamiApp
 			// txtSubVal16
 			// 
 			this.txtSubVal16.Location = new System.Drawing.Point(321, 195);
-			this.txtSubVal16.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtSubVal16.Margin = new System.Windows.Forms.Padding(2);
 			this.txtSubVal16.Name = "txtSubVal16";
 			this.txtSubVal16.Size = new System.Drawing.Size(92, 19);
 			this.txtSubVal16.TabIndex = 62;
@@ -730,7 +730,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSubStat16.FormattingEnabled = true;
 			this.cmbSubStat16.Location = new System.Drawing.Point(226, 195);
-			this.cmbSubStat16.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSubStat16.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSubStat16.Name = "cmbSubStat16";
 			this.cmbSubStat16.Size = new System.Drawing.Size(92, 20);
 			this.cmbSubStat16.TabIndex = 61;
@@ -739,7 +739,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSetBonus1.FormattingEnabled = true;
 			this.cmbSetBonus1.Location = new System.Drawing.Point(31, 232);
-			this.cmbSetBonus1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSetBonus1.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSetBonus1.Name = "cmbSetBonus1";
 			this.cmbSetBonus1.Size = new System.Drawing.Size(92, 20);
 			this.cmbSetBonus1.TabIndex = 69;
@@ -748,7 +748,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSetBonus2.FormattingEnabled = true;
 			this.cmbSetBonus2.Location = new System.Drawing.Point(131, 232);
-			this.cmbSetBonus2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSetBonus2.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSetBonus2.Name = "cmbSetBonus2";
 			this.cmbSetBonus2.Size = new System.Drawing.Size(92, 20);
 			this.cmbSetBonus2.TabIndex = 70;
@@ -757,7 +757,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbSetBonus3.FormattingEnabled = true;
 			this.cmbSetBonus3.Location = new System.Drawing.Point(226, 232);
-			this.cmbSetBonus3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbSetBonus3.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbSetBonus3.Name = "cmbSetBonus3";
 			this.cmbSetBonus3.Size = new System.Drawing.Size(92, 20);
 			this.cmbSetBonus3.TabIndex = 71;
@@ -766,7 +766,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbUnique1.FormattingEnabled = true;
 			this.cmbUnique1.Location = new System.Drawing.Point(321, 232);
-			this.cmbUnique1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbUnique1.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbUnique1.Name = "cmbUnique1";
 			this.cmbUnique1.Size = new System.Drawing.Size(92, 20);
 			this.cmbUnique1.TabIndex = 72;
@@ -775,7 +775,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbUnique2.FormattingEnabled = true;
 			this.cmbUnique2.Location = new System.Drawing.Point(417, 232);
-			this.cmbUnique2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbUnique2.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbUnique2.Name = "cmbUnique2";
 			this.cmbUnique2.Size = new System.Drawing.Size(92, 20);
 			this.cmbUnique2.TabIndex = 73;
@@ -784,7 +784,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbUnique3.FormattingEnabled = true;
 			this.cmbUnique3.Location = new System.Drawing.Point(512, 232);
-			this.cmbUnique3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbUnique3.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbUnique3.Name = "cmbUnique3";
 			this.cmbUnique3.Size = new System.Drawing.Size(92, 20);
 			this.cmbUnique3.TabIndex = 74;
@@ -793,7 +793,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbUnique4.FormattingEnabled = true;
 			this.cmbUnique4.Location = new System.Drawing.Point(607, 232);
-			this.cmbUnique4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbUnique4.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbUnique4.Name = "cmbUnique4";
 			this.cmbUnique4.Size = new System.Drawing.Size(92, 20);
 			this.cmbUnique4.TabIndex = 75;
@@ -802,7 +802,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbUnique5.FormattingEnabled = true;
 			this.cmbUnique5.Location = new System.Drawing.Point(703, 232);
-			this.cmbUnique5.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbUnique5.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbUnique5.Name = "cmbUnique5";
 			this.cmbUnique5.Size = new System.Drawing.Size(92, 20);
 			this.cmbUnique5.TabIndex = 76;
@@ -811,7 +811,7 @@ namespace ShikigamiApp
 			// 
 			this.cmbUnique6.FormattingEnabled = true;
 			this.cmbUnique6.Location = new System.Drawing.Point(798, 232);
-			this.cmbUnique6.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.cmbUnique6.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbUnique6.Name = "cmbUnique6";
 			this.cmbUnique6.Size = new System.Drawing.Size(92, 20);
 			this.cmbUnique6.TabIndex = 77;
@@ -819,7 +819,7 @@ namespace ShikigamiApp
 			// txtMitamaOnly
 			// 
 			this.txtMitamaOnly.Location = new System.Drawing.Point(132, 267);
-			this.txtMitamaOnly.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtMitamaOnly.Margin = new System.Windows.Forms.Padding(2);
 			this.txtMitamaOnly.Name = "txtMitamaOnly";
 			this.txtMitamaOnly.ReadOnly = true;
 			this.txtMitamaOnly.Size = new System.Drawing.Size(923, 19);
@@ -828,7 +828,7 @@ namespace ShikigamiApp
 			// txtFinalStats
 			// 
 			this.txtFinalStats.Location = new System.Drawing.Point(132, 290);
-			this.txtFinalStats.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.txtFinalStats.Margin = new System.Windows.Forms.Padding(2);
 			this.txtFinalStats.Name = "txtFinalStats";
 			this.txtFinalStats.ReadOnly = true;
 			this.txtFinalStats.Size = new System.Drawing.Size(923, 19);
@@ -857,7 +857,7 @@ namespace ShikigamiApp
 			// btnCalc
 			// 
 			this.btnCalc.Location = new System.Drawing.Point(132, 318);
-			this.btnCalc.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.btnCalc.Margin = new System.Windows.Forms.Padding(2);
 			this.btnCalc.Name = "btnCalc";
 			this.btnCalc.Size = new System.Drawing.Size(91, 25);
 			this.btnCalc.TabIndex = 82;
@@ -868,7 +868,7 @@ namespace ShikigamiApp
 			// btnSave
 			// 
 			this.btnSave.Location = new System.Drawing.Point(226, 318);
-			this.btnSave.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.btnSave.Margin = new System.Windows.Forms.Padding(2);
 			this.btnSave.Name = "btnSave";
 			this.btnSave.Size = new System.Drawing.Size(91, 25);
 			this.btnSave.TabIndex = 83;
@@ -879,7 +879,7 @@ namespace ShikigamiApp
 			// btnLoad
 			// 
 			this.btnLoad.Location = new System.Drawing.Point(321, 318);
-			this.btnLoad.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.btnLoad.Margin = new System.Windows.Forms.Padding(2);
 			this.btnLoad.Name = "btnLoad";
 			this.btnLoad.Size = new System.Drawing.Size(91, 25);
 			this.btnLoad.TabIndex = 84;
@@ -910,7 +910,7 @@ namespace ShikigamiApp
 			// btnReLoad
 			// 
 			this.btnReLoad.Location = new System.Drawing.Point(32, 53);
-			this.btnReLoad.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.btnReLoad.Margin = new System.Windows.Forms.Padding(2);
 			this.btnReLoad.Name = "btnReLoad";
 			this.btnReLoad.Size = new System.Drawing.Size(91, 25);
 			this.btnReLoad.TabIndex = 87;
@@ -931,7 +931,7 @@ namespace ShikigamiApp
 			// btnClear
 			// 
 			this.btnClear.Location = new System.Drawing.Point(417, 318);
-			this.btnClear.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.btnClear.Margin = new System.Windows.Forms.Padding(2);
 			this.btnClear.Name = "btnClear";
 			this.btnClear.Size = new System.Drawing.Size(91, 25);
 			this.btnClear.TabIndex = 89;
@@ -1034,9 +1034,9 @@ namespace ShikigamiApp
 			this.Controls.Add(this.txtBaseStats);
 			this.Controls.Add(this.cmbShikigami);
 			this.Controls.Add(this.lblShikigami);
-			this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.Margin = new System.Windows.Forms.Padding(2);
 			this.Name = "MainForm";
-			this.Text = "ShikigamiApp";
+			this.Text = "式神ステータス計算";
 			this.Load += new System.EventHandler(this.MainForm_Load);
 			this.ResumeLayout(false);
 			this.PerformLayout();
