@@ -424,6 +424,7 @@ namespace ShikigamiApp
 			}
 
 			comboBox.SelectedIndex = -1;
+			comboBox.Text = "";
 
 		}
 
@@ -952,5 +953,97 @@ namespace ShikigamiApp
 				}
 			}
 		}
+
+		/****************************************************************************************************
+		  入力クリア
+		****************************************************************************************************/
+
+		private void btnClear_Click(object sender, EventArgs e)
+		{
+			var result = MessageBox.Show(
+				"入力内容と計算結果をクリアします。よろしいですか？",
+				"確認",
+				MessageBoxButtons.YesNo,
+				MessageBoxIcon.Question);
+
+			if(result!= DialogResult.Yes)
+			{
+				return;
+			}
+
+			clearInputs();
+		}
+
+		// 起動直後と同じ入力状態に戻す
+		private void clearInputs()
+		{
+			clearShikigamiSelection();
+			clearMitamaInputs();
+			clearEffectInputs();
+			clearResultTexts();
+		}
+
+		private void clearShikigamiSelection()
+		{
+			cmbShikigami.SelectedIndex = -1;
+			txtBaseStats.Text = "";
+		}
+
+		private void clearMitamaInputs()
+		{
+			initializeMainStatComboBoxes();
+			initializeSubStatComboBoxes();
+
+			clearMainValueTextBoxes();
+			clearSubValueTextBoxes();
+		}
+
+		private void clearMainValueTextBoxes()
+		{
+			TextBox[] textBoxes =
+			{
+				txtMainVal1,
+				txtMainVal2,
+				txtMainVal3,
+				txtMainVal4,
+				txtMainVal5,
+				txtMainVal6
+			};
+
+			foreach (var textBox in textBoxes)
+			{
+				textBox.Text = "";
+			}
+		}
+
+		private void clearSubValueTextBoxes()
+		{
+			TextBox[] textBoxes =
+			{
+				txtSubVal11,	txtSubVal21,	txtSubVal31,	txtSubVal41,
+				txtSubVal12,	txtSubVal22,	txtSubVal32,	txtSubVal42,
+				txtSubVal13,	txtSubVal23,	txtSubVal33,	txtSubVal43,
+				txtSubVal14,	txtSubVal24,	txtSubVal34,	txtSubVal44,
+				txtSubVal15,	txtSubVal25,	txtSubVal35,	txtSubVal45,
+				txtSubVal16,	txtSubVal26,	txtSubVal36,	txtSubVal46
+			};
+
+			foreach (var textBox in textBoxes) {
+				textBox.Text = "";
+			}
+		}
+
+		private void clearEffectInputs()
+		{
+			initializeSetEffectComboBoxes();
+			initializeUniqueEffectComboBoxes();
+		}
+
+		private void clearResultTexts()
+		{
+			txtMitamaOnly.Text = "";
+			txtFinalStats.Text = "";
+		}
+
 	}
 }
