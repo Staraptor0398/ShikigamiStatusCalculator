@@ -46,6 +46,12 @@
     <Filter Include="ヘッダー ファイル\Status">
       <UniqueIdentifier>{7eb9ba56-4c53-4797-ac9c-c5c900b02a5f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Converter">
+      <UniqueIdentifier>{7881fb61-638d-408e-819d-154f87efa50b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Converter">
+      <UniqueIdentifier>{5b1228e5-a8d6-49a0-82c1-1e4785dd0e12}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -93,6 +99,9 @@
     <ClInclude Include="Status\StatusCalculator.h">
       <Filter>ヘッダー ファイル\Status</Filter>
     </ClInclude>
+    <ClInclude Include="Converter\ShikigamiCsvConverter.h">
+      <Filter>ヘッダー ファイル\Converter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -112,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="Status\StatusCalculator.cpp">
       <Filter>ソース ファイル\Status</Filter>
+    </ClCompile>
+    <ClCompile Include="Converter\ShikigamiCsvConverter.cpp">
+      <Filter>ソース ファイル\Converter</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -155,6 +155,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Converter\ShikigamiCsvConverter.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="IO\FileAccess.h" />
     <ClInclude Include="Mitama\Mitama.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="Status\StatusCalculator.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Converter\ShikigamiCsvConverter.cpp" />
     <ClCompile Include="IO\FileAccess.cpp" />
     <ClCompile Include="Mitama\MitamaCalculator.cpp" />
     <ClCompile Include="pch.cpp">
