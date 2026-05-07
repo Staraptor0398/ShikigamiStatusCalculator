@@ -4,7 +4,7 @@ using namespace System;
 using namespace System::Collections::Generic;
 
 #include<string>
-#include "../Dto/ShikigamiDto.h"
+#include "../Dto/Model/ShikigamiDto.h"
 
 public ref class ShikigamiGateway
 {

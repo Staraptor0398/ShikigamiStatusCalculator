@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Core/Model/StatValue.h"
-#include "../Dto/StatValueDto.h"
+#include "../../../Core/Model/StatValue.h"
+#include "../../Dto/Model/StatValueDto.h"
 
 class StatValueConverter
 {

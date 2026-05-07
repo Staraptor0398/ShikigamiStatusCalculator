@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Core/Model/CalculationResult.h"
-#include "../Dto/CalculationResultDto.h"
+#include "../../../Core/Model/CalculationResult.h"
+#include "../../Dto/Model/CalculationResultDto.h"
 
 class CalculationResultConverter
 {

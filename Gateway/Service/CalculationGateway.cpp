@@ -3,9 +3,9 @@
 
 #include "../../Core/Service/CalculationService.h"
 
-#include "../Converter/StatusConverter.h"
-#include "../Converter/MitamaSetConverter.h"
-#include "../Converter/CalculationResultConverter.h"
+#include "../Converter/Model/StatusConverter.h"
+#include "../Converter/Model/MitamaSetConverter.h"
+#include "../Converter/Model/CalculationResultConverter.h"
 
 CalculationResultDto^ CalculationGateway::calclutate(StatusDto^ baseStatusDto, MitamaSetDto^ mitamaSetDto)
 {

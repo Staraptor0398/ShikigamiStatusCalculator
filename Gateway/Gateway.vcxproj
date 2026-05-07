@@ -159,36 +159,36 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Converter\CalculationResultConverter.h" />
-    <ClInclude Include="Converter\MitamaConverter.h" />
-    <ClInclude Include="Converter\MitamaSetConverter.h" />
-    <ClInclude Include="Converter\ShikigamiConverter.h" />
-    <ClInclude Include="Converter\StatTypeConverter.h" />
-    <ClInclude Include="Converter\StatusConverter.h" />
-    <ClInclude Include="Converter\StatValueConverter.h" />
-    <ClInclude Include="Converter\StringConverter.h" />
-    <ClInclude Include="Dto\CalculationResultDto.h" />
-    <ClInclude Include="Dto\MitamaDto.h" />
-    <ClInclude Include="Dto\MitamaSetDto.h" />
-    <ClInclude Include="Dto\ShikigamiDto.h" />
-    <ClInclude Include="Dto\StatTypeDto.h" />
-    <ClInclude Include="Dto\StatusDto.h" />
-    <ClInclude Include="Dto\StatusEffectDto.h" />
-    <ClInclude Include="Dto\StatValueDto.h" />
+    <ClInclude Include="Converter\Model\CalculationResultConverter.h" />
+    <ClInclude Include="Converter\Model\MitamaConverter.h" />
+    <ClInclude Include="Converter\Model\MitamaSetConverter.h" />
+    <ClInclude Include="Converter\Model\ShikigamiConverter.h" />
+    <ClInclude Include="Converter\Model\StatTypeConverter.h" />
+    <ClInclude Include="Converter\Model\StatusConverter.h" />
+    <ClInclude Include="Converter\Model\StatValueConverter.h" />
+    <ClInclude Include="Converter\Model\StringConverter.h" />
+    <ClInclude Include="Dto\Model\CalculationResultDto.h" />
+    <ClInclude Include="Dto\Model\MitamaDto.h" />
+    <ClInclude Include="Dto\Model\MitamaSetDto.h" />
+    <ClInclude Include="Dto\Model\ShikigamiDto.h" />
+    <ClInclude Include="Dto\Model\StatTypeDto.h" />
+    <ClInclude Include="Dto\Model\StatusDto.h" />
+    <ClInclude Include="Dto\Model\StatusEffectDto.h" />
+    <ClInclude Include="Dto\Model\StatValueDto.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Service\CalculationGateway.h" />
     <ClInclude Include="Service\ShikigamiGateway.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Converter\CalculationResultConverter.cpp" />
-    <ClCompile Include="Converter\MitamaConverter.cpp" />
-    <ClCompile Include="Converter\MitamaSetConverter.cpp" />
-    <ClCompile Include="Converter\ShikigamiConverter.cpp" />
-    <ClCompile Include="Converter\StatTypeConverter.cpp" />
-    <ClCompile Include="Converter\StatusConverter.cpp" />
-    <ClCompile Include="Converter\StatValueConverter.cpp" />
-    <ClCompile Include="Converter\StringConverter.cpp" />
+    <ClCompile Include="Converter\Model\CalculationResultConverter.cpp" />
+    <ClCompile Include="Converter\Model\MitamaConverter.cpp" />
+    <ClCompile Include="Converter\Model\MitamaSetConverter.cpp" />
+    <ClCompile Include="Converter\Model\ShikigamiConverter.cpp" />
+    <ClCompile Include="Converter\Model\StatTypeConverter.cpp" />
+    <ClCompile Include="Converter\Model\StatusConverter.cpp" />
+    <ClCompile Include="Converter\Model\StatValueConverter.cpp" />
+    <ClCompile Include="Converter\Model\StringConverter.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

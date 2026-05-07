@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Core/Model/Status.h"
-#include "../Dto/StatusDto.h"
+#include "../../../Core/Model/Status.h"
+#include "../../Dto/Model/StatusDto.h"
 
 class StatusConverter
 {

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Dto/StatusDto.h"
-#include "../Dto/MitamaSetDto.h"
-#include "../Dto/CalculationResultDto.h"
+#include "../Dto/Model/StatusDto.h"
+#include "../Dto/Model/MitamaSetDto.h"
+#include "../Dto/Model/CalculationResultDto.h"
 
 public ref class CalculationGateway
 {

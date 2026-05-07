@@ -52,6 +52,9 @@
     <Filter Include="ヘッダー ファイル\Converter">
       <UniqueIdentifier>{5b1228e5-a8d6-49a0-82c1-1e4785dd0e12}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\Outcome">
+      <UniqueIdentifier>{6264778b-db21-4d56-b0ca-36df9b0169a7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">

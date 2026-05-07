@@ -28,6 +28,24 @@
     <Filter Include="ソース ファイル\Converter">
       <UniqueIdentifier>{73d62714-3f4d-4bd3-ae73-dcfb4d705c74}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Converter\Model">
+      <UniqueIdentifier>{d969a61e-8266-46c4-8e51-6e6fd6675a4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Converter\Model">
+      <UniqueIdentifier>{f67a9442-9b3f-4f08-a42d-f87449794bf1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Dto\Model">
+      <UniqueIdentifier>{57d2cf82-ed99-4d02-9fc9-becc6b62280a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Dto\Outcome">
+      <UniqueIdentifier>{0ad4c46a-542b-4137-94f4-07152ca5b77a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Converter\Outcome">
+      <UniqueIdentifier>{617ac68f-570b-427b-a5c5-4e96ba5aa80f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Converter\Outcome">
+      <UniqueIdentifier>{1ef11c37-9a19-49b0-ba29-322cfe64edf9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -39,56 +57,56 @@
     <ClInclude Include="Service\ShikigamiGateway.h">
       <Filter>ヘッダー ファイル\Service</Filter>
     </ClInclude>
-    <ClInclude Include="Dto\ShikigamiDto.h">
-      <Filter>ヘッダー ファイル\Dto</Filter>
-    </ClInclude>
-    <ClInclude Include="Converter\StringConverter.h">
-      <Filter>ヘッダー ファイル\Converter</Filter>
-    </ClInclude>
-    <ClInclude Include="Dto\StatusDto.h">
-      <Filter>ヘッダー ファイル\Dto</Filter>
-    </ClInclude>
-    <ClInclude Include="Dto\StatTypeDto.h">
-      <Filter>ヘッダー ファイル\Dto</Filter>
-    </ClInclude>
-    <ClInclude Include="Dto\StatValueDto.h">
-      <Filter>ヘッダー ファイル\Dto</Filter>
-    </ClInclude>
-    <ClInclude Include="Dto\MitamaDto.h">
-      <Filter>ヘッダー ファイル\Dto</Filter>
-    </ClInclude>
-    <ClInclude Include="Dto\StatusEffectDto.h">
-      <Filter>ヘッダー ファイル\Dto</Filter>
-    </ClInclude>
-    <ClInclude Include="Dto\MitamaSetDto.h">
-      <Filter>ヘッダー ファイル\Dto</Filter>
-    </ClInclude>
-    <ClInclude Include="Dto\CalculationResultDto.h">
-      <Filter>ヘッダー ファイル\Dto</Filter>
-    </ClInclude>
-    <ClInclude Include="Converter\StatTypeConverter.h">
-      <Filter>ヘッダー ファイル\Converter</Filter>
-    </ClInclude>
-    <ClInclude Include="Converter\StatValueConverter.h">
-      <Filter>ヘッダー ファイル\Converter</Filter>
-    </ClInclude>
-    <ClInclude Include="Converter\MitamaConverter.h">
-      <Filter>ヘッダー ファイル\Converter</Filter>
-    </ClInclude>
-    <ClInclude Include="Converter\StatusConverter.h">
-      <Filter>ヘッダー ファイル\Converter</Filter>
-    </ClInclude>
-    <ClInclude Include="Converter\MitamaSetConverter.h">
-      <Filter>ヘッダー ファイル\Converter</Filter>
-    </ClInclude>
     <ClInclude Include="Service\CalculationGateway.h">
       <Filter>ヘッダー ファイル\Service</Filter>
     </ClInclude>
-    <ClInclude Include="Converter\CalculationResultConverter.h">
-      <Filter>ヘッダー ファイル\Converter</Filter>
+    <ClInclude Include="Converter\Model\CalculationResultConverter.h">
+      <Filter>ヘッダー ファイル\Converter\Model</Filter>
     </ClInclude>
-    <ClInclude Include="Converter\ShikigamiConverter.h">
-      <Filter>ヘッダー ファイル\Converter</Filter>
+    <ClInclude Include="Converter\Model\MitamaConverter.h">
+      <Filter>ヘッダー ファイル\Converter\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Converter\Model\MitamaSetConverter.h">
+      <Filter>ヘッダー ファイル\Converter\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Converter\Model\ShikigamiConverter.h">
+      <Filter>ヘッダー ファイル\Converter\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Converter\Model\StatTypeConverter.h">
+      <Filter>ヘッダー ファイル\Converter\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Converter\Model\StatusConverter.h">
+      <Filter>ヘッダー ファイル\Converter\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Converter\Model\StatValueConverter.h">
+      <Filter>ヘッダー ファイル\Converter\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Converter\Model\StringConverter.h">
+      <Filter>ヘッダー ファイル\Converter\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Dto\Model\CalculationResultDto.h">
+      <Filter>ヘッダー ファイル\Dto\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Dto\Model\MitamaDto.h">
+      <Filter>ヘッダー ファイル\Dto\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Dto\Model\MitamaSetDto.h">
+      <Filter>ヘッダー ファイル\Dto\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Dto\Model\ShikigamiDto.h">
+      <Filter>ヘッダー ファイル\Dto\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Dto\Model\StatTypeDto.h">
+      <Filter>ヘッダー ファイル\Dto\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Dto\Model\StatusDto.h">
+      <Filter>ヘッダー ファイル\Dto\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Dto\Model\StatusEffectDto.h">
+      <Filter>ヘッダー ファイル\Dto\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Dto\Model\StatValueDto.h">
+      <Filter>ヘッダー ファイル\Dto\Model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -98,32 +116,32 @@
     <ClCompile Include="Service\ShikigamiGateway.cpp">
       <Filter>ソース ファイル\Service</Filter>
     </ClCompile>
-    <ClCompile Include="Converter\StringConverter.cpp">
-      <Filter>ソース ファイル\Converter</Filter>
-    </ClCompile>
-    <ClCompile Include="Converter\StatTypeConverter.cpp">
-      <Filter>ソース ファイル\Converter</Filter>
-    </ClCompile>
-    <ClCompile Include="Converter\StatValueConverter.cpp">
-      <Filter>ソース ファイル\Converter</Filter>
-    </ClCompile>
-    <ClCompile Include="Converter\MitamaConverter.cpp">
-      <Filter>ソース ファイル\Converter</Filter>
-    </ClCompile>
-    <ClCompile Include="Converter\StatusConverter.cpp">
-      <Filter>ソース ファイル\Converter</Filter>
-    </ClCompile>
-    <ClCompile Include="Converter\MitamaSetConverter.cpp">
-      <Filter>ソース ファイル\Converter</Filter>
-    </ClCompile>
     <ClCompile Include="Service\CalculationGateway.cpp">
       <Filter>ソース ファイル\Service</Filter>
     </ClCompile>
-    <ClCompile Include="Converter\CalculationResultConverter.cpp">
-      <Filter>ソース ファイル\Converter</Filter>
+    <ClCompile Include="Converter\Model\CalculationResultConverter.cpp">
+      <Filter>ソース ファイル\Converter\Model</Filter>
     </ClCompile>
-    <ClCompile Include="Converter\ShikigamiConverter.cpp">
-      <Filter>ソース ファイル\Converter</Filter>
+    <ClCompile Include="Converter\Model\MitamaConverter.cpp">
+      <Filter>ソース ファイル\Converter\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Converter\Model\MitamaSetConverter.cpp">
+      <Filter>ソース ファイル\Converter\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Converter\Model\ShikigamiConverter.cpp">
+      <Filter>ソース ファイル\Converter\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Converter\Model\StatTypeConverter.cpp">
+      <Filter>ソース ファイル\Converter\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Converter\Model\StatusConverter.cpp">
+      <Filter>ソース ファイル\Converter\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Converter\Model\StatValueConverter.cpp">
+      <Filter>ソース ファイル\Converter\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Converter\Model\StringConverter.cpp">
+      <Filter>ソース ファイル\Converter\Model</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

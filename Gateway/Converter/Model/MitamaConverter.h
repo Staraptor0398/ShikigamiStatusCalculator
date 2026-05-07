@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Core/Mitama/Mitama.h"
-#include "../Dto/MitamaDto.h"
+#include "../../../Core/Mitama/Mitama.h"
+#include "../../Dto/Model/MitamaDto.h"
 
 class MitamaConverter
 {

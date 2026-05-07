@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Core/Shikigami/Shikigami.h"
-#include "../Dto/ShikigamiDto.h"
+#include "../../../Core/Shikigami/Shikigami.h"
+#include "../../Dto/Model/ShikigamiDto.h"
 
 class ShikigamiConverter
 {

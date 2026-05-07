@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ShikigamiGateway.h"
-#include "../Converter/StringConverter.h"
-#include "../Converter/ShikigamiConverter.h"
+#include "../Converter/Model/StringConverter.h"
+#include "../Converter/Model/ShikigamiConverter.h"
 #include "../../Core/Shikigami/ShikigamiRepository.h"
 
 
