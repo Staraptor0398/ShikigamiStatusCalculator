@@ -555,7 +555,7 @@ namespace ShikigamiApp
 		}
 
 		/****************************************************************************************************
-		　メインステータス表示
+		  メインステータス表示
 		****************************************************************************************************/
 		private void cmbMainStat1_SelectedIndexChanged(object sender, EventArgs e)
 		{
@@ -610,7 +610,7 @@ namespace ShikigamiApp
 					return;
 				}
 
-				setFileOpEnabled(false);
+				setSaveDataOperationButtonsEnabled(false);
 
 				try
 				{
@@ -627,7 +627,7 @@ namespace ShikigamiApp
 				}
 				finally
 				{
-					setFileOpEnabled(true);
+					setSaveDataOperationButtonsEnabled(true);
 				}
 			}
 		}
@@ -771,7 +771,7 @@ namespace ShikigamiApp
 					return;
 				}
 
-				setFileOpEnabled(false);
+				setSaveDataOperationButtonsEnabled(false);
 
 				try
 				{
@@ -788,7 +788,7 @@ namespace ShikigamiApp
 				}
 				finally
 				{
-					setFileOpEnabled(true);
+					setSaveDataOperationButtonsEnabled(true);
 				}
 			}
 		}
@@ -961,7 +961,7 @@ namespace ShikigamiApp
 			applyUniqueEffect(data.UniqueEffects);
 		}
 
-		private void setFileOpEnabled(bool enabled)
+		private void setSaveDataOperationButtonsEnabled(bool enabled)
 		{
 			btnSave.Enabled = enabled;
 			btnLoad.Enabled = enabled;
@@ -1108,7 +1108,7 @@ namespace ShikigamiApp
 		}
 
 		/****************************************************************************************************
-		  計算結果表示
+		  結果表示フォーム
 		****************************************************************************************************/
 		private void btnResultView_Click(object sender, EventArgs e)
 		{
