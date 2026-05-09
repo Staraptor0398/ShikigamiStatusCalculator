@@ -1,11 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Gui.Common;
 
@@ -67,7 +61,7 @@ namespace ShikigamiApp
 			this.Text = "式神編集";
 			btnResister.Text = "更新";
 
-			if(_editTarget == null)
+			if (_editTarget == null)
 			{
 				return;
 			}
@@ -83,12 +77,12 @@ namespace ShikigamiApp
 			txtCritRate.Text = _editTarget.CritRate.ToString();
 			txtCritDamage.Text = _editTarget.CritDamage.ToString();
 			txtEffectHit.Text = _editTarget.EffectHit.ToString();
-			txtEffectResist.Text= _editTarget.EffectResist.ToString();
+			txtEffectResist.Text = _editTarget.EffectResist.ToString();
 		}
 
 		private void btnResister_Click(object sender, EventArgs e)
 		{
-			if(!tryBuildSikigamiDto(out ShikigamiDto dto))
+			if (!tryBuildSikigamiDto(out ShikigamiDto dto))
 			{
 				return;
 			}
@@ -105,17 +99,19 @@ namespace ShikigamiApp
 
 		private void registerShikigami(ShikigamiDto dto)
 		{
-			if (existsSameShikigami(dto))
-			{
-				MessageBox.Show("同じレアリティ・同じ式神名のデータが既に存在します。",
-					"式神データ登録",
-					MessageBoxButtons.OK,
-					MessageBoxIcon.Warning);
+			var dupplicateOutcome = validateDupplicateForResister(dto);
 
+			if (ShikigamiDataErrorHandler.Handle(dupplicateOutcome, "式神データ登録"))
+			{
 				return;
 			}
 
-			ShikigamiGateway.AddShikigami(AppPath.ShikigamiDataCsvPath, dto);
+			var outcome = ShikigamiGateway.AddShikigami(AppPath.ShikigamiDataCsvPath, dto);
+
+			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ登録"))
+			{
+				return;
+			}
 
 			this.DialogResult = DialogResult.OK;
 			this.Close();
@@ -125,24 +121,29 @@ namespace ShikigamiApp
 		{
 			if (_editTarget == null)
 			{
+				Logger.Error("式神データ編集に失敗しました。編集対象の式神データがnullです。");
+
 				MessageBox.Show("編集対象の式神データが取得できませんでした。",
 					"式神データ編集",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error);
+
 				return;
 			}
 
-			if(existsSameShikigamiExceptSelf(_editTarget, newDto))
+			var dupplicateOutcome = validateDupplicateForEdit(_editTarget, newDto);
+
+			if (ShikigamiDataErrorHandler.Handle(dupplicateOutcome, "式神データ編集"))
 			{
-				MessageBox.Show("変更後の式紙データと同じデータが既に存在します。",
-					"式神データ編集",
-					MessageBoxButtons.OK,
-					MessageBoxIcon.Warning);
-
 				return;
 			}
 
-			ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, _editTarget, newDto);
+			var outcome = ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, _editTarget, newDto);
+
+			if (ShikigamiDataErrorHandler.Handle(dupplicateOutcome, "式神データ編集"))
+			{
+				return;
+			}
 
 			EditedShikigami = newDto;
 
@@ -161,9 +162,9 @@ namespace ShikigamiApp
 			cmbRarity.SelectedIndex = -1;
 		}
 
-		private bool tryGetDouble(TextBox textBox,string itemName,out double value)
+		private bool tryGetDouble(TextBox textBox, string itemName, out double value)
 		{
-			if(double.TryParse(textBox.Text,out value))
+			if (double.TryParse(textBox.Text, out value))
 			{
 				return true;
 			}
@@ -191,7 +192,7 @@ namespace ShikigamiApp
 				return false;
 			}
 
-			if(!tryGetDouble(txtAttck,DisplayText.Attack,out double attack))
+			if (!tryGetDouble(txtAttck, DisplayText.Attack, out double attack))
 			{
 				return false;
 			}
@@ -241,43 +242,55 @@ namespace ShikigamiApp
 			return true;
 		}
 
-		private bool existsSameShikigami(ShikigamiDto dto)
+		private bool isSameShikigami(ShikigamiDto left, ShikigamiDto right)
 		{
-			List<ShikigamiDto> list;
+			return left.Rarity == right.Rarity && left.Name == right.Name;
+		}
 
-			ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out list);
+		private ShikigamiDataOutcomeDto validateDupplicateForResister(ShikigamiDto dto)
+		{
+			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out List<ShikigamiDto> list);
 
-			foreach (var s in list)
+			if (outcome != ShikigamiDataOutcomeDto.SUCCESS)
 			{
-				if (s.Rarity == dto.Rarity && s.Name == dto.Name)
+				return outcome;
+			}
+
+			foreach (var shikigami in list)
+			{
+				if (isSameShikigami(shikigami, dto))
 				{
-					return true;
+					return ShikigamiDataOutcomeDto.DUPLICATE;
 				}
 			}
 
-			return false;
+			return ShikigamiDataOutcomeDto.SUCCESS;
 		}
 
-		private bool existsSameShikigamiExceptSelf(ShikigamiDto oldDto, ShikigamiDto newDto)
+		private ShikigamiDataOutcomeDto validateDupplicateForEdit(ShikigamiDto oldDto, ShikigamiDto newDto)
 		{
-			List<ShikigamiDto> list;
+			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out List<ShikigamiDto> list);
 
-			ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out list);
-
-			foreach (var s in list)
+			if (outcome != ShikigamiDataOutcomeDto.SUCCESS)
 			{
-				if (s.Rarity == oldDto.Rarity && s.Name == oldDto.Name)
+				return outcome;
+			}
+
+			foreach (var shikigami in list)
+			{
+				// 編集対象の式神自身は重複チェックから除外する
+				if (isSameShikigami(shikigami, oldDto))
 				{
 					continue;
 				}
 
-				if (s.Rarity == newDto.Rarity && s.Name == newDto.Name)
+				if (isSameShikigami(shikigami, newDto))
 				{
-					return true;
+					return ShikigamiDataOutcomeDto.DUPLICATE;
 				}
 			}
 
-			return false;
+			return ShikigamiDataOutcomeDto.SUCCESS;
 		}
 
 		private void btnCancel_Click(object sender, EventArgs e)

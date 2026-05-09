@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Gui.Common;
@@ -17,8 +12,6 @@ namespace ShikigamiApp
 {
 	public partial class MainForm : Form
 	{
-		private List<ShikigamiDto> _shikigamiList;
-
 		private CalculationResultDto _lastCalculationResult;
 
 		public MainForm()
@@ -536,9 +529,16 @@ namespace ShikigamiApp
 
 		private void initializeShikigamiComboBox()
 		{
-			ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out _shikigamiList);
+			List<ShikigamiDto> list;
 
-			cmbShikigami.DataSource = _shikigamiList;
+			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out list);
+
+			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
+			{
+				list = new List<ShikigamiDto>();
+			}
+
+			cmbShikigami.DataSource = list;
 			cmbShikigami.DisplayMember = "Name";
 
 			cmbShikigami.SelectedIndex = -1;
@@ -991,7 +991,7 @@ namespace ShikigamiApp
 		{
 			var selectedShikigami = cmbShikigami.SelectedItem as ShikigamiDto;
 
-			if(selectedShikigami == null)
+			if (selectedShikigami == null)
 			{
 				MessageBox.Show(
 					"編集する式神を選択してください。",
