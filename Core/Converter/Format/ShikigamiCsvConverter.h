@@ -18,4 +18,3 @@ private:
 	static Shikigami toShikigami(const std::vector<std::string>& csvLineColumns);
 	static std::vector<std::string> toCsvLineColumns(const Shikigami& shikigami);
 };
-

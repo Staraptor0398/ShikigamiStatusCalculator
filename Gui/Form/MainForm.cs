@@ -1,12 +1,11 @@
+using Gui.Common;
+using Gui.IO;
+using Gui.SaveData;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Windows.Forms;
-
-using Gui.Common;
-using Gui.IO;
-using Gui.SaveData;
 
 namespace ShikigamiApp
 {

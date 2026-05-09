@@ -1,7 +1,7 @@
+using Gui.Common;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Gui.Common;
 
 namespace ShikigamiApp
 {

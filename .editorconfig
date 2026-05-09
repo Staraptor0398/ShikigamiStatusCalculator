@@ -1,0 +1,16 @@
+# Visual Studio エディタ設定
+root = true
+[*]
+# 文字コード: UTF-8 (BOMなし)
+charset = utf-8
+# 改行コード: CRLF (Windows標準)
+end_of_line = crlf
+# インデント: タブ固定
+indent_style = tab
+# タブの幅
+indent_size = 4
+tab_width = 4
+# ファイルの末尾に空行を挿入する (推奨設定)
+insert_final_newline = true
+# 行末の不要な空白を削除する (推奨設定)
+trim_trailing_whitespace = true

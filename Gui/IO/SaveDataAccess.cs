@@ -1,7 +1,7 @@
+using Gui.SaveData;
+using Newtonsoft.Json;
 using System.IO;
 using System.Text;
-using Newtonsoft.Json;
-using Gui.SaveData;
 
 namespace Gui.IO
 {
@@ -38,7 +38,8 @@ namespace Gui.IO
 			}
 		}
 
-		private static T load<T>(string path) {
+		private static T load<T>(string path)
+		{
 			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var reader = new StreamReader(stream, Encoding.UTF8))
 			{

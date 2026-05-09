@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Gui.SaveData
 {
 	public class BuildSaveData
