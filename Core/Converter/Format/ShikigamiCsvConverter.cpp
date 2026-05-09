@@ -22,7 +22,7 @@ namespace {
 
 Shikigami ShikigamiCsvConverter::toShikigami(const std::string& csvLine)
 {
-	std::vector<std::string> csvLineColumns = spilitCsvColumns(csvLine);
+	std::vector<std::string> csvLineColumns = splitCsvColumns(csvLine);
 
 	return toShikigami(csvLineColumns);
 }
@@ -34,7 +34,7 @@ std::string ShikigamiCsvConverter::toCsvLine(const Shikigami& shikigami)
 	return joinCsvLineColumns(csvLineColumns);
 }
 
-std::vector<std::string> ShikigamiCsvConverter::spilitCsvColumns(const std::string& csvLine)
+std::vector<std::string> ShikigamiCsvConverter::splitCsvColumns(const std::string& csvLine)
 {
 	std::vector<std::string> csvLineColumns;
 	std::stringstream stream(csvLine);

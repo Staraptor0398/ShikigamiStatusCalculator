@@ -155,9 +155,10 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Converter\ShikigamiCsvConverter.h" />
+    <ClInclude Include="Converter\Format\ShikigamiCsvConverter.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="IO\FileAccess.h" />
+    <ClInclude Include="Mapper\Outcome\FileAccessOutcomeMapper.h" />
     <ClInclude Include="Mitama\Mitama.h" />
     <ClInclude Include="Mitama\MitamaCalculator.h" />
     <ClInclude Include="Mitama\MitamaSet.h" />
@@ -166,6 +167,8 @@
     <ClInclude Include="Model\StatType.h" />
     <ClInclude Include="Model\Status.h" />
     <ClInclude Include="Model\StatValue.h" />
+    <ClInclude Include="Outcome\FileAccessOutcome.h" />
+    <ClInclude Include="Outcome\ShikigamiDataOutcome.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Service\CalculationService.h" />
     <ClInclude Include="Shikigami\Shikigami.h" />
@@ -173,8 +176,9 @@
     <ClInclude Include="Status\StatusCalculator.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Converter\ShikigamiCsvConverter.cpp" />
+    <ClCompile Include="Converter\Format\ShikigamiCsvConverter.cpp" />
     <ClCompile Include="IO\FileAccess.cpp" />
+    <ClCompile Include="Mapper\Outcome\FileAccessOutcomeMapper.cpp" />
     <ClCompile Include="Mitama\MitamaCalculator.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -2,33 +2,43 @@
 #include "ShikigamiGateway.h"
 #include "../Converter/Model/StringConverter.h"
 #include "../Converter/Model/ShikigamiConverter.h"
+#include "../Mapper/Outcome/ShikigamiDataOutcomeMapper.h"
 #include "../../Core/Shikigami/ShikigamiRepository.h"
 
 
-List<ShikigamiDto^>^ ShikigamiGateway::GetShikigamiList(System::String^ filePath)
+ShikigamiDataOutcomeDto ShikigamiGateway::GetShikigamiList(String^ filePath, List<ShikigamiDto^>^% outShikigamiList)
 {
+	outShikigamiList = gcnew List<ShikigamiDto^>();
+
 	std::string nativePath = StringConverter::toStdString(filePath);
-	auto nativaList = ShikigamiRepository::get_ShikigamiList(nativePath);
 
-	List<ShikigamiDto^>^ result = gcnew List<ShikigamiDto^>();
+	std::vector<Shikigami> nativeList;
 
-	for (auto& s : nativaList) {
-		result->Add(ShikigamiConverter::toDto(s));
+	ShikigamiDataOutcome outcome = ShikigamiRepository::get_ShikigamiList(nativePath, nativeList);
+
+	if (outcome != ShikigamiDataOutcome::SUCCESS) {
+		return ShikigamiDataOutcomeMapper::toDto(outcome);
 	}
 
-	return result;
+	for (auto& shikigami : nativeList) {
+		outShikigamiList->Add(ShikigamiConverter::toDto(shikigami));
+	}
+
+	return ShikigamiDataOutcomeDto::SUCCESS;
 }
 
-void ShikigamiGateway::AddShikigami(String^ filePath, ShikigamiDto^ dto)
+ShikigamiDataOutcomeDto ShikigamiGateway::AddShikigami(String^ filePath, ShikigamiDto^ dto)
 {
 	std::string nativePath = StringConverter::toStdString(filePath);
 
 	Shikigami native = ShikigamiConverter::toNative(dto);
 
-	ShikigamiRepository::add_Shikigami(nativePath, native);
+	ShikigamiDataOutcome outcome = ShikigamiRepository::add_Shikigami(nativePath, native);
+
+	return ShikigamiDataOutcomeMapper::toDto(outcome);
 }
 
-void ShikigamiGateway::UpdateShikigami(String^ filePath, ShikigamiDto^ oldDto, ShikigamiDto^ newDto)
+ShikigamiDataOutcomeDto ShikigamiGateway::UpdateShikigami(String^ filePath, ShikigamiDto^ oldDto, ShikigamiDto^ newDto)
 {
 	std::string nativePath = StringConverter::toStdString(filePath);
 
@@ -36,5 +46,7 @@ void ShikigamiGateway::UpdateShikigami(String^ filePath, ShikigamiDto^ oldDto, S
 
 	Shikigami newData = ShikigamiConverter::toNative(newDto);
 
-	ShikigamiRepository::update_Shikigami(nativePath, oldData, newData);
+	ShikigamiDataOutcome outcome = ShikigamiRepository::update_Shikigami(nativePath, oldData, newData);
+
+	return ShikigamiDataOutcomeMapper::toDto(outcome);
 }

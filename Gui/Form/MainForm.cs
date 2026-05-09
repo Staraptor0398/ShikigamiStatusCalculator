@@ -536,7 +536,7 @@ namespace ShikigamiApp
 
 		private void initializeShikigamiComboBox()
 		{
-			_shikigamiList = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath);
+			ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out _shikigamiList);
 
 			cmbShikigami.DataSource = _shikigamiList;
 			cmbShikigami.DisplayMember = "Name";

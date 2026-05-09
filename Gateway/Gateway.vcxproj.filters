@@ -40,11 +40,17 @@
     <Filter Include="ヘッダー ファイル\Dto\Outcome">
       <UniqueIdentifier>{0ad4c46a-542b-4137-94f4-07152ca5b77a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\Converter\Outcome">
-      <UniqueIdentifier>{617ac68f-570b-427b-a5c5-4e96ba5aa80f}</UniqueIdentifier>
+    <Filter Include="ヘッダー ファイル\Mapper">
+      <UniqueIdentifier>{3a3223ce-fb80-40f3-80ab-ab0c7a4abf48}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Converter\Outcome">
-      <UniqueIdentifier>{1ef11c37-9a19-49b0-ba29-322cfe64edf9}</UniqueIdentifier>
+    <Filter Include="ヘッダー ファイル\Mapper\Outcome">
+      <UniqueIdentifier>{08d2818e-9b95-469a-b85c-2d5788b36295}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Mapper">
+      <UniqueIdentifier>{3c03c3d4-0b3f-4624-aeb3-041f4a915ac8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Mapper\Outcome">
+      <UniqueIdentifier>{3d7c2d5d-cc29-4d10-bf9f-f1bfedae53e0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -108,6 +114,12 @@
     <ClInclude Include="Dto\Model\StatValueDto.h">
       <Filter>ヘッダー ファイル\Dto\Model</Filter>
     </ClInclude>
+    <ClInclude Include="Dto\Outcome\ShikigamiDataOutcomeDto.h">
+      <Filter>ヘッダー ファイル\Dto\Outcome</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper\Outcome\ShikigamiDataOutcomeMapper.h">
+      <Filter>ヘッダー ファイル\Mapper\Outcome</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -142,6 +154,9 @@
     </ClCompile>
     <ClCompile Include="Converter\Model\StringConverter.cpp">
       <Filter>ソース ファイル\Converter\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper\Outcome\ShikigamiDataOutcomeMapper.cpp">
+      <Filter>ソース ファイル\Mapper\Outcome</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

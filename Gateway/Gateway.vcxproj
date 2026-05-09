@@ -175,7 +175,9 @@
     <ClInclude Include="Dto\Model\StatusDto.h" />
     <ClInclude Include="Dto\Model\StatusEffectDto.h" />
     <ClInclude Include="Dto\Model\StatValueDto.h" />
+    <ClInclude Include="Dto\Outcome\ShikigamiDataOutcomeDto.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Mapper\Outcome\ShikigamiDataOutcomeMapper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Service\CalculationGateway.h" />
     <ClInclude Include="Service\ShikigamiGateway.h" />
@@ -189,6 +191,7 @@
     <ClCompile Include="Converter\Model\StatusConverter.cpp" />
     <ClCompile Include="Converter\Model\StatValueConverter.cpp" />
     <ClCompile Include="Converter\Model\StringConverter.cpp" />
+    <ClCompile Include="Mapper\Outcome\ShikigamiDataOutcomeMapper.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

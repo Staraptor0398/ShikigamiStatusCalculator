@@ -55,6 +55,24 @@
     <Filter Include="ヘッダー ファイル\Outcome">
       <UniqueIdentifier>{6264778b-db21-4d56-b0ca-36df9b0169a7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Converter\Format">
+      <UniqueIdentifier>{6c42ae44-0aa7-46be-8798-63ea1e393253}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Converter\Format">
+      <UniqueIdentifier>{7dac8214-d58c-49f4-9056-585ffdbd1d92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Mapper">
+      <UniqueIdentifier>{42ea6330-4bb3-44d2-85c7-ef94ca7f8258}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Mapper\Outcome">
+      <UniqueIdentifier>{38b4d3a0-f9a5-4741-986c-4795619e3d9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Mapper">
+      <UniqueIdentifier>{c5ffdae4-d8a2-4646-8046-7e2aa848b506}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Mapper\Outcome">
+      <UniqueIdentifier>{06598363-611e-4a2c-87fb-dbf54116d054}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -102,8 +120,17 @@
     <ClInclude Include="Status\StatusCalculator.h">
       <Filter>ヘッダー ファイル\Status</Filter>
     </ClInclude>
-    <ClInclude Include="Converter\ShikigamiCsvConverter.h">
-      <Filter>ヘッダー ファイル\Converter</Filter>
+    <ClInclude Include="Outcome\FileAccessOutcome.h">
+      <Filter>ヘッダー ファイル\Outcome</Filter>
+    </ClInclude>
+    <ClInclude Include="Outcome\ShikigamiDataOutcome.h">
+      <Filter>ヘッダー ファイル\Outcome</Filter>
+    </ClInclude>
+    <ClInclude Include="Converter\Format\ShikigamiCsvConverter.h">
+      <Filter>ヘッダー ファイル\Converter\Format</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper\Outcome\FileAccessOutcomeMapper.h">
+      <Filter>ヘッダー ファイル\Mapper\Outcome</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -125,8 +152,11 @@
     <ClCompile Include="Status\StatusCalculator.cpp">
       <Filter>ソース ファイル\Status</Filter>
     </ClCompile>
-    <ClCompile Include="Converter\ShikigamiCsvConverter.cpp">
-      <Filter>ソース ファイル\Converter</Filter>
+    <ClCompile Include="Converter\Format\ShikigamiCsvConverter.cpp">
+      <Filter>ソース ファイル\Converter\Format</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper\Outcome\FileAccessOutcomeMapper.cpp">
+      <Filter>ソース ファイル\Mapper\Outcome</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

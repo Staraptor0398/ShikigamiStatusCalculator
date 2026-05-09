@@ -243,11 +243,13 @@ namespace ShikigamiApp
 
 		private bool existsSameShikigami(ShikigamiDto dto)
 		{
-			var list = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath);
+			List<ShikigamiDto> list;
+
+			ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out list);
 
 			foreach (var s in list)
 			{
-				if(s.Rarity == dto.Rarity && s.Name == dto.Name)
+				if (s.Rarity == dto.Rarity && s.Name == dto.Name)
 				{
 					return true;
 				}
@@ -258,7 +260,9 @@ namespace ShikigamiApp
 
 		private bool existsSameShikigamiExceptSelf(ShikigamiDto oldDto, ShikigamiDto newDto)
 		{
-			var list = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath);
+			List<ShikigamiDto> list;
+
+			ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out list);
 
 			foreach (var s in list)
 			{

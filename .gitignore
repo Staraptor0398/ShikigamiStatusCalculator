@@ -184,3 +184,4 @@
 /.vs/ShikigamiApp.slnx/v18/Insiders/*.db-wal
 /.vs/ShikigamiApp.slnx/v18/Insiders/*.opendb
 /Core/x64/Debug/*.obj
+/Gateway/x64/Debug/*.obj
