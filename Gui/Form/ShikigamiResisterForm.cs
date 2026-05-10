@@ -187,7 +187,7 @@ namespace ShikigamiApp
 
 			if (string.IsNullOrWhiteSpace(txtName.Text))
 			{
-				MessageBox.Show("式紙名を入力してください。");
+				MessageBox.Show("式神名を入力してください。");
 				txtName.Focus();
 				return false;
 			}
