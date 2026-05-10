@@ -185,3 +185,4 @@
 /.vs/ShikigamiApp.slnx/v18/Insiders/*.opendb
 /Core/x64/Debug/*.obj
 /Gateway/x64/Debug/*.obj
+/.vs/ShikigamiApp.slnx/v18/Insiders/ipch/AutoPCH/c4dc53ab1c2ff7a5/*.ipch

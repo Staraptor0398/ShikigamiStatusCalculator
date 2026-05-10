@@ -8,18 +8,27 @@ namespace ShikigamiApp
 	public partial class ShikigamiResisterForm : Form
 	{
 
+		/****************************************************************************************************
+		  型定義
+		****************************************************************************************************/
 		private enum ShikigamiFormMode
 		{
 			Resister,
 			Edit
 		}
 
+		/****************************************************************************************************
+		  フィールド・プロパティ
+		****************************************************************************************************/
 		private readonly ShikigamiFormMode _mode;
 
 		private readonly ShikigamiDto _editTarget;
 
 		public ShikigamiDto EditedShikigami { get; private set; }
 
+		/****************************************************************************************************
+		  コンストラクタ
+		****************************************************************************************************/
 		public ShikigamiResisterForm()
 		{
 			InitializeComponent();
@@ -36,6 +45,9 @@ namespace ShikigamiApp
 			_editTarget = editTarget;
 		}
 
+		/****************************************************************************************************
+		  初期化
+		****************************************************************************************************/
 		private void ShikigamiResisterForm_Load(object sender, EventArgs e)
 		{
 			initializeRarityComboBox();
@@ -48,6 +60,17 @@ namespace ShikigamiApp
 			{
 				initializeEditMode();
 			}
+		}
+
+		private void initializeRarityComboBox()
+		{
+			cmbRarity.Items.Clear();
+
+			cmbRarity.Items.Add(DisplayText.RaritySP);
+			cmbRarity.Items.Add(DisplayText.RaritySSR);
+			cmbRarity.Items.Add(DisplayText.RaritySR);
+
+			cmbRarity.SelectedIndex = -1;
 		}
 
 		private void initializeResisterMode()
@@ -80,6 +103,9 @@ namespace ShikigamiApp
 			txtEffectResist.Text = _editTarget.EffectResist.ToString();
 		}
 
+		/****************************************************************************************************
+		  登録・編集
+		****************************************************************************************************/
 		private void btnResister_Click(object sender, EventArgs e)
 		{
 			if (!tryBuildSikigamiDto(out ShikigamiDto dto))
@@ -151,29 +177,14 @@ namespace ShikigamiApp
 			this.Close();
 		}
 
-		private void initializeRarityComboBox()
+		private void btnCancel_Click(object sender, EventArgs e)
 		{
-			cmbRarity.Items.Clear();
-
-			cmbRarity.Items.Add(DisplayText.RaritySP);
-			cmbRarity.Items.Add(DisplayText.RaritySSR);
-			cmbRarity.Items.Add(DisplayText.RaritySR);
-
-			cmbRarity.SelectedIndex = -1;
+			this.DialogResult = DialogResult.Cancel;
+			this.Close();
 		}
-
-		private bool tryGetDouble(TextBox textBox, string itemName, out double value)
-		{
-			if (double.TryParse(textBox.Text, out value))
-			{
-				return true;
-			}
-
-			MessageBox.Show($"{itemName}には数値を入力してください。");
-			textBox.Focus();
-			return false;
-		}
-
+		/****************************************************************************************************
+		  入力値取得・入力チェック
+		****************************************************************************************************/
 		private bool tryBuildSikigamiDto(out ShikigamiDto dto)
 		{
 			dto = null;
@@ -242,6 +253,21 @@ namespace ShikigamiApp
 			return true;
 		}
 
+		private bool tryGetDouble(TextBox textBox, string itemName, out double value)
+		{
+			if (double.TryParse(textBox.Text, out value))
+			{
+				return true;
+			}
+
+			MessageBox.Show($"{itemName}には数値を入力してください。");
+			textBox.Focus();
+			return false;
+		}
+
+		/****************************************************************************************************
+		  重複チェック
+		****************************************************************************************************/
 		private bool isSameShikigami(ShikigamiDto left, ShikigamiDto right)
 		{
 			return left.Rarity == right.Rarity && left.Name == right.Name;
@@ -291,12 +317,6 @@ namespace ShikigamiApp
 			}
 
 			return ShikigamiDataOutcomeDto.SUCCESS;
-		}
-
-		private void btnCancel_Click(object sender, EventArgs e)
-		{
-			this.DialogResult = DialogResult.Cancel;
-			this.Close();
 		}
 	}
 }
