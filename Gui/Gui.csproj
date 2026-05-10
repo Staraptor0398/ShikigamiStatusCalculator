@@ -69,6 +69,8 @@
     <Compile Include="SaveData\EffectSaveData.cs" />
     <Compile Include="SaveData\MitamaSaveData.cs" />
     <Compile Include="SaveData\MitamaSetSaveData.cs" />
+    <Compile Include="Validation\CalculationInputValidationErrorHandler.cs" />
+    <Compile Include="Validation\CalculationInputValidationOutcome.cs" />
     <EmbeddedResource Include="Form\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

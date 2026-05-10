@@ -1,6 +1,7 @@
 using Gui.Common;
 using Gui.IO;
 using Gui.SaveData;
+using Gui.Validation;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -51,6 +52,13 @@ namespace ShikigamiApp
 		****************************************************************************************************/
 		private void btnCalc_Click(object sender, EventArgs e)
 		{
+			CalculationInputValidationOutcome validationOutcome = validateCalculationInput();
+
+			if (CalculationInputValidationErrorHandler.Handle(validationOutcome))
+			{
+				return;
+			}
+
 			var baseStatus = getSelectedShikigamiStatus();
 			var mitamaSet = buildMitamaSetDto();
 
@@ -86,6 +94,433 @@ namespace ShikigamiApp
 			};
 		}
 
+		/****************************************************************************************************
+		  計算入力検証
+		****************************************************************************************************/
+		private CalculationInputValidationOutcome validateCalculationInput()
+		{
+			CalculationInputValidationOutcome outcome;
+
+			outcome = validateSelectedShikigami();
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStatsInUnequippedSlots();
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateEffectSlotCount();
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStats();
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			return outcome;
+		}
+
+		private CalculationInputValidationOutcome validateSelectedShikigami()
+		{
+			if (cmbShikigami.SelectedItem == null)
+			{
+				return CalculationInputValidationOutcome.SHIKIGAMI_NOT_SELECTED;
+			}
+
+			return CalculationInputValidationOutcome.SUCCESS;
+		}
+
+		private CalculationInputValidationOutcome validateSubStatsInUnequippedSlots()
+		{
+			CalculationInputValidationOutcome outcome;
+
+			outcome = validateSubStatsInUnequippedSlot(
+				cmbMainStat1,
+				cmbSubStat11, txtSubVal11,
+				cmbSubStat21, txtSubVal21,
+				cmbSubStat31, txtSubVal31,
+				cmbSubStat41, txtSubVal41);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStatsInUnequippedSlot(
+				cmbMainStat2,
+				cmbSubStat12, txtSubVal12,
+				cmbSubStat22, txtSubVal22,
+				cmbSubStat32, txtSubVal32,
+				cmbSubStat42, txtSubVal42);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStatsInUnequippedSlot(
+			cmbMainStat3,
+			cmbSubStat13, txtSubVal13,
+			cmbSubStat23, txtSubVal23,
+			cmbSubStat33, txtSubVal33,
+			cmbSubStat43, txtSubVal43);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStatsInUnequippedSlot(
+			cmbMainStat4,
+			cmbSubStat14, txtSubVal14,
+			cmbSubStat24, txtSubVal24,
+			cmbSubStat34, txtSubVal34,
+			cmbSubStat44, txtSubVal44);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStatsInUnequippedSlot(
+			cmbMainStat5,
+			cmbSubStat15, txtSubVal15,
+			cmbSubStat25, txtSubVal25,
+			cmbSubStat35, txtSubVal35,
+			cmbSubStat45, txtSubVal45);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStatsInUnequippedSlot(
+			cmbMainStat6,
+			cmbSubStat16, txtSubVal16,
+			cmbSubStat26, txtSubVal26,
+			cmbSubStat36, txtSubVal36,
+			cmbSubStat46, txtSubVal46);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			return CalculationInputValidationOutcome.SUCCESS;
+		}
+
+		private CalculationInputValidationOutcome validateSubStatsInUnequippedSlot(
+			ComboBox cmbMainStat,
+			ComboBox cmbSubStat1, TextBox txtSubValue1,
+			ComboBox cmbSubStat2, TextBox txtSubValue2,
+			ComboBox cmbSubStat3, TextBox txtSubValue3,
+			ComboBox cmbSubStat4, TextBox txtSubValue4)
+		{
+			if (!string.IsNullOrWhiteSpace(cmbMainStat.Text))
+			{
+				return CalculationInputValidationOutcome.SUCCESS;
+			}
+
+			if (hasSubStatInput(cmbSubStat1, txtSubValue1) ||
+				hasSubStatInput(cmbSubStat2, txtSubValue2) ||
+				hasSubStatInput(cmbSubStat3, txtSubValue3) ||
+				hasSubStatInput(cmbSubStat4, txtSubValue4))
+			{
+				return CalculationInputValidationOutcome.MAIN_STAT_NOT_SELECTED_WITH_SUB_STAT;
+			}
+
+			return CalculationInputValidationOutcome.SUCCESS;
+		}
+
+		private bool hasSubStatInput(ComboBox cmbSubStat, TextBox txtSubvalue)
+		{
+			return (!string.IsNullOrWhiteSpace(cmbSubStat.Text) && cmbSubStat.Text != DisplayText.None) || !string.IsNullOrWhiteSpace(txtSubvalue.Text);
+		}
+
+		private CalculationInputValidationOutcome validateEffectSlotCount()
+		{
+			int equippedSlotCount = getEquippedSlotCout();
+
+			int setEffectCount = getSelectedSetEffectCount();
+			int uniqueEffectCount = getSelectedUniqueEffectCount();
+
+			int usedSlotCount = setEffectCount * 2 + uniqueEffectCount;
+
+			if (usedSlotCount > equippedSlotCount)
+			{
+				return CalculationInputValidationOutcome.EFFECT_SLOT_COUNT_EXCEEDS_EQUIPPED_SLOTS;
+			}
+
+			return CalculationInputValidationOutcome.SUCCESS;
+		}
+
+		private int getEquippedSlotCout()
+		{
+			ComboBox[] comboBoxes =
+			{
+				cmbMainStat1,
+				cmbMainStat2,
+				cmbMainStat3,
+				cmbMainStat4,
+				cmbMainStat5,
+				cmbMainStat6
+			};
+
+			int count = 0;
+
+			foreach (ComboBox comboBox in comboBoxes)
+			{
+				if (isSelectedEffect(comboBox))
+				{
+					count++;
+				}
+			}
+
+			return count;
+		}
+
+		private int getSelectedSetEffectCount()
+		{
+			ComboBox[] comboBoxes =
+			{
+				cmbSetBonus1,
+				cmbSetBonus2,
+				cmbSetBonus3
+			};
+
+			int count = 0;
+
+			foreach (ComboBox comboBox in comboBoxes)
+			{
+				if (isSelectedEffect(comboBox))
+				{
+					count++;
+				}
+			}
+
+			return count;
+		}
+
+		private int getSelectedUniqueEffectCount()
+		{
+			ComboBox[] comboBoxes =
+			{
+				cmbUnique1,
+				cmbUnique2,
+				cmbUnique3,
+				cmbUnique4,
+				cmbUnique5,
+				cmbUnique6
+			};
+
+			int count = 0;
+
+			foreach (ComboBox comboBox in comboBoxes)
+			{
+				if (isSelectedEffect(comboBox))
+				{
+					count++;
+				}
+			}
+
+			return count;
+		}
+
+		private bool isSelectedEffect(ComboBox comboBox)
+		{
+			if (string.IsNullOrEmpty(comboBox.Text))
+			{
+				return false;
+			}
+
+			if (comboBox.Text == DisplayText.None)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private CalculationInputValidationOutcome validateSubStats()
+		{
+			CalculationInputValidationOutcome outcome;
+
+			outcome = validateSubStasInSlot(
+				cmbSubStat11, txtSubVal11,
+				cmbSubStat21, txtSubVal21,
+				cmbSubStat31, txtSubVal31,
+				cmbSubStat41, txtSubVal41);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStasInSlot(
+				cmbSubStat12, txtSubVal12,
+				cmbSubStat22, txtSubVal22,
+				cmbSubStat32, txtSubVal32,
+				cmbSubStat42, txtSubVal42);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStasInSlot(
+				cmbSubStat13, txtSubVal13,
+				cmbSubStat23, txtSubVal23,
+				cmbSubStat33, txtSubVal33,
+				cmbSubStat43, txtSubVal43);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStasInSlot(
+				cmbSubStat14, txtSubVal14,
+				cmbSubStat24, txtSubVal24,
+				cmbSubStat34, txtSubVal34,
+				cmbSubStat44, txtSubVal44);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStasInSlot(
+				cmbSubStat15, txtSubVal15,
+				cmbSubStat25, txtSubVal25,
+				cmbSubStat35, txtSubVal35,
+				cmbSubStat45, txtSubVal45);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStasInSlot(
+				cmbSubStat16, txtSubVal16,
+				cmbSubStat26, txtSubVal26,
+				cmbSubStat36, txtSubVal36,
+				cmbSubStat46, txtSubVal46);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			return CalculationInputValidationOutcome.SUCCESS;
+		}
+
+		private CalculationInputValidationOutcome validateSubStasInSlot(
+			ComboBox cmbSubStat1, TextBox txtSubValue1,
+			ComboBox cmbSubStat2, TextBox txtSubValue2,
+			ComboBox cmbSubStat3, TextBox txtSubValue3,
+			ComboBox cmbSubStat4, TextBox txtSubValue4)
+		{
+			List<string> selectedSubStats = new List<string>();
+
+			CalculationInputValidationOutcome outcome;
+
+			outcome = validateSubStat(
+				cmbSubStat1,
+				txtSubValue1,
+				selectedSubStats);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStat(
+				cmbSubStat2,
+				txtSubValue2,
+				selectedSubStats);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStat(
+				cmbSubStat3,
+				txtSubValue3,
+				selectedSubStats);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStat(
+				cmbSubStat4,
+				txtSubValue4,
+				selectedSubStats);
+
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			return CalculationInputValidationOutcome.SUCCESS;
+		}
+
+		private CalculationInputValidationOutcome validateSubStat(
+			ComboBox cmbSubStat,
+			TextBox txtSubValue,
+			List<string> selectedSubStats)
+		{
+			bool hasType = !string.IsNullOrWhiteSpace(cmbSubStat.Text) && cmbSubStat.Text != DisplayText.None;
+			bool hasValue = !string.IsNullOrWhiteSpace(txtSubValue.Text);
+
+			if (!hasType && !hasValue)
+			{
+				return CalculationInputValidationOutcome.SUCCESS;
+			}
+
+			if (hasType && !hasValue)
+			{
+				return CalculationInputValidationOutcome.SUB_STAT_TYPE_WHITHOUT_VALUE;
+			}
+
+			if (!hasType && hasValue)
+			{
+				return CalculationInputValidationOutcome.SUB_STAT_VALUE_WHITHOUT_TYPE;
+			}
+
+			if (!double.TryParse(txtSubValue.Text, out double value))
+			{
+				return CalculationInputValidationOutcome.INVALID_VALUE;
+			}
+
+			if (value < 0)
+			{
+				return CalculationInputValidationOutcome.NEGATIVE_VALUE;
+			}
+
+			if (selectedSubStats.Contains(cmbSubStat.Text))
+			{
+				return CalculationInputValidationOutcome.DUPLICATE_SUB_STAT;
+			}
+
+			selectedSubStats.Add(cmbSubStat.Text);
+
+			return CalculationInputValidationOutcome.SUCCESS;
+		}
 		/****************************************************************************************************
 		  Dto作成
 		****************************************************************************************************/
