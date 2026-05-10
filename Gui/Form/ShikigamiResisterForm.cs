@@ -191,15 +191,13 @@ namespace ShikigamiApp
 
 			if (string.IsNullOrWhiteSpace(cmbRarity.Text))
 			{
-				MessageBox.Show("レアリティを選択してください。");
-				cmbRarity.Focus();
+				showInputWarning("レアリティを選択してください。", cmbRarity);
 				return false;
 			}
 
 			if (string.IsNullOrWhiteSpace(txtName.Text))
 			{
-				MessageBox.Show("式神名を入力してください。");
-				txtName.Focus();
+				showInputWarning("式神名を入力してください。", txtName);
 				return false;
 			}
 
@@ -255,16 +253,35 @@ namespace ShikigamiApp
 
 		private bool tryGetDouble(TextBox textBox, string itemName, out double value)
 		{
-			if (double.TryParse(textBox.Text, out value))
+			value = 0;
+
+			if (!double.TryParse(textBox.Text, out value))
 			{
-				return true;
+				showInputWarning($"{itemName}には数値を入力してください。", textBox);
+				return false;
 			}
 
-			MessageBox.Show($"{itemName}には数値を入力してください。");
-			textBox.Focus();
-			return false;
+			if (value < 0)
+			{
+				showInputWarning($"{itemName}には0以上の値を入力してください。", textBox);
+				return false;
+			}
+
+			return true;
 		}
 
+		private void showInputWarning(string message, Control focusControl)
+		{
+			Logger.Warning($"Operation=式神データ入力検証 Message={message}");
+
+			MessageBox.Show(
+				message,
+				"式神データ入力",
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Warning);
+
+			focusControl.Focus();
+		}
 		/****************************************************************************************************
 		  重複チェック
 		****************************************************************************************************/
