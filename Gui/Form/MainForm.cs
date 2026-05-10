@@ -12,16 +12,239 @@ namespace ShikigamiApp
 {
 	public partial class MainForm : Form
 	{
+		/****************************************************************************************************
+		  UI入力コントロール定義
+		****************************************************************************************************/
+		private class SubStatInputControl
+		{
+			public ComboBox TypeComboBox { get; set; }
+			public TextBox ValueTextBox { get; set; }
+		}
+
+		private class MitamaSlotInputControl
+		{
+			public ComboBox MainStatComboBox { get; set; }
+			public TextBox MainValueTextBox { get; set; }
+			public SubStatInputControl[] SubStats { get; set; }
+		}
+
+		/****************************************************************************************************
+		  UI入力コントロール取得
+		****************************************************************************************************/
+		private MitamaSlotInputControl[] getMitamaSlotInputControls()
+		{
+			return new MitamaSlotInputControl[]
+			{
+				new MitamaSlotInputControl
+				{
+					MainStatComboBox = cmbMainStat1,
+					MainValueTextBox = txtMainVal1,
+					SubStats=new SubStatInputControl[]
+					{
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat11,
+							ValueTextBox = txtSubVal11,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat21,
+							ValueTextBox = txtSubVal21,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat31,
+							ValueTextBox = txtSubVal31,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat41,
+							ValueTextBox = txtSubVal41,
+						}
+					}
+				},
+
+				new MitamaSlotInputControl
+				{
+					MainStatComboBox = cmbMainStat2,
+					MainValueTextBox = txtMainVal2,
+					SubStats = new SubStatInputControl[]
+					{
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat12,
+							ValueTextBox = txtSubVal12,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat22,
+							ValueTextBox = txtSubVal22,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat32,
+							ValueTextBox = txtSubVal32,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat42,
+							ValueTextBox = txtSubVal42,
+						}
+					}
+				},
+
+				new MitamaSlotInputControl
+				{
+					MainStatComboBox = cmbMainStat3,
+					MainValueTextBox = txtMainVal3,
+					SubStats = new SubStatInputControl[]
+					{
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat13,
+							ValueTextBox = txtSubVal13,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat23,
+							ValueTextBox = txtSubVal23,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat33,
+							ValueTextBox = txtSubVal33,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat43,
+							ValueTextBox = txtSubVal43,
+						}
+					}
+				},
+
+				new MitamaSlotInputControl
+				{
+					MainStatComboBox = cmbMainStat4,
+					MainValueTextBox = txtMainVal4,
+					SubStats = new SubStatInputControl[]
+					{
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat14,
+							ValueTextBox = txtSubVal14,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat24,
+							ValueTextBox = txtSubVal24,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat34,
+							ValueTextBox = txtSubVal34,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat44,
+							ValueTextBox = txtSubVal44,
+						}
+					}
+				},
+
+				new MitamaSlotInputControl
+				{
+					MainStatComboBox = cmbMainStat5,
+					MainValueTextBox = txtMainVal5,
+					SubStats = new SubStatInputControl[]
+					{
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat15,
+							ValueTextBox = txtSubVal15,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat25,
+							ValueTextBox = txtSubVal25,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat35,
+							ValueTextBox = txtSubVal35,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat45,
+							ValueTextBox = txtSubVal45,
+						}
+					}
+				},
+
+				new MitamaSlotInputControl
+				{
+					MainStatComboBox = cmbMainStat6,
+					MainValueTextBox = txtMainVal6,
+					SubStats = new SubStatInputControl[]
+					{
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat16,
+							ValueTextBox = txtSubVal16,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat26,
+							ValueTextBox = txtSubVal26,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat36,
+							ValueTextBox = txtSubVal36,
+						},
+						new SubStatInputControl
+						{
+							TypeComboBox = cmbSubStat46,
+							ValueTextBox = txtSubVal46,
+						}
+					}
+				}
+			};
+		}
+
+		private ComboBox[] getSetEffectComboBoxes()
+		{
+			return new ComboBox[]
+			{
+				cmbSetBonus1,
+				cmbSetBonus2,
+				cmbSetBonus3
+			};
+		}
+
+		private ComboBox[] getUniqueEffectComboBoxes()
+		{
+			return new ComboBox[]
+			{
+				cmbUnique1,
+				cmbUnique2,
+				cmbUnique3,
+				cmbUnique4,
+				cmbUnique5,
+				cmbUnique6
+			};
+		}
+
+		/****************************************************************************************************
+		  フィールド・プロパティ
+		****************************************************************************************************/
 		private CalculationResultDto _lastCalculationResult;
 
+		/****************************************************************************************************
+		  コンストラクタ
+		****************************************************************************************************/
 		public MainForm()
 		{
 			InitializeComponent();
-		}
-
-		private void MainForm_Load(object sender, EventArgs e)
-		{
-			initializeComboBoxes();
 		}
 
 		/****************************************************************************************************
@@ -144,101 +367,32 @@ namespace ShikigamiApp
 
 		private CalculationInputValidationOutcome validateSubStatsInUnequippedSlots()
 		{
-			CalculationInputValidationOutcome outcome;
-
-			outcome = validateSubStatsInUnequippedSlot(
-				cmbMainStat1,
-				cmbSubStat11, txtSubVal11,
-				cmbSubStat21, txtSubVal21,
-				cmbSubStat31, txtSubVal31,
-				cmbSubStat41, txtSubVal41);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
 			{
-				return outcome;
-			}
+				CalculationInputValidationOutcome outcome = validateSubStatsInUnequippedSlot(slot);
 
-			outcome = validateSubStatsInUnequippedSlot(
-				cmbMainStat2,
-				cmbSubStat12, txtSubVal12,
-				cmbSubStat22, txtSubVal22,
-				cmbSubStat32, txtSubVal32,
-				cmbSubStat42, txtSubVal42);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStatsInUnequippedSlot(
-			cmbMainStat3,
-			cmbSubStat13, txtSubVal13,
-			cmbSubStat23, txtSubVal23,
-			cmbSubStat33, txtSubVal33,
-			cmbSubStat43, txtSubVal43);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStatsInUnequippedSlot(
-			cmbMainStat4,
-			cmbSubStat14, txtSubVal14,
-			cmbSubStat24, txtSubVal24,
-			cmbSubStat34, txtSubVal34,
-			cmbSubStat44, txtSubVal44);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStatsInUnequippedSlot(
-			cmbMainStat5,
-			cmbSubStat15, txtSubVal15,
-			cmbSubStat25, txtSubVal25,
-			cmbSubStat35, txtSubVal35,
-			cmbSubStat45, txtSubVal45);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStatsInUnequippedSlot(
-			cmbMainStat6,
-			cmbSubStat16, txtSubVal16,
-			cmbSubStat26, txtSubVal26,
-			cmbSubStat36, txtSubVal36,
-			cmbSubStat46, txtSubVal46);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
+				if (outcome != CalculationInputValidationOutcome.SUCCESS)
+				{
+					return outcome;
+				}
 			}
 
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
-		private CalculationInputValidationOutcome validateSubStatsInUnequippedSlot(
-			ComboBox cmbMainStat,
-			ComboBox cmbSubStat1, TextBox txtSubValue1,
-			ComboBox cmbSubStat2, TextBox txtSubValue2,
-			ComboBox cmbSubStat3, TextBox txtSubValue3,
-			ComboBox cmbSubStat4, TextBox txtSubValue4)
+		private CalculationInputValidationOutcome validateSubStatsInUnequippedSlot(MitamaSlotInputControl slot)
 		{
-			if (!string.IsNullOrWhiteSpace(cmbMainStat.Text))
+			if (!string.IsNullOrWhiteSpace(slot.MainStatComboBox.Text))
 			{
 				return CalculationInputValidationOutcome.SUCCESS;
 			}
 
-			if (hasSubStatInput(cmbSubStat1, txtSubValue1) ||
-				hasSubStatInput(cmbSubStat2, txtSubValue2) ||
-				hasSubStatInput(cmbSubStat3, txtSubValue3) ||
-				hasSubStatInput(cmbSubStat4, txtSubValue4))
+			foreach (SubStatInputControl subsStat in slot.SubStats)
 			{
-				return CalculationInputValidationOutcome.MAIN_STAT_NOT_SELECTED_WITH_SUB_STAT;
+				if (hasSubStatInput(subsStat.TypeComboBox, subsStat.ValueTextBox))
+				{
+					return CalculationInputValidationOutcome.MAIN_STAT_NOT_SELECTED_WITH_SUB_STAT;
+				}
 			}
 
 			return CalculationInputValidationOutcome.SUCCESS;
@@ -251,7 +405,7 @@ namespace ShikigamiApp
 
 		private CalculationInputValidationOutcome validateEffectSlotCount()
 		{
-			int equippedSlotCount = getEquippedSlotCout();
+			int equippedSlotCount = getEquippedSlotCount();
 
 			int setEffectCount = getSelectedSetEffectCount();
 			int uniqueEffectCount = getSelectedUniqueEffectCount();
@@ -266,23 +420,13 @@ namespace ShikigamiApp
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
-		private int getEquippedSlotCout()
+		private int getEquippedSlotCount()
 		{
-			ComboBox[] comboBoxes =
-			{
-				cmbMainStat1,
-				cmbMainStat2,
-				cmbMainStat3,
-				cmbMainStat4,
-				cmbMainStat5,
-				cmbMainStat6
-			};
-
 			int count = 0;
 
-			foreach (ComboBox comboBox in comboBoxes)
+			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
 			{
-				if (isSelectedEffect(comboBox))
+				if (!string.IsNullOrWhiteSpace(slot.MainStatComboBox.Text))
 				{
 					count++;
 				}
@@ -293,16 +437,9 @@ namespace ShikigamiApp
 
 		private int getSelectedSetEffectCount()
 		{
-			ComboBox[] comboBoxes =
-			{
-				cmbSetBonus1,
-				cmbSetBonus2,
-				cmbSetBonus3
-			};
-
 			int count = 0;
 
-			foreach (ComboBox comboBox in comboBoxes)
+			foreach (ComboBox comboBox in getSetEffectComboBoxes())
 			{
 				if (isSelectedEffect(comboBox))
 				{
@@ -315,19 +452,9 @@ namespace ShikigamiApp
 
 		private int getSelectedUniqueEffectCount()
 		{
-			ComboBox[] comboBoxes =
-			{
-				cmbUnique1,
-				cmbUnique2,
-				cmbUnique3,
-				cmbUnique4,
-				cmbUnique5,
-				cmbUnique6
-			};
-
 			int count = 0;
 
-			foreach (ComboBox comboBox in comboBoxes)
+			foreach (ComboBox comboBox in getUniqueEffectComboBoxes())
 			{
 				if (isSelectedEffect(comboBox))
 				{
@@ -340,7 +467,7 @@ namespace ShikigamiApp
 
 		private bool isSelectedEffect(ComboBox comboBox)
 		{
-			if (string.IsNullOrEmpty(comboBox.Text))
+			if (string.IsNullOrWhiteSpace(comboBox.Text))
 			{
 				return false;
 			}
@@ -355,169 +482,61 @@ namespace ShikigamiApp
 
 		private CalculationInputValidationOutcome validateSubStats()
 		{
-			CalculationInputValidationOutcome outcome;
-
-			outcome = validateSubStasInSlot(
-				cmbSubStat11, txtSubVal11,
-				cmbSubStat21, txtSubVal21,
-				cmbSubStat31, txtSubVal31,
-				cmbSubStat41, txtSubVal41);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
 			{
-				return outcome;
-			}
+				CalculationInputValidationOutcome outcome = validateSubStatsInSlot(slot.SubStats);
 
-			outcome = validateSubStasInSlot(
-				cmbSubStat12, txtSubVal12,
-				cmbSubStat22, txtSubVal22,
-				cmbSubStat32, txtSubVal32,
-				cmbSubStat42, txtSubVal42);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStasInSlot(
-				cmbSubStat13, txtSubVal13,
-				cmbSubStat23, txtSubVal23,
-				cmbSubStat33, txtSubVal33,
-				cmbSubStat43, txtSubVal43);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStasInSlot(
-				cmbSubStat14, txtSubVal14,
-				cmbSubStat24, txtSubVal24,
-				cmbSubStat34, txtSubVal34,
-				cmbSubStat44, txtSubVal44);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStasInSlot(
-				cmbSubStat15, txtSubVal15,
-				cmbSubStat25, txtSubVal25,
-				cmbSubStat35, txtSubVal35,
-				cmbSubStat45, txtSubVal45);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStasInSlot(
-				cmbSubStat16, txtSubVal16,
-				cmbSubStat26, txtSubVal26,
-				cmbSubStat36, txtSubVal36,
-				cmbSubStat46, txtSubVal46);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
+				if (outcome != CalculationInputValidationOutcome.SUCCESS)
+				{
+					return outcome;
+				}
 			}
 
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
-		private CalculationInputValidationOutcome validateSubStasInSlot(
-			ComboBox cmbSubStat1, TextBox txtSubValue1,
-			ComboBox cmbSubStat2, TextBox txtSubValue2,
-			ComboBox cmbSubStat3, TextBox txtSubValue3,
-			ComboBox cmbSubStat4, TextBox txtSubValue4)
+		private CalculationInputValidationOutcome validateSubStatsInSlot(
+			SubStatInputControl[] subStats)
 		{
 			List<string> selectedSubStats = new List<string>();
 
-			CalculationInputValidationOutcome outcome;
-
-			outcome = validateSubStat(
-				cmbSubStat1,
-				txtSubValue1,
-				selectedSubStats);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			foreach (SubStatInputControl subStat in subStats)
 			{
-				return outcome;
+				bool hasType = !string.IsNullOrWhiteSpace(subStat.TypeComboBox.Text) && subStat.TypeComboBox.Text != DisplayText.None;
+				bool hasValue = !string.IsNullOrWhiteSpace(subStat.ValueTextBox.Text);
+
+				if (!hasType && !hasValue)
+				{
+					return CalculationInputValidationOutcome.SUCCESS;
+				}
+
+				if (hasType && !hasValue)
+				{
+					return CalculationInputValidationOutcome.SUB_STAT_TYPE_WHITHOUT_VALUE;
+				}
+
+				if (!hasType && hasValue)
+				{
+					return CalculationInputValidationOutcome.SUB_STAT_VALUE_WHITHOUT_TYPE;
+				}
+
+				if (!double.TryParse(subStat.ValueTextBox.Text, out double value))
+				{
+					return CalculationInputValidationOutcome.INVALID_VALUE;
+				}
+
+				if (value < 0)
+				{
+					return CalculationInputValidationOutcome.NEGATIVE_VALUE;
+				}
+
+				if (selectedSubStats.Contains(subStat.TypeComboBox.Text))
+				{
+					return CalculationInputValidationOutcome.DUPLICATE_SUB_STAT;
+				}
+
+				selectedSubStats.Add(subStat.TypeComboBox.Text);
 			}
-
-			outcome = validateSubStat(
-				cmbSubStat2,
-				txtSubValue2,
-				selectedSubStats);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStat(
-				cmbSubStat3,
-				txtSubValue3,
-				selectedSubStats);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStat(
-				cmbSubStat4,
-				txtSubValue4,
-				selectedSubStats);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			return CalculationInputValidationOutcome.SUCCESS;
-		}
-
-		private CalculationInputValidationOutcome validateSubStat(
-			ComboBox cmbSubStat,
-			TextBox txtSubValue,
-			List<string> selectedSubStats)
-		{
-			bool hasType = !string.IsNullOrWhiteSpace(cmbSubStat.Text) && cmbSubStat.Text != DisplayText.None;
-			bool hasValue = !string.IsNullOrWhiteSpace(txtSubValue.Text);
-
-			if (!hasType && !hasValue)
-			{
-				return CalculationInputValidationOutcome.SUCCESS;
-			}
-
-			if (hasType && !hasValue)
-			{
-				return CalculationInputValidationOutcome.SUB_STAT_TYPE_WHITHOUT_VALUE;
-			}
-
-			if (!hasType && hasValue)
-			{
-				return CalculationInputValidationOutcome.SUB_STAT_VALUE_WHITHOUT_TYPE;
-			}
-
-			if (!double.TryParse(txtSubValue.Text, out double value))
-			{
-				return CalculationInputValidationOutcome.INVALID_VALUE;
-			}
-
-			if (value < 0)
-			{
-				return CalculationInputValidationOutcome.NEGATIVE_VALUE;
-			}
-
-			if (selectedSubStats.Contains(cmbSubStat.Text))
-			{
-				return CalculationInputValidationOutcome.DUPLICATE_SUB_STAT;
-			}
-
-			selectedSubStats.Add(cmbSubStat.Text);
 
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
@@ -837,18 +856,18 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  ComboBox初期化
 		****************************************************************************************************/
-		private void setComboItems(ComboBox comboBox, params string[] items)
+		private void MainForm_Load(object sender, EventArgs e)
 		{
-			comboBox.Items.Clear();
+			initializeComboBoxes();
+		}
 
-			foreach (string item in items)
-			{
-				comboBox.Items.Add(item);
-			}
-
-			comboBox.SelectedIndex = -1;
-			comboBox.Text = "";
-
+		private void initializeComboBoxes()
+		{
+			initializeShikigamiComboBox();
+			initializeMainStatComboBoxes();
+			initializeSubStatComboBoxes();
+			initializeSetEffectComboBoxes();
+			initializeUniqueEffectComboBoxes();
 		}
 
 		private void initializeMainStatComboBoxes()
@@ -979,13 +998,18 @@ namespace ShikigamiApp
 			txtBaseStats.Text = "";
 		}
 
-		private void initializeComboBoxes()
+		private void setComboItems(ComboBox comboBox, params string[] items)
 		{
-			initializeShikigamiComboBox();
-			initializeMainStatComboBoxes();
-			initializeSubStatComboBoxes();
-			initializeSetEffectComboBoxes();
-			initializeUniqueEffectComboBoxes();
+			comboBox.Items.Clear();
+
+			foreach (string item in items)
+			{
+				comboBox.Items.Add(item);
+			}
+
+			comboBox.SelectedIndex = -1;
+			comboBox.Text = "";
+
 		}
 
 		/****************************************************************************************************
