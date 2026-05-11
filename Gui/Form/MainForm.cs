@@ -543,117 +543,42 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  Dto作成
 		****************************************************************************************************/
-		private StatTypeDto convertStatType(string text)
-		{
-			StatTypeDto ret = StatTypeDto.None;
-
-			switch (text)
-			{
-				case DisplayText.Attack: ret = StatTypeDto.Attack; break;
-				case DisplayText.HP: ret = StatTypeDto.Hp; break;
-				case DisplayText.Deffense: ret = StatTypeDto.Defense; break;
-				case DisplayText.Speed: ret = StatTypeDto.Speed; break;
-				case DisplayText.CritRate: ret = StatTypeDto.CriticalRate; break;
-				case DisplayText.CritDamage: ret = StatTypeDto.CriticalDamage; break;
-				case DisplayText.EffectHit: ret = StatTypeDto.EffectHit; break;
-				case DisplayText.EffectResist: ret = StatTypeDto.EffectResist; break;
-				case DisplayText.AdditionalAttack: ret = StatTypeDto.AdditionalAttackRate; break;
-				case DisplayText.AdditionalHP: ret = StatTypeDto.AdditionalHpRate; break;
-				case DisplayText.AdditionalDeffense: ret = StatTypeDto.AdditionalDeffenseRate; break;
-				default: break;
-			}
-
-			return ret;
-		}
-
 		private MitamaSetDto buildMitamaSetDto()
 		{
-			var dto = new MitamaSetDto();
+			MitamaSetDto dto = new MitamaSetDto();
 
-			dto.Mitamas = new List<MitamaDto>
+			dto.Mitamas = new List<MitamaDto>();
+
+			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
 			{
-				createMitamaDto(1, cmbMainStat1,
-					cmbSubStat11, txtSubVal11,
-					cmbSubStat21, txtSubVal21,
-					cmbSubStat31, txtSubVal31,
-					cmbSubStat41, txtSubVal41),
+				dto.Mitamas.Add(createMitamaDto(slot));
+			}
 
-				createMitamaDto(2, cmbMainStat2,
-					cmbSubStat12, txtSubVal12,
-					cmbSubStat22, txtSubVal22,
-					cmbSubStat32, txtSubVal32,
-					cmbSubStat42, txtSubVal42),
-
-				createMitamaDto(3, cmbMainStat3,
-					cmbSubStat13, txtSubVal13,
-					cmbSubStat23, txtSubVal23,
-					cmbSubStat33, txtSubVal33,
-					cmbSubStat43, txtSubVal43),
-
-				createMitamaDto(4, cmbMainStat4,
-					cmbSubStat14, txtSubVal14,
-					cmbSubStat24, txtSubVal24,
-					cmbSubStat34, txtSubVal34,
-					cmbSubStat44, txtSubVal44),
-
-				createMitamaDto(5, cmbMainStat5,
-					cmbSubStat15, txtSubVal15,
-					cmbSubStat25, txtSubVal25,
-					cmbSubStat35, txtSubVal35,
-					cmbSubStat45, txtSubVal45),
-
-				createMitamaDto(6, cmbMainStat6,
-					cmbSubStat16, txtSubVal16,
-					cmbSubStat26, txtSubVal26,
-					cmbSubStat36, txtSubVal36,
-					cmbSubStat46, txtSubVal46)
-			};
-
-			dto.SetEffects = new List<StatusEffectDto>
-			{
-				createSetEffectDto(cmbSetBonus1),
-				createSetEffectDto(cmbSetBonus2),
-				createSetEffectDto(cmbSetBonus3)
-			};
-
-			dto.UniqueEffects = new List<StatusEffectDto>
-			{
-				createUniqueEffectDto(cmbUnique1),
-				createUniqueEffectDto(cmbUnique2),
-				createUniqueEffectDto(cmbUnique3),
-				createUniqueEffectDto(cmbUnique4),
-				createUniqueEffectDto(cmbUnique5),
-				createUniqueEffectDto(cmbUnique6),
-			};
+			dto.SetEffects = createSetEffectDtos();
+			dto.UniqueEffects = createUniqueEffectDtos();
 
 			return dto;
 		}
 
-		private MitamaDto createMitamaDto(
-			int slot,
-			ComboBox cmbMainType,
-			ComboBox cmbSubType1, TextBox textSubValue1,
-			ComboBox cmbSubType2, TextBox textSubValue2,
-			ComboBox cmbSubType3, TextBox textSubValue3,
-			ComboBox cmbSubType4, TextBox textSubValue4)
+		private MitamaDto createMitamaDto(MitamaSlotInputControl slot)
 		{
-			var dto = new MitamaDto();
-
-			dto.MainStat = new StatValueDto
+			return new MitamaDto
 			{
-				Type = convertStatType(cmbMainType.Text),
-				Value = getMainStatValue(cmbMainType.Text, slot)
+				MainStat = createStatValueDto(slot.MainStatComboBox, slot.MainValueTextBox),
+				SubStat = createSubStatValueDtos(slot.SubStats)
 			};
+		}
 
-			dto.SubStat = new List<StatValueDto>
+		private List<StatValueDto> createSubStatValueDtos(SubStatInputControl[] subStats)
+		{
+			List<StatValueDto> list = new List<StatValueDto>();
+
+			foreach (SubStatInputControl subStat in subStats)
 			{
-				createStatValueDto(cmbSubType1,textSubValue1),
-				createStatValueDto(cmbSubType2,textSubValue2),
-				createStatValueDto(cmbSubType3,textSubValue3),
-				createStatValueDto(cmbSubType4,textSubValue4)
-			};
+				list.Add(createStatValueDto(subStat.TypeComboBox, subStat.ValueTextBox));
+			}
 
-			return dto;
+			return list;
 		}
 
 		private StatValueDto createStatValueDto(ComboBox cmbType, TextBox txtValue)
@@ -674,6 +599,17 @@ namespace ShikigamiApp
 			return dto;
 		}
 
+		private List<StatusEffectDto> createSetEffectDtos()
+		{
+			List<StatusEffectDto> list = new List<StatusEffectDto>();
+
+			foreach (ComboBox comboBox in getSetEffectComboBoxes())
+			{
+				list.Add(createSetEffectDto(comboBox));
+			}
+			return list;
+		}
+
 		private StatusEffectDto createSetEffectDto(ComboBox cmbEffect)
 		{
 			return new StatusEffectDto
@@ -684,6 +620,18 @@ namespace ShikigamiApp
 					Value = getSetEffectValue(cmbEffect.Text)
 				}
 			};
+		}
+
+		private List<StatusEffectDto> createUniqueEffectDtos()
+		{
+			List<StatusEffectDto> list = new List<StatusEffectDto>();
+
+			foreach (ComboBox comboBox in getUniqueEffectComboBoxes())
+			{
+				list.Add(createUniqueEffectDto(comboBox));
+			}
+
+			return list;
 		}
 
 		private StatusEffectDto createUniqueEffectDto(ComboBox cmbEffect)
@@ -698,48 +646,24 @@ namespace ShikigamiApp
 			};
 		}
 
-		private double getSetEffectValue(string text)
+		private StatTypeDto convertStatType(string text)
 		{
-			double ret = 0.0;
+			StatTypeDto ret = StatTypeDto.None;
+
 			switch (text)
 			{
-				case DisplayText.AdditionalAttack:
-				case DisplayText.AdditionalHP:
-				case DisplayText.CritRate:
-				case DisplayText.EffectHit:
-				case DisplayText.EffectResist:
-					ret = 15.0;
-					break;
-				case DisplayText.CritDamage:
-					ret = 20.0;
-					break;
-				case DisplayText.AdditionalDeffense:
-					ret = 30.0;
-					break;
-				default:
-					break;
-			}
-
-			return ret;
-		}
-
-		private double getUniqueEffectValue(string text)
-		{
-			double ret = 0.0;
-			switch (text)
-			{
-				case DisplayText.AdditionalAttack:
-				case DisplayText.AdditionalHP:
-				case DisplayText.CritRate:
-				case DisplayText.EffectHit:
-				case DisplayText.EffectResist:
-					ret = 8.0;
-					break;
-				case DisplayText.AdditionalDeffense:
-					ret = 16.0;
-					break;
-				default:
-					break;
+				case DisplayText.Attack: ret = StatTypeDto.Attack; break;
+				case DisplayText.HP: ret = StatTypeDto.Hp; break;
+				case DisplayText.Deffense: ret = StatTypeDto.Defense; break;
+				case DisplayText.Speed: ret = StatTypeDto.Speed; break;
+				case DisplayText.CritRate: ret = StatTypeDto.CriticalRate; break;
+				case DisplayText.CritDamage: ret = StatTypeDto.CriticalDamage; break;
+				case DisplayText.EffectHit: ret = StatTypeDto.EffectHit; break;
+				case DisplayText.EffectResist: ret = StatTypeDto.EffectResist; break;
+				case DisplayText.AdditionalAttack: ret = StatTypeDto.AdditionalAttackRate; break;
+				case DisplayText.AdditionalHP: ret = StatTypeDto.AdditionalHpRate; break;
+				case DisplayText.AdditionalDeffense: ret = StatTypeDto.AdditionalDeffenseRate; break;
+				default: break;
 			}
 
 			return ret;
@@ -782,6 +706,53 @@ namespace ShikigamiApp
 					{
 						ret = 55.0;
 					}
+					break;
+				default:
+					break;
+			}
+
+			return ret;
+		}
+
+		private double getSetEffectValue(string text)
+		{
+			double ret = 0.0;
+			switch (text)
+			{
+				case DisplayText.AdditionalAttack:
+				case DisplayText.AdditionalHP:
+				case DisplayText.CritRate:
+				case DisplayText.EffectHit:
+				case DisplayText.EffectResist:
+					ret = 15.0;
+					break;
+				case DisplayText.CritDamage:
+					ret = 20.0;
+					break;
+				case DisplayText.AdditionalDeffense:
+					ret = 30.0;
+					break;
+				default:
+					break;
+			}
+
+			return ret;
+		}
+
+		private double getUniqueEffectValue(string text)
+		{
+			double ret = 0.0;
+			switch (text)
+			{
+				case DisplayText.AdditionalAttack:
+				case DisplayText.AdditionalHP:
+				case DisplayText.CritRate:
+				case DisplayText.EffectHit:
+				case DisplayText.EffectResist:
+					ret = 8.0;
+					break;
+				case DisplayText.AdditionalDeffense:
+					ret = 16.0;
 					break;
 				default:
 					break;
