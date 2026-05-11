@@ -841,6 +841,25 @@ namespace ShikigamiApp
 			initializeUniqueEffectComboBoxes();
 		}
 
+		private void initializeShikigamiComboBox()
+		{
+			List<ShikigamiDto> list;
+
+			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out list);
+
+			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
+			{
+				list = new List<ShikigamiDto>();
+			}
+
+			cmbShikigami.DataSource = list;
+			cmbShikigami.DisplayMember = "Name";
+
+			cmbShikigami.SelectedIndex = -1;
+			txtBaseStats.Text = "";
+		}
+
+
 		private void initializeMainStatComboBoxes()
 		{
 			setComboItems(cmbMainStat1,
@@ -875,44 +894,30 @@ namespace ShikigamiApp
 
 		private void initializeSubStatComboBoxes()
 		{
-			ComboBox[] comboBoxes =
+			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
 			{
-				cmbSubStat11,   cmbSubStat21,   cmbSubStat31,   cmbSubStat41,
-				cmbSubStat12,   cmbSubStat22,   cmbSubStat32,   cmbSubStat42,
-				cmbSubStat13,   cmbSubStat23,   cmbSubStat33,   cmbSubStat43,
-				cmbSubStat14,   cmbSubStat24,   cmbSubStat34,   cmbSubStat44,
-				cmbSubStat15,   cmbSubStat25,   cmbSubStat35,   cmbSubStat45,
-				cmbSubStat16,   cmbSubStat26,   cmbSubStat36,   cmbSubStat46,
-			};
-
-			foreach (ComboBox comboBox in comboBoxes)
-			{
-				setComboItems(comboBox,
-					DisplayText.None,
-					DisplayText.Attack,
-					DisplayText.HP,
-					DisplayText.Deffense,
-					DisplayText.Speed,
-					DisplayText.CritRate,
-					DisplayText.CritDamage,
-					DisplayText.EffectHit,
-					DisplayText.EffectResist,
-					DisplayText.AdditionalAttack,
-					DisplayText.AdditionalHP,
-					DisplayText.AdditionalDeffense);
+				foreach (SubStatInputControl subStat in slot.SubStats)
+				{
+					setComboItems(subStat.TypeComboBox,
+						DisplayText.None,
+						DisplayText.Attack,
+						DisplayText.HP,
+						DisplayText.Deffense,
+						DisplayText.Speed,
+						DisplayText.CritRate,
+						DisplayText.CritDamage,
+						DisplayText.EffectHit,
+						DisplayText.EffectResist,
+						DisplayText.AdditionalAttack,
+						DisplayText.AdditionalHP,
+						DisplayText.AdditionalDeffense);
+				}
 			}
 		}
 
 		private void initializeSetEffectComboBoxes()
 		{
-			ComboBox[] comboBoxes =
-			{
-				cmbSetBonus1,
-				cmbSetBonus2,
-				cmbSetBonus3
-			};
-
-			foreach (ComboBox comboBox in comboBoxes)
+			foreach (ComboBox comboBox in getSetEffectComboBoxes())
 			{
 				setComboItems(comboBox,
 					DisplayText.None,
@@ -928,17 +933,7 @@ namespace ShikigamiApp
 
 		private void initializeUniqueEffectComboBoxes()
 		{
-			ComboBox[] comboBoxes =
-			{
-				cmbUnique1,
-				cmbUnique2,
-				cmbUnique3,
-				cmbUnique4,
-				cmbUnique5,
-				cmbUnique6
-			};
-
-			foreach (ComboBox comboBox in comboBoxes)
+			foreach (ComboBox comboBox in getUniqueEffectComboBoxes())
 			{
 				setComboItems(comboBox,
 					DisplayText.None,
@@ -949,24 +944,6 @@ namespace ShikigamiApp
 					DisplayText.AdditionalHP,
 					DisplayText.AdditionalDeffense);
 			}
-		}
-
-		private void initializeShikigamiComboBox()
-		{
-			List<ShikigamiDto> list;
-
-			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out list);
-
-			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
-			{
-				list = new List<ShikigamiDto>();
-			}
-
-			cmbShikigami.DataSource = list;
-			cmbShikigami.DisplayMember = "Name";
-
-			cmbShikigami.SelectedIndex = -1;
-			txtBaseStats.Text = "";
 		}
 
 		private void setComboItems(ComboBox comboBox, params string[] items)
