@@ -1467,37 +1467,20 @@ namespace ShikigamiApp
 
 		private void clearMainValueTextBoxes()
 		{
-			TextBox[] textBoxes =
+			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
 			{
-				txtMainVal1,
-				txtMainVal2,
-				txtMainVal3,
-				txtMainVal4,
-				txtMainVal5,
-				txtMainVal6
-			};
-
-			foreach (var textBox in textBoxes)
-			{
-				textBox.Text = "";
+				slot.MainValueTextBox.Text = "";
 			}
 		}
 
 		private void clearSubValueTextBoxes()
 		{
-			TextBox[] textBoxes =
+			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
 			{
-				txtSubVal11,    txtSubVal21,    txtSubVal31,    txtSubVal41,
-				txtSubVal12,    txtSubVal22,    txtSubVal32,    txtSubVal42,
-				txtSubVal13,    txtSubVal23,    txtSubVal33,    txtSubVal43,
-				txtSubVal14,    txtSubVal24,    txtSubVal34,    txtSubVal44,
-				txtSubVal15,    txtSubVal25,    txtSubVal35,    txtSubVal45,
-				txtSubVal16,    txtSubVal26,    txtSubVal36,    txtSubVal46
-			};
-
-			foreach (var textBox in textBoxes)
-			{
-				textBox.Text = "";
+				foreach (SubStatInputControl subStat in slot.SubStats)
+				{
+					subStat.ValueTextBox.Text = "";
+				}
 			}
 		}
 
