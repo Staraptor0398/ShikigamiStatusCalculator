@@ -1057,73 +1057,72 @@ namespace ShikigamiApp
 			};
 		}
 
+		private List<MitamaSaveData> createMitamaSaveDataList()
+		{
+			List<MitamaSaveData> list = new List<MitamaSaveData>();
+
+			MitamaSlotInputControl[] slots = getMitamaSlotInputControls();
+
+			for (int i = 0; i < slots.Length; i++)
+			{
+				list.Add(createMitamaSaveData(i + 1, slots[i]));
+			}
+
+			return list;
+		}
+
 		private MitamaSaveData createMitamaSaveData(
 			int slot,
-			ComboBox cmbMain,
-			ComboBox cmbSub1, TextBox txt1,
-			ComboBox cmbSub2, TextBox txt2,
-			ComboBox cmbSub3, TextBox txt3,
-			ComboBox cmbSub4, TextBox txt4)
+			MitamaSlotInputControl input)
 		{
 			return new MitamaSaveData
 			{
 				Slot = slot,
+
 				MainStat = new EffectSaveData
 				{
-					Type = cmbMain.Text,
-					Value = getMainStatValue(cmbMain.Text, slot)
+					Type = input.MainStatComboBox.Text,
+					Value = getMainStatValue(input.MainValueTextBox.Text, slot)
 				},
-				SubStats = new List<EffectSaveData>
-				{
-					createEffectSaveData(cmbSub1,txt1),
-					createEffectSaveData(cmbSub2,txt2),
-					createEffectSaveData(cmbSub3,txt3),
-					createEffectSaveData(cmbSub4,txt4)
-				}
 
+				SubStats = createSubStatSaveDataList(input.SubStats)
 			};
 		}
 
-		private List<MitamaSaveData> createMitamaSaveDataList()
+		private List<EffectSaveData> createSubStatSaveDataList(SubStatInputControl[] subStats)
 		{
-			return new List<MitamaSaveData>
+			List<EffectSaveData> list = new List<EffectSaveData>();
+
+			foreach (SubStatInputControl subStat in subStats)
 			{
-				createMitamaSaveData(1, cmbMainStat1,
-					cmbSubStat11, txtSubVal11,
-					cmbSubStat21, txtSubVal21,
-					cmbSubStat31, txtSubVal31,
-					cmbSubStat41, txtSubVal41),
+				list.Add(createEffectSaveData(subStat.TypeComboBox, subStat.ValueTextBox));
+			}
 
-				createMitamaSaveData(2, cmbMainStat2,
-					cmbSubStat12, txtSubVal12,
-					cmbSubStat22, txtSubVal22,
-					cmbSubStat32, txtSubVal32,
-					cmbSubStat42, txtSubVal42),
+			return list;
+		}
 
-				createMitamaSaveData(3, cmbMainStat3,
-					cmbSubStat13, txtSubVal13,
-					cmbSubStat23, txtSubVal23,
-					cmbSubStat33, txtSubVal33,
-					cmbSubStat43, txtSubVal43),
+		private List<EffectSaveData> createSetEffectSaveData()
+		{
+			List<EffectSaveData> list = new List<EffectSaveData>();
 
-				createMitamaSaveData(4, cmbMainStat4,
-					cmbSubStat14, txtSubVal14,
-					cmbSubStat24, txtSubVal24,
-					cmbSubStat34, txtSubVal34,
-					cmbSubStat44, txtSubVal44),
+			foreach (ComboBox comboBox in getSetEffectComboBoxes())
+			{
+				list.Add(createEffectSaveData(comboBox));
+			}
 
-				createMitamaSaveData(5, cmbMainStat5,
-					cmbSubStat15, txtSubVal15,
-					cmbSubStat25, txtSubVal25,
-					cmbSubStat35, txtSubVal35,
-					cmbSubStat45, txtSubVal45),
+			return list;
+		}
 
-				createMitamaSaveData(6, cmbMainStat6,
-					cmbSubStat16, txtSubVal16,
-					cmbSubStat26, txtSubVal26,
-					cmbSubStat36, txtSubVal36,
-					cmbSubStat46, txtSubVal46),
-			};
+		private List<EffectSaveData> createUniqueEffectSaveData()
+		{
+			List<EffectSaveData> list = new List<EffectSaveData>();
+
+			foreach (ComboBox comboBox in getUniqueEffectComboBoxes())
+			{
+				list.Add(createEffectSaveData(comboBox));
+			}
+
+			return list;
 		}
 
 		private EffectSaveData createEffectSaveData(ComboBox cmb, TextBox txt)
@@ -1137,26 +1136,12 @@ namespace ShikigamiApp
 			};
 		}
 
-		private List<EffectSaveData> createSetEffectSaveData()
+		private EffectSaveData createEffectSaveData(ComboBox cmb)
 		{
-			return new List<EffectSaveData>
+			return new EffectSaveData
 			{
-				createEffectSaveData(cmbSetBonus1, new TextBox()),
-				createEffectSaveData(cmbSetBonus2, new TextBox()),
-				createEffectSaveData(cmbSetBonus3 , new TextBox())
-			};
-		}
-
-		private List<EffectSaveData> createUniqueEffectSaveData()
-		{
-			return new List<EffectSaveData>
-			{
-				createEffectSaveData(cmbUnique1, new TextBox()),
-				createEffectSaveData(cmbUnique2, new TextBox()),
-				createEffectSaveData(cmbUnique3, new TextBox()),
-				createEffectSaveData(cmbUnique4, new TextBox()),
-				createEffectSaveData(cmbUnique5, new TextBox()),
-				createEffectSaveData(cmbUnique6, new TextBox())
+				Type = cmb.Text,
+				Value = 0.0
 			};
 		}
 
