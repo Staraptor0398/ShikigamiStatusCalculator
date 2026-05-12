@@ -4,8 +4,6 @@ using Gui.SaveData;
 using Gui.Validation;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace ShikigamiApp
@@ -1184,128 +1182,27 @@ namespace ShikigamiApp
 			}
 		}
 
-		private void applyEffect(EffectSaveData e, ComboBox cmb, TextBox txt)
+		private void applyBuildSaveDataToUI(BuildSaveData data)
 		{
-			if (e == null)
+			if (data == null)
 			{
 				return;
 			}
 
-			cmb.SelectedItem = e.Type;
-			txt.Text = e.Value.ToString();
+			applyShikigami(data.ShikigamiName);
+			applyMitamaSetSaveDataToUI(data.MitamaSet);
 		}
 
-		private void applySetEffect(List<EffectSaveData> list)
+		private void applyMitamaSetSaveDataToUI(MitamaSetSaveData data)
 		{
-			if (list == null)
+			if (data == null)
 			{
 				return;
 			}
 
-			cmbSetBonus1.SelectedItem = list.ElementAtOrDefault(0)?.Type ?? "";
-			cmbSetBonus2.SelectedItem = list.ElementAtOrDefault(1)?.Type ?? "";
-			cmbSetBonus3.SelectedItem = list.ElementAtOrDefault(2)?.Type ?? "";
-		}
-
-		private void applyUniqueEffect(List<EffectSaveData> list)
-		{
-			if (list == null)
-			{
-				return;
-			}
-
-			cmbUnique1.SelectedItem = list.ElementAtOrDefault(0)?.Type ?? "";
-			cmbUnique2.SelectedItem = list.ElementAtOrDefault(1)?.Type ?? "";
-			cmbUnique3.SelectedItem = list.ElementAtOrDefault(2)?.Type ?? "";
-			cmbUnique4.SelectedItem = list.ElementAtOrDefault(3)?.Type ?? "";
-			cmbUnique5.SelectedItem = list.ElementAtOrDefault(4)?.Type ?? "";
-			cmbUnique6.SelectedItem = list.ElementAtOrDefault(5)?.Type ?? "";
-		}
-
-		private void applySingleMitama(
-			MitamaSaveData m,
-			ComboBox cmbMain,
-			ComboBox cmbSub1, TextBox txt1,
-			ComboBox cmbSub2, TextBox txt2,
-			ComboBox cmbSub3, TextBox txt3,
-			ComboBox cmbSub4, TextBox txt4)
-		{
-			if (m == null)
-			{
-				return;
-			}
-
-			cmbMain.SelectedItem = m.MainStat?.Type ?? "";
-
-			applyEffect(m.SubStats?.ElementAtOrDefault(0), cmbSub1, txt1);
-			applyEffect(m.SubStats?.ElementAtOrDefault(1), cmbSub2, txt2);
-			applyEffect(m.SubStats?.ElementAtOrDefault(2), cmbSub3, txt3);
-			applyEffect(m.SubStats?.ElementAtOrDefault(3), cmbSub4, txt4);
-		}
-
-		private void applyMitama(List<MitamaSaveData> list)
-		{
-			if (list == null)
-			{
-				return;
-			}
-
-			foreach (var m in list)
-			{
-				switch (m.Slot)
-				{
-					case 1:
-						applySingleMitama(m,
-							cmbMainStat1,
-							cmbSubStat11, txtSubVal11,
-							cmbSubStat21, txtSubVal21,
-							cmbSubStat31, txtSubVal31,
-							cmbSubStat41, txtSubVal41);
-						break;
-					case 2:
-						applySingleMitama(m,
-							cmbMainStat2,
-							cmbSubStat12, txtSubVal12,
-							cmbSubStat22, txtSubVal22,
-							cmbSubStat32, txtSubVal32,
-							cmbSubStat42, txtSubVal42);
-						break;
-					case 3:
-						applySingleMitama(m,
-							cmbMainStat3,
-							cmbSubStat13, txtSubVal13,
-							cmbSubStat23, txtSubVal23,
-							cmbSubStat33, txtSubVal33,
-							cmbSubStat43, txtSubVal43);
-						break;
-					case 4:
-						applySingleMitama(m,
-							cmbMainStat4,
-							cmbSubStat14, txtSubVal14,
-							cmbSubStat24, txtSubVal24,
-							cmbSubStat34, txtSubVal34,
-							cmbSubStat44, txtSubVal44);
-						break;
-					case 5:
-						applySingleMitama(m,
-							cmbMainStat5,
-							cmbSubStat15, txtSubVal15,
-							cmbSubStat25, txtSubVal25,
-							cmbSubStat35, txtSubVal35,
-							cmbSubStat45, txtSubVal45);
-						break;
-					case 6:
-						applySingleMitama(m,
-							cmbMainStat6,
-							cmbSubStat16, txtSubVal16,
-							cmbSubStat26, txtSubVal26,
-							cmbSubStat36, txtSubVal36,
-							cmbSubStat46, txtSubVal46);
-						break;
-					default:
-						break;
-				}
-			}
+			applyMitama(data.Mitamas);
+			applySetEffect(data.SetEffects);
+			applyUniqueEffect(data.UniqueEffects);
 		}
 
 		private void applyShikigami(string name)
@@ -1329,27 +1226,58 @@ namespace ShikigamiApp
 			MessageBox.Show($"式神が見つかりません： {name}");
 		}
 
-		private void applyBuildSaveDataToUI(BuildSaveData data)
+		private void applyMitama(List<MitamaSaveData> list)
 		{
-			if (data == null)
-			{
-				return;
-			}
+			MitamaSlotInputControl[] slots = getMitamaSlotInputControls();
 
-			applyShikigami(data.ShikigamiName);
-			applyMitamaSetSaveDataToUI(data.MitamaSet);
+			for (int i = 0; i < list.Count && i < slots.Length; i++)
+			{
+				applySingleMitama(list[i], slots[i]);
+			}
 		}
 
-		private void applyMitamaSetSaveDataToUI(MitamaSetSaveData data)
+		private void applySingleMitama(
+			MitamaSaveData data,
+			MitamaSlotInputControl slot)
 		{
-			if (data == null)
-			{
-				return;
-			}
+			slot.MainStatComboBox.Text = data.MainStat.Type;
+			slot.MainValueTextBox.Text = data.MainStat.Value.ToString();
 
-			applyMitama(data.Mitamas);
-			applySetEffect(data.SetEffects);
-			applyUniqueEffect(data.UniqueEffects);
+			for (int i = 0; i < data.SubStats.Count && i < slot.SubStats.Length; i++)
+			{
+				applyEffect(data.SubStats[i], slot.SubStats[i].TypeComboBox, slot.SubStats[i].ValueTextBox);
+			}
+		}
+
+		private void applySetEffect(List<EffectSaveData> list)
+		{
+			ComboBox[] comboBoxes = getSetEffectComboBoxes();
+
+			for (int i = 0; i < list.Count && i < comboBoxes.Length; i++)
+			{
+				applyEffect(list[i], comboBoxes[i]);
+			}
+		}
+
+		private void applyUniqueEffect(List<EffectSaveData> list)
+		{
+			ComboBox[] comboBoxes = getUniqueEffectComboBoxes();
+
+			for (int i = 0; i < list.Count && i < comboBoxes.Length; i++)
+			{
+				applyEffect(list[i], comboBoxes[i]);
+			}
+		}
+
+		private void applyEffect(EffectSaveData data, ComboBox comboBox, TextBox textBox)
+		{
+			comboBox.SelectedItem = data.Type;
+			textBox.Text = data.Value.ToString();
+		}
+
+		private void applyEffect(EffectSaveData data, ComboBox comboBox)
+		{
+			comboBox.SelectedItem = data.Type;
 		}
 
 		private void setSaveDataOperationButtonsEnabled(bool enabled)
