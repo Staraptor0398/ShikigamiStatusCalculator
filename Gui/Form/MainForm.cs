@@ -1013,6 +1013,7 @@ namespace ShikigamiApp
 		{
 			markCalculationResultDirty();
 		}
+
 		/****************************************************************************************************
 		  メインステータス表示
 		****************************************************************************************************/
@@ -1110,12 +1111,12 @@ namespace ShikigamiApp
 		private string createSaveFileDialogFilter()
 		{
 			string filter =
-				"ビルド保存データ (*.build.json)|*.build.json|" +
-				"御魂セット保存データ (*.mitama.json)|*.mitama.json";
+				SaveDataFileDefinition.BuildFilter + "|" +
+				SaveDataFileDefinition.MitamaSetFilter;
 
 			if (canSaveCalculationSnapshot())
 			{
-				filter += "|計算結果スナップショット (*.snapshot.json)|*.snapshot.json";
+				filter += "|" + SaveDataFileDefinition.SnapshotFilter;
 			}
 
 			return filter;
@@ -1236,9 +1237,7 @@ namespace ShikigamiApp
 			using (var ofd = new OpenFileDialog())
 			{
 
-				ofd.Filter =
-					"ビルド保存データ (*.build.json)|*.build.json|" +
-					"御魂セット保存データ (*.mitama.json)|*.mitama.json";
+				ofd.Filter = createLoadFileDialogFilter();
 
 				if (ofd.ShowDialog() != DialogResult.OK)
 				{
@@ -1266,6 +1265,13 @@ namespace ShikigamiApp
 					markCalculationResultDirty();
 				}
 			}
+		}
+
+		private string createLoadFileDialogFilter()
+		{
+			return
+				SaveDataFileDefinition.BuildFilter + "|" +
+				SaveDataFileDefinition.MitamaSetFilter;
 		}
 
 		private void applyBuildSaveDataToUI(BuildSaveData data)
@@ -1384,9 +1390,9 @@ namespace ShikigamiApp
 		{
 			string fileName = Path.GetFileName(filePath);
 
-			if (fileName.EndsWith(".snapshot.json"))
+			if (fileName.EndsWith(SaveDataFileDefinition.SnapshotExtension))
 			{
-				return fileName.Substring(0, fileName.Length - ".snapshot.json".Length);
+				return fileName.Substring(0, fileName.Length - SaveDataFileDefinition.SnapshotExtension.Length);
 			}
 
 			return Path.GetFileNameWithoutExtension(filePath);

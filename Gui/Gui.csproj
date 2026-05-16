@@ -43,6 +43,7 @@
     <Compile Include="Common\AppPath.cs" />
     <Compile Include="Common\DisplayText.cs" />
     <Compile Include="Common\Logger.cs" />
+    <Compile Include="Common\SaveDataFileDefinition.cs" />
     <Compile Include="Common\ShikigamiDataErrorHandler.cs" />
     <Compile Include="Form\MainForm.cs">
       <SubType>Form</SubType>
