@@ -1,4 +1,5 @@
 using Gui.Common;
+using Gui.Dialog;
 using Gui.IO;
 using Gui.SaveData;
 using Gui.Validation;
@@ -1070,11 +1071,9 @@ namespace ShikigamiApp
 		****************************************************************************************************/
 		private void btnSave_Click(object sender, EventArgs e)
 		{
-			using (var sfd = new SaveFileDialog())
+			using (var dialog = new SaveDataSaveDialog(cmbShikigami.Text, canSaveCalculationSnapshot()))
 			{
-				sfd.Filter = createSaveFileDialogFilter();
-
-				if (sfd.ShowDialog() != DialogResult.OK)
+				if (dialog.ShowDialog() != DialogResult.OK)
 				{
 					return;
 				}
@@ -1083,22 +1082,22 @@ namespace ShikigamiApp
 
 				try
 				{
-					if (sfd.FilterIndex == 1)
+					if (dialog._selectedSaveType == SaveDataSaveType.Build)
 					{
 						var data = createCurrentBuildSaveData();
-						SaveDataAccess.SaveBuild(sfd.FileName, data);
+						SaveDataAccess.SaveBuild(dialog._filePath, data);
 					}
-					else if (sfd.FilterIndex == 2)
+					else if (dialog._selectedSaveType == SaveDataSaveType.MitamaSet)
 					{
 						var data = createCurrentMitamaSetSaveData();
-						SaveDataAccess.SaveMitamaSet(sfd.FileName, data);
+						SaveDataAccess.SaveMitamaSet(dialog._filePath, data);
 					}
-					else if (sfd.FilterIndex == 3)
+					else if (dialog._selectedSaveType == SaveDataSaveType.CalculationSnapshot)
 					{
-						string snapshotName = createSnapshotNameFromFilePath(sfd.FileName);
+						string snapshotName = createSnapshotNameFromFilePath(dialog._filePath);
 
 						var data = createCurrentCalculationSnapshotSaveData(snapshotName);
-						SaveDataAccess.SaveSnapshot(sfd.FileName, data);
+						SaveDataAccess.SaveSnapshot(dialog._filePath, data);
 					}
 				}
 				finally
@@ -1106,20 +1105,6 @@ namespace ShikigamiApp
 					setSaveDataOperationButtonsEnabled(true);
 				}
 			}
-		}
-
-		private string createSaveFileDialogFilter()
-		{
-			string filter =
-				SaveDataFileDefinition.BuildFilter + "|" +
-				SaveDataFileDefinition.MitamaSetFilter;
-
-			if (canSaveCalculationSnapshot())
-			{
-				filter += "|" + SaveDataFileDefinition.SnapshotFilter;
-			}
-
-			return filter;
 		}
 
 		private BuildSaveData createCurrentBuildSaveData()

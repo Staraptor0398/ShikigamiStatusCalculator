@@ -1,3 +1,4 @@
+using Gui.Common;
 using ShikigamiApp;
 using System;
 using System.Windows.Forms;
@@ -14,6 +15,9 @@ namespace Gui
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
+
+			ApplicationDirectoryInitializer.Initialize();
+
 			Application.Run(new MainForm());
 		}
 	}

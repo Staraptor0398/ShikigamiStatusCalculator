@@ -35,5 +35,45 @@ namespace Gui.Common
 					LogFileName);
 			}
 		}
+
+		public static string SaveDataDirectoryPath
+		{
+			get
+			{
+				return Path.Combine(
+					BaseDirectory,
+					SaveDataFileDefinition.SaveDataDirectoryName);
+			}
+		}
+
+		public static string BuildSaveDataDirectoryPath
+		{
+			get
+			{
+				return Path.Combine(
+					SaveDataDirectoryPath,
+					SaveDataFileDefinition.BuildDirectoryName);
+			}
+		}
+
+		public static string MitamaSetSaveDataDirectoryPath
+		{
+			get
+			{
+				return Path.Combine(
+					SaveDataDirectoryPath,
+					SaveDataFileDefinition.MitamaSetDirectoryName);
+			}
+		}
+
+		public static string SnapshotSaveDataDirectoryPath
+		{
+			get
+			{
+				return Path.Combine(
+					SaveDataDirectoryPath,
+					SaveDataFileDefinition.SnapshotDirectoryName);
+			}
+		}
 	}
 }
