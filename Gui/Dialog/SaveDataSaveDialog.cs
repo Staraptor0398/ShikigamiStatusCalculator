@@ -184,7 +184,6 @@ namespace Gui.Dialog
 				createDefaultFileName(saveType));
 		}
 
-
 		private void SaveDataSaveDialog_Load(object sender, System.EventArgs e)
 		{
 			initializeSaveTypeComboBox();

@@ -1223,6 +1223,7 @@ namespace ShikigamiApp
 			{
 
 				ofd.Filter = createLoadFileDialogFilter();
+				ofd.InitialDirectory = AppPath.SaveDataDirectoryPath;
 
 				if (ofd.ShowDialog() != DialogResult.OK)
 				{
