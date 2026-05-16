@@ -4,6 +4,7 @@ using Gui.SaveData;
 using Gui.Validation;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 
 namespace ShikigamiApp
@@ -235,8 +236,9 @@ namespace ShikigamiApp
 		/****************************************************************************************************
 		  フィールド・プロパティ
 		****************************************************************************************************/
-		private CalculationResultDto _lastCalculationResult;
+		private CalculationResultDto _lastCalculationResult = null;
 
+		private bool _isCalculationResultDirty = true;
 		/****************************************************************************************************
 		  コンストラクタ
 		****************************************************************************************************/
@@ -266,6 +268,8 @@ namespace ShikigamiApp
 					$"{DisplayText.CritDamage}: {selected.CritDamage:F2}% " +
 					$"{DisplayText.EffectHit}: {selected.EffectHit:F2}% " +
 					$"{DisplayText.EffectResist}: {selected.EffectResist:F2}%";
+
+			markCalculationResultDirty();
 		}
 
 		/****************************************************************************************************
@@ -284,8 +288,31 @@ namespace ShikigamiApp
 			var mitamaSet = buildMitamaSetDto();
 
 			_lastCalculationResult = CalculationGateway.calclutate(baseStatus, mitamaSet);
+			markCalculationResultClean();
 
 			showCalculationResult(_lastCalculationResult);
+		}
+
+		private void markCalculationResultClean()
+		{
+			_isCalculationResultDirty = false;
+		}
+
+		private void markCalculationResultDirty()
+		{
+			if (_lastCalculationResult == null)
+			{
+				return;
+			}
+
+			if (_isCalculationResultDirty)
+			{
+				return;
+			}
+
+			_isCalculationResultDirty = true;
+
+			Logger.Info("Operation=ステータス計算結果状態変更 Message=入力内容が変更されたため、前回の計算結果を無効化しました。");
 		}
 
 		private StatusDto getSelectedShikigamiStatus()
@@ -820,14 +847,16 @@ namespace ShikigamiApp
 		private void btnReLoad_Click(object sender, EventArgs e)
 		{
 			initializeShikigamiComboBox();
+			markCalculationResultDirty();
 		}
 
 		/****************************************************************************************************
-		  ComboBox初期化
+		  初期化
 		****************************************************************************************************/
 		private void MainForm_Load(object sender, EventArgs e)
 		{
 			initializeComboBoxes();
+			registerCalculationInputChangedEvents();
 		}
 
 		private void initializeComboBoxes()
@@ -958,6 +987,32 @@ namespace ShikigamiApp
 
 		}
 
+		private void registerCalculationInputChangedEvents()
+		{
+			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
+			{
+				foreach (SubStatInputControl subStat in slot.SubStats)
+				{
+					subStat.TypeComboBox.SelectedIndexChanged += calculationInputChanged;
+					subStat.ValueTextBox.TextChanged += calculationInputChanged;
+				}
+			}
+
+			foreach (ComboBox comboBox in getSetEffectComboBoxes())
+			{
+				comboBox.SelectedIndexChanged += calculationInputChanged;
+			}
+
+			foreach (ComboBox comboBox in getUniqueEffectComboBoxes())
+			{
+				comboBox.SelectedIndexChanged += calculationInputChanged;
+			}
+		}
+
+		private void calculationInputChanged(object sender, EventArgs e)
+		{
+			markCalculationResultDirty();
+		}
 		/****************************************************************************************************
 		  メインステータス表示
 		****************************************************************************************************/
@@ -965,36 +1020,48 @@ namespace ShikigamiApp
 		{
 			var value = getMainStatValue(cmbMainStat1.SelectedItem.ToString(), 1);
 			txtMainVal1.Text = value.ToString();
+
+			markCalculationResultDirty();
 		}
 
 		private void cmbMainStat2_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			var value = getMainStatValue(cmbMainStat2.SelectedItem.ToString(), 2);
 			txtMainVal2.Text = value.ToString();
+
+			markCalculationResultDirty();
 		}
 
 		private void cmbMainStat3_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			var value = getMainStatValue(cmbMainStat3.SelectedItem.ToString(), 3);
 			txtMainVal3.Text = value.ToString();
+
+			markCalculationResultDirty();
 		}
 
 		private void cmbMainStat4_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			var value = getMainStatValue(cmbMainStat4.SelectedItem.ToString(), 4);
 			txtMainVal4.Text = value.ToString();
+
+			markCalculationResultDirty();
 		}
 
 		private void cmbMainStat5_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			var value = getMainStatValue(cmbMainStat5.SelectedItem.ToString(), 5);
 			txtMainVal5.Text = value.ToString();
+
+			markCalculationResultDirty();
 		}
 
 		private void cmbMainStat6_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			var value = getMainStatValue(cmbMainStat6.SelectedItem.ToString(), 6);
 			txtMainVal6.Text = value.ToString();
+
+			markCalculationResultDirty();
 		}
 
 		/****************************************************************************************************
@@ -1004,10 +1071,7 @@ namespace ShikigamiApp
 		{
 			using (var sfd = new SaveFileDialog())
 			{
-				sfd.Filter =
-					"ビルド保存データ (*.build.json)|*.build.json|" +
-					"御魂セット保存データ (*.mitama.json)|*.mitama.json";
-
+				sfd.Filter = createSaveFileDialogFilter();
 
 				if (sfd.ShowDialog() != DialogResult.OK)
 				{
@@ -1028,12 +1092,33 @@ namespace ShikigamiApp
 						var data = createCurrentMitamaSetSaveData();
 						SaveDataAccess.SaveMitamaSet(sfd.FileName, data);
 					}
+					else if (sfd.FilterIndex == 3)
+					{
+						string snapshotName = createSnapshotNameFromFilePath(sfd.FileName);
+
+						var data = createCurrentCalculationSnapshotSaveData(snapshotName);
+						SaveDataAccess.SaveSnapshot(sfd.FileName, data);
+					}
 				}
 				finally
 				{
 					setSaveDataOperationButtonsEnabled(true);
 				}
 			}
+		}
+
+		private string createSaveFileDialogFilter()
+		{
+			string filter =
+				"ビルド保存データ (*.build.json)|*.build.json|" +
+				"御魂セット保存データ (*.mitama.json)|*.mitama.json";
+
+			if (canSaveCalculationSnapshot())
+			{
+				filter += "|計算結果スナップショット (*.snapshot.json)|*.snapshot.json";
+			}
+
+			return filter;
 		}
 
 		private BuildSaveData createCurrentBuildSaveData()
@@ -1178,6 +1263,7 @@ namespace ShikigamiApp
 				finally
 				{
 					setSaveDataOperationButtonsEnabled(true);
+					markCalculationResultDirty();
 				}
 			}
 		}
@@ -1287,6 +1373,54 @@ namespace ShikigamiApp
 		}
 
 		/****************************************************************************************************
+		  計算結果スナップショット保存
+		****************************************************************************************************/
+		private bool canSaveCalculationSnapshot()
+		{
+			return _lastCalculationResult != null && !_isCalculationResultDirty;
+		}
+
+		private string createSnapshotNameFromFilePath(string filePath)
+		{
+			string fileName = Path.GetFileName(filePath);
+
+			if (fileName.EndsWith(".snapshot.json"))
+			{
+				return fileName.Substring(0, fileName.Length - ".snapshot.json".Length);
+			}
+
+			return Path.GetFileNameWithoutExtension(filePath);
+		}
+
+		private CalculationSnapshotSaveData createCurrentCalculationSnapshotSaveData(string snapshotName)
+		{
+			return new CalculationSnapshotSaveData
+			{
+				SnapshotName = snapshotName,
+				CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+				ShikigamiName = cmbShikigami.Text,
+				MitamaSet = createCurrentMitamaSetSaveData(),
+				MitamaStatus = createStatusSavedata(_lastCalculationResult.MitamaOnlyStatus),
+				FinalStatus = createStatusSavedata(_lastCalculationResult.FinalStatus)
+			};
+		}
+
+		private StatusSaveData createStatusSavedata(StatusDto status)
+		{
+			return new StatusSaveData
+			{
+				Attack = status.Attack,
+				HP = status.HP,
+				Deffense = status.Defense,
+				Speed = status.Speed,
+				CritRate = status.CritRate,
+				CritDamage = status.CritDamage,
+				EffectHit = status.EffectHit,
+				EffectResist = status.EffectResist
+			};
+		}
+
+		/****************************************************************************************************
 		  式神登録
 		****************************************************************************************************/
 		private void btnAddShikigami_Click(object sender, EventArgs e)
@@ -1299,6 +1433,7 @@ namespace ShikigamiApp
 				{
 					initializeShikigamiComboBox();
 					applyShikigami(selectedShikigami.Name);
+					markCalculationResultDirty();
 				}
 			}
 		}
@@ -1330,6 +1465,7 @@ namespace ShikigamiApp
 					if (form.EditedShikigami != null)
 					{
 						applyShikigami(form.EditedShikigami.Name);
+						markCalculationResultDirty();
 					}
 				}
 			}
@@ -1352,6 +1488,7 @@ namespace ShikigamiApp
 			}
 
 			clearInputs();
+			markCalculationResultDirty();
 		}
 
 		// 起動直後と同じ入力状態に戻す

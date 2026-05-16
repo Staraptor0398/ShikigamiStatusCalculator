@@ -66,9 +66,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SaveData\BuildSaveData.cs" />
+    <Compile Include="SaveData\CalculationSnapshotSaveData.cs" />
     <Compile Include="SaveData\EffectSaveData.cs" />
     <Compile Include="SaveData\MitamaSaveData.cs" />
     <Compile Include="SaveData\MitamaSetSaveData.cs" />
+    <Compile Include="SaveData\StatusSaveData.cs" />
     <Compile Include="Validation\CalculationInputValidationErrorHandler.cs" />
     <Compile Include="Validation\CalculationInputValidationOutcome.cs" />
     <EmbeddedResource Include="Form\MainForm.resx">

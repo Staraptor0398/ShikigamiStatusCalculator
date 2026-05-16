@@ -27,6 +27,16 @@ namespace Gui.IO
 			return load<MitamaSetSaveData>(path);
 		}
 
+		public static void SaveSnapshot(string path, CalculationSnapshotSaveData data)
+		{
+			save(path, data);
+		}
+
+		public static CalculationSnapshotSaveData LoadSnapshot(string path)
+		{
+			return load<CalculationSnapshotSaveData>(path);
+		}
+
 		private static void save<T>(string path, T data)
 		{
 			string json = JsonConvert.SerializeObject(data, Formatting.Indented);
