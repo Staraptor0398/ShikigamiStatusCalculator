@@ -64,23 +64,6 @@ namespace Gui.Dialog
 			return selectedLoadType;
 		}
 
-		private string getLoadTypeExtension(SaveDataLoadType loadType)
-		{
-			string extension = "";
-
-			switch (loadType)
-			{
-				case SaveDataLoadType.Build:
-					extension = SaveDataFileDefinition.BuildExtension;
-					break;
-				case SaveDataLoadType.MitamaSet:
-					extension = SaveDataFileDefinition.MitamaSetExtension;
-					break;
-			}
-
-			return extension;
-		}
-
 		private string getLoadTypeFilter(SaveDataLoadType loadType)
 		{
 			string filter = "";
@@ -143,8 +126,8 @@ namespace Gui.Dialog
 			if (string.IsNullOrWhiteSpace(txtFilePath.Text))
 			{
 				MessageBox.Show(
-					"",
-					"",
+					"読み込み元ファイルを指定してください。",
+					"SaveData読み込み",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning);
 
