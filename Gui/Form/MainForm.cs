@@ -1410,7 +1410,7 @@ namespace ShikigamiApp
 
 			using (var form = new ShikigamiResisterForm())
 			{
-				if (form.ShowDialog() == DialogResult.OK)
+				if (form.ShowDialog(this) == DialogResult.OK)
 				{
 					initializeShikigamiComboBox();
 					applyShikigami(selectedShikigami.Name);
@@ -1439,7 +1439,7 @@ namespace ShikigamiApp
 
 			using (var form = new ShikigamiResisterForm(selectedShikigami))
 			{
-				if (form.ShowDialog() == DialogResult.OK)
+				if (form.ShowDialog(this) == DialogResult.OK)
 				{
 					initializeShikigamiComboBox();
 
@@ -1544,7 +1544,7 @@ namespace ShikigamiApp
 
 			using (var form = new ResultViewForm(_lastCalculationResult))
 			{
-				form.ShowDialog();
+				form.ShowDialog(this);
 			}
 		}
 	}

@@ -40,9 +40,11 @@ namespace ShikigamiApp
 			// groupBox1
 			// 
 			this.groupBox1.Controls.Add(this.txtMitamaStatus);
-			this.groupBox1.Location = new System.Drawing.Point(12, 21);
+			this.groupBox1.Location = new System.Drawing.Point(9, 17);
+			this.groupBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
 			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(322, 253);
+			this.groupBox1.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.groupBox1.Size = new System.Drawing.Size(242, 202);
 			this.groupBox1.TabIndex = 0;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "御魂のみのステータス";
@@ -50,11 +52,12 @@ namespace ShikigamiApp
 			// txtMitamaStatus
 			// 
 			this.txtMitamaStatus.Font = new System.Drawing.Font("ＭＳ ゴシック", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-			this.txtMitamaStatus.Location = new System.Drawing.Point(21, 21);
+			this.txtMitamaStatus.Location = new System.Drawing.Point(16, 17);
+			this.txtMitamaStatus.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
 			this.txtMitamaStatus.Multiline = true;
 			this.txtMitamaStatus.Name = "txtMitamaStatus";
 			this.txtMitamaStatus.ReadOnly = true;
-			this.txtMitamaStatus.Size = new System.Drawing.Size(279, 215);
+			this.txtMitamaStatus.Size = new System.Drawing.Size(210, 173);
 			this.txtMitamaStatus.TabIndex = 0;
 			this.txtMitamaStatus.TabStop = false;
 			this.txtMitamaStatus.WordWrap = false;
@@ -62,9 +65,11 @@ namespace ShikigamiApp
 			// groupBox2
 			// 
 			this.groupBox2.Controls.Add(this.txtFinalStatus);
-			this.groupBox2.Location = new System.Drawing.Point(13, 280);
+			this.groupBox2.Location = new System.Drawing.Point(10, 224);
+			this.groupBox2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
 			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(321, 205);
+			this.groupBox2.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+			this.groupBox2.Size = new System.Drawing.Size(241, 164);
 			this.groupBox2.TabIndex = 1;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "最終ステータス";
@@ -72,20 +77,22 @@ namespace ShikigamiApp
 			// txtFinalStatus
 			// 
 			this.txtFinalStatus.Font = new System.Drawing.Font("ＭＳ ゴシック", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-			this.txtFinalStatus.Location = new System.Drawing.Point(21, 21);
+			this.txtFinalStatus.Location = new System.Drawing.Point(16, 17);
+			this.txtFinalStatus.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
 			this.txtFinalStatus.Multiline = true;
 			this.txtFinalStatus.Name = "txtFinalStatus";
 			this.txtFinalStatus.ReadOnly = true;
-			this.txtFinalStatus.Size = new System.Drawing.Size(279, 161);
+			this.txtFinalStatus.Size = new System.Drawing.Size(210, 130);
 			this.txtFinalStatus.TabIndex = 3;
 			this.txtFinalStatus.TabStop = false;
 			this.txtFinalStatus.WordWrap = false;
 			// 
 			// btnClose
 			// 
-			this.btnClose.Location = new System.Drawing.Point(123, 505);
+			this.btnClose.Location = new System.Drawing.Point(92, 404);
+			this.btnClose.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
 			this.btnClose.Name = "btnClose";
-			this.btnClose.Size = new System.Drawing.Size(100, 30);
+			this.btnClose.Size = new System.Drawing.Size(75, 24);
 			this.btnClose.TabIndex = 2;
 			this.btnClose.Text = "閉じる";
 			this.btnClose.UseVisualStyleBackColor = true;
@@ -93,13 +100,15 @@ namespace ShikigamiApp
 			// 
 			// ResultViewForm
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
+			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(347, 550);
+			this.ClientSize = new System.Drawing.Size(260, 440);
 			this.Controls.Add(this.btnClose);
 			this.Controls.Add(this.groupBox2);
 			this.Controls.Add(this.groupBox1);
+			this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
 			this.Name = "ResultViewForm";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "結果表示";
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();

@@ -297,6 +297,7 @@ namespace ShikigamiApp
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.MaximizeBox = false;
 			this.Name = "ShikigamiResisterForm";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "式神登録";
 			this.Load += new System.EventHandler(this.ShikigamiResisterForm_Load);
 			this.groupBox1.ResumeLayout(false);
