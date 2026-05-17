@@ -117,9 +117,11 @@ namespace Gui.Dialog
 			this.Controls.Add(this.txtFilePath);
 			this.Controls.Add(this.cmbLoadType);
 			this.Controls.Add(this.btnBrowse);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "SaveDataLoadDialog";
+			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "読み込み";
 			this.Load += new System.EventHandler(this.SaveDataLoadDialog_Load);

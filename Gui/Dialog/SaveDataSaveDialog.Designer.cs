@@ -120,6 +120,7 @@ namespace Gui.Dialog
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "SaveDataSaveDialog";
+			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "保存";
 			this.Load += new System.EventHandler(this.SaveDataSaveDialog_Load);

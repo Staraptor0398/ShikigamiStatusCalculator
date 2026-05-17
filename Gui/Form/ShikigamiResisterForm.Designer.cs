@@ -287,16 +287,20 @@ namespace ShikigamiApp
 			// 
 			// ShikigamiResisterForm
 			// 
+			this.AcceptButton = this.btnResister;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.CancelButton = this.btnCancel;
 			this.ClientSize = new System.Drawing.Size(288, 312);
 			this.Controls.Add(this.groupBox2);
 			this.Controls.Add(this.groupBox1);
 			this.Controls.Add(this.btnCancel);
 			this.Controls.Add(this.btnResister);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.MaximizeBox = false;
+			this.MinimizeBox = false;
 			this.Name = "ShikigamiResisterForm";
+			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "式神登録";
 			this.Load += new System.EventHandler(this.ShikigamiResisterForm_Load);
