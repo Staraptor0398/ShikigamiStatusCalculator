@@ -6,7 +6,6 @@ namespace Gui.Common
 	public static class AppPath
 	{
 		public const string ShikigamiDataFileName = "ShikigamiData.csv";
-		public const string LogFileName = "ShikigamiApp.log";
 
 		public static string BaseDirectory
 		{
@@ -26,13 +25,28 @@ namespace Gui.Common
 			}
 		}
 
-		public static string LogFilePath
+		public static string LogDirectoryPath
 		{
 			get
 			{
 				return Path.Combine(
 					BaseDirectory,
-					LogFileName);
+					LogFileDefinition.LogDirectoryName);
+			}
+		}
+
+		public static string LogFilePath
+		{
+			get
+			{
+				string fileName =
+					LogFileDefinition.LogFilePrefix +
+					DateTime.Now.ToString("yyyyMMdd") +
+					LogFileDefinition.LogFileExtension;
+
+				return Path.Combine(
+					LogDirectoryPath,
+					fileName);
 			}
 		}
 

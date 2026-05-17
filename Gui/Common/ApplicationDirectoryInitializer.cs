@@ -10,6 +10,8 @@ namespace Gui.Common
 			Directory.CreateDirectory(AppPath.BuildSaveDataDirectoryPath);
 			Directory.CreateDirectory(AppPath.MitamaSetSaveDataDirectoryPath);
 			Directory.CreateDirectory(AppPath.SnapshotSaveDataDirectoryPath);
+
+			Directory.CreateDirectory(AppPath.LogDirectoryPath);
 		}
 	}
 }
