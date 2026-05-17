@@ -1219,13 +1219,9 @@ namespace ShikigamiApp
 		****************************************************************************************************/
 		private void btnLoad_Click(object sender, EventArgs e)
 		{
-			using (var ofd = new OpenFileDialog())
+			using (var dialog = new SaveDataLoadDialog())
 			{
-
-				ofd.Filter = createLoadFileDialogFilter();
-				ofd.InitialDirectory = AppPath.SaveDataDirectoryPath;
-
-				if (ofd.ShowDialog() != DialogResult.OK)
+				if (dialog.ShowDialog() != DialogResult.OK)
 				{
 					return;
 				}
@@ -1234,14 +1230,14 @@ namespace ShikigamiApp
 
 				try
 				{
-					if (ofd.FilterIndex == 1)
+					if (dialog._selectedLoadType == SaveDataLoadType.Build)
 					{
-						var data = SaveDataAccess.LoadBuild(ofd.FileName);
+						var data = SaveDataAccess.LoadBuild(dialog._filePath);
 						applyBuildSaveDataToUI(data);
 					}
-					else if (ofd.FilterIndex == 2)
+					else if (dialog._selectedLoadType == SaveDataLoadType.MitamaSet)
 					{
-						var data = SaveDataAccess.LoadMitamaSet(ofd.FileName);
+						var data = SaveDataAccess.LoadMitamaSet(dialog._filePath);
 						applyMitamaSetSaveDataToUI(data);
 					}
 				}
@@ -1251,13 +1247,6 @@ namespace ShikigamiApp
 					markCalculationResultDirty();
 				}
 			}
-		}
-
-		private string createLoadFileDialogFilter()
-		{
-			return
-				SaveDataFileDefinition.BuildFilter + "|" +
-				SaveDataFileDefinition.MitamaSetFilter;
 		}
 
 		private void applyBuildSaveDataToUI(BuildSaveData data)

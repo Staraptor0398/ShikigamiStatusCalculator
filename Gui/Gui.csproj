@@ -46,6 +46,13 @@
     <Compile Include="Common\Logger.cs" />
     <Compile Include="Common\SaveDataFileDefinition.cs" />
     <Compile Include="Common\ShikigamiDataErrorHandler.cs" />
+    <Compile Include="Dialog\SaveDataLoadDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialog\SaveDataLoadDialog.Designer.cs">
+      <DependentUpon>SaveDataLoadDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\SaveDataLoadType.cs" />
     <Compile Include="Dialog\SaveDataSaveDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -82,6 +89,9 @@
     <Compile Include="SaveData\StatusSaveData.cs" />
     <Compile Include="Validation\CalculationInputValidationErrorHandler.cs" />
     <Compile Include="Validation\CalculationInputValidationOutcome.cs" />
+    <EmbeddedResource Include="Dialog\SaveDataLoadDialog.resx">
+      <DependentUpon>SaveDataLoadDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Dialog\SaveDataSaveDialog.resx">
       <DependentUpon>SaveDataSaveDialog.cs</DependentUpon>
     </EmbeddedResource>
