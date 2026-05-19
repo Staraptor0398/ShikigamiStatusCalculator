@@ -566,6 +566,7 @@ namespace ShikigamiApp
 
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
+
 		/****************************************************************************************************
 		  Dto作成
 		****************************************************************************************************/
@@ -886,7 +887,6 @@ namespace ShikigamiApp
 			cmbShikigami.SelectedIndex = -1;
 			txtBaseStats.Text = "";
 		}
-
 
 		private void initializeMainStatComboBoxes()
 		{
@@ -1398,6 +1398,51 @@ namespace ShikigamiApp
 				CritDamage = status.CritDamage,
 				EffectHit = status.EffectHit,
 				EffectResist = status.EffectResist
+			};
+		}
+
+		/****************************************************************************************************
+		  計算結果比較
+		****************************************************************************************************/
+		private void btnCompareResult_Click(object sender, EventArgs e)
+		{
+			using (var dialog = new SnapshotCompareFileSelectDialog())
+			{
+				if (dialog.ShowDialog(this) != DialogResult.OK)
+				{
+					return;
+				}
+
+				CalculationSnapshotSaveData baseSnapshot = SaveDataAccess.LoadSnapshot(dialog._baseSnapshotFilePath);
+				CalculationSnapshotSaveData targetSnapshot = SaveDataAccess.LoadSnapshot(dialog._targetSnapshotFilePath);
+
+				StatusDto baseStatus = createStatusDto(baseSnapshot.FinalStatus);
+				StatusDto targetStatus = createStatusDto(targetSnapshot.FinalStatus);
+
+				StatusComparisonResultDto comparisonResult = ComparisonGateway.compareStatus(baseStatus, targetStatus);
+
+				string baseSnapshotName = baseSnapshot.SnapshotName;
+				string targetSnapshotName = targetSnapshot.SnapshotName;
+
+				using (var form = new StatusComparisonResultForm(baseSnapshotName, targetSnapshotName, comparisonResult))
+				{
+					form.ShowDialog(this);
+				}
+			}
+		}
+
+		private StatusDto createStatusDto(StatusSaveData saveData)
+		{
+			return new StatusDto
+			{
+				Attack = saveData.Attack,
+				HP = saveData.HP,
+				Defense = saveData.Deffense,
+				Speed = saveData.Speed,
+				CritRate = saveData.CritRate,
+				CritDamage = saveData.CritDamage,
+				EffectHit = saveData.EffectHit,
+				EffectResist = saveData.EffectResist
 			};
 		}
 

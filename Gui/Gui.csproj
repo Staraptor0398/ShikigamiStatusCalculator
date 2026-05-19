@@ -61,6 +61,12 @@
       <DependentUpon>SaveDataSaveDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Dialog\SaveDataSaveType.cs" />
+    <Compile Include="Dialog\SnapshotCompareFileSelectDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialog\SnapshotCompareFileSelectDialog.Designer.cs">
+      <DependentUpon>SnapshotCompareFileSelectDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -79,6 +85,12 @@
     <Compile Include="Form\ShikigamiResisterForm.Designer.cs">
       <DependentUpon>ShikigamiResisterForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Form\StatusComparisonResultForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\StatusComparisonResultForm.Designer.cs">
+      <DependentUpon>StatusComparisonResultForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="IO\SaveDataAccess.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -96,6 +108,9 @@
     <EmbeddedResource Include="Dialog\SaveDataSaveDialog.resx">
       <DependentUpon>SaveDataSaveDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Dialog\SnapshotCompareFileSelectDialog.resx">
+      <DependentUpon>SnapshotCompareFileSelectDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -104,6 +119,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form\ShikigamiResisterForm.resx">
       <DependentUpon>ShikigamiResisterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\StatusComparisonResultForm.resx">
+      <DependentUpon>StatusComparisonResultForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

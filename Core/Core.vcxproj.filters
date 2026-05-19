@@ -132,6 +132,15 @@
     <ClInclude Include="Mapper\Outcome\FileAccessOutcomeMapper.h">
       <Filter>ヘッダー ファイル\Mapper\Outcome</Filter>
     </ClInclude>
+    <ClInclude Include="Status\StatusComparisonResult.h">
+      <Filter>ヘッダー ファイル\Status</Filter>
+    </ClInclude>
+    <ClInclude Include="Status\StatusComparator.h">
+      <Filter>ヘッダー ファイル\Status</Filter>
+    </ClInclude>
+    <ClInclude Include="Service\ComparisonService.h">
+      <Filter>ヘッダー ファイル\Service</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -157,6 +166,12 @@
     </ClCompile>
     <ClCompile Include="Mapper\Outcome\FileAccessOutcomeMapper.cpp">
       <Filter>ソース ファイル\Mapper\Outcome</Filter>
+    </ClCompile>
+    <ClCompile Include="Status\StatusComparator.cpp">
+      <Filter>ソース ファイル\Status</Filter>
+    </ClCompile>
+    <ClCompile Include="Service\ComparisonService.cpp">
+      <Filter>ソース ファイル\Service</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

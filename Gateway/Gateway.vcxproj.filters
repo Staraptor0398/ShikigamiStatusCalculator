@@ -52,6 +52,12 @@
     <Filter Include="ソース ファイル\Mapper\Outcome">
       <UniqueIdentifier>{3d7c2d5d-cc29-4d10-bf9f-f1bfedae53e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\Mapper\Model">
+      <UniqueIdentifier>{7c937311-ed2b-42aa-b476-47431d0db084}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Mapper\Model">
+      <UniqueIdentifier>{d70e13a4-3611-44cc-9fe1-c011f798c40a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -120,6 +126,15 @@
     <ClInclude Include="Mapper\Outcome\ShikigamiDataOutcomeMapper.h">
       <Filter>ヘッダー ファイル\Mapper\Outcome</Filter>
     </ClInclude>
+    <ClInclude Include="Dto\Model\StatusComparisonResultDto.h">
+      <Filter>ヘッダー ファイル\Dto\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper\Model\StatusComparisonResultMapper.h">
+      <Filter>ヘッダー ファイル\Mapper\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Service\ComparisonGateway.h">
+      <Filter>ヘッダー ファイル\Service</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -157,6 +172,12 @@
     </ClCompile>
     <ClCompile Include="Mapper\Outcome\ShikigamiDataOutcomeMapper.cpp">
       <Filter>ソース ファイル\Mapper\Outcome</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper\Model\StatusComparisonResultMapper.cpp">
+      <Filter>ソース ファイル\Mapper\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Service\ComparisonGateway.cpp">
+      <Filter>ソース ファイル\Service</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

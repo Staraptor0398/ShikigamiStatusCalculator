@@ -8,16 +8,16 @@ public:
 	String^ Name;
 	String^ Rarity;
 
-    double Attack;
-    double HP;
-    double Defense;
-    double Speed;
-    double CritRate;
-    double CritDamage;
-    double EffectHit;
-    double EffectResist;
+	double Attack;
+	double HP;
+	double Defense;
+	double Speed;
+	double CritRate;
+	double CritDamage;
+	double EffectHit;
+	double EffectResist;
 
-    virtual System::String^ ToString() override {
-        return Name;
-    }
+	virtual System::String^ ToString() override {
+		return Name;
+	}
 };
