@@ -1,10 +1,9 @@
 using Gui.Common;
 using System;
-using System.Windows.Forms;
 
-namespace ShikigamiApp
+namespace Gui.Form
 {
-	public partial class ResultViewForm : Form
+	public partial class ResultViewForm : System.Windows.Forms.Form
 	{
 		private readonly CalculationResultDto _result;
 

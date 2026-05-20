@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace Gui.Dialog
 {
-	public partial class SaveDataSaveDialog : Form
+	public partial class SaveDataSaveDialog : System.Windows.Forms.Form
 	{
 		private readonly string _shikigamiName;
 		private readonly bool _canSaveCalculationSnapshot;

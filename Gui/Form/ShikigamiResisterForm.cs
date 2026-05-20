@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace ShikigamiApp
+namespace Gui.Form
 {
-	public partial class ShikigamiResisterForm : Form
+	public partial class ShikigamiResisterForm : System.Windows.Forms.Form
 	{
 
 		/****************************************************************************************************

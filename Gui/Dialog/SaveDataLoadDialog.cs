@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace Gui.Dialog
 {
-	public partial class SaveDataLoadDialog : Form
+	public partial class SaveDataLoadDialog : System.Windows.Forms.Form
 	{
 		public SaveDataLoadType _selectedLoadType { get; private set; }
 

@@ -1,5 +1,5 @@
 using Gui.Common;
-using ShikigamiApp;
+using Gui.Form;
 using System;
 using System.Windows.Forms;
 

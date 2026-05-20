@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 
-namespace ShikigamiApp
+namespace Gui.Form
 {
-	public partial class MainForm : Form
+	public partial class MainForm : System.Windows.Forms.Form
 	{
 		/****************************************************************************************************
 		  UI入力コントロール定義

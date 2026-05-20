@@ -1,7 +1,7 @@
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace ShikigamiApp
+namespace Gui.Form
 {
 	partial class MainForm
 	{

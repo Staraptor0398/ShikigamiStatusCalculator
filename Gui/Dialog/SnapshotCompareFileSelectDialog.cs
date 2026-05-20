@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace Gui.Dialog
 {
-	public partial class SnapshotCompareFileSelectDialog : Form
+	public partial class SnapshotCompareFileSelectDialog : System.Windows.Forms.Form
 	{
 
 		public string _baseSnapshotFilePath { get; private set; }

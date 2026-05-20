@@ -1,8 +1,8 @@
 using System.Windows.Forms;
 
-namespace ShikigamiApp
+namespace Gui.Form
 {
-	public partial class StatusComparisonResultForm : Form
+	public partial class StatusComparisonResultForm : System.Windows.Forms.Form
 	{
 		private readonly string _baseSnapshotName;
 		private readonly string _targetSnapshotName;

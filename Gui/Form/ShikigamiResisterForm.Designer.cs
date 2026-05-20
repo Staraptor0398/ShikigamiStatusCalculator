@@ -1,4 +1,4 @@
-namespace ShikigamiApp
+namespace Gui.Form
 {
 	partial class ShikigamiResisterForm
 	{
