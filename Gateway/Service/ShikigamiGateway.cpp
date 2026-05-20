@@ -1,10 +1,9 @@
 #include "pch.h"
-#include "ShikigamiGateway.h"
-#include "../Converter/Model/StringConverter.h"
+#include "../../Core/Service/ShikigamiService.h"
 #include "../Converter/Model/ShikigamiConverter.h"
+#include "../Converter/Model/StringConverter.h"
 #include "../Mapper/Outcome/ShikigamiDataOutcomeMapper.h"
-#include "../../Core/Shikigami/ShikigamiRepository.h"
-
+#include "ShikigamiGateway.h"
 
 ShikigamiDataOutcomeDto ShikigamiGateway::GetShikigamiList(String^ filePath, List<ShikigamiDto^>^% outShikigamiList)
 {
@@ -14,7 +13,7 @@ ShikigamiDataOutcomeDto ShikigamiGateway::GetShikigamiList(String^ filePath, Lis
 
 	std::vector<Shikigami> nativeList;
 
-	ShikigamiDataOutcome outcome = ShikigamiRepository::get_ShikigamiList(nativePath, nativeList);
+	ShikigamiDataOutcome outcome = ShikigamiService::get_ShikigamiList(nativePath, nativeList);
 
 	if (outcome != ShikigamiDataOutcome::SUCCESS) {
 		return ShikigamiDataOutcomeMapper::toDto(outcome);
@@ -33,7 +32,7 @@ ShikigamiDataOutcomeDto ShikigamiGateway::AddShikigami(String^ filePath, Shikiga
 
 	Shikigami native = ShikigamiConverter::toNative(dto);
 
-	ShikigamiDataOutcome outcome = ShikigamiRepository::add_Shikigami(nativePath, native);
+	ShikigamiDataOutcome outcome = ShikigamiService::add_Shikigami(nativePath, native);
 
 	return ShikigamiDataOutcomeMapper::toDto(outcome);
 }
@@ -46,7 +45,7 @@ ShikigamiDataOutcomeDto ShikigamiGateway::UpdateShikigami(String^ filePath, Shik
 
 	Shikigami newData = ShikigamiConverter::toNative(newDto);
 
-	ShikigamiDataOutcome outcome = ShikigamiRepository::update_Shikigami(nativePath, oldData, newData);
+	ShikigamiDataOutcome outcome = ShikigamiService::update_Shikigami(nativePath, oldData, newData);
 
 	return ShikigamiDataOutcomeMapper::toDto(outcome);
 }

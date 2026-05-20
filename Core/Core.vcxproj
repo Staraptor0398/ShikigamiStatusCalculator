@@ -172,6 +172,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Service\CalculationService.h" />
     <ClInclude Include="Service\ComparisonService.h" />
+    <ClInclude Include="Service\ShikigamiService.h" />
     <ClInclude Include="Shikigami\Shikigami.h" />
     <ClInclude Include="Shikigami\ShikigamiRepository.h" />
     <ClInclude Include="Status\StatusCalculator.h" />
@@ -191,6 +192,7 @@
     </ClCompile>
     <ClCompile Include="Service\CalculationService.cpp" />
     <ClCompile Include="Service\ComparisonService.cpp" />
+    <ClCompile Include="Service\ShikigamiService.cpp" />
     <ClCompile Include="Shikigami\ShikigamiRepository.cpp" />
     <ClCompile Include="Status\StatusCalculator.cpp" />
     <ClCompile Include="Status\StatusComparator.cpp" />
