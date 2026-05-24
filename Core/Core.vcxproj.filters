@@ -142,7 +142,7 @@
       <Filter>ヘッダー ファイル\Service</Filter>
     </ClInclude>
     <ClInclude Include="Service\ShikigamiService.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\Service</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

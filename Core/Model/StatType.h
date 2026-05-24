@@ -1,5 +1,6 @@
 #pragma once
 
+// ステータス種類定義
 enum class StatType
 {
 	None,
@@ -16,5 +17,5 @@ enum class StatType
 
 	AdditionalAttackRate,
 	AdditionalHpRate,
-	AdditionalDeffenseRate,
+	AdditionalDefenseRate,
 };

@@ -27,7 +27,7 @@ void StatusComparator_Test::compareStatus_returnsPositiveDifferences()
 	targetStatus.EffectHit = 25.0;
 	targetStatus.EffectResist = 40.0;
 
-	StatusComparisonResult result = StatusComparator::Compare(baseStatus, targetStatus);
+	StatusComparisonResult result = StatusComparator::compare(baseStatus, targetStatus);
 
 	TEST_ASSERT_DOUBLE_EQUAL(50.0, result.AttackDifferense);
 	TEST_ASSERT_DOUBLE_EQUAL(200.0, result.HpDifferense);
@@ -61,7 +61,7 @@ void StatusComparator_Test::compareStatus_returnsNegativeDefferences()
 	targetStatus.EffectHit = 20.0;
 	targetStatus.EffectResist = 30.0;
 
-	StatusComparisonResult result = StatusComparator::Compare(baseStatus, targetStatus);
+	StatusComparisonResult result = StatusComparator::compare(baseStatus, targetStatus);
 
 	TEST_ASSERT_DOUBLE_EQUAL(-50.0, result.AttackDifferense);
 	TEST_ASSERT_DOUBLE_EQUAL(-200.0, result.HpDifferense);
@@ -86,7 +86,7 @@ void StatusComparator_Test::compareStatus_returnsZeroDefferences()
 	baseStatus.EffectResist = 30.0;
 
 	Status targetStatus = baseStatus;
-	StatusComparisonResult result = StatusComparator::Compare(baseStatus, targetStatus);
+	StatusComparisonResult result = StatusComparator::compare(baseStatus, targetStatus);
 
 	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.AttackDifferense);
 	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.HpDifferense);
@@ -120,7 +120,7 @@ void StatusComparator_Test::compareStatus_returnsMixedDifferences()
 	targetStatus.EffectHit = 20.0;
 	targetStatus.EffectResist = 10.0;
 
-	StatusComparisonResult result = StatusComparator::Compare(baseStatus, targetStatus);
+	StatusComparisonResult result = StatusComparator::compare(baseStatus, targetStatus);
 
 	TEST_ASSERT_DOUBLE_EQUAL(50.0, result.AttackDifferense);
 	TEST_ASSERT_DOUBLE_EQUAL(-200.0, result.HpDifferense);

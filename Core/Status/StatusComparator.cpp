@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "StatusComparator.h"
 
-StatusComparisonResult StatusComparator::Compare(const Status& baseStatus, const Status& targetStatus)
+StatusComparisonResult StatusComparator::compare(const Status& baseStatus, const Status& targetStatus)
 {
 	StatusComparisonResult result;
 

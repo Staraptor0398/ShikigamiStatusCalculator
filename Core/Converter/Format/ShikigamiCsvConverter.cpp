@@ -76,8 +76,8 @@ Shikigami ShikigamiCsvConverter::toShikigami(const std::vector<std::string>& csv
 	shikigami.HP = std::stod(csvLineColumns[HP_INDEX]);
 	shikigami.Defense = std::stod(csvLineColumns[DEFFENSE_INDEX]);
 	shikigami.Speed = std::stod(csvLineColumns[SPEED_INDEX]);
-	shikigami.CritRate = std::stod(csvLineColumns[CRIT_RATE_INDEX]);
-	shikigami.CritDamage = std::stod(csvLineColumns[CRIT_DAMAGE_INDEX]);
+	shikigami.CriticalRate = std::stod(csvLineColumns[CRIT_RATE_INDEX]);
+	shikigami.CriticalDamage = std::stod(csvLineColumns[CRIT_DAMAGE_INDEX]);
 	shikigami.EffectHit = std::stod(csvLineColumns[EFFECT_HIT_INDEX]);
 	shikigami.EffectResist = std::stod(csvLineColumns[EFFECT_RESITST_INDEX]);
 
@@ -94,8 +94,8 @@ std::vector<std::string> ShikigamiCsvConverter::toCsvLineColumns(const Shikigami
 	csvLineColumns.push_back(std::to_string(shikigami.HP));
 	csvLineColumns.push_back(std::to_string(shikigami.Defense));
 	csvLineColumns.push_back(std::to_string(shikigami.Speed));
-	csvLineColumns.push_back(std::to_string(shikigami.CritRate));
-	csvLineColumns.push_back(std::to_string(shikigami.CritDamage));
+	csvLineColumns.push_back(std::to_string(shikigami.CriticalRate));
+	csvLineColumns.push_back(std::to_string(shikigami.CriticalDamage));
 	csvLineColumns.push_back(std::to_string(shikigami.EffectHit));
 	csvLineColumns.push_back(std::to_string(shikigami.EffectResist));
 

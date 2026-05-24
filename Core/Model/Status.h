@@ -13,5 +13,5 @@ struct Status {
 
 	double AdditionalAttackRate = 0.0;
 	double AdditionalHpRate = 0.0;
-	double AdditionalDeffenseRate = 0.0;
+	double AdditionalDefenseRate = 0.0;
 };

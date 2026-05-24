@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Model/Status.h"
-#include "../Model/CalculationResult.h"
 #include "../Mitama/MitamaSet.h"
+#include "../Model/CalculationResult.h"
+#include "../Model/Status.h"
 
 class CalculationService
 {

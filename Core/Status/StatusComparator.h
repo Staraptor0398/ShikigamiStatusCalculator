@@ -6,6 +6,5 @@
 class StatusComparator
 {
 public:
-	static StatusComparisonResult Compare(const Status& baseStatus, const Status& targetStatus);
+	static StatusComparisonResult compare(const Status& baseStatus, const Status& targetStatus);
 };
-

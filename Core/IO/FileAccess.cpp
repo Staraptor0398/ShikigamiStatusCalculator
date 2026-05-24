@@ -8,7 +8,7 @@ namespace {
 	const std::string SHIKIGAMI_CSV_HEADER = "レア度,式神名,攻撃力,HP,防御力,素早さ,会心率,会心DMG,効果命中,効果抵抗";
 }
 
-FileAccessOutcome FileAccess::load_Shikigami(const std::string& filePath, std::vector<Shikigami>& outShikigamis)
+FileAccessOutcome FileAccess::loadShikigami(const std::string& filePath, std::vector<Shikigami>& outShikigamis)
 {
 	outShikigamis.clear();
 
@@ -46,7 +46,7 @@ FileAccessOutcome FileAccess::load_Shikigami(const std::string& filePath, std::v
 	return FileAccessOutcome::SUCCESS;
 }
 
-FileAccessOutcome FileAccess::save_Shikigami(const std::string& filePath, const std::vector<Shikigami> shikigamis)
+FileAccessOutcome FileAccess::saveShikigami(const std::string& filePath, const std::vector<Shikigami> shikigamis)
 {
 	std::ofstream file(filePath, std::ios::trunc);
 

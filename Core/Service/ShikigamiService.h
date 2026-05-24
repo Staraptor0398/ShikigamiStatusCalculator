@@ -9,9 +9,9 @@
 class ShikigamiService
 {
 public:
-	static ShikigamiDataOutcome get_ShikigamiList(const std::string& filePath, std::vector<Shikigami>& shikigamiList);
+	static ShikigamiDataOutcome getShikigamiList(const std::string& filePath, std::vector<Shikigami>& shikigamiList);
 
-	static ShikigamiDataOutcome add_Shikigami(const std::string& filePath, const Shikigami& shikigami);
+	static ShikigamiDataOutcome addShikigami(const std::string& filePath, const Shikigami& shikigami);
 
-	static ShikigamiDataOutcome update_Shikigami(const std::string& filePath, const Shikigami& oldData, const Shikigami& newData);
+	static ShikigamiDataOutcome updateShikigami(const std::string& filePath, const Shikigami& oldData, const Shikigami& newData);
 };

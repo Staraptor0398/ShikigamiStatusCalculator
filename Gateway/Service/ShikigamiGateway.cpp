@@ -13,7 +13,7 @@ ShikigamiDataOutcomeDto ShikigamiGateway::GetShikigamiList(String^ filePath, Lis
 
 	std::vector<Shikigami> nativeList;
 
-	ShikigamiDataOutcome outcome = ShikigamiService::get_ShikigamiList(nativePath, nativeList);
+	ShikigamiDataOutcome outcome = ShikigamiService::getShikigamiList(nativePath, nativeList);
 
 	if (outcome != ShikigamiDataOutcome::SUCCESS) {
 		return ShikigamiDataOutcomeMapper::toDto(outcome);
@@ -32,7 +32,7 @@ ShikigamiDataOutcomeDto ShikigamiGateway::AddShikigami(String^ filePath, Shikiga
 
 	Shikigami native = ShikigamiConverter::toNative(dto);
 
-	ShikigamiDataOutcome outcome = ShikigamiService::add_Shikigami(nativePath, native);
+	ShikigamiDataOutcome outcome = ShikigamiService::addShikigami(nativePath, native);
 
 	return ShikigamiDataOutcomeMapper::toDto(outcome);
 }
@@ -45,7 +45,7 @@ ShikigamiDataOutcomeDto ShikigamiGateway::UpdateShikigami(String^ filePath, Shik
 
 	Shikigami newData = ShikigamiConverter::toNative(newDto);
 
-	ShikigamiDataOutcome outcome = ShikigamiService::update_Shikigami(nativePath, oldData, newData);
+	ShikigamiDataOutcome outcome = ShikigamiService::updateShikigami(nativePath, oldData, newData);
 
 	return ShikigamiDataOutcomeMapper::toDto(outcome);
 }

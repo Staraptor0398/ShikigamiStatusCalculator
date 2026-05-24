@@ -254,3 +254,5 @@
 /x64/Debug/*.pdb
 /.vs/ShikigamiApp/FileContentIndex/*.vsidx
 /.vs/ShikigamiApp/v18/Insiders/*.db
+/.vs/ShikigamiApp/v18/Insiders/ipch/*.ipch
+/.vs/ShikigamiApp/v18/Insiders/ipch/SymbolIndex/*.ipch

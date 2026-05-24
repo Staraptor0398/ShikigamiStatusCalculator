@@ -37,7 +37,7 @@ MitamaSet MitamaCalculatorTestData::createValidMitamaSetTestData()
 	mitamaSet.Mitamas[1].SubStat[3] = { StatType::EffectHit, 9.0 };
 
 	// Mitama 3
-	mitamaSet.Mitamas[2].SubStat[0] = { StatType::AdditionalDeffenseRate, 15.0 };
+	mitamaSet.Mitamas[2].SubStat[0] = { StatType::AdditionalDefenseRate, 15.0 };
 	mitamaSet.Mitamas[2].SubStat[1] = { StatType::Defense, 18.0 };
 	mitamaSet.Mitamas[2].SubStat[2] = { StatType::Hp, 120.0 };
 	mitamaSet.Mitamas[2].SubStat[3] = { StatType::CriticalRate, 4.0 };

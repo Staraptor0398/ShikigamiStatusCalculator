@@ -1,5 +1,6 @@
 #pragma once
 
+// 計算結果スナップショット比較用の差分ステータス
 struct StatusComparisonResult
 {
 	double AttackDifferense = 0.0;

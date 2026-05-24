@@ -5,5 +5,5 @@
 
 StatusComparisonResult ComparisonService::compareStatus(const Status& baseStatus, const Status& targetStatus)
 {
-	return StatusComparator::Compare(baseStatus, targetStatus);
+	return StatusComparator::compare(baseStatus, targetStatus);
 }

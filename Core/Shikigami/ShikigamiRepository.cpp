@@ -4,18 +4,18 @@
 #include "../IO/FileAccess.h"
 #include "../Mapper/Outcome/FileAccessOutcomeMapper.h"
 
-ShikigamiDataOutcome ShikigamiRepository::get_ShikigamiList(const std::string& filePath, std::vector<Shikigami>& outShikigamis)
+ShikigamiDataOutcome ShikigamiRepository::getShikigamiList(const std::string& filePath, std::vector<Shikigami>& outShikigamis)
 {
-	FileAccessOutcome outcome = FileAccess::load_Shikigami(filePath, outShikigamis);
+	FileAccessOutcome outcome = FileAccess::loadShikigami(filePath, outShikigamis);
 
 	return FileAccessOutcomeMapper::toShikigamiDataOutcome(outcome);
 }
 
-ShikigamiDataOutcome ShikigamiRepository::add_Shikigami(const std::string& filePath, const Shikigami& newData)
+ShikigamiDataOutcome ShikigamiRepository::addShikigami(const std::string& filePath, const Shikigami& newData)
 {
 	std::vector<Shikigami> shikigamis;
 
-	FileAccessOutcome loadOutcome = FileAccess::load_Shikigami(filePath, shikigamis);
+	FileAccessOutcome loadOutcome = FileAccess::loadShikigami(filePath, shikigamis);
 
 	if (loadOutcome != FileAccessOutcome::SUCCESS) {
 		return FileAccessOutcomeMapper::toShikigamiDataOutcome(loadOutcome);
@@ -29,16 +29,16 @@ ShikigamiDataOutcome ShikigamiRepository::add_Shikigami(const std::string& fileP
 
 	shikigamis.insert(shikigamis.begin() + insertIndex, newData);
 
-	FileAccessOutcome saveOutcome = FileAccess::save_Shikigami(filePath, shikigamis);
+	FileAccessOutcome saveOutcome = FileAccess::saveShikigami(filePath, shikigamis);
 
 	return FileAccessOutcomeMapper::toShikigamiDataOutcome(saveOutcome);
 }
 
-ShikigamiDataOutcome ShikigamiRepository::update_Shikigami(const std::string& filePath, const Shikigami& oldData, const Shikigami& newData)
+ShikigamiDataOutcome ShikigamiRepository::updateShikigami(const std::string& filePath, const Shikigami& oldData, const Shikigami& newData)
 {
 	std::vector<Shikigami> shikigamis;
 
-	FileAccessOutcome loadOutcome = FileAccess::load_Shikigami(filePath, shikigamis);
+	FileAccessOutcome loadOutcome = FileAccess::loadShikigami(filePath, shikigamis);
 
 	if (loadOutcome != FileAccessOutcome::SUCCESS) {
 		return FileAccessOutcomeMapper::toShikigamiDataOutcome(loadOutcome);
@@ -59,7 +59,7 @@ ShikigamiDataOutcome ShikigamiRepository::update_Shikigami(const std::string& fi
 		}
 	}
 
-	FileAccessOutcome saveOutcome = FileAccess::save_Shikigami(filePath, shikigamis);
+	FileAccessOutcome saveOutcome = FileAccess::saveShikigami(filePath, shikigamis);
 
 	return FileAccessOutcomeMapper::toShikigamiDataOutcome(saveOutcome);
 }
