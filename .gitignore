@@ -252,3 +252,5 @@
 /x64/Debug/*.exe
 /x64/Debug/*.ilk
 /x64/Debug/*.pdb
+/.vs/ShikigamiApp/FileContentIndex/*.vsidx
+/.vs/ShikigamiApp/v18/Insiders/*.db
