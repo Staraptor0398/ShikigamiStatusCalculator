@@ -18,6 +18,15 @@
     <ClCompile Include="TestCase\StatusCalculator\StatusCalculator_TestEntry.cpp">
       <Filter>TestCase\StatusCalculator</Filter>
     </ClCompile>
+    <ClCompile Include="TestCase\MitamaCalculator\_data\MitamaCalculatorTestData.cpp">
+      <Filter>TestCase\MitamaCalculator\_data</Filter>
+    </ClCompile>
+    <ClCompile Include="TestCase\MitamaCalculator\MitamaCalculator_Test.cpp">
+      <Filter>TestCase\MitamaCalculator</Filter>
+    </ClCompile>
+    <ClCompile Include="TestCase\MitamaCalculator\MitamaCalculator_TestEntry.cpp">
+      <Filter>TestCase\MitamaCalculator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -33,6 +42,12 @@
     <ClInclude Include="TestCase\StatusCalculator\StatusCalculator_Test.h">
       <Filter>TestCase\StatusCalculator</Filter>
     </ClInclude>
+    <ClInclude Include="TestCase\MitamaCalculator\_data\MitamaCalculatorTestData.h">
+      <Filter>TestCase\MitamaCalculator\_data</Filter>
+    </ClInclude>
+    <ClInclude Include="TestCase\MitamaCalculator\MitamaCalculator_Test.h">
+      <Filter>TestCase\MitamaCalculator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TestCommon">
@@ -46,6 +61,12 @@
     </Filter>
     <Filter Include="TestCase\StatusCalculator">
       <UniqueIdentifier>{8d56195b-a1d5-439c-835a-25ffac609d66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestCase\MitamaCalculator">
+      <UniqueIdentifier>{ab602fe7-161e-467e-a6ea-498f11a2133d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestCase\MitamaCalculator\_data">
+      <UniqueIdentifier>{dafb945a-c9ab-4a1c-b2d8-f0c938c58f23}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
