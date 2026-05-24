@@ -19,7 +19,7 @@ Status StatusConverter::toNative(StatusDto^ dto)
 	native.EffectResist = dto->EffectResist;
 	native.AdditionalAttackRate = dto->AdditionalAttackRate;
 	native.AdditionalHpRate = dto->AdditionalHpRate;
-	native.AdditionalDefenseRate = dto->AdditionalDeffenseRate;
+	native.AdditionalDefenseRate = dto->AdditionalDefenseRate;
 
 	return native;
 }
@@ -38,7 +38,7 @@ StatusDto^ StatusConverter::toDto(const Status& native)
 	dto->EffectResist = native.EffectResist;
 	dto->AdditionalAttackRate = native.AdditionalAttackRate;
 	dto->AdditionalHpRate = native.AdditionalHpRate;
-	dto->AdditionalDeffenseRate = native.AdditionalDefenseRate;
+	dto->AdditionalDefenseRate = native.AdditionalDefenseRate;
 
 	return dto;
 }

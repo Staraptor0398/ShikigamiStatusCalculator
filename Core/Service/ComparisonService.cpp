@@ -3,7 +3,7 @@
 
 #include "../Status/StatusComparator.h"
 
-StatusComparisonResult ComparisonService::compareStatus(const Status& baseStatus, const Status& targetStatus)
+StatusComparisonResult ComparisonService::CompareStatus(const Status& baseStatus, const Status& targetStatus)
 {
 	return StatusComparator::compare(baseStatus, targetStatus);
 }

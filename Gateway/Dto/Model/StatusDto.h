@@ -1,5 +1,9 @@
 #pragma once
 
+// ステータス計算で使用する値を保持するDtoクラス
+//
+// Gui ⇔ Gateway 間のデータ受け渡しで使用する。
+// Core の Status と対応するDto定義。
 public ref class StatusDto
 {
 public:
@@ -15,5 +19,5 @@ public:
 
 	property double AdditionalAttackRate;
 	property double AdditionalHpRate;
-	property double AdditionalDeffenseRate;
+	property double AdditionalDefenseRate;
 };

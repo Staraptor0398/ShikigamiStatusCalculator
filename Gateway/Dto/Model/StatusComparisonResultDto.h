@@ -1,5 +1,9 @@
 #pragma once
 
+// // 計算結果スナップショット比較用の差分ステータスDtoクラス
+//
+// Gui ⇔ Gateway 間のデータ受け渡しで使用する。
+// Core の StatusComparisonResult と対応するDto定義。
 public ref class StatusComparisonResultDto {
 public:
 	property double AttackDifferense;

@@ -3,6 +3,7 @@
 #include "../../../Core/Mitama/Mitama.h"
 #include "../../Dto/Model/MitamaDto.h"
 
+// Mitama と MitamaDto の相互変換を行うクラス
 class MitamaConverter
 {
 public:

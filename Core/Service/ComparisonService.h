@@ -6,5 +6,5 @@
 class ComparisonService
 {
 public:
-	static StatusComparisonResult compareStatus(const Status& baseStatus, const Status& targetStatus);
+	static StatusComparisonResult CompareStatus(const Status& baseStatus, const Status& targetStatus);
 };

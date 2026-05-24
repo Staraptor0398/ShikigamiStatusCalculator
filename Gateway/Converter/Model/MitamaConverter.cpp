@@ -15,7 +15,7 @@ Mitama MitamaConverter::toNative(MitamaDto^ dto)
 
 	native.MainStat = StatValueConverter::toNative(dto->MainStat);
 
-	for (int i = 0;i < 4;i++) {
+	for (int i = 0;i < 4; i++) {
 		if (dto->SubStat != nullptr && i < dto->SubStat->Count) {
 			native.SubStat[i] = StatValueConverter::toNative(dto->SubStat[i]);
 		}
@@ -32,7 +32,7 @@ MitamaDto^ MitamaConverter::toDto(const Mitama& native)
 
 	dto->SubStat = gcnew List<StatValueDto^>();
 
-	for (int i = 0;i < 4;i++) {
+	for (int i = 0;i < 4; i++) {
 		dto->SubStat->Add(StatValueConverter::toDto(native.SubStat[i]));
 	}
 

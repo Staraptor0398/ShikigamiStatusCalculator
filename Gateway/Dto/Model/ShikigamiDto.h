@@ -2,6 +2,10 @@
 
 using namespace System;
 
+// 式神Dtoクラス
+//
+// Gui ⇔ Gateway 間のデータ受け渡しで使用する。
+// Core の Shikigami と対応するDto定義。
 public ref class ShikigamiDto
 {
 public:
@@ -12,8 +16,8 @@ public:
 	double HP;
 	double Defense;
 	double Speed;
-	double CritRate;
-	double CritDamage;
+	double CriticalRate;
+	double CriticalDamage;
 	double EffectHit;
 	double EffectResist;
 

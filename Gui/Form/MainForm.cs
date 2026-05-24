@@ -265,8 +265,8 @@ namespace Gui.Form
 					$"{DisplayText.HP}: {selected.HP:F2} " +
 					$"{DisplayText.Deffense}: {selected.Defense:F2} " +
 					$"{DisplayText.Speed}: {selected.Speed:F2} " +
-					$"{DisplayText.CritRate}: {selected.CritRate:F2}% " +
-					$"{DisplayText.CritDamage}: {selected.CritDamage:F2}% " +
+					$"{DisplayText.CritRate}: {selected.CriticalRate:F2}% " +
+					$"{DisplayText.CritDamage}: {selected.CriticalDamage:F2}% " +
 					$"{DisplayText.EffectHit}: {selected.EffectHit:F2}% " +
 					$"{DisplayText.EffectResist}: {selected.EffectResist:F2}%";
 
@@ -288,7 +288,7 @@ namespace Gui.Form
 			var baseStatus = getSelectedShikigamiStatus();
 			var mitamaSet = buildMitamaSetDto();
 
-			_lastCalculationResult = CalculationGateway.calclutate(baseStatus, mitamaSet);
+			_lastCalculationResult = CalculationGateway.Calclutate(baseStatus, mitamaSet);
 			markCalculationResultClean();
 
 			showCalculationResult(_lastCalculationResult);
@@ -332,14 +332,14 @@ namespace Gui.Form
 				Defense = selected.Defense,
 				Speed = selected.Speed,
 
-				CritRate = selected.CritRate,
-				CritDamage = selected.CritDamage,
+				CritRate = selected.CriticalRate,
+				CritDamage = selected.CriticalDamage,
 				EffectHit = selected.EffectHit,
 				EffectResist = selected.EffectResist,
 
 				AdditionalAttackRate = 0.0,
 				AdditionalHpRate = 0.0,
-				AdditionalDeffenseRate = 0.0,
+				AdditionalDefenseRate = 0.0,
 			};
 		}
 
@@ -626,9 +626,9 @@ namespace Gui.Form
 			return dto;
 		}
 
-		private List<StatusEffectDto> createSetEffectDtos()
+		private List<SetEffectDto> createSetEffectDtos()
 		{
-			List<StatusEffectDto> list = new List<StatusEffectDto>();
+			List<SetEffectDto> list = new List<SetEffectDto>();
 
 			foreach (ComboBox comboBox in getSetEffectComboBoxes())
 			{
@@ -637,9 +637,9 @@ namespace Gui.Form
 			return list;
 		}
 
-		private StatusEffectDto createSetEffectDto(ComboBox cmbEffect)
+		private SetEffectDto createSetEffectDto(ComboBox cmbEffect)
 		{
-			return new StatusEffectDto
+			return new SetEffectDto
 			{
 				Stat = new StatValueDto
 				{
@@ -649,9 +649,9 @@ namespace Gui.Form
 			};
 		}
 
-		private List<StatusEffectDto> createUniqueEffectDtos()
+		private List<SetEffectDto> createUniqueEffectDtos()
 		{
-			List<StatusEffectDto> list = new List<StatusEffectDto>();
+			List<SetEffectDto> list = new List<SetEffectDto>();
 
 			foreach (ComboBox comboBox in getUniqueEffectComboBoxes())
 			{
@@ -661,9 +661,9 @@ namespace Gui.Form
 			return list;
 		}
 
-		private StatusEffectDto createUniqueEffectDto(ComboBox cmbEffect)
+		private SetEffectDto createUniqueEffectDto(ComboBox cmbEffect)
 		{
-			return new StatusEffectDto
+			return new SetEffectDto
 			{
 				Stat = new StatValueDto
 				{
@@ -689,7 +689,7 @@ namespace Gui.Form
 				case DisplayText.EffectResist: ret = StatTypeDto.EffectResist; break;
 				case DisplayText.AdditionalAttack: ret = StatTypeDto.AdditionalAttackRate; break;
 				case DisplayText.AdditionalHP: ret = StatTypeDto.AdditionalHpRate; break;
-				case DisplayText.AdditionalDeffense: ret = StatTypeDto.AdditionalDeffenseRate; break;
+				case DisplayText.AdditionalDeffense: ret = StatTypeDto.AdditionalDefenseRate; break;
 				default: break;
 			}
 
@@ -817,7 +817,7 @@ namespace Gui.Form
 
 					$"{DisplayText.AdditionalAttack}: {s.AdditionalAttackRate:F2}% " +
 					$"{DisplayText.AdditionalHP}: {s.AdditionalHpRate:F2}% " +
-					$"{DisplayText.AdditionalDeffense}: {s.AdditionalDeffenseRate:F2}% " +
+					$"{DisplayText.AdditionalDeffense}: {s.AdditionalDefenseRate:F2}% " +
 
 					$"{DisplayText.CritRate}: {s.CritRate:F2}% " +
 					$"{DisplayText.CritDamage}: {s.CritDamage:F2}% " +
@@ -1419,7 +1419,7 @@ namespace Gui.Form
 				StatusDto baseStatus = createStatusDto(baseSnapshot.FinalStatus);
 				StatusDto targetStatus = createStatusDto(targetSnapshot.FinalStatus);
 
-				StatusComparisonResultDto comparisonResult = ComparisonGateway.compareStatus(baseStatus, targetStatus);
+				StatusComparisonResultDto comparisonResult = ComparisonGateway.CompareStatus(baseStatus, targetStatus);
 
 				string baseSnapshotName = baseSnapshot.SnapshotName;
 				string targetSnapshotName = targetSnapshot.SnapshotName;

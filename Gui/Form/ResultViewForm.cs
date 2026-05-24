@@ -47,7 +47,7 @@ namespace Gui.Form
 
 					$"{DisplayText.AdditionalAttack,-6}: {s.AdditionalAttackRate:F2}%\r\n" +
 					$"{DisplayText.AdditionalHP,-9}: {s.AdditionalHpRate:F2}%\r\n" +
-					$"{DisplayText.AdditionalDeffense,-6}: {s.AdditionalDeffenseRate:F2}%\r\n" +
+					$"{DisplayText.AdditionalDeffense,-6}: {s.AdditionalDefenseRate:F2}%\r\n" +
 
 					$"{DisplayText.CritRate,-8}: {s.CritRate:F2}%\r\n" +
 					$"{DisplayText.CritDamage,-9}: {s.CritDamage:F2}%\r\n" +

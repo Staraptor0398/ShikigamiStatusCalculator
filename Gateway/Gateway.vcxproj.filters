@@ -114,7 +114,7 @@
     <ClInclude Include="Dto\Model\StatusDto.h">
       <Filter>ヘッダー ファイル\Dto\Model</Filter>
     </ClInclude>
-    <ClInclude Include="Dto\Model\StatusEffectDto.h">
+    <ClInclude Include="Dto\Model\SetEffectDto.h">
       <Filter>ヘッダー ファイル\Dto\Model</Filter>
     </ClInclude>
     <ClInclude Include="Dto\Model\StatValueDto.h">

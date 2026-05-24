@@ -3,6 +3,7 @@
 #include "../../../Core/Model/StatType.h"
 #include "../../Dto/Model/StatTypeDto.h"
 
+// StatType と StatTypeDto の相互変換を行うクラス
 class StatTypeConverter
 {
 public:

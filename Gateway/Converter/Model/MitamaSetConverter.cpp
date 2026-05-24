@@ -44,15 +44,15 @@ MitamaSetDto^ MitamaSetConverter::toDto(const MitamaSet& native)
 	MitamaSetDto^ dto = gcnew MitamaSetDto();
 
 	dto->Mitamas = gcnew List<MitamaDto^>();
-	dto->SetEffects = gcnew List<StatusEffectDto^>();
-	dto->UniqueEffects = gcnew List<StatusEffectDto^>();
+	dto->SetEffects = gcnew List<SetEffectDto^>();
+	dto->UniqueEffects = gcnew List<SetEffectDto^>();
 
 	for (int i = 0; i < 6; i++) {
 		dto->Mitamas->Add(MitamaConverter::toDto(native.Mitamas[i]));
 	}
 
 	for (int i = 0; i < 3; i++) {
-		StatusEffectDto^ effect = gcnew StatusEffectDto();
+		SetEffectDto^ effect = gcnew SetEffectDto();
 
 		effect->Stat = StatValueConverter::toDto(native.SetEffects[i].Stat);
 
@@ -60,12 +60,12 @@ MitamaSetDto^ MitamaSetConverter::toDto(const MitamaSet& native)
 	}
 
 	for (int i = 0; i < 6; i++) {
-		StatusEffectDto^ effect = gcnew StatusEffectDto();
+		SetEffectDto^ effect = gcnew SetEffectDto();
 
 		effect->Stat = StatValueConverter::toDto(native.UniqueEffects[i].Stat);
 
 		dto->UniqueEffects->Add(effect);
 	}
-	
+
 	return dto;
 }

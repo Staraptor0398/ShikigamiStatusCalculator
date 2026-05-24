@@ -174,7 +174,7 @@
     <ClInclude Include="Dto\Model\StatTypeDto.h" />
     <ClInclude Include="Dto\Model\StatusComparisonResultDto.h" />
     <ClInclude Include="Dto\Model\StatusDto.h" />
-    <ClInclude Include="Dto\Model\StatusEffectDto.h" />
+    <ClInclude Include="Dto\Model\SetEffectDto.h" />
     <ClInclude Include="Dto\Model\StatValueDto.h" />
     <ClInclude Include="Dto\Outcome\ShikigamiDataOutcomeDto.h" />
     <ClInclude Include="framework.h" />

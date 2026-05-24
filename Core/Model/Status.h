@@ -1,5 +1,6 @@
 #pragma once
 
+// ステータス計算で使用する値を保持する構造体
 struct Status {
 	double Attack = 0.0;
 	double Hp = 0.0;

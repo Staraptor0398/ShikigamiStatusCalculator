@@ -17,8 +17,8 @@ Shikigami ShikigamiConverter::toNative(ShikigamiDto^ dto)
 	native.HP = dto->HP;
 	native.Defense = dto->Defense;
 	native.Speed = dto->Speed;
-	native.CriticalRate = dto->CritRate;
-	native.CriticalDamage = dto->CritDamage;
+	native.CriticalRate = dto->CriticalRate;
+	native.CriticalDamage = dto->CriticalDamage;
 	native.EffectHit = dto->EffectHit;
 	native.EffectResist = dto->EffectResist;
 
@@ -35,8 +35,8 @@ ShikigamiDto^ ShikigamiConverter::toDto(Shikigami native)
 	dto->HP = native.HP;
 	dto->Defense = native.Defense;
 	dto->Speed = native.Speed;
-	dto->CritRate = native.CriticalRate;
-	dto->CritDamage = native.CriticalDamage;
+	dto->CriticalRate = native.CriticalRate;
+	dto->CriticalDamage = native.CriticalDamage;
 	dto->EffectHit = native.EffectHit;
 	dto->EffectResist = native.EffectResist;
 

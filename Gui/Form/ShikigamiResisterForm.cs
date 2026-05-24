@@ -97,8 +97,8 @@ namespace Gui.Form
 			txtDeffense.Text = _editTarget.Defense.ToString();
 			txtSpeed.Text = _editTarget.Speed.ToString();
 
-			txtCritRate.Text = _editTarget.CritRate.ToString();
-			txtCritDamage.Text = _editTarget.CritDamage.ToString();
+			txtCritRate.Text = _editTarget.CriticalRate.ToString();
+			txtCritDamage.Text = _editTarget.CriticalDamage.ToString();
 			txtEffectHit.Text = _editTarget.EffectHit.ToString();
 			txtEffectResist.Text = _editTarget.EffectResist.ToString();
 		}
@@ -242,8 +242,8 @@ namespace Gui.Form
 				HP = hp,
 				Defense = deffense,
 				Speed = speed,
-				CritRate = critRate,
-				CritDamage = critDamage,
+				CriticalRate = critRate,
+				CriticalDamage = critDamage,
 				EffectHit = effectHit,
 				EffectResist = effectResist
 			};

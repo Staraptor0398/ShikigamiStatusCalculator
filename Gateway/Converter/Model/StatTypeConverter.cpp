@@ -16,7 +16,7 @@ StatType StatTypeConverter::toNative(StatTypeDto dto)
 		case StatTypeDto::EffectResist:					native = StatType::EffectResist;				break;
 		case StatTypeDto::AdditionalAttackRate:			native = StatType::AdditionalAttackRate;		break;
 		case StatTypeDto::AdditionalHpRate:				native = StatType::AdditionalHpRate;			break;
-		case StatTypeDto::AdditionalDeffenseRate:		native = StatType::AdditionalDefenseRate;		break;
+		case StatTypeDto::AdditionalDefenseRate:		native = StatType::AdditionalDefenseRate;		break;
 		default:																						break;
 	}
 
@@ -38,7 +38,7 @@ StatTypeDto StatTypeConverter::toDto(StatType native)
 		case StatType::EffectResist:					dto = StatTypeDto::EffectResist;				break;
 		case StatType::AdditionalAttackRate:			dto = StatTypeDto::AdditionalAttackRate;		break;
 		case StatType::AdditionalHpRate:				dto = StatTypeDto::AdditionalHpRate;			break;
-		case StatType::AdditionalDefenseRate:			dto = StatTypeDto::AdditionalDeffenseRate;		break;
+		case StatType::AdditionalDefenseRate:			dto = StatTypeDto::AdditionalDefenseRate;		break;
 		default:																						break;
 	}
 
