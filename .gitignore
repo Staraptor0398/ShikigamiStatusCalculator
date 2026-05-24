@@ -245,3 +245,10 @@
 /packages/Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.8/lib/native/v140/windesktop/msvcstl/static/rt-dyn/x86/Release/*.lib
 /packages/Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.8/lib/native/v140/windesktop/msvcstl/static/rt-dyn/x86/Release/*.pdb
 /CoreTest/*.user
+/.vs/Core_Test.slnx/v18/Insiders/*.db-shm
+/.vs/Core_Test.slnx/v18/Insiders/*.db-wal
+/.vs/Core_Test.slnx/v18/Insiders/*.opendb
+/.vs/Core_Test.slnx/v18/Insiders/ipch/SymbolIndex/*.ipch
+/x64/Debug/*.exe
+/x64/Debug/*.ilk
+/x64/Debug/*.pdb
