@@ -12,6 +12,12 @@
       <Filter>TestCommon</Filter>
     </ClCompile>
     <ClCompile Include="TestMain.cpp" />
+    <ClCompile Include="TestCase\StatusCalculator\StatusCalculator_Test.cpp">
+      <Filter>TestCase\StatusCalculator</Filter>
+    </ClCompile>
+    <ClCompile Include="TestCase\StatusCalculator\StatusCalculator_TestEntry.cpp">
+      <Filter>TestCase\StatusCalculator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -24,6 +30,9 @@
     <ClInclude Include="TestCommon\TestResultLogger.h">
       <Filter>TestCommon</Filter>
     </ClInclude>
+    <ClInclude Include="TestCase\StatusCalculator\StatusCalculator_Test.h">
+      <Filter>TestCase\StatusCalculator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TestCommon">
@@ -34,6 +43,9 @@
     </Filter>
     <Filter Include="TestCase\StatusComparator">
       <UniqueIdentifier>{9bd22c3a-4d85-4c14-b419-5291fa119c2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestCase\StatusCalculator">
+      <UniqueIdentifier>{8d56195b-a1d5-439c-835a-25ffac609d66}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -99,6 +99,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TestCase\StatusCalculator\StatusCalculator_Test.h" />
     <ClInclude Include="TestCase\StatusComparator\StatusComparator_Test.h" />
     <ClInclude Include="TestCommon\TestAssert.h" />
     <ClInclude Include="TestCommon\TestResultLogger.h" />
@@ -110,6 +111,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TestCase\StatusCalculator\StatusCalculator_Test.cpp" />
+    <ClCompile Include="TestCase\StatusCalculator\StatusCalculator_TestEntry.cpp" />
     <ClCompile Include="TestCase\StatusComparator\StatusComparator_Test.cpp" />
     <ClCompile Include="TestCase\StatusComparator\StatusComparator_TestEntry.cpp" />
     <ClCompile Include="TestCommon\TestResultLogger.cpp" />
