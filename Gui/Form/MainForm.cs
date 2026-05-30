@@ -928,17 +928,17 @@ namespace Gui.Form
 				{
 					setComboItems(subStat.TypeComboBox,
 						DisplayText.None,
-						DisplayText.Attack,
-						DisplayText.HP,
-						DisplayText.Defense,
 						DisplayText.Speed,
+						DisplayText.AdditionalAttackRate,
+						DisplayText.AdditionalHPRate,
+						DisplayText.AdditionalDefenseRate,
 						DisplayText.CriticalRate,
 						DisplayText.CriticalDamage,
 						DisplayText.EffectHit,
 						DisplayText.EffectResist,
-						DisplayText.AdditionalAttackRate,
-						DisplayText.AdditionalHPRate,
-						DisplayText.AdditionalDefenseRate);
+						DisplayText.Attack,
+						DisplayText.HP,
+						DisplayText.Defense);
 				}
 			}
 		}
