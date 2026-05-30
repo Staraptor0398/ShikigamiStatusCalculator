@@ -532,8 +532,7 @@ namespace Gui.Form
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
-		private CalculationInputValidationOutcome validateSubStatsInSlot(
-			SubStatInputControl[] subStats)
+		private CalculationInputValidationOutcome validateSubStatsInSlot(SubStatInputControl[] subStats)
 		{
 			List<string> selectedSubStats = new List<string>();
 
@@ -600,6 +599,11 @@ namespace Gui.Form
 
 		private MitamaDto createMitamaDto(MitamaSlotInputControl slot)
 		{
+			if (slot == null)
+			{
+				return null;
+			}
+
 			return new MitamaDto
 			{
 				MainStat = createStatValueDto(slot.MainStatComboBox, slot.MainValueTextBox),
@@ -609,6 +613,11 @@ namespace Gui.Form
 
 		private List<StatValueDto> createSubStatValueDtos(SubStatInputControl[] subStats)
 		{
+			if (subStats == null)
+			{
+				return null;
+			}
+
 			List<StatValueDto> list = new List<StatValueDto>();
 
 			foreach (SubStatInputControl subStat in subStats)
@@ -621,6 +630,11 @@ namespace Gui.Form
 
 		private StatValueDto createStatValueDto(ComboBox cmbType, TextBox txtValue)
 		{
+			if (cmbType == null || txtValue == null)
+			{
+				return null;
+			}
+
 			var dto = new StatValueDto();
 
 			dto.Type = convertStatType(cmbType.Text);
@@ -650,6 +664,11 @@ namespace Gui.Form
 
 		private SetEffectDto createSetEffectDto(ComboBox cmbEffect)
 		{
+			if (cmbEffect == null)
+			{
+				return null;
+			}
+
 			return new SetEffectDto
 			{
 				Stat = new StatValueDto
@@ -674,6 +693,11 @@ namespace Gui.Form
 
 		private SetEffectDto createUniqueEffectDto(ComboBox cmbEffect)
 		{
+			if (cmbEffect == null)
+			{
+				return null;
+			}
+
 			return new SetEffectDto
 			{
 				Stat = new StatValueDto
@@ -755,6 +779,7 @@ namespace Gui.Form
 		private double getSetEffectValue(string text)
 		{
 			double ret = 0.0;
+
 			switch (text)
 			{
 				case DisplayText.AdditionalAttackRate:
@@ -780,6 +805,7 @@ namespace Gui.Form
 		private double getUniqueEffectValue(string text)
 		{
 			double ret = 0.0;
+
 			switch (text)
 			{
 				case DisplayText.AdditionalAttackRate:
@@ -995,6 +1021,11 @@ namespace Gui.Form
 
 		private void setComboItems(ComboBox comboBox, params string[] items)
 		{
+			if (comboBox == null || items == null)
+			{
+				return;
+			}
+
 			comboBox.Items.Clear();
 
 			foreach (string item in items)
@@ -1159,10 +1190,13 @@ namespace Gui.Form
 			return list;
 		}
 
-		private MitamaSaveData createMitamaSaveData(
-			int slot,
-			MitamaSlotInputControl input)
+		private MitamaSaveData createMitamaSaveData(int slot, MitamaSlotInputControl input)
 		{
+			if (0 > slot || slot > 6 || input == null)
+			{
+				return null;
+			}
+
 			return new MitamaSaveData
 			{
 				Slot = slot,
@@ -1179,6 +1213,11 @@ namespace Gui.Form
 
 		private List<EffectSaveData> createSubStatSaveDataList(SubStatInputControl[] subStats)
 		{
+			if (subStats == null)
+			{
+				return null;
+			}
+
 			List<EffectSaveData> list = new List<EffectSaveData>();
 
 			foreach (SubStatInputControl subStat in subStats)
@@ -1215,6 +1254,11 @@ namespace Gui.Form
 
 		private EffectSaveData createEffectSaveData(ComboBox cmb, TextBox txt)
 		{
+			if (cmb == null || txt == null)
+			{
+				return null;
+			}
+
 			double.TryParse(txt.Text, out double value);
 
 			return new EffectSaveData
@@ -1226,6 +1270,11 @@ namespace Gui.Form
 
 		private EffectSaveData createEffectSaveData(ComboBox cmb)
 		{
+			if (cmb == null)
+			{
+				return null;
+			}
+
 			return new EffectSaveData
 			{
 				Type = cmb.Text,
@@ -1334,6 +1383,11 @@ namespace Gui.Form
 
 		private void applyMitama(List<MitamaSaveData> list)
 		{
+			if (list == null)
+			{
+				return;
+			}
+
 			MitamaSlotInputControl[] slots = getMitamaSlotInputControls();
 
 			for (int i = 0; i < list.Count && i < slots.Length; i++)
@@ -1342,10 +1396,13 @@ namespace Gui.Form
 			}
 		}
 
-		private void applySingleMitama(
-			MitamaSaveData data,
-			MitamaSlotInputControl slot)
+		private void applySingleMitama(MitamaSaveData data, MitamaSlotInputControl slot)
 		{
+			if (data == null || slot == null)
+			{
+				return;
+			}
+
 			slot.MainStatComboBox.Text = data.MainStat.Type;
 			slot.MainValueTextBox.Text = data.MainStat.Value.ToString();
 
@@ -1357,6 +1414,11 @@ namespace Gui.Form
 
 		private void applySetEffect(List<EffectSaveData> list)
 		{
+			if (list == null)
+			{
+				return;
+			}
+
 			ComboBox[] comboBoxes = getSetEffectComboBoxes();
 
 			for (int i = 0; i < list.Count && i < comboBoxes.Length; i++)
@@ -1367,6 +1429,11 @@ namespace Gui.Form
 
 		private void applyUniqueEffect(List<EffectSaveData> list)
 		{
+			if (list == null)
+			{
+				return;
+			}
+
 			ComboBox[] comboBoxes = getUniqueEffectComboBoxes();
 
 			for (int i = 0; i < list.Count && i < comboBoxes.Length; i++)
@@ -1377,12 +1444,22 @@ namespace Gui.Form
 
 		private void applyEffect(EffectSaveData data, ComboBox comboBox, TextBox textBox)
 		{
+			if (data == null || comboBox == null || textBox == null)
+			{
+				return;
+			}
+
 			comboBox.SelectedItem = data.Type;
 			textBox.Text = data.Value.ToString();
 		}
 
 		private void applyEffect(EffectSaveData data, ComboBox comboBox)
 		{
+			if (data == null || comboBox == null)
+			{
+				return;
+			}
+
 			comboBox.SelectedItem = data.Type;
 		}
 
@@ -1414,6 +1491,11 @@ namespace Gui.Form
 
 		private CalculationSnapshotSaveData createCurrentCalculationSnapshotSaveData(string snapshotName)
 		{
+			if (string.IsNullOrEmpty(snapshotName))
+			{
+				return null;
+			}
+
 			return new CalculationSnapshotSaveData
 			{
 				SnapshotName = snapshotName,
@@ -1427,6 +1509,11 @@ namespace Gui.Form
 
 		private StatusSaveData createStatusSaveData(StatusDto status)
 		{
+			if (status == null)
+			{
+				return null;
+			}
+
 			return new StatusSaveData
 			{
 				Attack = status.Attack,
@@ -1458,6 +1545,11 @@ namespace Gui.Form
 				StatusDto baseStatus = createStatusDto(baseSnapshot.FinalStatus);
 				StatusDto targetStatus = createStatusDto(targetSnapshot.FinalStatus);
 
+				if (baseStatus == null || targetStatus == null)
+				{
+					return;
+				}
+
 				StatusComparisonResultDto comparisonResult = ComparisonGateway.CompareStatus(baseStatus, targetStatus);
 
 				string baseSnapshotName = baseSnapshot.SnapshotName;
@@ -1472,6 +1564,11 @@ namespace Gui.Form
 
 		private StatusDto createStatusDto(StatusSaveData saveData)
 		{
+			if (saveData == null)
+			{
+				return null;
+			}
+
 			return new StatusDto
 			{
 				Attack = saveData.Attack,
@@ -1497,7 +1594,12 @@ namespace Gui.Form
 				if (form.ShowDialog(this) == DialogResult.OK)
 				{
 					initializeShikigamiComboBox();
-					applyShikigami(selectedShikigami.Name);
+
+					if (selectedShikigami != null)
+					{
+						applyShikigami(selectedShikigami.Name);
+					}
+
 					markCalculationResultDirty();
 				}
 			}
