@@ -263,10 +263,10 @@ namespace Gui.Form
 			txtBaseStats.Text =
 					$"{DisplayText.Attack}: {selected.Attack:F2} " +
 					$"{DisplayText.HP}: {selected.HP:F2} " +
-					$"{DisplayText.Deffense}: {selected.Defense:F2} " +
+					$"{DisplayText.Defense}: {selected.Defense:F2} " +
 					$"{DisplayText.Speed}: {selected.Speed:F2} " +
-					$"{DisplayText.CritRate}: {selected.CriticalRate:F2}% " +
-					$"{DisplayText.CritDamage}: {selected.CriticalDamage:F2}% " +
+					$"{DisplayText.CriticalRate}: {selected.CriticalRate:F2}% " +
+					$"{DisplayText.CriticalDamage}: {selected.CriticalDamage:F2}% " +
 					$"{DisplayText.EffectHit}: {selected.EffectHit:F2}% " +
 					$"{DisplayText.EffectResist}: {selected.EffectResist:F2}%";
 
@@ -286,7 +286,7 @@ namespace Gui.Form
 			}
 
 			var baseStatus = getSelectedShikigamiStatus();
-			var mitamaSet = buildMitamaSetDto();
+			var mitamaSet = createMitamaSetDto();
 
 			_lastCalculationResult = CalculationGateway.Calclutate(baseStatus, mitamaSet);
 			markCalculationResultClean();
@@ -570,7 +570,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  Dto作成
 		****************************************************************************************************/
-		private MitamaSetDto buildMitamaSetDto()
+		private MitamaSetDto createMitamaSetDto()
 		{
 			MitamaSetDto dto = new MitamaSetDto();
 
@@ -681,15 +681,15 @@ namespace Gui.Form
 			{
 				case DisplayText.Attack: ret = StatTypeDto.Attack; break;
 				case DisplayText.HP: ret = StatTypeDto.Hp; break;
-				case DisplayText.Deffense: ret = StatTypeDto.Defense; break;
+				case DisplayText.Defense: ret = StatTypeDto.Defense; break;
 				case DisplayText.Speed: ret = StatTypeDto.Speed; break;
-				case DisplayText.CritRate: ret = StatTypeDto.CriticalRate; break;
-				case DisplayText.CritDamage: ret = StatTypeDto.CriticalDamage; break;
+				case DisplayText.CriticalRate: ret = StatTypeDto.CriticalRate; break;
+				case DisplayText.CriticalDamage: ret = StatTypeDto.CriticalDamage; break;
 				case DisplayText.EffectHit: ret = StatTypeDto.EffectHit; break;
 				case DisplayText.EffectResist: ret = StatTypeDto.EffectResist; break;
-				case DisplayText.AdditionalAttack: ret = StatTypeDto.AdditionalAttackRate; break;
-				case DisplayText.AdditionalHP: ret = StatTypeDto.AdditionalHpRate; break;
-				case DisplayText.AdditionalDeffense: ret = StatTypeDto.AdditionalDefenseRate; break;
+				case DisplayText.AdditionalAttackRate: ret = StatTypeDto.AdditionalAttackRate; break;
+				case DisplayText.AdditionalHPRate: ret = StatTypeDto.AdditionalHpRate; break;
+				case DisplayText.AdditionalDefenseRate: ret = StatTypeDto.AdditionalDefenseRate; break;
 				default: break;
 			}
 
@@ -725,7 +725,7 @@ namespace Gui.Form
 					ret = 2052.0;
 					break;
 				case 6:
-					if (text == DisplayText.CritDamage)
+					if (text == DisplayText.CriticalDamage)
 					{
 						ret = 89.0;
 					}
@@ -746,17 +746,17 @@ namespace Gui.Form
 			double ret = 0.0;
 			switch (text)
 			{
-				case DisplayText.AdditionalAttack:
-				case DisplayText.AdditionalHP:
-				case DisplayText.CritRate:
+				case DisplayText.AdditionalAttackRate:
+				case DisplayText.AdditionalHPRate:
+				case DisplayText.CriticalRate:
 				case DisplayText.EffectHit:
 				case DisplayText.EffectResist:
 					ret = 15.0;
 					break;
-				case DisplayText.CritDamage:
+				case DisplayText.CriticalDamage:
 					ret = 20.0;
 					break;
-				case DisplayText.AdditionalDeffense:
+				case DisplayText.AdditionalDefenseRate:
 					ret = 30.0;
 					break;
 				default:
@@ -771,14 +771,14 @@ namespace Gui.Form
 			double ret = 0.0;
 			switch (text)
 			{
-				case DisplayText.AdditionalAttack:
-				case DisplayText.AdditionalHP:
-				case DisplayText.CritRate:
+				case DisplayText.AdditionalAttackRate:
+				case DisplayText.AdditionalHPRate:
+				case DisplayText.CriticalRate:
 				case DisplayText.EffectHit:
 				case DisplayText.EffectResist:
 					ret = 8.0;
 					break;
-				case DisplayText.AdditionalDeffense:
+				case DisplayText.AdditionalDefenseRate:
 					ret = 16.0;
 					break;
 				default:
@@ -812,15 +812,15 @@ namespace Gui.Form
 			return
 					$"{DisplayText.Attack}: {s.Attack:F2} " +
 					$"{DisplayText.HP}: {s.HP:F2} " +
-					$"{DisplayText.Deffense}: {s.Defense:F2} " +
+					$"{DisplayText.Defense}: {s.Defense:F2} " +
 					$"{DisplayText.Speed}: {s.Speed:F2} " +
 
-					$"{DisplayText.AdditionalAttack}: {s.AdditionalAttackRate:F2}% " +
-					$"{DisplayText.AdditionalHP}: {s.AdditionalHpRate:F2}% " +
-					$"{DisplayText.AdditionalDeffense}: {s.AdditionalDefenseRate:F2}% " +
+					$"{DisplayText.AdditionalAttackRate}: {s.AdditionalAttackRate:F2}% " +
+					$"{DisplayText.AdditionalHPRate}: {s.AdditionalHpRate:F2}% " +
+					$"{DisplayText.AdditionalDefenseRate}: {s.AdditionalDefenseRate:F2}% " +
 
-					$"{DisplayText.CritRate}: {s.CritRate:F2}% " +
-					$"{DisplayText.CritDamage}: {s.CritDamage:F2}% " +
+					$"{DisplayText.CriticalRate}: {s.CritRate:F2}% " +
+					$"{DisplayText.CriticalDamage}: {s.CritDamage:F2}% " +
 					$"{DisplayText.EffectHit}: {s.EffectHit:F2}% " +
 					$"{DisplayText.EffectResist}: {s.EffectResist:F2}%";
 		}
@@ -835,10 +835,10 @@ namespace Gui.Form
 			return
 					$"{DisplayText.Attack}: {s.Attack:F2} " +
 					$"{DisplayText.HP}: {s.HP:F2} " +
-					$"{DisplayText.Deffense}: {s.Defense:F2} " +
+					$"{DisplayText.Defense}: {s.Defense:F2} " +
 					$"{DisplayText.Speed}: {s.Speed:F2} " +
-					$"{DisplayText.CritRate}: {s.CritRate:F2}% " +
-					$"{DisplayText.CritDamage}: {s.CritDamage:F2}% " +
+					$"{DisplayText.CriticalRate}: {s.CritRate:F2}% " +
+					$"{DisplayText.CriticalDamage}: {s.CritDamage:F2}% " +
 					$"{DisplayText.EffectHit}: {s.EffectHit:F2}% " +
 					$"{DisplayText.EffectResist}: {s.EffectResist:F2}%";
 		}
@@ -895,29 +895,29 @@ namespace Gui.Form
 
 			setComboItems(cmbMainStat2,
 				DisplayText.Speed,
-				DisplayText.AdditionalAttack,
-				DisplayText.AdditionalHP,
-				DisplayText.AdditionalDeffense);
+				DisplayText.AdditionalAttackRate,
+				DisplayText.AdditionalHPRate,
+				DisplayText.AdditionalDefenseRate);
 
 			setComboItems(cmbMainStat3,
-				DisplayText.Deffense);
+				DisplayText.Defense);
 
 			setComboItems(cmbMainStat4,
 				DisplayText.EffectHit,
 				DisplayText.EffectResist,
-				DisplayText.AdditionalAttack,
-				DisplayText.AdditionalHP,
-				DisplayText.AdditionalDeffense);
+				DisplayText.AdditionalAttackRate,
+				DisplayText.AdditionalHPRate,
+				DisplayText.AdditionalDefenseRate);
 
 			setComboItems(cmbMainStat5,
 				DisplayText.HP);
 
 			setComboItems(cmbMainStat6,
-				DisplayText.CritRate,
-				DisplayText.CritDamage,
-				DisplayText.AdditionalAttack,
-				DisplayText.AdditionalHP,
-				DisplayText.AdditionalDeffense);
+				DisplayText.CriticalRate,
+				DisplayText.CriticalDamage,
+				DisplayText.AdditionalAttackRate,
+				DisplayText.AdditionalHPRate,
+				DisplayText.AdditionalDefenseRate);
 		}
 
 		private void initializeSubStatComboBoxes()
@@ -930,15 +930,15 @@ namespace Gui.Form
 						DisplayText.None,
 						DisplayText.Attack,
 						DisplayText.HP,
-						DisplayText.Deffense,
+						DisplayText.Defense,
 						DisplayText.Speed,
-						DisplayText.CritRate,
-						DisplayText.CritDamage,
+						DisplayText.CriticalRate,
+						DisplayText.CriticalDamage,
 						DisplayText.EffectHit,
 						DisplayText.EffectResist,
-						DisplayText.AdditionalAttack,
-						DisplayText.AdditionalHP,
-						DisplayText.AdditionalDeffense);
+						DisplayText.AdditionalAttackRate,
+						DisplayText.AdditionalHPRate,
+						DisplayText.AdditionalDefenseRate);
 				}
 			}
 		}
@@ -949,13 +949,13 @@ namespace Gui.Form
 			{
 				setComboItems(comboBox,
 					DisplayText.None,
-					DisplayText.CritRate,
-					DisplayText.CritDamage,
+					DisplayText.CriticalRate,
+					DisplayText.CriticalDamage,
 					DisplayText.EffectHit,
 					DisplayText.EffectResist,
-					DisplayText.AdditionalAttack,
-					DisplayText.AdditionalHP,
-					DisplayText.AdditionalDeffense);
+					DisplayText.AdditionalAttackRate,
+					DisplayText.AdditionalHPRate,
+					DisplayText.AdditionalDefenseRate);
 			}
 		}
 
@@ -965,12 +965,12 @@ namespace Gui.Form
 			{
 				setComboItems(comboBox,
 					DisplayText.None,
-					DisplayText.CritRate,
+					DisplayText.CriticalRate,
 					DisplayText.EffectHit,
 					DisplayText.EffectResist,
-					DisplayText.AdditionalAttack,
-					DisplayText.AdditionalHP,
-					DisplayText.AdditionalDeffense);
+					DisplayText.AdditionalAttackRate,
+					DisplayText.AdditionalHPRate,
+					DisplayText.AdditionalDefenseRate);
 			}
 		}
 
@@ -1381,12 +1381,12 @@ namespace Gui.Form
 				CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
 				ShikigamiName = cmbShikigami.Text,
 				MitamaSet = createCurrentMitamaSetSaveData(),
-				MitamaStatus = createStatusSavedata(_lastCalculationResult.MitamaOnlyStatus),
-				FinalStatus = createStatusSavedata(_lastCalculationResult.FinalStatus)
+				MitamaStatus = createStatusSaveData(_lastCalculationResult.MitamaOnlyStatus),
+				FinalStatus = createStatusSaveData(_lastCalculationResult.FinalStatus)
 			};
 		}
 
-		private StatusSaveData createStatusSavedata(StatusDto status)
+		private StatusSaveData createStatusSaveData(StatusDto status)
 		{
 			return new StatusSaveData
 			{

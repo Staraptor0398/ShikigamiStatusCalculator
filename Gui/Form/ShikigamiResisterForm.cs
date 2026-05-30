@@ -209,7 +209,7 @@ namespace Gui.Form
 			{
 				return false;
 			}
-			if (!tryGetDouble(txtDeffense, DisplayText.Deffense, out double deffense))
+			if (!tryGetDouble(txtDeffense, DisplayText.Defense, out double deffense))
 			{
 				return false;
 			}
@@ -217,11 +217,11 @@ namespace Gui.Form
 			{
 				return false;
 			}
-			if (!tryGetDouble(txtCritRate, DisplayText.CritRate, out double critRate))
+			if (!tryGetDouble(txtCritRate, DisplayText.CriticalRate, out double critRate))
 			{
 				return false;
 			}
-			if (!tryGetDouble(txtCritDamage, DisplayText.CritDamage, out double critDamage))
+			if (!tryGetDouble(txtCritDamage, DisplayText.CriticalDamage, out double critDamage))
 			{
 				return false;
 			}

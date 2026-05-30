@@ -42,15 +42,15 @@ namespace Gui.Form
 			return
 					$"{DisplayText.Attack,-8}: {s.Attack:F2}\r\n" +
 					$"{DisplayText.HP,-11}: {s.HP:F2}\r\n" +
-					$"{DisplayText.Deffense,-8}: {s.Defense:F2}\r\n" +
+					$"{DisplayText.Defense,-8}: {s.Defense:F2}\r\n" +
 					$"{DisplayText.Speed,-8}: {s.Speed:F2}\r\n" +
 
-					$"{DisplayText.AdditionalAttack,-6}: {s.AdditionalAttackRate:F2}%\r\n" +
-					$"{DisplayText.AdditionalHP,-9}: {s.AdditionalHpRate:F2}%\r\n" +
-					$"{DisplayText.AdditionalDeffense,-6}: {s.AdditionalDefenseRate:F2}%\r\n" +
+					$"{DisplayText.AdditionalAttackRate,-6}: {s.AdditionalAttackRate:F2}%\r\n" +
+					$"{DisplayText.AdditionalHPRate,-9}: {s.AdditionalHpRate:F2}%\r\n" +
+					$"{DisplayText.AdditionalDefenseRate,-6}: {s.AdditionalDefenseRate:F2}%\r\n" +
 
-					$"{DisplayText.CritRate,-8}: {s.CritRate:F2}%\r\n" +
-					$"{DisplayText.CritDamage,-9}: {s.CritDamage:F2}%\r\n" +
+					$"{DisplayText.CriticalRate,-8}: {s.CritRate:F2}%\r\n" +
+					$"{DisplayText.CriticalDamage,-9}: {s.CritDamage:F2}%\r\n" +
 					$"{DisplayText.EffectHit,-7}: {s.EffectHit:F2}%\r\n" +
 					$"{DisplayText.EffectResist,-7}: {s.EffectResist:F2}%";
 
@@ -66,10 +66,10 @@ namespace Gui.Form
 			return
 					$"{DisplayText.Attack,-8}: {s.Attack:F2}\r\n" +
 					$"{DisplayText.HP,-11}: {s.HP:F2}\r\n" +
-					$"{DisplayText.Deffense,-8}: {s.Defense:F2}\r\n" +
+					$"{DisplayText.Defense,-8}: {s.Defense:F2}\r\n" +
 					$"{DisplayText.Speed,-8}: {s.Speed:F2}\r\n" +
-					$"{DisplayText.CritRate,-8}: {s.CritRate:F2}%\r\n" +
-					$"{DisplayText.CritDamage,-9}: {s.CritDamage:F2}%\r\n" +
+					$"{DisplayText.CriticalRate,-8}: {s.CritRate:F2}%\r\n" +
+					$"{DisplayText.CriticalDamage,-9}: {s.CritDamage:F2}%\r\n" +
 					$"{DisplayText.EffectHit,-7}: {s.EffectHit:F2}%\r\n" +
 					$"{DisplayText.EffectResist,-7}: {s.EffectResist:F2}%";
 		}
