@@ -5,31 +5,43 @@ using System.Windows.Forms;
 
 namespace Gui.Dialog
 {
+	public enum SaveDataSaveLevel
+	{
+		MITAMA_SET_ONLY,
+		BUILD_AVAILABLE,
+		SNAPSHOT_AVAILABLE
+	}
+
 	public partial class SaveDataSaveDialog : System.Windows.Forms.Form
 	{
 		private readonly string _shikigamiName;
-		private readonly bool _canSaveCalculationSnapshot;
+		private readonly SaveDataSaveLevel _saveDataSaveLevel;
 
 		public SaveDataSaveType _selectedSaveType { get; private set; }
 
 		public string _filePath { get; private set; }
 
-		public SaveDataSaveDialog(string shikigamiName, bool canSaveCalculationSnapshot)
+		public SaveDataSaveDialog(string shikigamiName, SaveDataSaveLevel saveDataSaveLevel)
 		{
 			InitializeComponent();
 
 			_shikigamiName = shikigamiName;
-			_canSaveCalculationSnapshot = canSaveCalculationSnapshot;
+			_saveDataSaveLevel = saveDataSaveLevel;
+
 		}
 
 		private void initializeSaveTypeComboBox()
 		{
 			cmbSaveType.Items.Clear();
 
-			cmbSaveType.Items.Add(getSaveTypeDisplayText(SaveDataSaveType.Build));
 			cmbSaveType.Items.Add(getSaveTypeDisplayText(SaveDataSaveType.MitamaSet));
 
-			if (_canSaveCalculationSnapshot)
+			if (_saveDataSaveLevel >= SaveDataSaveLevel.BUILD_AVAILABLE)
+			{
+				cmbSaveType.Items.Add(getSaveTypeDisplayText(SaveDataSaveType.Build));
+			}
+
+			if (_saveDataSaveLevel >= SaveDataSaveLevel.SNAPSHOT_AVAILABLE)
 			{
 				cmbSaveType.Items.Add(getSaveTypeDisplayText(SaveDataSaveType.CalculationSnapshot));
 			}

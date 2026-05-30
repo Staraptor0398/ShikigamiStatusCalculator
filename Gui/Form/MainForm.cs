@@ -257,18 +257,21 @@ namespace Gui.Form
 
 			if (selected == null)
 			{
-				return;
+				txtBaseStats.Text = "";
 			}
+			else
+			{
+				txtBaseStats.Text =
+						$"{DisplayText.Attack}: {selected.Attack:F2} " +
+						$"{DisplayText.HP}: {selected.HP:F2} " +
+						$"{DisplayText.Defense}: {selected.Defense:F2} " +
+						$"{DisplayText.Speed}: {selected.Speed:F2} " +
+						$"{DisplayText.CriticalRate}: {selected.CriticalRate:F2}% " +
+						$"{DisplayText.CriticalDamage}: {selected.CriticalDamage:F2}% " +
+						$"{DisplayText.EffectHit}: {selected.EffectHit:F2}% " +
+						$"{DisplayText.EffectResist}: {selected.EffectResist:F2}%";
 
-			txtBaseStats.Text =
-					$"{DisplayText.Attack}: {selected.Attack:F2} " +
-					$"{DisplayText.HP}: {selected.HP:F2} " +
-					$"{DisplayText.Defense}: {selected.Defense:F2} " +
-					$"{DisplayText.Speed}: {selected.Speed:F2} " +
-					$"{DisplayText.CriticalRate}: {selected.CriticalRate:F2}% " +
-					$"{DisplayText.CriticalDamage}: {selected.CriticalDamage:F2}% " +
-					$"{DisplayText.EffectHit}: {selected.EffectHit:F2}% " +
-					$"{DisplayText.EffectResist}: {selected.EffectResist:F2}%";
+			}
 
 			markCalculationResultDirty();
 		}
@@ -289,7 +292,13 @@ namespace Gui.Form
 			var mitamaSet = createMitamaSetDto();
 
 			_lastCalculationResult = CalculationGateway.Calclutate(baseStatus, mitamaSet);
-			markCalculationResultClean();
+
+			updateSaveButtonEnabled();
+
+			if (cmbShikigami.SelectedItem != null)
+			{
+				markCalculationResultClean();
+			}
 
 			showCalculationResult(_lastCalculationResult);
 		}
@@ -301,6 +310,8 @@ namespace Gui.Form
 
 		private void markCalculationResultDirty()
 		{
+			updateSaveButtonEnabled();
+
 			if (_lastCalculationResult == null)
 			{
 				return;
@@ -350,7 +361,7 @@ namespace Gui.Form
 		{
 			CalculationInputValidationOutcome outcome;
 
-			outcome = validateSelectedShikigami();
+			outcome = validateEqueppedMitamaCount();
 
 			if (outcome != CalculationInputValidationOutcome.SUCCESS)
 			{
@@ -381,11 +392,11 @@ namespace Gui.Form
 			return outcome;
 		}
 
-		private CalculationInputValidationOutcome validateSelectedShikigami()
+		private CalculationInputValidationOutcome validateEqueppedMitamaCount()
 		{
-			if (cmbShikigami.SelectedItem == null)
+			if (getEquippedSlotCount() <= 0)
 			{
-				return CalculationInputValidationOutcome.SHIKIGAMI_NOT_SELECTED;
+				return CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
 			}
 
 			return CalculationInputValidationOutcome.SUCCESS;
@@ -799,7 +810,15 @@ namespace Gui.Form
 			}
 
 			txtMitamaOnly.Text = formatMitamaStatus(result.MitamaOnlyStatus);
-			txtFinalStats.Text = formatFinalStatus(result.FinalStatus);
+
+			if (cmbShikigami.SelectedItem != null)
+			{
+				txtFinalStats.Text = formatFinalStatus(result.FinalStatus);
+			}
+			else
+			{
+				txtFinalStats.Text = "";
+			}
 		}
 
 		private string formatMitamaStatus(StatusDto s)
@@ -1071,7 +1090,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void btnSave_Click(object sender, EventArgs e)
 		{
-			using (var dialog = new SaveDataSaveDialog(cmbShikigami.Text, canSaveCalculationSnapshot()))
+			using (var dialog = new SaveDataSaveDialog(cmbShikigami.Text, getSaveDataSaveLevel()))
 			{
 				if (dialog.ShowDialog() != DialogResult.OK)
 				{
@@ -1212,6 +1231,26 @@ namespace Gui.Form
 				Type = cmb.Text,
 				Value = 0.0
 			};
+		}
+
+		private SaveDataSaveLevel getSaveDataSaveLevel()
+		{
+			if (canSaveCalculationSnapshot())
+			{
+				return SaveDataSaveLevel.SNAPSHOT_AVAILABLE;
+			}
+
+			if (cmbShikigami.SelectedItem != null)
+			{
+				return SaveDataSaveLevel.BUILD_AVAILABLE;
+			}
+
+			return SaveDataSaveLevel.MITAMA_SET_ONLY;
+		}
+
+		private void updateSaveButtonEnabled()
+		{
+			btnSave.Enabled = validateCalculationInput() != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
 		}
 
 		/****************************************************************************************************
@@ -1529,7 +1568,6 @@ namespace Gui.Form
 		private void clearShikigamiSelection()
 		{
 			cmbShikigami.SelectedIndex = -1;
-			txtBaseStats.Text = "";
 		}
 
 		private void clearMitamaInputs()
@@ -1591,6 +1629,15 @@ namespace Gui.Form
 			{
 				form.ShowDialog(this);
 			}
+		}
+
+		/****************************************************************************************************
+		  式神選択解除
+		****************************************************************************************************/
+
+		private void btnClearShikigami_Click(object sender, EventArgs e)
+		{
+			clearShikigamiSelection();
 		}
 	}
 }

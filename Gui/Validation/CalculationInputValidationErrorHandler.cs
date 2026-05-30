@@ -30,9 +30,9 @@ namespace Gui.Validation
 		{
 			switch (outcome)
 			{
-				case CalculationInputValidationOutcome.SHIKIGAMI_NOT_SELECTED:
+				case CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA:
 					return "ステータス計算に失敗しました。\n\n" +
-							"式神を選択してください。";
+							"御魂が1つも装備されていません。";
 				case CalculationInputValidationOutcome.MAIN_STAT_NOT_SELECTED_WITH_SUB_STAT:
 					return "ステータス計算に失敗しました。\n\n" +
 							"未装備の御魂スロットにサブステータスが入力されています。";

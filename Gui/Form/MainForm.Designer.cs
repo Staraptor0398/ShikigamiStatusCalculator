@@ -124,6 +124,7 @@ namespace Gui.Form
 			this.btnResultView = new System.Windows.Forms.Button();
 			this.btnEditShikigami = new System.Windows.Forms.Button();
 			this.btnCompareResult = new System.Windows.Forms.Button();
+			this.btnClearShikigami = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// lblShikigami
@@ -138,6 +139,7 @@ namespace Gui.Form
 			// 
 			// cmbShikigami
 			// 
+			this.cmbShikigami.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cmbShikigami.FormattingEnabled = true;
 			this.cmbShikigami.Location = new System.Drawing.Point(31, 29);
 			this.cmbShikigami.Margin = new System.Windows.Forms.Padding(2);
@@ -974,11 +976,22 @@ namespace Gui.Form
 			this.btnCompareResult.UseVisualStyleBackColor = true;
 			this.btnCompareResult.Click += new System.EventHandler(this.btnCompareResult_Click);
 			// 
+			// btnClearShikigami
+			// 
+			this.btnClearShikigami.Location = new System.Drawing.Point(321, 53);
+			this.btnClearShikigami.Name = "btnClearShikigami";
+			this.btnClearShikigami.Size = new System.Drawing.Size(91, 25);
+			this.btnClearShikigami.TabIndex = 93;
+			this.btnClearShikigami.Text = "式神解除";
+			this.btnClearShikigami.UseVisualStyleBackColor = true;
+			this.btnClearShikigami.Click += new System.EventHandler(this.btnClearShikigami_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1066, 352);
+			this.Controls.Add(this.btnClearShikigami);
 			this.Controls.Add(this.btnCompareResult);
 			this.Controls.Add(this.btnEditShikigami);
 			this.Controls.Add(this.btnResultView);
@@ -1177,6 +1190,7 @@ namespace Gui.Form
 		private Button btnResultView;
 		private Button btnEditShikigami;
 		private Button btnCompareResult;
+		private Button btnClearShikigami;
 	}
 }
 
