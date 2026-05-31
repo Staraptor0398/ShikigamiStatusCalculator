@@ -144,18 +144,18 @@ namespace Gui.Form
 			this.cmbShikigami.Location = new System.Drawing.Point(31, 29);
 			this.cmbShikigami.Margin = new System.Windows.Forms.Padding(2);
 			this.cmbShikigami.Name = "cmbShikigami";
-			this.cmbShikigami.Size = new System.Drawing.Size(92, 20);
+			this.cmbShikigami.Size = new System.Drawing.Size(192, 20);
 			this.cmbShikigami.TabIndex = 1;
 			this.cmbShikigami.SelectedIndexChanged += new System.EventHandler(this.cmbShikigami_SelectedIndexChanged);
 			// 
 			// txtBaseStats
 			// 
-			this.txtBaseStats.Location = new System.Drawing.Point(132, 29);
+			this.txtBaseStats.Location = new System.Drawing.Point(226, 29);
 			this.txtBaseStats.Margin = new System.Windows.Forms.Padding(2);
 			this.txtBaseStats.Multiline = true;
 			this.txtBaseStats.Name = "txtBaseStats";
 			this.txtBaseStats.ReadOnly = true;
-			this.txtBaseStats.Size = new System.Drawing.Size(923, 18);
+			this.txtBaseStats.Size = new System.Drawing.Size(829, 18);
 			this.txtBaseStats.TabIndex = 2;
 			// 
 			// label1
