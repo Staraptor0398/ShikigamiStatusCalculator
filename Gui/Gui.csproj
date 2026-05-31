@@ -160,6 +160,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if not exist "$(TargetDir)Data" mkdir "$(TargetDir)Data"
-copy /Y "$(ProjectDir)Data\AppVersion.txt" "$(TargetDir)Data\AppVersion.txt"</PostBuildEvent>
+copy /Y "$(ProjectDir)Data\AppVersion.txt" "$(TargetDir)Data\AppVersion.txt"
+copy /Y "$(ProjectDir)Data\ShikigamiData.csv" "$(TargetDir)Data\ShikigamiData.csv"</PostBuildEvent>
   </PropertyGroup>
 </Project>
