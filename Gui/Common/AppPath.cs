@@ -5,6 +5,10 @@ namespace Gui.Common
 {
 	public static class AppPath
 	{
+		public const string DataDirectoryName = "Data";
+		public const string DataBackupDirectoryName = "Backup";
+		public const string DataBrockenDirectoryName = "Broken";
+
 		public const string ShikigamiDataFileName = "ShikigamiData.csv";
 
 		public static string BaseDirectory
@@ -15,12 +19,42 @@ namespace Gui.Common
 			}
 		}
 
-		public static string ShikigamiDataCsvPath
+		public static string DataDirectoryPath
 		{
 			get
 			{
 				return Path.Combine(
 					BaseDirectory,
+					DataDirectoryName);
+			}
+		}
+
+		public static string DataBackupDirectoryPath
+		{
+			get
+			{
+				return Path.Combine(
+					DataDirectoryPath,
+					DataBackupDirectoryName);
+			}
+		}
+
+		public static string DataBrokenDirectoryPath
+		{
+			get
+			{
+				return Path.Combine(
+					DataDirectoryPath,
+					DataBrockenDirectoryName);
+			}
+		}
+
+		public static string ShikigamiDataCsvPath
+		{
+			get
+			{
+				return Path.Combine(
+					DataDirectoryPath,
 					ShikigamiDataFileName);
 			}
 		}

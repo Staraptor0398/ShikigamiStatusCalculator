@@ -47,6 +47,7 @@
     <Compile Include="Common\Logger.cs" />
     <Compile Include="Common\SaveDataFileDefinition.cs" />
     <Compile Include="Common\ShikigamiDataErrorHandler.cs" />
+    <Compile Include="Common\ShikigamiDataFileManager.cs" />
     <Compile Include="Dialog\SaveDataLoadDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -132,6 +133,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Data\ShikigamiData.csv" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

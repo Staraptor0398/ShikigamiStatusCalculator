@@ -6,6 +6,10 @@ namespace Gui.Common
 	{
 		public static void Initialize()
 		{
+			Directory.CreateDirectory(AppPath.DataDirectoryPath);
+			Directory.CreateDirectory(AppPath.DataBackupDirectoryPath);
+			Directory.CreateDirectory(AppPath.DataBrokenDirectoryPath);
+
 			Directory.CreateDirectory(AppPath.SaveDataDirectoryPath);
 			Directory.CreateDirectory(AppPath.BuildSaveDataDirectoryPath);
 			Directory.CreateDirectory(AppPath.MitamaSetSaveDataDirectoryPath);

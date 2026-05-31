@@ -132,6 +132,8 @@ namespace Gui.Form
 				return;
 			}
 
+			ShikigamiDataFileManager.CreateBackup();
+
 			var outcome = ShikigamiGateway.AddShikigami(AppPath.ShikigamiDataCsvPath, dto);
 
 			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ登録"))
@@ -163,6 +165,8 @@ namespace Gui.Form
 			{
 				return;
 			}
+
+			ShikigamiDataFileManager.CreateBackup();
 
 			var outcome = ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, _editTarget, newDto);
 

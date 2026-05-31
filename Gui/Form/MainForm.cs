@@ -938,7 +938,16 @@ namespace Gui.Form
 
 			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
 			{
-				_shikigamiList = new List<ShikigamiDto>();
+				ShikigamiDataFileManager.MoveBrokenFile();
+				ShikigamiDataFileManager.RestoreDefaultIfMissing();
+
+				outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out _shikigamiList);
+
+				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ復元後読み込み"))
+				{
+					_shikigamiList = new List<ShikigamiDto>();
+
+				}
 			}
 
 			cmbShikigami.DataSource = _shikigamiList;

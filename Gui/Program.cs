@@ -17,6 +17,7 @@ namespace Gui
 			Application.SetCompatibleTextRenderingDefault(false);
 
 			ApplicationDirectoryInitializer.Initialize();
+			ShikigamiDataFileManager.RestoreDefaultIfMissing();
 
 			Application.Run(new MainForm());
 		}
