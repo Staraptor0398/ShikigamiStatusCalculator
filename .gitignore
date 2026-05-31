@@ -256,3 +256,6 @@
 /.vs/ShikigamiApp/v18/Insiders/*.db
 /.vs/ShikigamiApp/v18/Insiders/ipch/*.ipch
 /.vs/ShikigamiApp/v18/Insiders/ipch/SymbolIndex/*.ipch
+/.vs/ShikigamiApp/v18/Insiders/*.db-shm
+/.vs/ShikigamiApp/v18/Insiders/*.db-wal
+/.vs/ShikigamiApp/v18/Insiders/*.opendb

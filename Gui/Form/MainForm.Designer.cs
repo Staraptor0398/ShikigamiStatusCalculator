@@ -125,17 +125,19 @@ namespace Gui.Form
 			this.btnEditShikigami = new System.Windows.Forms.Button();
 			this.btnCompareResult = new System.Windows.Forms.Button();
 			this.btnClearShikigami = new System.Windows.Forms.Button();
+			this.cmbRarityFilter = new System.Windows.Forms.ComboBox();
+			this.label11 = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
 			// lblShikigami
 			// 
 			this.lblShikigami.AutoSize = true;
-			this.lblShikigami.Location = new System.Drawing.Point(28, 14);
+			this.lblShikigami.Location = new System.Drawing.Point(5, 35);
 			this.lblShikigami.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 			this.lblShikigami.Name = "lblShikigami";
-			this.lblShikigami.Size = new System.Drawing.Size(53, 12);
+			this.lblShikigami.Size = new System.Drawing.Size(29, 12);
 			this.lblShikigami.TabIndex = 0;
-			this.lblShikigami.Text = "式神選択";
+			this.lblShikigami.Text = "式神";
 			// 
 			// cmbShikigami
 			// 
@@ -986,11 +988,33 @@ namespace Gui.Form
 			this.btnClearShikigami.UseVisualStyleBackColor = true;
 			this.btnClearShikigami.Click += new System.EventHandler(this.btnClearShikigami_Click);
 			// 
+			// cmbRarityFilter
+			// 
+			this.cmbRarityFilter.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.cmbRarityFilter.FormattingEnabled = true;
+			this.cmbRarityFilter.Location = new System.Drawing.Point(31, 5);
+			this.cmbRarityFilter.Margin = new System.Windows.Forms.Padding(2);
+			this.cmbRarityFilter.Name = "cmbRarityFilter";
+			this.cmbRarityFilter.Size = new System.Drawing.Size(92, 20);
+			this.cmbRarityFilter.TabIndex = 94;
+			this.cmbRarityFilter.SelectedIndexChanged += new System.EventHandler(this.cmbRarityFilter_SelectedIndexChanged);
+			// 
+			// label11
+			// 
+			this.label11.AutoSize = true;
+			this.label11.Location = new System.Drawing.Point(5, 9);
+			this.label11.Name = "label11";
+			this.label11.Size = new System.Drawing.Size(23, 12);
+			this.label11.TabIndex = 95;
+			this.label11.Text = "レア";
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1066, 352);
+			this.Controls.Add(this.label11);
+			this.Controls.Add(this.cmbRarityFilter);
 			this.Controls.Add(this.btnClearShikigami);
 			this.Controls.Add(this.btnCompareResult);
 			this.Controls.Add(this.btnEditShikigami);
@@ -1191,6 +1215,8 @@ namespace Gui.Form
 		private Button btnEditShikigami;
 		private Button btnCompareResult;
 		private Button btnClearShikigami;
+		private ComboBox cmbRarityFilter;
+		private Label label11;
 	}
 }
 

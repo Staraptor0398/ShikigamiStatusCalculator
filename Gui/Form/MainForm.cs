@@ -6,6 +6,7 @@ using Gui.Validation;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Gui.Form
@@ -240,6 +241,8 @@ namespace Gui.Form
 		private CalculationResultDto _lastCalculationResult = null;
 
 		private bool _isCalculationResultDirty = true;
+
+		private List<ShikigamiDto> _shikigamiList = null;
 		/****************************************************************************************************
 		  コンストラクタ
 		****************************************************************************************************/
@@ -908,6 +911,8 @@ namespace Gui.Form
 
 		private void initializeComboBoxes()
 		{
+			initializeRarityFilterComboBox();
+
 			initializeShikigamiComboBox();
 			initializeMainStatComboBoxes();
 			initializeSubStatComboBoxes();
@@ -915,18 +920,28 @@ namespace Gui.Form
 			initializeUniqueEffectComboBoxes();
 		}
 
+		private void initializeRarityFilterComboBox()
+		{
+			setComboItems(
+				cmbRarityFilter,
+				DisplayText.RarityAll,
+				DisplayText.RaritySP,
+				DisplayText.RaritySSR,
+				DisplayText.RaritySR);
+
+			cmbRarityFilter.SelectedIndex = 0;
+		}
+
 		private void initializeShikigamiComboBox()
 		{
-			List<ShikigamiDto> list;
-
-			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out list);
+			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out _shikigamiList);
 
 			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
 			{
-				list = new List<ShikigamiDto>();
+				_shikigamiList = new List<ShikigamiDto>();
 			}
 
-			cmbShikigami.DataSource = list;
+			cmbShikigami.DataSource = _shikigamiList;
 			cmbShikigami.DisplayMember = "Name";
 
 			cmbShikigami.SelectedIndex = -1;
@@ -1367,6 +1382,28 @@ namespace Gui.Form
 				return;
 			}
 
+			if (trySelectShikigami(name))
+			{
+				return;
+			}
+
+			cmbRarityFilter.SelectedItem = DisplayText.RarityAll;
+
+			if (trySelectShikigami(name))
+			{
+				return;
+			}
+
+			MessageBox.Show($"式神が見つかりません： {name}");
+		}
+
+		private bool trySelectShikigami(string name)
+		{
+			if (string.IsNullOrEmpty(name))
+			{
+				return false;
+			}
+
 			foreach (var item in cmbShikigami.Items)
 			{
 				var shikigami = item as ShikigamiDto;
@@ -1374,11 +1411,11 @@ namespace Gui.Form
 				if (shikigami != null && shikigami.Name == name)
 				{
 					cmbShikigami.SelectedItem = shikigami;
-					return;
+					return true;
 				}
 			}
 
-			MessageBox.Show($"式神が見つかりません： {name}");
+			return false;
 		}
 
 		private void applyMitama(List<MitamaSaveData> list)
@@ -1736,10 +1773,42 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  式神選択解除
 		****************************************************************************************************/
-
 		private void btnClearShikigami_Click(object sender, EventArgs e)
 		{
 			clearShikigamiSelection();
+		}
+
+		/****************************************************************************************************
+		  式神フィルター
+		****************************************************************************************************/
+		private void cmbRarityFilter_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			applyShikigamiFilter();
+		}
+
+		private void applyShikigamiFilter()
+		{
+			var selectedShikigami = cmbShikigami.SelectedItem as ShikigamiDto;
+			string selectedShikigamiName = selectedShikigami?.Name;
+
+			string selectedRarity = cmbRarityFilter.Text;
+
+			var filteredList = _shikigamiList;
+
+			if (selectedRarity != DisplayText.RarityAll)
+			{
+				filteredList = _shikigamiList.Where(x => x.Rarity == selectedRarity).ToList();
+			}
+
+			cmbShikigami.DataSource = null;
+			cmbShikigami.DataSource = filteredList;
+			cmbShikigami.DisplayMember = "Name";
+			cmbShikigami.SelectedIndex = -1;
+
+			if (!string.IsNullOrEmpty(selectedShikigamiName))
+			{
+				trySelectShikigami(selectedShikigamiName);
+			}
 		}
 	}
 }
