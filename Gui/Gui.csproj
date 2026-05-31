@@ -154,6 +154,12 @@
       <Name>Gateway</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Data\AppVersion.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if not exist "$(TargetDir)Data" mkdir "$(TargetDir)Data"
+copy /Y "$(ProjectDir)Data\AppVersion.txt" "$(TargetDir)Data\AppVersion.txt"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

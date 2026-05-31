@@ -249,6 +249,22 @@ namespace Gui.Form
 		public MainForm()
 		{
 			InitializeComponent();
+
+			string version = loadAppVersion();
+			this.Text = $"{this.Text} {version}";
+		}
+
+		/****************************************************************************************************
+		  バージョン表示
+		****************************************************************************************************/
+		private string loadAppVersion()
+		{
+			if (!File.Exists(AppPath.AppVersionFilePath))
+			{
+				return "";
+			}
+
+			return File.ReadAllText(AppPath.AppVersionFilePath).Trim();
 		}
 
 		/****************************************************************************************************

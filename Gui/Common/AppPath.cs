@@ -11,6 +11,8 @@ namespace Gui.Common
 
 		public const string ShikigamiDataFileName = "ShikigamiData.csv";
 
+		public const string AppVersionFileName = "AppVersion.txt";
+
 		public static string BaseDirectory
 		{
 			get
@@ -26,6 +28,16 @@ namespace Gui.Common
 				return Path.Combine(
 					BaseDirectory,
 					DataDirectoryName);
+			}
+		}
+
+		public static string AppVersionFilePath
+		{
+			get
+			{
+				return Path.Combine(
+					DataDirectoryPath,
+					AppVersionFileName);
 			}
 		}
 
