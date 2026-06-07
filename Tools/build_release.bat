@@ -73,6 +73,7 @@ copy /Y "Gui\bin\x64\Release\Gui.exe" "%PACKAGE_DIR%\"
 copy /Y "Gui\bin\x64\Release\Gateway.dll" "%PACKAGE_DIR%\"
 copy /Y "Gui\bin\x64\Release\Newtonsoft.Json.dll" "%PACKAGE_DIR%\"
 xcopy /E /I /Y "Gui\bin\x64\Release\Data" "%PACKAGE_DIR%\Data"
+copy /Y "README.md" "%PACKAGE_DIR%\"
 
 echo.
 echo Step6. Create Zip
