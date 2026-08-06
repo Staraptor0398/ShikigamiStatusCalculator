@@ -87,7 +87,7 @@ bool ShikigamiRepository::existsSameShikigamiExceptSelf(const std::vector<Shikig
 			continue;
 		}
 
-		if (isSameShikigami(shikigami, oldData)) {
+		if (isSameShikigami(shikigami, newData)) {
 			return true;
 		}
 	}
