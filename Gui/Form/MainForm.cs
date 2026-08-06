@@ -941,6 +941,7 @@ namespace Gui.Form
 			setComboItems(
 				cmbRarityFilter,
 				DisplayText.RarityAll,
+				DisplayText.RarityUR,
 				DisplayText.RaritySP,
 				DisplayText.RaritySSR,
 				DisplayText.RaritySR);

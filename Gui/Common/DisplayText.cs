@@ -19,6 +19,7 @@ namespace Gui.Common
 		public const string None = "該当なし";
 
 		public const string RarityAll = "すべて";
+		public const string RarityUR = "UR";
 		public const string RaritySP = "SP";
 		public const string RaritySSR = "SSR";
 		public const string RaritySR = "SR";

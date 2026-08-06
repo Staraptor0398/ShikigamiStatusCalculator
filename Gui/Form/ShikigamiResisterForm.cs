@@ -66,6 +66,7 @@ namespace Gui.Form
 		{
 			cmbRarity.Items.Clear();
 
+			cmbRarity.Items.Add(DisplayText.RarityUR);
 			cmbRarity.Items.Add(DisplayText.RaritySP);
 			cmbRarity.Items.Add(DisplayText.RaritySSR);
 			cmbRarity.Items.Add(DisplayText.RaritySR);
@@ -209,30 +210,37 @@ namespace Gui.Form
 			{
 				return false;
 			}
+
 			if (!tryGetDouble(txtHP, DisplayText.HP, out double hp))
 			{
 				return false;
 			}
+
 			if (!tryGetDouble(txtDeffense, DisplayText.Defense, out double deffense))
 			{
 				return false;
 			}
+
 			if (!tryGetDouble(txtSpeed, DisplayText.Speed, out double speed))
 			{
 				return false;
 			}
+
 			if (!tryGetDouble(txtCritRate, DisplayText.CriticalRate, out double critRate))
 			{
 				return false;
 			}
+
 			if (!tryGetDouble(txtCritDamage, DisplayText.CriticalDamage, out double critDamage))
 			{
 				return false;
 			}
+
 			if (!tryGetDouble(txtEffectHit, DisplayText.EffectHit, out double effectHit))
 			{
 				return false;
 			}
+
 			if (!tryGetDouble(txtEffectResist, DisplayText.EffectResist, out double effectResist))
 			{
 				return false;
@@ -286,6 +294,7 @@ namespace Gui.Form
 
 			focusControl.Focus();
 		}
+
 		/****************************************************************************************************
 		  重複チェック
 		****************************************************************************************************/
