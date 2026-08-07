@@ -20,4 +20,10 @@ public:
 
 	// 式神データを更新する
 	static ShikigamiDataOutcomeDto UpdateShikigami(String^ filePath, ShikigamiDto^ oldDto, ShikigamiDto^ newDto);
+
+	// 復旧候補となる式神一覧を取得する
+	static ShikigamiDataOutcomeDto GetRecoveryCandinateShikigamiList(String^ currentFilePath, String^ sourceFilePath, [OutAttribute] List<ShikigamiDto^>^% outRecoveryCandinateShikigamiList);
+
+	// 選択された式神を復旧する
+	static ShikigamiDataOutcomeDto RecoveryShikigami(String^ currentFilePath, List<ShikigamiDto^>^ selectedShikigamiList);
 };

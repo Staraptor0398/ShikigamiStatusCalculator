@@ -49,3 +49,43 @@ ShikigamiDataOutcomeDto ShikigamiGateway::UpdateShikigami(String^ filePath, Shik
 
 	return ShikigamiDataOutcomeMapper::toDto(outcome);
 }
+
+ShikigamiDataOutcomeDto ShikigamiGateway::GetRecoveryCandinateShikigamiList(String^ currentFilePath, String^ sourceFilePath, List<ShikigamiDto^>^% outRecoveryCandinateShikigamiList)
+{
+
+	outRecoveryCandinateShikigamiList = gcnew List<ShikigamiDto^>();
+
+	std::string nativeCurrentPath = StringConverter::toStdString(currentFilePath);
+
+	std::string nativeSourcePath = StringConverter::toStdString(sourceFilePath);
+
+	std::vector<Shikigami> nativeRecoveryCandinateList;
+
+	ShikigamiDataOutcome outcome = ShikigamiService::getRecoveryCandinateShikigamiList(nativeCurrentPath, nativeSourcePath, nativeRecoveryCandinateList);
+
+	if (outcome != ShikigamiDataOutcome::SUCCESS) {
+		return ShikigamiDataOutcomeMapper::toDto(outcome);
+	}
+
+	for (auto& shikigami : nativeRecoveryCandinateList) {
+		outRecoveryCandinateShikigamiList->Add(ShikigamiConverter::toDto(shikigami));
+	}
+
+	return ShikigamiDataOutcomeDto::SUCCESS;
+}
+
+ShikigamiDataOutcomeDto ShikigamiGateway::RecoveryShikigami(String^ currentFilePath, List<ShikigamiDto^>^ selectedShikigamiList)
+{
+	std::string nativeCurrentPath = StringConverter::toStdString(currentFilePath);
+
+	std::vector<Shikigami> nativeList;
+
+	for each (ShikigamiDto ^ shikigami in selectedShikigamiList)
+	{
+		nativeList.push_back(ShikigamiConverter::toNative(shikigami));
+	}
+
+	ShikigamiDataOutcome outcome = ShikigamiService::recoverShikigamiList(nativeCurrentPath, nativeList);
+
+	return ShikigamiDataOutcomeMapper::toDto(outcome);
+}
