@@ -135,6 +135,9 @@
     <ClInclude Include="Service\ComparisonGateway.h">
       <Filter>ヘッダー ファイル\Service</Filter>
     </ClInclude>
+    <ClInclude Include="Converter\Model\ShikigamiListConverter.h">
+      <Filter>ヘッダー ファイル\Converter\Model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -178,6 +181,9 @@
     </ClCompile>
     <ClCompile Include="Service\ComparisonGateway.cpp">
       <Filter>ソース ファイル\Service</Filter>
+    </ClCompile>
+    <ClCompile Include="Converter\Model\ShikigamiListConverter.cpp">
+      <Filter>ソース ファイル\Converter\Model</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

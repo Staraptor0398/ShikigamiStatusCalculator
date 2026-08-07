@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "../../Core/Service/ShikigamiService.h"
 #include "../Converter/Model/ShikigamiConverter.h"
+#include "../Converter/Model/ShikigamiListConverter.h"
 #include "../Converter/Model/StringConverter.h"
 #include "../Mapper/Outcome/ShikigamiDataOutcomeMapper.h"
 #include "ShikigamiGateway.h"
@@ -19,9 +20,7 @@ ShikigamiDataOutcomeDto ShikigamiGateway::GetShikigamiList(String^ filePath, Lis
 		return ShikigamiDataOutcomeMapper::toDto(outcome);
 	}
 
-	for (auto& shikigami : nativeList) {
-		outShikigamiList->Add(ShikigamiConverter::toDto(shikigami));
-	}
+	outShikigamiList = ShikigamiListConverter::toDto(nativeList);
 
 	return ShikigamiDataOutcomeDto::SUCCESS;
 }
@@ -67,9 +66,7 @@ ShikigamiDataOutcomeDto ShikigamiGateway::GetRecoveryCandinateShikigamiList(Stri
 		return ShikigamiDataOutcomeMapper::toDto(outcome);
 	}
 
-	for (auto& shikigami : nativeRecoveryCandinateList) {
-		outRecoveryCandinateShikigamiList->Add(ShikigamiConverter::toDto(shikigami));
-	}
+	outRecoveryCandinateShikigamiList = ShikigamiListConverter::toDto(nativeRecoveryCandinateList);
 
 	return ShikigamiDataOutcomeDto::SUCCESS;
 }
@@ -78,12 +75,7 @@ ShikigamiDataOutcomeDto ShikigamiGateway::RecoveryShikigami(String^ currentFileP
 {
 	std::string nativeCurrentPath = StringConverter::toStdString(currentFilePath);
 
-	std::vector<Shikigami> nativeList;
-
-	for each (ShikigamiDto ^ shikigami in selectedShikigamiList)
-	{
-		nativeList.push_back(ShikigamiConverter::toNative(shikigami));
-	}
+	std::vector<Shikigami> nativeList = ShikigamiListConverter::toNative(selectedShikigamiList);
 
 	ShikigamiDataOutcome outcome = ShikigamiService::recoverShikigamiList(nativeCurrentPath, nativeList);
 

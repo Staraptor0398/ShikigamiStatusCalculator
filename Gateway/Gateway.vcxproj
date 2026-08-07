@@ -163,6 +163,7 @@
     <ClInclude Include="Converter\Model\MitamaConverter.h" />
     <ClInclude Include="Converter\Model\MitamaSetConverter.h" />
     <ClInclude Include="Converter\Model\ShikigamiConverter.h" />
+    <ClInclude Include="Converter\Model\ShikigamiListConverter.h" />
     <ClInclude Include="Converter\Model\StatTypeConverter.h" />
     <ClInclude Include="Converter\Model\StatusConverter.h" />
     <ClInclude Include="Converter\Model\StatValueConverter.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="Converter\Model\MitamaConverter.cpp" />
     <ClCompile Include="Converter\Model\MitamaSetConverter.cpp" />
     <ClCompile Include="Converter\Model\ShikigamiConverter.cpp" />
+    <ClCompile Include="Converter\Model\ShikigamiListConverter.cpp" />
     <ClCompile Include="Converter\Model\StatTypeConverter.cpp" />
     <ClCompile Include="Converter\Model\StatusConverter.cpp" />
     <ClCompile Include="Converter\Model\StatValueConverter.cpp" />
