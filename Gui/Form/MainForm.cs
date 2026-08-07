@@ -1164,7 +1164,7 @@ namespace Gui.Form
 		{
 			using (var dialog = new SaveDataSaveDialog(cmbShikigami.Text, getSaveDataSaveLevel()))
 			{
-				if (dialog.ShowDialog() != DialogResult.OK)
+				if (dialog.ShowDialog(this) != DialogResult.OK)
 				{
 					return;
 				}
@@ -1350,7 +1350,7 @@ namespace Gui.Form
 		{
 			using (var dialog = new SaveDataLoadDialog())
 			{
-				if (dialog.ShowDialog() != DialogResult.OK)
+				if (dialog.ShowDialog(this) != DialogResult.OK)
 				{
 					return;
 				}
@@ -1834,6 +1834,77 @@ namespace Gui.Form
 			if (!string.IsNullOrEmpty(selectedShikigamiName))
 			{
 				trySelectShikigami(selectedShikigamiName);
+			}
+		}
+
+		/****************************************************************************************************
+		  式神復旧
+		****************************************************************************************************/
+		private void btnRecoveryShikigami_Click(object sender, EventArgs e)
+		{
+			using (var dialog = new OpenFileDialog())
+			{
+				dialog.Title = "復旧元の式神データを選択してください。";
+				dialog.Filter = $"式神データ (*.csv)|*.csv";
+				dialog.InitialDirectory = AppPath.DataBackupDirectoryPath;
+
+				if (dialog.ShowDialog(this) != DialogResult.OK)
+				{
+					return;
+				}
+
+				List<ShikigamiDto> recoveryShikigamiList = new List<ShikigamiDto>();
+				ShikigamiDataOutcomeDto outcome = ShikigamiGateway.GetRecoveryCandinateShikigamiList(AppPath.ShikigamiDataCsvPath, dialog.FileName, out recoveryShikigamiList);
+
+				if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧候補読み込み"))
+				{
+					return;
+				}
+
+				if (recoveryShikigamiList.Count == 0)
+				{
+					String message = "復旧できる式神はありませんでした。";
+					MessageBox.Show(
+						message,
+						"式神復旧候補読み込み",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Information);
+
+					Logger.Info(message);
+
+					return;
+				}
+
+				using (var shikigamiRecoveryDialog = new ShikigamiRecoveryDialog(recoveryShikigamiList))
+				{
+					shikigamiRecoveryDialog.ShowDialog(this);
+
+					if (shikigamiRecoveryDialog.DialogResult != DialogResult.OK)
+					{
+						return;
+					}
+
+					ShikigamiDataFileManager.CreateBackup();
+
+					outcome = ShikigamiGateway.RecoveryShikigami(AppPath.ShikigamiDataCsvPath, shikigamiRecoveryDialog._selectedRecoveryCandinate);
+
+					if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧"))
+					{
+						return;
+					}
+
+					String message = "式神の復旧に成功しました。";
+					MessageBox.Show(
+						message,
+						"式神復旧",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Information);
+
+					Logger.Info(message);
+
+					initializeShikigamiComboBox();
+					markCalculationResultDirty();
+				}
 			}
 		}
 	}

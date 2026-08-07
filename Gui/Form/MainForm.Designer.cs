@@ -127,6 +127,7 @@ namespace Gui.Form
 			this.btnClearShikigami = new System.Windows.Forms.Button();
 			this.cmbRarityFilter = new System.Windows.Forms.ComboBox();
 			this.label11 = new System.Windows.Forms.Label();
+			this.btnRecoveryShikigami = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// lblShikigami
@@ -916,10 +917,10 @@ namespace Gui.Form
 			// 
 			// btnReLoad
 			// 
-			this.btnReLoad.Location = new System.Drawing.Point(32, 53);
+			this.btnReLoad.Location = new System.Drawing.Point(31, 53);
 			this.btnReLoad.Margin = new System.Windows.Forms.Padding(2);
 			this.btnReLoad.Name = "btnReLoad";
-			this.btnReLoad.Size = new System.Drawing.Size(91, 25);
+			this.btnReLoad.Size = new System.Drawing.Size(92, 25);
 			this.btnReLoad.TabIndex = 87;
 			this.btnReLoad.Text = "更新";
 			this.btnReLoad.UseVisualStyleBackColor = true;
@@ -959,7 +960,7 @@ namespace Gui.Form
 			// 
 			// btnEditShikigami
 			// 
-			this.btnEditShikigami.Location = new System.Drawing.Point(226, 53);
+			this.btnEditShikigami.Location = new System.Drawing.Point(227, 53);
 			this.btnEditShikigami.Name = "btnEditShikigami";
 			this.btnEditShikigami.Size = new System.Drawing.Size(91, 25);
 			this.btnEditShikigami.TabIndex = 91;
@@ -980,7 +981,7 @@ namespace Gui.Form
 			// 
 			// btnClearShikigami
 			// 
-			this.btnClearShikigami.Location = new System.Drawing.Point(321, 53);
+			this.btnClearShikigami.Location = new System.Drawing.Point(416, 53);
 			this.btnClearShikigami.Name = "btnClearShikigami";
 			this.btnClearShikigami.Size = new System.Drawing.Size(91, 25);
 			this.btnClearShikigami.TabIndex = 93;
@@ -1008,11 +1009,22 @@ namespace Gui.Form
 			this.label11.TabIndex = 95;
 			this.label11.Text = "レア";
 			// 
+			// btnRecoveryShikigami
+			// 
+			this.btnRecoveryShikigami.Location = new System.Drawing.Point(321, 53);
+			this.btnRecoveryShikigami.Name = "btnRecoveryShikigami";
+			this.btnRecoveryShikigami.Size = new System.Drawing.Size(91, 25);
+			this.btnRecoveryShikigami.TabIndex = 96;
+			this.btnRecoveryShikigami.Text = "式神復旧";
+			this.btnRecoveryShikigami.UseVisualStyleBackColor = true;
+			this.btnRecoveryShikigami.Click += new System.EventHandler(this.btnRecoveryShikigami_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1066, 352);
+			this.Controls.Add(this.btnRecoveryShikigami);
 			this.Controls.Add(this.label11);
 			this.Controls.Add(this.cmbRarityFilter);
 			this.Controls.Add(this.btnClearShikigami);
@@ -1217,6 +1229,7 @@ namespace Gui.Form
 		private Button btnClearShikigami;
 		private ComboBox cmbRarityFilter;
 		private Label label11;
+		private Button btnRecoveryShikigami;
 	}
 }
 

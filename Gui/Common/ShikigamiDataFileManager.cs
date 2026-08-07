@@ -56,6 +56,8 @@ namespace Gui.Common
 			File.Move(AppPath.ShikigamiDataCsvPath, brokenFilePath);
 
 			Logger.Info($"Operation=式神データ退避 Message=破損した式神データCSVを退避しました。 Path={brokenFilePath}");
+
+			deleteOldBrokens();
 		}
 
 		public static void CreateBackup()
