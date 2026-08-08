@@ -66,8 +66,8 @@ Shikigami ShikigamiCsvConverter::toShikigami(const std::vector<std::string>& csv
 {
 	Shikigami shikigami;
 
-	if (csvLineColumns.size() < SHIKIGAMI_CSV_COLUMNCOUNT) {
-		return shikigami;
+	if (csvLineColumns.size() != SHIKIGAMI_CSV_COLUMNCOUNT) {
+		throw std::invalid_argument("Invalid shikigami CSV culumn count.");
 	}
 
 	shikigami.Rarity = csvLineColumns[RARITY_INDEX];

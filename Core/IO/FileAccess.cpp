@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "FileAccess.h"
 
-#include <fstream>
 #include "../Converter/Format/ShikigamiCsvConverter.h"
+#include <fstream>
 
 namespace {
 	const std::string SHIKIGAMI_CSV_HEADER = "レア度,式神名,攻撃力,HP,防御力,素早さ,会心率,会心DMG,効果命中,効果抵抗";
@@ -36,7 +36,21 @@ FileAccessOutcome FileAccess::loadShikigami(const std::string& filePath, std::ve
 			continue;
 		}
 
-		outShikigamis.push_back(ShikigamiCsvConverter::toShikigami(line));
+		try {
+			outShikigamis.push_back(ShikigamiCsvConverter::toShikigami(line));
+		}
+		catch (const std::invalid_argument&) {
+			outShikigamis.clear();
+			return FileAccessOutcome::INVALID_FORMAT;
+		}
+		catch (const std::out_of_range&) {
+			outShikigamis.clear();
+			return FileAccessOutcome::INVALID_FORMAT;
+		}
+		catch (...) {
+			outShikigamis.clear();
+			return FileAccessOutcome::UNKNOWN_ERROR;
+		}
 	}
 
 	if (file.bad()) {
