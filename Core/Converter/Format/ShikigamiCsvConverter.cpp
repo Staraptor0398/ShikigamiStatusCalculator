@@ -9,12 +9,12 @@ namespace {
 		NAME_INDEX,
 		ATTACK_INDEX,
 		HP_INDEX,
-		DEFFENSE_INDEX,
+		DEFENSE_INDEX,
 		SPEED_INDEX,
 		CRIT_RATE_INDEX,
 		CRIT_DAMAGE_INDEX,
 		EFFECT_HIT_INDEX,
-		EFFECT_RESITST_INDEX,
+		EFFECT_RESIST_INDEX,
 
 		SHIKIGAMI_CSV_COLUMNCOUNT
 	};
@@ -74,12 +74,12 @@ Shikigami ShikigamiCsvConverter::toShikigami(const std::vector<std::string>& csv
 	shikigami.Name = csvLineColumns[NAME_INDEX];
 	shikigami.Attack = std::stod(csvLineColumns[ATTACK_INDEX]);
 	shikigami.HP = std::stod(csvLineColumns[HP_INDEX]);
-	shikigami.Defense = std::stod(csvLineColumns[DEFFENSE_INDEX]);
+	shikigami.Defense = std::stod(csvLineColumns[DEFENSE_INDEX]);
 	shikigami.Speed = std::stod(csvLineColumns[SPEED_INDEX]);
 	shikigami.CriticalRate = std::stod(csvLineColumns[CRIT_RATE_INDEX]);
 	shikigami.CriticalDamage = std::stod(csvLineColumns[CRIT_DAMAGE_INDEX]);
 	shikigami.EffectHit = std::stod(csvLineColumns[EFFECT_HIT_INDEX]);
-	shikigami.EffectResist = std::stod(csvLineColumns[EFFECT_RESITST_INDEX]);
+	shikigami.EffectResist = std::stod(csvLineColumns[EFFECT_RESIST_INDEX]);
 
 	return shikigami;
 }
