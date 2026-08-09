@@ -973,7 +973,7 @@ namespace Gui.Form
 				{
 					if (dialog._selectedSaveType == SaveDataSaveType.Build)
 					{
-						var data = createCurrentBuildSaveData();
+						var data = BuildSaveDataFactory.Create(cmbShikigami, getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
 						SaveDataAccess.SaveBuild(dialog._filePath, data);
 					}
 					else if (dialog._selectedSaveType == SaveDataSaveType.MitamaSet)
@@ -994,15 +994,6 @@ namespace Gui.Form
 					setSaveDataOperationButtonsEnabled(true);
 				}
 			}
-		}
-
-		private BuildSaveData createCurrentBuildSaveData()
-		{
-			return new BuildSaveData
-			{
-				ShikigamiName = cmbShikigami.Text,
-				MitamaSet = MitamaSetSaveDataFactory.Create(getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes()),
-			};
 		}
 
 		private SaveDataSaveLevel getSaveDataSaveLevel()
