@@ -1,6 +1,6 @@
 #pragma once
 
-// 式紙データ捜査結果Dto列挙体
+// 式神データ操作結果Dto列挙体
 //
 // Gui ⇔ Gateway 間のデータ受け渡しで使用する。
 // Core の ShikigamiDataOutcome と対応するDto定義。
