@@ -5,13 +5,11 @@
 
 StatValue StatValueConverter::toNative(StatValueDto^ dto)
 {
-	StatValue native;
-
 	if (dto == nullptr) {
-		native.Type = StatType::None;
-		native.Value = 0.0;
-		return native;
+		throw gcnew System::ArgumentNullException("dto", "StatValueDto must not be null.");
 	}
+
+	StatValue native;
 
 	native.Type = StatTypeConverter::toNative(dto->Type);
 	native.Value = dto->Value;

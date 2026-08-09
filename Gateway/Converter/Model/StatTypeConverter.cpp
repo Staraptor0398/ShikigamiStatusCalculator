@@ -3,44 +3,64 @@
 
 StatType StatTypeConverter::toNative(StatTypeDto dto)
 {
-	StatType native = StatType::None;
-
 	switch (dto) {
-		case StatTypeDto::Attack:						native = StatType::Attack;						break;
-		case StatTypeDto::Hp:							native = StatType::Hp;							break;
-		case StatTypeDto::Defense:						native = StatType::Defense;						break;
-		case StatTypeDto::Speed:						native = StatType::Speed;						break;
-		case StatTypeDto::CriticalRate:					native = StatType::CriticalRate;				break;
-		case StatTypeDto::CriticalDamage:				native = StatType::CriticalDamage;				break;
-		case StatTypeDto::EffectHit:					native = StatType::EffectHit;					break;
-		case StatTypeDto::EffectResist:					native = StatType::EffectResist;				break;
-		case StatTypeDto::AdditionalAttackRate:			native = StatType::AdditionalAttackRate;		break;
-		case StatTypeDto::AdditionalHpRate:				native = StatType::AdditionalHpRate;			break;
-		case StatTypeDto::AdditionalDefenseRate:		native = StatType::AdditionalDefenseRate;		break;
-		default:																						break;
+		case StatTypeDto::None:
+			return StatType::None;
+		case StatTypeDto::Attack:
+			return StatType::Attack;
+		case StatTypeDto::Hp:
+			return StatType::Hp;
+		case StatTypeDto::Defense:
+			return StatType::Defense;
+		case StatTypeDto::Speed:
+			return StatType::Speed;
+		case StatTypeDto::CriticalRate:
+			return StatType::CriticalRate;
+		case StatTypeDto::CriticalDamage:
+			return StatType::CriticalDamage;
+		case StatTypeDto::EffectHit:
+			return StatType::EffectHit;
+		case StatTypeDto::EffectResist:
+			return StatType::EffectResist;
+		case StatTypeDto::AdditionalAttackRate:
+			return StatType::AdditionalAttackRate;
+		case StatTypeDto::AdditionalHpRate:
+			return StatType::AdditionalHpRate;
+		case StatTypeDto::AdditionalDefenseRate:
+			return StatType::AdditionalDefenseRate;
+		default:
+			throw gcnew System::ArgumentOutOfRangeException("dto", "Invalid StatTypeDto value");
 	}
-
-	return native;
 }
 
 StatTypeDto StatTypeConverter::toDto(StatType native)
 {
-	StatTypeDto dto = StatTypeDto::None;
-
 	switch (native) {
-		case StatType::Attack:							dto = StatTypeDto::Attack;						break;
-		case StatType::Hp:								dto = StatTypeDto::Hp;							break;
-		case StatType::Defense:							dto = StatTypeDto::Defense;						break;
-		case StatType::Speed:							dto = StatTypeDto::Speed;						break;
-		case StatType::CriticalRate:					dto = StatTypeDto::CriticalRate;				break;
-		case StatType::CriticalDamage:					dto = StatTypeDto::CriticalDamage;				break;
-		case StatType::EffectHit:						dto = StatTypeDto::EffectHit;					break;
-		case StatType::EffectResist:					dto = StatTypeDto::EffectResist;				break;
-		case StatType::AdditionalAttackRate:			dto = StatTypeDto::AdditionalAttackRate;		break;
-		case StatType::AdditionalHpRate:				dto = StatTypeDto::AdditionalHpRate;			break;
-		case StatType::AdditionalDefenseRate:			dto = StatTypeDto::AdditionalDefenseRate;		break;
-		default:																						break;
+		case StatType::None:
+			return StatTypeDto::None;
+		case StatType::Attack:
+			return StatTypeDto::Attack;
+		case StatType::Hp:
+			return StatTypeDto::Hp;
+		case StatType::Defense:
+			return StatTypeDto::Defense;
+		case StatType::Speed:
+			return StatTypeDto::Speed;
+		case StatType::CriticalRate:
+			return StatTypeDto::CriticalRate;
+		case StatType::CriticalDamage:
+			return StatTypeDto::CriticalDamage;
+		case StatType::EffectHit:
+			return StatTypeDto::EffectHit;
+		case StatType::EffectResist:
+			return StatTypeDto::EffectResist;
+		case StatType::AdditionalAttackRate:
+			return StatTypeDto::AdditionalAttackRate;
+		case StatType::AdditionalHpRate:
+			return StatTypeDto::AdditionalHpRate;
+		case StatType::AdditionalDefenseRate:
+			return StatTypeDto::AdditionalDefenseRate;
+		default:
+			throw gcnew System::InvalidOperationException("Invalid StatType value.");
 	}
-
-	return dto;
 }

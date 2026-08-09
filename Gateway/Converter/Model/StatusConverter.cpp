@@ -3,11 +3,11 @@
 
 Status StatusConverter::toNative(StatusDto^ dto)
 {
-	Status native;
-
 	if (dto == nullptr) {
-		return native;
+		throw gcnew System::ArgumentNullException("dto", "StatusDto must not be null.");
 	}
+
+	Status native;
 
 	native.Attack = dto->Attack;
 	native.Hp = dto->HP;
@@ -29,7 +29,7 @@ StatusDto^ StatusConverter::toDto(const Status& native)
 	StatusDto^ dto = gcnew StatusDto();
 
 	dto->Attack = native.Attack;
-	dto->HP = native.Hp;;
+	dto->HP = native.Hp;
 	dto->Defense = native.Defense;
 	dto->Speed = native.Speed;
 	dto->CritRate = native.CriticalRate;

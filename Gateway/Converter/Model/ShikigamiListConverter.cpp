@@ -5,6 +5,10 @@
 
 std::vector<Shikigami> ShikigamiListConverter::toNative(List<ShikigamiDto^>^ dto)
 {
+	if (dto == nullptr) {
+		throw gcnew System::ArgumentNullException("dto", "ShikigamiDto list must not be null.");
+	}
+
 	std::vector<Shikigami> native;
 
 	for each (ShikigamiDto ^ shikigami in dto)

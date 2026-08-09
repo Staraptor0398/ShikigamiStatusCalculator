@@ -5,11 +5,11 @@
 
 Shikigami ShikigamiConverter::toNative(ShikigamiDto^ dto)
 {
-	Shikigami native;
-
 	if (dto == nullptr) {
-		return native;
+		throw gcnew System::ArgumentNullException("dto", "ShikigamiDto must not be null.");
 	}
+
+	Shikigami native;
 
 	native.Rarity = StringConverter::toUtf8String(dto->Rarity);
 	native.Name = StringConverter::toUtf8String(dto->Name);

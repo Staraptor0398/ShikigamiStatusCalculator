@@ -11,6 +11,7 @@ public enum class ShikigamiDataOutcomeDto
 	FILE_READ_FAILED,		// ファイル読み込み失敗
 	FILE_WRITE_FAILED,		// ファイル書き込み失敗
 	INVALID_FORMAT,			// CSV形式異常
+	INVALID_ARGUMENT,		// 引数不正
 	NOT_FOUND,				// 対象式神データが存在しない
 	DUPLICATE,				// 同一式神データが既に存在する
 	UNKNOWN_ERROR			// 不明なエラー

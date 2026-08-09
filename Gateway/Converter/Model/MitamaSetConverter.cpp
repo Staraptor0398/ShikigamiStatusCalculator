@@ -8,30 +8,38 @@ using namespace System::Collections::Generic;
 
 MitamaSet MitamaSetConverter::toNative(MitamaSetDto^ dto)
 {
-	MitamaSet native;
-
 	if (dto == nullptr) {
-		return native;
+		throw gcnew System::ArgumentNullException("dto", "MitamaSetDto must not be null.");
 	}
+
+	MitamaSet native;
 
 	auto mitamas = dto->Mitamas;
 	auto setEffects = dto->SetEffects;
 	auto uniqueEffects = dto->UniqueEffects;
 
 	for (int i = 0; i < 6; i++) {
-		if (dto->Mitamas != nullptr && i < dto->Mitamas->Count) {
+		if (mitamas != nullptr && i < mitamas->Count) {
 			native.Mitamas[i] = MitamaConverter::toNative(mitamas->default[i]);
 		}
 	}
 
 	for (int i = 0; i < 3; i++) {
-		if (dto->SetEffects != nullptr && i < dto->SetEffects->Count) {
+		if (setEffects != nullptr && i < setEffects->Count) {
+			if (setEffects->default[i] == nullptr) {
+				throw gcnew System::ArgumentNullException("dto", "SetEffectDto must not be null.");
+			}
+
 			native.SetEffects[i].Stat = StatValueConverter::toNative(setEffects->default[i]->Stat);
 		}
 	}
 
 	for (int i = 0; i < 6; i++) {
-		if (dto->UniqueEffects != nullptr && i < dto->UniqueEffects->Count) {
+		if (uniqueEffects != nullptr && i < uniqueEffects->Count) {
+			if (uniqueEffects->default[i] == nullptr) {
+				throw gcnew System::ArgumentNullException("dto", "SetEffectDto must not be null.");
+			}
+
 			native.UniqueEffects[i].Stat = StatValueConverter::toNative(uniqueEffects->default[i]->Stat);
 		}
 	}

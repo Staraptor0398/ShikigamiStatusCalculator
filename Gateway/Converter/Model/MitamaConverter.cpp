@@ -7,11 +7,11 @@ using namespace System::Collections::Generic;
 
 Mitama MitamaConverter::toNative(MitamaDto^ dto)
 {
-	Mitama native;
-
 	if (dto == nullptr) {
-		return native;
+		throw gcnew System::ArgumentNullException("dto", "MitamaDto must not be null.");
 	}
+
+	Mitama native;
 
 	native.MainStat = StatValueConverter::toNative(dto->MainStat);
 
