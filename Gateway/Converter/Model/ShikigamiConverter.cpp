@@ -29,7 +29,7 @@ ShikigamiDto^ ShikigamiConverter::toDto(Shikigami native)
 {
 	ShikigamiDto^ dto = gcnew ShikigamiDto();
 
-	dto->Rarity = StringConverter::toManagedString(native.Rarity);
+	dto->Rarity = StringConverter::toManagedString(native.Rarity.toString());
 	dto->Name = StringConverter::toManagedString(native.Name);
 	dto->Attack = native.Attack;
 	dto->HP = native.HP;
