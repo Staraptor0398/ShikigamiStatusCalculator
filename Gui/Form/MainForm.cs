@@ -2,6 +2,7 @@ using Gui.Common;
 using Gui.Converter;
 using Gui.Dialog;
 using Gui.Factory;
+using Gui.Form.Applicator;
 using Gui.Form.Control;
 using Gui.IO;
 using Gui.SaveData;
@@ -1041,7 +1042,7 @@ namespace Gui.Form
 					else if (dialog._selectedLoadType == SaveDataLoadType.MitamaSet)
 					{
 						var data = SaveDataAccess.LoadMitamaSet(dialog._filePath);
-						applyMitamaSetSaveDataToUI(data);
+						MitamaSetSaveDataApplicator.Apply(data, getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
 					}
 				}
 				finally
@@ -1060,19 +1061,7 @@ namespace Gui.Form
 			}
 
 			applyShikigami(data.ShikigamiName);
-			applyMitamaSetSaveDataToUI(data.MitamaSet);
-		}
-
-		private void applyMitamaSetSaveDataToUI(MitamaSetSaveData data)
-		{
-			if (data == null)
-			{
-				return;
-			}
-
-			applyMitama(data.Mitamas);
-			applySetEffect(data.SetEffects);
-			applyUniqueEffect(data.UniqueEffects);
+			MitamaSetSaveDataApplicator.Apply(data.MitamaSet, getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
 		}
 
 		private void applyShikigami(string name)
@@ -1116,88 +1105,6 @@ namespace Gui.Form
 			}
 
 			return false;
-		}
-
-		private void applyMitama(List<MitamaSaveData> list)
-		{
-			if (list == null)
-			{
-				return;
-			}
-
-			MitamaSlotInputControl[] slots = getMitamaSlotInputControls();
-
-			for (int i = 0; i < list.Count && i < slots.Length; i++)
-			{
-				applySingleMitama(list[i], slots[i]);
-			}
-		}
-
-		private void applySingleMitama(MitamaSaveData data, MitamaSlotInputControl slot)
-		{
-			if (data == null || slot == null)
-			{
-				return;
-			}
-
-			slot.MainStatComboBox.Text = data.MainStat.Type;
-			slot.MainValueTextBox.Text = data.MainStat.Value.ToString();
-
-			for (int i = 0; i < data.SubStats.Count && i < slot.SubStats.Length; i++)
-			{
-				applyEffect(data.SubStats[i], slot.SubStats[i].TypeComboBox, slot.SubStats[i].ValueTextBox);
-			}
-		}
-
-		private void applySetEffect(List<EffectSaveData> list)
-		{
-			if (list == null)
-			{
-				return;
-			}
-
-			ComboBox[] comboBoxes = getSetEffectComboBoxes();
-
-			for (int i = 0; i < list.Count && i < comboBoxes.Length; i++)
-			{
-				applyEffect(list[i], comboBoxes[i]);
-			}
-		}
-
-		private void applyUniqueEffect(List<EffectSaveData> list)
-		{
-			if (list == null)
-			{
-				return;
-			}
-
-			ComboBox[] comboBoxes = getUniqueEffectComboBoxes();
-
-			for (int i = 0; i < list.Count && i < comboBoxes.Length; i++)
-			{
-				applyEffect(list[i], comboBoxes[i]);
-			}
-		}
-
-		private void applyEffect(EffectSaveData data, ComboBox comboBox, TextBox textBox)
-		{
-			if (data == null || comboBox == null || textBox == null)
-			{
-				return;
-			}
-
-			comboBox.SelectedItem = data.Type;
-			textBox.Text = data.Value.ToString();
-		}
-
-		private void applyEffect(EffectSaveData data, ComboBox comboBox)
-		{
-			if (data == null || comboBox == null)
-			{
-				return;
-			}
-
-			comboBox.SelectedItem = data.Type;
 		}
 
 		private void setSaveDataOperationButtonsEnabled(bool enabled)
