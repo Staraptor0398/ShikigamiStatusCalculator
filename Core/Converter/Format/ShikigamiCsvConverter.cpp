@@ -88,7 +88,7 @@ std::vector<std::string> ShikigamiCsvConverter::toCsvLineColumns(const Shikigami
 {
 	std::vector<std::string> csvLineColumns;
 
-	csvLineColumns.push_back(shikigami.Rarity);
+	csvLineColumns.push_back(shikigami.Rarity.toString());
 	csvLineColumns.push_back(shikigami.Name);
 	csvLineColumns.push_back(std::to_string(shikigami.Attack));
 	csvLineColumns.push_back(std::to_string(shikigami.HP));

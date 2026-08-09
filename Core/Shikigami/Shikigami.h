@@ -1,10 +1,12 @@
 #pragma once
 #include <string>
 
+#include "ShikigamiRarity.h"
+
 // 式神構造体
 struct Shikigami
 {
-	std::string Rarity = "";
+	ShikigamiRarity Rarity;
 	std::string Name = "";
 
 	double Attack = 0.0;

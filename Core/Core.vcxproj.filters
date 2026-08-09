@@ -144,6 +144,9 @@
     <ClInclude Include="Service\ShikigamiService.h">
       <Filter>ヘッダー ファイル\Service</Filter>
     </ClInclude>
+    <ClInclude Include="Shikigami\ShikigamiRarity.h">
+      <Filter>ヘッダー ファイル\Shikigami</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -178,6 +181,9 @@
     </ClCompile>
     <ClCompile Include="Service\ShikigamiService.cpp">
       <Filter>ソース ファイル\Service</Filter>
+    </ClCompile>
+    <ClCompile Include="Shikigami\ShikigamiRarity.cpp">
+      <Filter>ソース ファイル\Shikigami</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
