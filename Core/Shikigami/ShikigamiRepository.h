@@ -17,6 +17,9 @@ private:
 	static bool existsSameShikigami(const std::vector<Shikigami>& shikigamis, const Shikigami& target);
 	static bool existsSameShikigamiExceptSelf(const std::vector<Shikigami>& shikigamis, const Shikigami& oldData, const Shikigami& newData);
 	static int findInsertIndex(const std::vector<Shikigami>& shikigamis, const Shikigami& newData);
+	static int findMergeInsertIndex(const std::vector<Shikigami>& mergedShikigamis, const std::vector<Shikigami>& sourceShikigamis, const Shikigami& target);
 	static std::vector<Shikigami> extractUnknownShikigamiList(const std::vector<Shikigami>& currentShikigamis, const std::vector<Shikigami>& sourceShikigamis);
-	static std::vector<Shikigami> mergeShikigamiList(const std::vector<Shikigami>& currentShikigamis, const std::vector<Shikigami>& sourceShikigamis);
+	static std::vector<Shikigami> mergeShikigamiList(const std::vector<Shikigami>& currentShikigamis, const std::vector<Shikigami>& sourceShikigamis, const std::vector<Shikigami>& recoveryTargetShikigamis);
+private:
+	static std::string mRecoverySourceFilePath;
 };
