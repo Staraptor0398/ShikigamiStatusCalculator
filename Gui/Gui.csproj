@@ -115,6 +115,7 @@
     <Compile Include="SaveData\MitamaSaveData.cs" />
     <Compile Include="SaveData\MitamaSetSaveData.cs" />
     <Compile Include="SaveData\StatusSaveData.cs" />
+    <Compile Include="Validation\CalculationInputValidator.cs" />
     <Compile Include="Validation\CalculationInputValidationErrorHandler.cs" />
     <Compile Include="Validation\CalculationInputValidationOutcome.cs" />
     <EmbeddedResource Include="Dialog\SaveDataLoadDialog.resx">
