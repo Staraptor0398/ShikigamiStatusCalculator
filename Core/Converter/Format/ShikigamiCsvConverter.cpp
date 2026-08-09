@@ -64,11 +64,11 @@ std::string ShikigamiCsvConverter::joinCsvLineColumns(const std::vector<std::str
 
 Shikigami ShikigamiCsvConverter::toShikigami(const std::vector<std::string>& csvLineColumns)
 {
-	Shikigami shikigami;
-
 	if (csvLineColumns.size() != SHIKIGAMI_CSV_COLUMNCOUNT) {
 		throw std::invalid_argument("Invalid shikigami CSV culumn count.");
 	}
+
+	Shikigami shikigami;
 
 	shikigami.Rarity = csvLineColumns[RARITY_INDEX];
 	shikigami.Name = csvLineColumns[NAME_INDEX];
