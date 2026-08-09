@@ -1617,21 +1617,38 @@ namespace Gui.Form
 					return;
 				}
 
-				CalculationSnapshotSaveData baseSnapshot = SaveDataAccess.LoadSnapshot(dialog._baseSnapshotFilePath);
-				CalculationSnapshotSaveData targetSnapshot = SaveDataAccess.LoadSnapshot(dialog._targetSnapshotFilePath);
-
-				StatusDto baseStatus = createStatusDto(baseSnapshot.FinalStatus);
-				StatusDto targetStatus = createStatusDto(targetSnapshot.FinalStatus);
-
-				if (baseStatus == null || targetStatus == null)
-				{
-					return;
-				}
+				CalculationSnapshotSaveData baseSnapshot;
+				CalculationSnapshotSaveData targetSnapshot;
 
 				StatusComparisonResultDto comparisonResult;
 
 				try
 				{
+
+					baseSnapshot = SaveDataAccess.LoadSnapshot(dialog._baseSnapshotFilePath);
+					targetSnapshot = SaveDataAccess.LoadSnapshot(dialog._targetSnapshotFilePath);
+
+					if (baseSnapshot == null || targetSnapshot == null)
+					{
+						Logger.Error("Operation=計算結果比較 Message=スナップショットデータの読み込み結果がnullでした。");
+
+						MessageBox.Show(
+							"スナップショットデータの読み込みに失敗しました。",
+							"計算結果比較",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Error);
+
+						return;
+					}
+
+					StatusDto baseStatus = createStatusDto(baseSnapshot.FinalStatus);
+					StatusDto targetStatus = createStatusDto(targetSnapshot.FinalStatus);
+
+					if (baseStatus == null || targetStatus == null)
+					{
+						return;
+					}
+
 					comparisonResult = ComparisonGateway.CompareStatus(baseStatus, targetStatus);
 				}
 				catch (Exception ex)
