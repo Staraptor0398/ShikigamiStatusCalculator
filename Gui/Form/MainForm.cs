@@ -978,7 +978,7 @@ namespace Gui.Form
 					}
 					else if (dialog._selectedSaveType == SaveDataSaveType.MitamaSet)
 					{
-						var data = createCurrentMitamaSetSaveData();
+						var data = MitamaSetSaveDataFactory.Create(getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
 						SaveDataAccess.SaveMitamaSet(dialog._filePath, data);
 					}
 					else if (dialog._selectedSaveType == SaveDataSaveType.CalculationSnapshot)
@@ -1001,123 +1001,7 @@ namespace Gui.Form
 			return new BuildSaveData
 			{
 				ShikigamiName = cmbShikigami.Text,
-				MitamaSet = createCurrentMitamaSetSaveData()
-			};
-		}
-
-		private MitamaSetSaveData createCurrentMitamaSetSaveData()
-		{
-			return new MitamaSetSaveData
-			{
-				Mitamas = createMitamaSaveDataList(),
-				SetEffects = createSetEffectSaveData(),
-				UniqueEffects = createUniqueEffectSaveData()
-			};
-		}
-
-		private List<MitamaSaveData> createMitamaSaveDataList()
-		{
-			List<MitamaSaveData> list = new List<MitamaSaveData>();
-
-			MitamaSlotInputControl[] slots = getMitamaSlotInputControls();
-
-			for (int i = 0; i < slots.Length; i++)
-			{
-				list.Add(createMitamaSaveData(i + 1, slots[i]));
-			}
-
-			return list;
-		}
-
-		private MitamaSaveData createMitamaSaveData(int slot, MitamaSlotInputControl input)
-		{
-			if (0 > slot || slot > 6 || input == null)
-			{
-				return null;
-			}
-
-			return new MitamaSaveData
-			{
-				Slot = slot,
-
-				MainStat = new EffectSaveData
-				{
-					Type = input.MainStatComboBox.Text,
-					Value = getMainStatValue(input.MainValueTextBox.Text, slot)
-				},
-
-				SubStats = createSubStatSaveDataList(input.SubStats)
-			};
-		}
-
-		private List<EffectSaveData> createSubStatSaveDataList(SubStatInputControl[] subStats)
-		{
-			if (subStats == null)
-			{
-				return null;
-			}
-
-			List<EffectSaveData> list = new List<EffectSaveData>();
-
-			foreach (SubStatInputControl subStat in subStats)
-			{
-				list.Add(createEffectSaveData(subStat.TypeComboBox, subStat.ValueTextBox));
-			}
-
-			return list;
-		}
-
-		private List<EffectSaveData> createSetEffectSaveData()
-		{
-			List<EffectSaveData> list = new List<EffectSaveData>();
-
-			foreach (ComboBox comboBox in getSetEffectComboBoxes())
-			{
-				list.Add(createEffectSaveData(comboBox));
-			}
-
-			return list;
-		}
-
-		private List<EffectSaveData> createUniqueEffectSaveData()
-		{
-			List<EffectSaveData> list = new List<EffectSaveData>();
-
-			foreach (ComboBox comboBox in getUniqueEffectComboBoxes())
-			{
-				list.Add(createEffectSaveData(comboBox));
-			}
-
-			return list;
-		}
-
-		private EffectSaveData createEffectSaveData(ComboBox cmb, TextBox txt)
-		{
-			if (cmb == null || txt == null)
-			{
-				return null;
-			}
-
-			double.TryParse(txt.Text, out double value);
-
-			return new EffectSaveData
-			{
-				Type = cmb.Text,
-				Value = value
-			};
-		}
-
-		private EffectSaveData createEffectSaveData(ComboBox cmb)
-		{
-			if (cmb == null)
-			{
-				return null;
-			}
-
-			return new EffectSaveData
-			{
-				Type = cmb.Text,
-				Value = 0.0
+				MitamaSet = MitamaSetSaveDataFactory.Create(getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes()),
 			};
 		}
 
@@ -1362,7 +1246,7 @@ namespace Gui.Form
 				SnapshotName = snapshotName,
 				CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
 				ShikigamiName = cmbShikigami.Text,
-				MitamaSet = createCurrentMitamaSetSaveData(),
+				MitamaSet = MitamaSetSaveDataFactory.Create(getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes()),
 				MitamaStatus = createStatusSaveData(_lastCalculationResult.MitamaOnlyStatus),
 				FinalStatus = createStatusSaveData(_lastCalculationResult.FinalStatus)
 			};
