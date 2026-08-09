@@ -41,6 +41,9 @@ namespace Gui.Common
 				case ShikigamiDataOutcomeDto.INVALID_FORMAT:
 					return $"{operationName}に失敗しました。\n\n" +
 							"式神データファイルの形式が正しくありません。";
+				case ShikigamiDataOutcomeDto.INVALID_ARGUMENT:
+					return $"{operationName}に失敗しました。\n\n" +
+							"処理に必要なデータが正しくありません。";
 				case ShikigamiDataOutcomeDto.NOT_FOUND:
 					return $"{operationName}に失敗しました。\n\n" +
 							"対象の式神データが見つかりませんでした。";

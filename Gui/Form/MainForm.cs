@@ -310,7 +310,22 @@ namespace Gui.Form
 			var baseStatus = getSelectedShikigamiStatus();
 			var mitamaSet = createMitamaSetDto();
 
-			_lastCalculationResult = CalculationGateway.Calclutate(baseStatus, mitamaSet);
+			try
+			{
+				_lastCalculationResult = CalculationGateway.Calclutate(baseStatus, mitamaSet);
+			}
+			catch (Exception ex)
+			{
+				Logger.Error($"Operation=ステータス計算 Message={ex}");
+
+				MessageBox.Show(
+					"ステータス計算中に予期しないエラーが発生しました。",
+					"ステータス計算",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error);
+
+				return;
+			}
 
 			updateSaveButtonEnabled();
 
@@ -1613,7 +1628,24 @@ namespace Gui.Form
 					return;
 				}
 
-				StatusComparisonResultDto comparisonResult = ComparisonGateway.CompareStatus(baseStatus, targetStatus);
+				StatusComparisonResultDto comparisonResult;
+
+				try
+				{
+					comparisonResult = ComparisonGateway.CompareStatus(baseStatus, targetStatus);
+				}
+				catch (Exception ex)
+				{
+					Logger.Error($"Operation=計算結果比較 Message={ex}");
+
+					MessageBox.Show(
+						"計算結果比較中に予期しないエラーが発生しました。",
+						"計算結果比較",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error);
+
+					return;
+				}
 
 				string baseSnapshotName = baseSnapshot.SnapshotName;
 				string targetSnapshotName = targetSnapshot.SnapshotName;
