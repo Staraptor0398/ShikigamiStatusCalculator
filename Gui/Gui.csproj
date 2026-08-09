@@ -48,6 +48,7 @@
     <Compile Include="Common\SaveDataFileDefinition.cs" />
     <Compile Include="Common\ShikigamiDataErrorHandler.cs" />
     <Compile Include="Common\ShikigamiDataFileManager.cs" />
+    <Compile Include="Converter\StatusSaveDataConverter.cs" />
     <Compile Include="Dialog\SaveDataLoadDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -75,6 +76,7 @@
       <DependentUpon>SnapshotCompareFileSelectDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Factory\BuildSaveDataFactory.cs" />
+    <Compile Include="Factory\CalculationSnapshotSaveDataFactory.cs" />
     <Compile Include="Factory\MitamaSetFactory.cs" />
     <Compile Include="Factory\MitamaSetSaveDataFactory.cs" />
     <Compile Include="Form\Control\MitamaSlotInputControl.cs" />
@@ -171,6 +173,7 @@
   <ItemGroup>
     <Content Include="Data\AppVersion.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if not exist "$(TargetDir)Data" mkdir "$(TargetDir)Data"

@@ -1,0 +1,29 @@
+using Gui.Converter;
+using Gui.Form.Control;
+using Gui.SaveData;
+using System;
+using System.Windows.Forms;
+
+namespace Gui.Factory
+{
+	public static class CalculationSnapshotSaveDataFactory
+	{
+		public static CalculationSnapshotSaveData Create(ComboBox cmbShikigami, MitamaSlotInputControl[] slots, ComboBox[] setEffectComboBoxes, ComboBox[] uniqueEffectComboBoxes, string snapshotName, CalculationResultDto calculationResult)
+		{
+			if (string.IsNullOrEmpty(snapshotName))
+			{
+				return null;
+			}
+
+			return new CalculationSnapshotSaveData
+			{
+				SnapshotName = snapshotName,
+				CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+				ShikigamiName = cmbShikigami.Text,
+				MitamaSet = MitamaSetSaveDataFactory.Create(slots, setEffectComboBoxes, uniqueEffectComboBoxes),
+				MitamaStatus = StatusSaveDataConverter.ToSaveData(calculationResult.MitamaOnlyStatus),
+				FinalStatus = StatusSaveDataConverter.ToSaveData(calculationResult.FinalStatus)
+			};
+		}
+	}
+}

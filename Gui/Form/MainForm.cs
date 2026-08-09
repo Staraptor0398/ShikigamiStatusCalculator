@@ -1,4 +1,5 @@
 using Gui.Common;
+using Gui.Converter;
 using Gui.Dialog;
 using Gui.Factory;
 using Gui.Form.Control;
@@ -985,7 +986,7 @@ namespace Gui.Form
 					{
 						string snapshotName = createSnapshotNameFromFilePath(dialog._filePath);
 
-						var data = createCurrentCalculationSnapshotSaveData(snapshotName);
+						var data = CalculationSnapshotSaveDataFactory.Create(cmbShikigami, getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes(), snapshotName, _lastCalculationResult);
 						SaveDataAccess.SaveSnapshot(dialog._filePath, data);
 					}
 				}
@@ -1225,44 +1226,6 @@ namespace Gui.Form
 			return Path.GetFileNameWithoutExtension(filePath);
 		}
 
-		private CalculationSnapshotSaveData createCurrentCalculationSnapshotSaveData(string snapshotName)
-		{
-			if (string.IsNullOrEmpty(snapshotName))
-			{
-				return null;
-			}
-
-			return new CalculationSnapshotSaveData
-			{
-				SnapshotName = snapshotName,
-				CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-				ShikigamiName = cmbShikigami.Text,
-				MitamaSet = MitamaSetSaveDataFactory.Create(getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes()),
-				MitamaStatus = createStatusSaveData(_lastCalculationResult.MitamaOnlyStatus),
-				FinalStatus = createStatusSaveData(_lastCalculationResult.FinalStatus)
-			};
-		}
-
-		private StatusSaveData createStatusSaveData(StatusDto status)
-		{
-			if (status == null)
-			{
-				return null;
-			}
-
-			return new StatusSaveData
-			{
-				Attack = status.Attack,
-				HP = status.HP,
-				Deffense = status.Defense,
-				Speed = status.Speed,
-				CritRate = status.CritRate,
-				CritDamage = status.CritDamage,
-				EffectHit = status.EffectHit,
-				EffectResist = status.EffectResist
-			};
-		}
-
 		/****************************************************************************************************
 		  計算結果比較
 		****************************************************************************************************/
@@ -1299,8 +1262,8 @@ namespace Gui.Form
 						return;
 					}
 
-					StatusDto baseStatus = createStatusDto(baseSnapshot.FinalStatus);
-					StatusDto targetStatus = createStatusDto(targetSnapshot.FinalStatus);
+					StatusDto baseStatus = StatusSaveDataConverter.ToDto(baseSnapshot.FinalStatus);
+					StatusDto targetStatus = StatusSaveDataConverter.ToDto(targetSnapshot.FinalStatus);
 
 					if (baseStatus == null || targetStatus == null)
 					{
@@ -1330,26 +1293,6 @@ namespace Gui.Form
 					form.ShowDialog(this);
 				}
 			}
-		}
-
-		private StatusDto createStatusDto(StatusSaveData saveData)
-		{
-			if (saveData == null)
-			{
-				return null;
-			}
-
-			return new StatusDto
-			{
-				Attack = saveData.Attack,
-				HP = saveData.HP,
-				Defense = saveData.Deffense,
-				Speed = saveData.Speed,
-				CritRate = saveData.CritRate,
-				CritDamage = saveData.CritDamage,
-				EffectHit = saveData.EffectHit,
-				EffectResist = saveData.EffectResist
-			};
 		}
 
 		/****************************************************************************************************
