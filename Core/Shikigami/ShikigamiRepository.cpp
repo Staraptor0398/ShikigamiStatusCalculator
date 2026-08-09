@@ -159,15 +159,13 @@ bool ShikigamiRepository::existsSameShikigamiExceptSelf(const std::vector<Shikig
 
 int ShikigamiRepository::findInsertIndex(const std::vector<Shikigami>& shikigamis, const Shikigami& newData)
 {
-	int insertIndex = static_cast<int>(shikigamis.size());
-
 	for (int i = 0;i < static_cast<int>(shikigamis.size());i++) {
-		if (shikigamis[i].Rarity == newData.Rarity) {
-			insertIndex = i + 1;
+		if (shikigamis[i].Rarity < newData.Rarity) {
+			return i;
 		}
 	}
 
-	return insertIndex;
+	return static_cast<int>(shikigamis.size());
 }
 
 int ShikigamiRepository::findMergeInsertIndex(const std::vector<Shikigami>& mergedShikigamis, const std::vector<Shikigami>& sourceShikigamis, const Shikigami& target) {
