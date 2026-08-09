@@ -1,5 +1,7 @@
 using Gui.Common;
 using Gui.Dialog;
+using Gui.Factory;
+using Gui.Form.Control;
 using Gui.IO;
 using Gui.SaveData;
 using Gui.Validation;
@@ -13,22 +15,6 @@ namespace Gui.Form
 {
 	public partial class MainForm : System.Windows.Forms.Form
 	{
-		/****************************************************************************************************
-		  UI入力コントロール定義
-		****************************************************************************************************/
-		private class SubStatInputControl
-		{
-			public ComboBox TypeComboBox { get; set; }
-			public TextBox ValueTextBox { get; set; }
-		}
-
-		private class MitamaSlotInputControl
-		{
-			public ComboBox MainStatComboBox { get; set; }
-			public TextBox MainValueTextBox { get; set; }
-			public SubStatInputControl[] SubStats { get; set; }
-		}
-
 		/****************************************************************************************************
 		  UI入力コントロール取得
 		****************************************************************************************************/
@@ -308,7 +294,7 @@ namespace Gui.Form
 			}
 
 			var baseStatus = getSelectedShikigamiStatus();
-			var mitamaSet = createMitamaSetDto();
+			var mitamaSet = MitamaSetFactory.Create(getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
 
 			try
 			{
@@ -609,254 +595,6 @@ namespace Gui.Form
 			}
 
 			return CalculationInputValidationOutcome.SUCCESS;
-		}
-
-		/****************************************************************************************************
-		  Dto作成
-		****************************************************************************************************/
-		private MitamaSetDto createMitamaSetDto()
-		{
-			MitamaSetDto dto = new MitamaSetDto();
-
-			dto.Mitamas = new List<MitamaDto>();
-
-			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
-			{
-				dto.Mitamas.Add(createMitamaDto(slot));
-			}
-
-			dto.SetEffects = createSetEffectDtos();
-			dto.UniqueEffects = createUniqueEffectDtos();
-
-			return dto;
-		}
-
-		private MitamaDto createMitamaDto(MitamaSlotInputControl slot)
-		{
-			if (slot == null)
-			{
-				return null;
-			}
-
-			return new MitamaDto
-			{
-				MainStat = createStatValueDto(slot.MainStatComboBox, slot.MainValueTextBox),
-				SubStat = createSubStatValueDtos(slot.SubStats)
-			};
-		}
-
-		private List<StatValueDto> createSubStatValueDtos(SubStatInputControl[] subStats)
-		{
-			if (subStats == null)
-			{
-				return null;
-			}
-
-			List<StatValueDto> list = new List<StatValueDto>();
-
-			foreach (SubStatInputControl subStat in subStats)
-			{
-				list.Add(createStatValueDto(subStat.TypeComboBox, subStat.ValueTextBox));
-			}
-
-			return list;
-		}
-
-		private StatValueDto createStatValueDto(ComboBox cmbType, TextBox txtValue)
-		{
-			if (cmbType == null || txtValue == null)
-			{
-				return null;
-			}
-
-			var dto = new StatValueDto();
-
-			dto.Type = convertStatType(cmbType.Text);
-
-			if (double.TryParse(txtValue.Text, out double value))
-			{
-				dto.Value = value;
-			}
-			else
-			{
-				dto.Value = 0.0;
-			}
-
-			return dto;
-		}
-
-		private List<SetEffectDto> createSetEffectDtos()
-		{
-			List<SetEffectDto> list = new List<SetEffectDto>();
-
-			foreach (ComboBox comboBox in getSetEffectComboBoxes())
-			{
-				list.Add(createSetEffectDto(comboBox));
-			}
-			return list;
-		}
-
-		private SetEffectDto createSetEffectDto(ComboBox cmbEffect)
-		{
-			if (cmbEffect == null)
-			{
-				return null;
-			}
-
-			return new SetEffectDto
-			{
-				Stat = new StatValueDto
-				{
-					Type = convertStatType(cmbEffect.Text),
-					Value = getSetEffectValue(cmbEffect.Text)
-				}
-			};
-		}
-
-		private List<SetEffectDto> createUniqueEffectDtos()
-		{
-			List<SetEffectDto> list = new List<SetEffectDto>();
-
-			foreach (ComboBox comboBox in getUniqueEffectComboBoxes())
-			{
-				list.Add(createUniqueEffectDto(comboBox));
-			}
-
-			return list;
-		}
-
-		private SetEffectDto createUniqueEffectDto(ComboBox cmbEffect)
-		{
-			if (cmbEffect == null)
-			{
-				return null;
-			}
-
-			return new SetEffectDto
-			{
-				Stat = new StatValueDto
-				{
-					Type = convertStatType(cmbEffect.Text),
-					Value = getUniqueEffectValue(cmbEffect.Text)
-				}
-			};
-		}
-
-		private StatTypeDto convertStatType(string text)
-		{
-			StatTypeDto ret = StatTypeDto.None;
-
-			switch (text)
-			{
-				case DisplayText.Attack: ret = StatTypeDto.Attack; break;
-				case DisplayText.HP: ret = StatTypeDto.Hp; break;
-				case DisplayText.Defense: ret = StatTypeDto.Defense; break;
-				case DisplayText.Speed: ret = StatTypeDto.Speed; break;
-				case DisplayText.CriticalRate: ret = StatTypeDto.CriticalRate; break;
-				case DisplayText.CriticalDamage: ret = StatTypeDto.CriticalDamage; break;
-				case DisplayText.EffectHit: ret = StatTypeDto.EffectHit; break;
-				case DisplayText.EffectResist: ret = StatTypeDto.EffectResist; break;
-				case DisplayText.AdditionalAttackRate: ret = StatTypeDto.AdditionalAttackRate; break;
-				case DisplayText.AdditionalHPRate: ret = StatTypeDto.AdditionalHpRate; break;
-				case DisplayText.AdditionalDefenseRate: ret = StatTypeDto.AdditionalDefenseRate; break;
-				default: break;
-			}
-
-			return ret;
-		}
-
-		private double getMainStatValue(string text, int slot)
-		{
-			double ret = 0.0;
-
-			switch (slot)
-			{
-				case 1:
-					ret = 486.0;
-					break;
-				case 2:
-					if (text == DisplayText.Speed)
-					{
-						ret = 57.0;
-					}
-					else
-					{
-						ret = 55.0;
-					}
-					break;
-				case 3:
-					ret = 104.0;
-					break;
-				case 4:
-					ret = 55.0;
-					break;
-				case 5:
-					ret = 2052.0;
-					break;
-				case 6:
-					if (text == DisplayText.CriticalDamage)
-					{
-						ret = 89.0;
-					}
-					else
-					{
-						ret = 55.0;
-					}
-					break;
-				default:
-					break;
-			}
-
-			return ret;
-		}
-
-		private double getSetEffectValue(string text)
-		{
-			double ret = 0.0;
-
-			switch (text)
-			{
-				case DisplayText.AdditionalAttackRate:
-				case DisplayText.AdditionalHPRate:
-				case DisplayText.CriticalRate:
-				case DisplayText.EffectHit:
-				case DisplayText.EffectResist:
-					ret = 15.0;
-					break;
-				case DisplayText.CriticalDamage:
-					ret = 20.0;
-					break;
-				case DisplayText.AdditionalDefenseRate:
-					ret = 30.0;
-					break;
-				default:
-					break;
-			}
-
-			return ret;
-		}
-
-		private double getUniqueEffectValue(string text)
-		{
-			double ret = 0.0;
-
-			switch (text)
-			{
-				case DisplayText.AdditionalAttackRate:
-				case DisplayText.AdditionalHPRate:
-				case DisplayText.CriticalRate:
-				case DisplayText.EffectHit:
-				case DisplayText.EffectResist:
-					ret = 8.0;
-					break;
-				case DisplayText.AdditionalDefenseRate:
-					ret = 16.0;
-					break;
-				default:
-					break;
-			}
-
-			return ret;
 		}
 
 		/****************************************************************************************************
@@ -1170,6 +908,51 @@ namespace Gui.Form
 			txtMainVal6.Text = value.ToString();
 
 			markCalculationResultDirty();
+		}
+
+		private double getMainStatValue(string text, int slot)
+		{
+			double ret = 0.0;
+
+			switch (slot)
+			{
+				case 1:
+					ret = 486.0;
+					break;
+				case 2:
+					if (text == DisplayText.Speed)
+					{
+						ret = 57.0;
+					}
+					else
+					{
+						ret = 55.0;
+					}
+					break;
+				case 3:
+					ret = 104.0;
+					break;
+				case 4:
+					ret = 55.0;
+					break;
+				case 5:
+					ret = 2052.0;
+					break;
+				case 6:
+					if (text == DisplayText.CriticalDamage)
+					{
+						ret = 89.0;
+					}
+					else
+					{
+						ret = 55.0;
+					}
+					break;
+				default:
+					break;
+			}
+
+			return ret;
 		}
 
 		/****************************************************************************************************

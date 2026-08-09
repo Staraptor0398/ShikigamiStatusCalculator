@@ -187,6 +187,7 @@ namespace Gui.Form
 			this.DialogResult = DialogResult.Cancel;
 			this.Close();
 		}
+
 		/****************************************************************************************************
 		  入力値取得・入力チェック
 		****************************************************************************************************/
@@ -282,7 +283,7 @@ namespace Gui.Form
 			return true;
 		}
 
-		private void showInputWarning(string message, Control focusControl)
+		private void showInputWarning(string message, System.Windows.Forms.Control focusControl)
 		{
 			Logger.Warning($"Operation=式神データ入力検証 Message={message}");
 
