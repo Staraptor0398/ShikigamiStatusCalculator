@@ -76,7 +76,7 @@ ShikigamiDataOutcome ShikigamiRepository::getRecoveryCandinateShikigamiList(cons
 
 	std::vector<Shikigami> sourceShikigamis;
 
-	loadOutcome = FileAccess::loadShikigami(sourceFilePath, sourceShikigamis);
+	loadOutcome = FileAccess::loadValidShikigami(sourceFilePath, sourceShikigamis);
 
 	if (loadOutcome != FileAccessOutcome::SUCCESS) {
 		return FileAccessOutcomeMapper::toShikigamiDataOutcome(loadOutcome);

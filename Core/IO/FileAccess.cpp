@@ -54,6 +54,47 @@ FileAccessOutcome FileAccess::loadShikigami(const std::string& filePath, std::ve
 	}
 
 	if (file.bad()) {
+		outShikigamis.clear();
+		return FileAccessOutcome::FILE_READ_FAILED;
+	}
+
+	return FileAccessOutcome::SUCCESS;
+}
+
+FileAccessOutcome FileAccess::loadValidShikigami(const std::string& filePath, std::vector<Shikigami>& outShikigamis)
+{
+	outShikigamis.clear();
+
+	std::ifstream file(filePath);
+
+	if (!file.is_open()) {
+		return FileAccessOutcome::FILE_OPEN_FAILED;
+	}
+
+	std::string line;
+
+	while (std::getline(file, line)) {
+		if (line.empty()) {
+			continue;
+		}
+
+		try {
+			outShikigamis.push_back(ShikigamiCsvConverter::toShikigami(line));
+		}
+		catch (const std::invalid_argument&) {
+			continue;
+		}
+		catch (const std::out_of_range&) {
+			continue;
+		}
+		catch (...) {
+			outShikigamis.clear();
+			return FileAccessOutcome::UNKNOWN_ERROR;
+		}
+	}
+
+	if (file.bad()) {
+		outShikigamis.clear();
 		return FileAccessOutcome::FILE_READ_FAILED;
 	}
 
