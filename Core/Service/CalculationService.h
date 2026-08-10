@@ -7,5 +7,5 @@
 class CalculationService
 {
 public:
-	static CalculationResult calculate(const Status& baseStatus, const MitamaSet& mitamaSet);
+	static CalculationResult calculate(const Status& Status, const MitamaSet& mitamaSet);
 };

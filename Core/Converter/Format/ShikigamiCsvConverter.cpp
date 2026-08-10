@@ -72,14 +72,14 @@ Shikigami ShikigamiCsvConverter::toShikigami(const std::vector<std::string>& csv
 
 	shikigami.Rarity = csvLineColumns[RARITY_INDEX];
 	shikigami.Name = csvLineColumns[NAME_INDEX];
-	shikigami.Attack = std::stod(csvLineColumns[ATTACK_INDEX]);
-	shikigami.HP = std::stod(csvLineColumns[HP_INDEX]);
-	shikigami.Defense = std::stod(csvLineColumns[DEFENSE_INDEX]);
-	shikigami.Speed = std::stod(csvLineColumns[SPEED_INDEX]);
-	shikigami.CriticalRate = std::stod(csvLineColumns[CRIT_RATE_INDEX]);
-	shikigami.CriticalDamage = std::stod(csvLineColumns[CRIT_DAMAGE_INDEX]);
-	shikigami.EffectHit = std::stod(csvLineColumns[EFFECT_HIT_INDEX]);
-	shikigami.EffectResist = std::stod(csvLineColumns[EFFECT_RESIST_INDEX]);
+	shikigami.Status.Attack = std::stod(csvLineColumns[ATTACK_INDEX]);
+	shikigami.Status.Hp = std::stod(csvLineColumns[HP_INDEX]);
+	shikigami.Status.Defense = std::stod(csvLineColumns[DEFENSE_INDEX]);
+	shikigami.Status.Speed = std::stod(csvLineColumns[SPEED_INDEX]);
+	shikigami.Status.CriticalRate = std::stod(csvLineColumns[CRIT_RATE_INDEX]);
+	shikigami.Status.CriticalDamage = std::stod(csvLineColumns[CRIT_DAMAGE_INDEX]);
+	shikigami.Status.EffectHit = std::stod(csvLineColumns[EFFECT_HIT_INDEX]);
+	shikigami.Status.EffectResist = std::stod(csvLineColumns[EFFECT_RESIST_INDEX]);
 
 	return shikigami;
 }
@@ -90,14 +90,14 @@ std::vector<std::string> ShikigamiCsvConverter::toCsvLineColumns(const Shikigami
 
 	csvLineColumns.push_back(shikigami.Rarity.toString());
 	csvLineColumns.push_back(shikigami.Name);
-	csvLineColumns.push_back(std::to_string(shikigami.Attack));
-	csvLineColumns.push_back(std::to_string(shikigami.HP));
-	csvLineColumns.push_back(std::to_string(shikigami.Defense));
-	csvLineColumns.push_back(std::to_string(shikigami.Speed));
-	csvLineColumns.push_back(std::to_string(shikigami.CriticalRate));
-	csvLineColumns.push_back(std::to_string(shikigami.CriticalDamage));
-	csvLineColumns.push_back(std::to_string(shikigami.EffectHit));
-	csvLineColumns.push_back(std::to_string(shikigami.EffectResist));
+	csvLineColumns.push_back(std::to_string(shikigami.Status.Attack));
+	csvLineColumns.push_back(std::to_string(shikigami.Status.Hp));
+	csvLineColumns.push_back(std::to_string(shikigami.Status.Defense));
+	csvLineColumns.push_back(std::to_string(shikigami.Status.Speed));
+	csvLineColumns.push_back(std::to_string(shikigami.Status.CriticalRate));
+	csvLineColumns.push_back(std::to_string(shikigami.Status.CriticalDamage));
+	csvLineColumns.push_back(std::to_string(shikigami.Status.EffectHit));
+	csvLineColumns.push_back(std::to_string(shikigami.Status.EffectResist));
 
 	return csvLineColumns;
 }
