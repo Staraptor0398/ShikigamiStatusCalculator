@@ -1,5 +1,5 @@
-using Gui.Common;
 using Gui.Form.Control;
+using Gui.Resolver;
 using Gui.SaveData;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -44,56 +44,11 @@ namespace Gui.Factory
 				MainStat = new EffectSaveData
 				{
 					Type = input.MainStatComboBox.Text,
-					Value = getMainStatValue(input.MainValueTextBox.Text, slot)
+					Value = MainStatValueResolver.Resolve(input.MainStatComboBox.Text, slot)
 				},
 
 				SubStats = createSubStatSaveDataList(input.SubStats)
 			};
-		}
-
-		private static double getMainStatValue(string text, int slot)
-		{
-			double ret = 0.0;
-
-			switch (slot)
-			{
-				case 1:
-					ret = 486.0;
-					break;
-				case 2:
-					if (text == DisplayText.Speed)
-					{
-						ret = 57.0;
-					}
-					else
-					{
-						ret = 55.0;
-					}
-					break;
-				case 3:
-					ret = 104.0;
-					break;
-				case 4:
-					ret = 55.0;
-					break;
-				case 5:
-					ret = 2052.0;
-					break;
-				case 6:
-					if (text == DisplayText.CriticalDamage)
-					{
-						ret = 89.0;
-					}
-					else
-					{
-						ret = 55.0;
-					}
-					break;
-				default:
-					break;
-			}
-
-			return ret;
 		}
 
 		private static List<EffectSaveData> createSubStatSaveDataList(SubStatInputControl[] subStats)

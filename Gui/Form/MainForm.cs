@@ -5,6 +5,7 @@ using Gui.Factory;
 using Gui.Form.Applicator;
 using Gui.Form.Control;
 using Gui.IO;
+using Gui.Resolver;
 using Gui.SaveData;
 using Gui.Validation;
 using System;
@@ -659,7 +660,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void cmbMainStat1_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = getMainStatValue(cmbMainStat1.SelectedItem.ToString(), 1);
+			var value = MainStatValueResolver.Resolve(cmbMainStat1.SelectedItem.ToString(), 1);
 			txtMainVal1.Text = value.ToString();
 
 			markCalculationResultDirty();
@@ -667,7 +668,7 @@ namespace Gui.Form
 
 		private void cmbMainStat2_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = getMainStatValue(cmbMainStat2.SelectedItem.ToString(), 2);
+			var value = MainStatValueResolver.Resolve(cmbMainStat2.SelectedItem.ToString(), 2);
 			txtMainVal2.Text = value.ToString();
 
 			markCalculationResultDirty();
@@ -675,7 +676,7 @@ namespace Gui.Form
 
 		private void cmbMainStat3_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = getMainStatValue(cmbMainStat3.SelectedItem.ToString(), 3);
+			var value = MainStatValueResolver.Resolve(cmbMainStat3.SelectedItem.ToString(), 3);
 			txtMainVal3.Text = value.ToString();
 
 			markCalculationResultDirty();
@@ -683,7 +684,7 @@ namespace Gui.Form
 
 		private void cmbMainStat4_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = getMainStatValue(cmbMainStat4.SelectedItem.ToString(), 4);
+			var value = MainStatValueResolver.Resolve(cmbMainStat4.SelectedItem.ToString(), 4);
 			txtMainVal4.Text = value.ToString();
 
 			markCalculationResultDirty();
@@ -691,7 +692,7 @@ namespace Gui.Form
 
 		private void cmbMainStat5_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = getMainStatValue(cmbMainStat5.SelectedItem.ToString(), 5);
+			var value = MainStatValueResolver.Resolve(cmbMainStat5.SelectedItem.ToString(), 5);
 			txtMainVal5.Text = value.ToString();
 
 			markCalculationResultDirty();
@@ -699,55 +700,10 @@ namespace Gui.Form
 
 		private void cmbMainStat6_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = getMainStatValue(cmbMainStat6.SelectedItem.ToString(), 6);
+			var value = MainStatValueResolver.Resolve(cmbMainStat6.SelectedItem.ToString(), 6);
 			txtMainVal6.Text = value.ToString();
 
 			markCalculationResultDirty();
-		}
-
-		private double getMainStatValue(string text, int slot)
-		{
-			double ret = 0.0;
-
-			switch (slot)
-			{
-				case 1:
-					ret = 486.0;
-					break;
-				case 2:
-					if (text == DisplayText.Speed)
-					{
-						ret = 57.0;
-					}
-					else
-					{
-						ret = 55.0;
-					}
-					break;
-				case 3:
-					ret = 104.0;
-					break;
-				case 4:
-					ret = 55.0;
-					break;
-				case 5:
-					ret = 2052.0;
-					break;
-				case 6:
-					if (text == DisplayText.CriticalDamage)
-					{
-						ret = 89.0;
-					}
-					else
-					{
-						ret = 55.0;
-					}
-					break;
-				default:
-					break;
-			}
-
-			return ret;
 		}
 
 		/****************************************************************************************************
