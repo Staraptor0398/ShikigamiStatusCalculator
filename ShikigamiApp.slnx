@@ -7,6 +7,8 @@
   <Project Path="Gateway/Gateway.vcxproj" Id="f992adf3-3f2f-4c05-b8e0-9364edf3657b" />
   <Project Path="Gui/Gui.csproj" Id="81d5d86e-e574-4aea-9fb0-87288e81e48e">
     <Platform Solution="*|x64" Project="x64" />
-    <Build Solution="*|x86" Project="false" />
+  </Project>
+  <Project Path="SaveData/SaveData.csproj" Id="e8564587-6700-48af-8200-48d33e666f70">
+    <Platform Solution="*|x64" Project="x64" />
   </Project>
 </Solution>

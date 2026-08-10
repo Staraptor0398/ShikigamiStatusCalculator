@@ -1,9 +1,9 @@
-using Gui.SaveData;
 using Newtonsoft.Json;
+using SaveData.Model;
 using System.IO;
 using System.Text;
 
-namespace Gui.IO
+namespace SaveData.Access
 {
 	public static class SaveDataAccess
 	{

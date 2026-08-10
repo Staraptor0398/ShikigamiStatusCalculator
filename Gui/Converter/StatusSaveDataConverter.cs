@@ -1,4 +1,4 @@
-using Gui.SaveData;
+using SaveData.Model;
 
 namespace Gui.Converter
 {

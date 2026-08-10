@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Gui.SaveData
+namespace SaveData.Model
 {
 	public class MitamaSaveData
 	{

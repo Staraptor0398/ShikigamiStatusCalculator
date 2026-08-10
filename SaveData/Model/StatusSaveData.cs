@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Gui.SaveData
+namespace SaveData.Model
 {
 	public class StatusSaveData
 	{
