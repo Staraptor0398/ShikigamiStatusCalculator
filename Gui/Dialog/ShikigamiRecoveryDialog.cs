@@ -27,10 +27,10 @@ namespace Gui.Dialog
 					true,
 					shikigami.Rarity,
 					shikigami.Name,
-					shikigami.Attack,
-					shikigami.HP,
-					shikigami.Defense,
-					shikigami.Speed
+					shikigami.Status.Attack,
+					shikigami.Status.HP,
+					shikigami.Status.Defense,
+					shikigami.Status.Speed
 				);
 
 				dgvRecoveryCandinates.Rows[rowIndex].Tag = shikigami;

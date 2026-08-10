@@ -93,15 +93,15 @@ namespace Gui.Form
 			cmbRarity.SelectedItem = _editTarget.Rarity;
 			txtName.Text = _editTarget.Name;
 
-			txtAttck.Text = _editTarget.Attack.ToString();
-			txtHP.Text = _editTarget.HP.ToString();
-			txtDeffense.Text = _editTarget.Defense.ToString();
-			txtSpeed.Text = _editTarget.Speed.ToString();
+			txtAttck.Text = _editTarget.Status.Attack.ToString();
+			txtHP.Text = _editTarget.Status.HP.ToString();
+			txtDeffense.Text = _editTarget.Status.Defense.ToString();
+			txtSpeed.Text = _editTarget.Status.Speed.ToString();
 
-			txtCritRate.Text = _editTarget.CriticalRate.ToString();
-			txtCritDamage.Text = _editTarget.CriticalDamage.ToString();
-			txtEffectHit.Text = _editTarget.EffectHit.ToString();
-			txtEffectResist.Text = _editTarget.EffectResist.ToString();
+			txtCritRate.Text = _editTarget.Status.CritRate.ToString();
+			txtCritDamage.Text = _editTarget.Status.CritDamage.ToString();
+			txtEffectHit.Text = _editTarget.Status.EffectHit.ToString();
+			txtEffectResist.Text = _editTarget.Status.EffectResist.ToString();
 		}
 
 		/****************************************************************************************************
@@ -251,14 +251,18 @@ namespace Gui.Form
 			{
 				Rarity = cmbRarity.Text,
 				Name = txtName.Text.Trim(),
-				Attack = attack,
-				HP = hp,
-				Defense = deffense,
-				Speed = speed,
-				CriticalRate = critRate,
-				CriticalDamage = critDamage,
-				EffectHit = effectHit,
-				EffectResist = effectResist
+
+				Status = new StatusDto
+				{
+					Attack = attack,
+					HP = hp,
+					Defense = deffense,
+					Speed = speed,
+					CritRate = critRate,
+					CritDamage = critDamage,
+					EffectHit = effectHit,
+					EffectResist = effectResist
+				}
 			};
 
 			return true;

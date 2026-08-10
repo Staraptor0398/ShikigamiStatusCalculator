@@ -278,14 +278,14 @@ namespace Gui.Form
 			else
 			{
 				txtBaseStats.Text =
-						$"{DisplayText.Attack}: {selected.Attack:F2} " +
-						$"{DisplayText.HP}: {selected.HP:F2} " +
-						$"{DisplayText.Defense}: {selected.Defense:F2} " +
-						$"{DisplayText.Speed}: {selected.Speed:F2} " +
-						$"{DisplayText.CriticalRate}: {selected.CriticalRate:F2}% " +
-						$"{DisplayText.CriticalDamage}: {selected.CriticalDamage:F2}% " +
-						$"{DisplayText.EffectHit}: {selected.EffectHit:F2}% " +
-						$"{DisplayText.EffectResist}: {selected.EffectResist:F2}%";
+						$"{DisplayText.Attack}: {selected.Status.Attack:F2} " +
+						$"{DisplayText.HP}: {selected.Status.HP:F2} " +
+						$"{DisplayText.Defense}: {selected.Status.Defense:F2} " +
+						$"{DisplayText.Speed}: {selected.Status.Speed:F2} " +
+						$"{DisplayText.CriticalRate}: {selected.Status.CritRate:F2}% " +
+						$"{DisplayText.CriticalDamage}: {selected.Status.CritDamage:F2}% " +
+						$"{DisplayText.EffectHit}: {selected.Status.EffectHit:F2}% " +
+						$"{DisplayText.EffectResist}: {selected.Status.EffectResist:F2}%";
 
 			}
 
@@ -369,15 +369,15 @@ namespace Gui.Form
 
 			return new StatusDto
 			{
-				Attack = selected.Attack,
-				HP = selected.HP,
-				Defense = selected.Defense,
-				Speed = selected.Speed,
+				Attack = selected.Status.Attack,
+				HP = selected.Status.HP,
+				Defense = selected.Status.Defense,
+				Speed = selected.Status.Speed,
 
-				CritRate = selected.CriticalRate,
-				CritDamage = selected.CriticalDamage,
-				EffectHit = selected.EffectHit,
-				EffectResist = selected.EffectResist,
+				CritRate = selected.Status.CritRate,
+				CritDamage = selected.Status.CritDamage,
+				EffectHit = selected.Status.EffectHit,
+				EffectResist = selected.Status.EffectResist,
 
 				AdditionalAttackRate = 0.0,
 				AdditionalHpRate = 0.0,
