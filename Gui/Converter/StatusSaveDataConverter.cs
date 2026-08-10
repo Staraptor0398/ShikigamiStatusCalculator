@@ -15,7 +15,7 @@ namespace Gui.Converter
 			{
 				Attack = dto.Attack,
 				HP = dto.HP,
-				Deffense = dto.Defense,
+				Defense = dto.Defense,
 				Speed = dto.Speed,
 				CritRate = dto.CritRate,
 				CritDamage = dto.CritDamage,
@@ -35,7 +35,7 @@ namespace Gui.Converter
 			{
 				Attack = saveData.Attack,
 				HP = saveData.HP,
-				Defense = saveData.Deffense,
+				Defense = saveData.Defense,
 				Speed = saveData.Speed,
 				CritRate = saveData.CritRate,
 				CritDamage = saveData.CritDamage,

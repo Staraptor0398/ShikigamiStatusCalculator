@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace Gui.SaveData
 {
 	public class StatusSaveData
@@ -6,7 +8,13 @@ namespace Gui.SaveData
 
 		public double HP { get; set; }
 
-		public double Deffense { get; set; }
+		public double Defense { get; set; }
+
+		[JsonProperty("Deffense")]
+		private double LegacyDeffense
+		{
+			set => Defense = value;
+		}
 
 		public double Speed { get; set; }
 
