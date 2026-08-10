@@ -85,5 +85,23 @@ namespace Gui.Formatter
 					$"{DisplayText.EffectHit,-7}: {status.EffectHit:F2}%\r\n" +
 					$"{DisplayText.EffectResist,-7}: {status.EffectResist:F2}%";
 		}
+
+		public static string FormatBaseSummary(StatusDto status)
+		{
+			if (status == null)
+			{
+				return "";
+			}
+
+			return
+					$"{DisplayText.Attack}: {status.Attack:F2} " +
+					$"{DisplayText.HP}: {status.HP:F2} " +
+					$"{DisplayText.Defense}: {status.Defense:F2} " +
+					$"{DisplayText.Speed}: {status.Speed:F2} " +
+					$"{DisplayText.CriticalRate}: {status.CritRate:F2}% " +
+					$"{DisplayText.CriticalDamage}: {status.CritDamage:F2}% " +
+					$"{DisplayText.EffectHit}: {status.EffectHit:F2}% " +
+					$"{DisplayText.EffectResist}: {status.EffectResist:F2}%";
+		}
 	}
 }

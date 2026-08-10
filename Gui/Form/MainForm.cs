@@ -271,23 +271,7 @@ namespace Gui.Form
 		{
 			ShikigamiDto selected = cmbShikigami.SelectedItem as ShikigamiDto;
 
-			if (selected == null)
-			{
-				txtBaseStats.Text = "";
-			}
-			else
-			{
-				txtBaseStats.Text =
-						$"{DisplayText.Attack}: {selected.Status.Attack:F2} " +
-						$"{DisplayText.HP}: {selected.Status.HP:F2} " +
-						$"{DisplayText.Defense}: {selected.Status.Defense:F2} " +
-						$"{DisplayText.Speed}: {selected.Status.Speed:F2} " +
-						$"{DisplayText.CriticalRate}: {selected.Status.CritRate:F2}% " +
-						$"{DisplayText.CriticalDamage}: {selected.Status.CritDamage:F2}% " +
-						$"{DisplayText.EffectHit}: {selected.Status.EffectHit:F2}% " +
-						$"{DisplayText.EffectResist}: {selected.Status.EffectResist:F2}%";
-
-			}
+			txtBaseStats.Text = StatusFormatter.FormatBaseSummary(selected?.Status);
 
 			markCalculationResultDirty();
 		}
