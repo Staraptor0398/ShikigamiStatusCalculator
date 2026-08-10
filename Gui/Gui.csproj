@@ -48,6 +48,7 @@
     <Compile Include="Common\SaveDataFileDefinition.cs" />
     <Compile Include="Common\ShikigamiDataErrorHandler.cs" />
     <Compile Include="Common\ShikigamiDataFileManager.cs" />
+    <Compile Include="Converter\StatTypeConverter.cs" />
     <Compile Include="Converter\StatusSaveDataConverter.cs" />
     <Compile Include="Dialog\SaveDataLoadDialog.cs">
       <SubType>Form</SubType>

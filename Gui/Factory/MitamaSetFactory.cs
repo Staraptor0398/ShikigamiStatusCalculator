@@ -1,4 +1,5 @@
 using Gui.Common;
+using Gui.Converter;
 using Gui.Form.Control;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -64,7 +65,7 @@ namespace Gui.Factory
 
 			var dto = new StatValueDto();
 
-			dto.Type = convertStatType(cmbType.Text);
+			dto.Type = StatTypeConverter.ToDto(cmbType.Text);
 
 			if (double.TryParse(txtValue.Text, out double value))
 			{
@@ -100,7 +101,7 @@ namespace Gui.Factory
 			{
 				Stat = new StatValueDto
 				{
-					Type = convertStatType(cmbEffect.Text),
+					Type = StatTypeConverter.ToDto(cmbEffect.Text),
 					Value = getSetEffectValue(cmbEffect.Text)
 				}
 			};
@@ -129,33 +130,10 @@ namespace Gui.Factory
 			{
 				Stat = new StatValueDto
 				{
-					Type = convertStatType(cmbEffect.Text),
+					Type = StatTypeConverter.ToDto(cmbEffect.Text),
 					Value = getUniqueEffectValue(cmbEffect.Text)
 				}
 			};
-		}
-
-		private static StatTypeDto convertStatType(string text)
-		{
-			StatTypeDto ret = StatTypeDto.None;
-
-			switch (text)
-			{
-				case DisplayText.Attack: ret = StatTypeDto.Attack; break;
-				case DisplayText.HP: ret = StatTypeDto.Hp; break;
-				case DisplayText.Defense: ret = StatTypeDto.Defense; break;
-				case DisplayText.Speed: ret = StatTypeDto.Speed; break;
-				case DisplayText.CriticalRate: ret = StatTypeDto.CriticalRate; break;
-				case DisplayText.CriticalDamage: ret = StatTypeDto.CriticalDamage; break;
-				case DisplayText.EffectHit: ret = StatTypeDto.EffectHit; break;
-				case DisplayText.EffectResist: ret = StatTypeDto.EffectResist; break;
-				case DisplayText.AdditionalAttackRate: ret = StatTypeDto.AdditionalAttackRate; break;
-				case DisplayText.AdditionalHPRate: ret = StatTypeDto.AdditionalHpRate; break;
-				case DisplayText.AdditionalDefenseRate: ret = StatTypeDto.AdditionalDefenseRate; break;
-				default: break;
-			}
-
-			return ret;
 		}
 
 		private static double getSetEffectValue(string text)
