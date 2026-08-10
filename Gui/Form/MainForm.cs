@@ -360,29 +360,9 @@ namespace Gui.Form
 
 		private StatusDto getSelectedShikigamiStatus()
 		{
-			var selected = (ShikigamiDto)cmbShikigami.SelectedItem;
+			var selected = cmbShikigami.SelectedItem as ShikigamiDto;
 
-			if (selected == null)
-			{
-				return new StatusDto();
-			}
-
-			return new StatusDto
-			{
-				Attack = selected.Status.Attack,
-				HP = selected.Status.HP,
-				Defense = selected.Status.Defense,
-				Speed = selected.Status.Speed,
-
-				CritRate = selected.Status.CritRate,
-				CritDamage = selected.Status.CritDamage,
-				EffectHit = selected.Status.EffectHit,
-				EffectResist = selected.Status.EffectResist,
-
-				AdditionalAttackRate = 0.0,
-				AdditionalHpRate = 0.0,
-				AdditionalDefenseRate = 0.0,
-			};
+			return selected?.Status ?? new StatusDto();
 		}
 
 		/****************************************************************************************************
