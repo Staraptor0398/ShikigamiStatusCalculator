@@ -5,14 +5,14 @@ StatusComparisonResultDto^ StatusComparisonResultMapper::toDto(const StatusCompa
 {
 	StatusComparisonResultDto^ dto = gcnew StatusComparisonResultDto();
 
-	dto->AttackDifferense = native.AttackDifferense;
-	dto->HpDifferense = native.HpDifferense;
-	dto->DefenseDifferense = native.DefenseDifferense;
-	dto->SpeedDifferense = native.SpeedDifferense;
-	dto->CriticalRateDifferense = native.CriticalRateDifferense;
-	dto->CriticalDamageDifferense = native.CriticalDamageDifferense;
-	dto->EffectHitDifferense = native.EffectHitDifferense;
-	dto->EffectResistDifferense = native.EffectResistDifferense;
+	dto->AttackDifference = native.AttackDifference;
+	dto->HpDifference = native.HpDifference;
+	dto->DefenseDifference = native.DefenseDifference;
+	dto->SpeedDifference = native.SpeedDifference;
+	dto->CriticalRateDifference = native.CriticalRateDifference;
+	dto->CriticalDamageDifference = native.CriticalDamageDifference;
+	dto->EffectHitDifference = native.EffectHitDifference;
+	dto->EffectResistDifference = native.EffectResistDifference;
 
 	return dto;
 }

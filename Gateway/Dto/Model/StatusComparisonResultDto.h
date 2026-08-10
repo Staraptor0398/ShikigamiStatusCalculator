@@ -6,13 +6,13 @@
 // Core の StatusComparisonResult と対応するDto定義。
 public ref class StatusComparisonResultDto {
 public:
-	property double AttackDifferense;
-	property double HpDifferense;
-	property double DefenseDifferense;
-	property double SpeedDifferense;
+	property double AttackDifference;
+	property double HpDifference;
+	property double DefenseDifference;
+	property double SpeedDifference;
 
-	property double CriticalRateDifferense;
-	property double CriticalDamageDifferense;
-	property double EffectHitDifferense;
-	property double EffectResistDifferense;
+	property double CriticalRateDifference;
+	property double CriticalDamageDifference;
+	property double EffectHitDifference;
+	property double EffectResistDifference;
 };
