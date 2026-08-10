@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ShikigamiConverter.h"
 
+#include "StatusConverter.h"
 #include "StringConverter.h"
 
 Shikigami ShikigamiConverter::toNative(ShikigamiDto^ dto)
@@ -13,14 +14,7 @@ Shikigami ShikigamiConverter::toNative(ShikigamiDto^ dto)
 
 	native.Rarity = StringConverter::toUtf8String(dto->Rarity);
 	native.Name = StringConverter::toUtf8String(dto->Name);
-	native.Attack = dto->Attack;
-	native.HP = dto->HP;
-	native.Defense = dto->Defense;
-	native.Speed = dto->Speed;
-	native.CriticalRate = dto->CriticalRate;
-	native.CriticalDamage = dto->CriticalDamage;
-	native.EffectHit = dto->EffectHit;
-	native.EffectResist = dto->EffectResist;
+	native.Status = StatusConverter::toNative(dto->Status);
 
 	return native;
 }
@@ -31,14 +25,7 @@ ShikigamiDto^ ShikigamiConverter::toDto(Shikigami native)
 
 	dto->Rarity = StringConverter::toManagedString(native.Rarity.toString());
 	dto->Name = StringConverter::toManagedString(native.Name);
-	dto->Attack = native.Attack;
-	dto->HP = native.HP;
-	dto->Defense = native.Defense;
-	dto->Speed = native.Speed;
-	dto->CriticalRate = native.CriticalRate;
-	dto->CriticalDamage = native.CriticalDamage;
-	dto->EffectHit = native.EffectHit;
-	dto->EffectResist = native.EffectResist;
+	dto->Status = StatusConverter::toDto(native.Status);
 
 	return dto;
 }

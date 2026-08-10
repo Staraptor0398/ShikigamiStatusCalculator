@@ -2,6 +2,8 @@
 
 using namespace System;
 
+#include "StatusDto.h"
+
 // 式神Dtoクラス
 //
 // Gui ⇔ Gateway 間のデータ受け渡しで使用する。
@@ -12,14 +14,7 @@ public:
 	String^ Name;
 	String^ Rarity;
 
-	double Attack;
-	double HP;
-	double Defense;
-	double Speed;
-	double CriticalRate;
-	double CriticalDamage;
-	double EffectHit;
-	double EffectResist;
+	StatusDto^ Status;
 
 	virtual System::String^ ToString() override {
 		return Name;
