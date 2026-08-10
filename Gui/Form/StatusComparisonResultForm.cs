@@ -49,14 +49,14 @@ namespace Gui.Form
 		{
 			dgvComparisonResult.Rows.Clear();
 
-			addComparesonResultRow("攻撃力", _comparisonResult.AttackDifferense);
-			addComparesonResultRow("HP", _comparisonResult.HpDifferense);
-			addComparesonResultRow("防御力", _comparisonResult.DefenseDifferense);
-			addComparesonResultRow("素早さ", _comparisonResult.SpeedDifferense);
-			addComparesonResultRow("会心率", _comparisonResult.CriticalRateDifferense);
-			addComparesonResultRow("会心DMG", _comparisonResult.CriticalDamageDifferense);
-			addComparesonResultRow("効果命中", _comparisonResult.EffectHitDifferense);
-			addComparesonResultRow("効果抵抗", _comparisonResult.EffectResistDifferense);
+			addComparesonResultRow("攻撃力", _comparisonResult.AttackDifference);
+			addComparesonResultRow("HP", _comparisonResult.HpDifference);
+			addComparesonResultRow("防御力", _comparisonResult.DefenseDifference);
+			addComparesonResultRow("素早さ", _comparisonResult.SpeedDifference);
+			addComparesonResultRow("会心率", _comparisonResult.CriticalRateDifference);
+			addComparesonResultRow("会心DMG", _comparisonResult.CriticalDamageDifference);
+			addComparesonResultRow("効果命中", _comparisonResult.EffectHitDifference);
+			addComparesonResultRow("効果抵抗", _comparisonResult.EffectResistDifference);
 
 		}
 
