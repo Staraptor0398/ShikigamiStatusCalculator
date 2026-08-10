@@ -5,14 +5,14 @@ StatusComparisonResult StatusComparator::compare(const Status& baseStatus, const
 {
 	StatusComparisonResult result;
 
-	result.AttackDifferense = targetStatus.Attack - baseStatus.Attack;
-	result.HpDifferense = targetStatus.Hp - baseStatus.Hp;
-	result.DefenseDifferense = targetStatus.Defense - baseStatus.Defense;
-	result.SpeedDifferense = targetStatus.Speed - baseStatus.Speed;
-	result.CriticalRateDifferense = targetStatus.CriticalRate - baseStatus.CriticalRate;
-	result.CriticalDamageDifferense = targetStatus.CriticalDamage - baseStatus.CriticalDamage;
-	result.EffectHitDifferense = targetStatus.EffectHit - baseStatus.EffectHit;
-	result.EffectResistDifferense = targetStatus.EffectResist - baseStatus.EffectResist;
+	result.AttackDifference = targetStatus.Attack - baseStatus.Attack;
+	result.HpDifference = targetStatus.Hp - baseStatus.Hp;
+	result.DefenseDifference = targetStatus.Defense - baseStatus.Defense;
+	result.SpeedDifference = targetStatus.Speed - baseStatus.Speed;
+	result.CriticalRateDifference = targetStatus.CriticalRate - baseStatus.CriticalRate;
+	result.CriticalDamageDifference = targetStatus.CriticalDamage - baseStatus.CriticalDamage;
+	result.EffectHitDifference = targetStatus.EffectHit - baseStatus.EffectHit;
+	result.EffectResistDifference = targetStatus.EffectResist - baseStatus.EffectResist;
 
 	return result;
 }
