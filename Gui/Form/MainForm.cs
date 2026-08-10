@@ -18,9 +18,9 @@ namespace Gui.Form
 	public partial class MainForm : System.Windows.Forms.Form
 	{
 		/****************************************************************************************************
-		  UI入力コントロール取得
+		  UI入力コントロール生成
 		****************************************************************************************************/
-		private MitamaSlotInputControl[] getMitamaSlotInputControls()
+		private MitamaSlotInputControl[] createMitamaSlotInputControls()
 		{
 			return new MitamaSlotInputControl[]
 			{
@@ -28,7 +28,7 @@ namespace Gui.Form
 				{
 					MainStatComboBox = cmbMainStat1,
 					MainValueTextBox = txtMainVal1,
-					SubStats=new SubStatInputControl[]
+					SubStats = new SubStatInputControl[]
 					{
 						new SubStatInputControl
 						{
@@ -200,7 +200,7 @@ namespace Gui.Form
 			};
 		}
 
-		private ComboBox[] getSetEffectComboBoxes()
+		private ComboBox[] createSetEffectComboBoxes()
 		{
 			return new ComboBox[]
 			{
@@ -210,7 +210,7 @@ namespace Gui.Form
 			};
 		}
 
-		private ComboBox[] getUniqueEffectComboBoxes()
+		private ComboBox[] createUniqueEffectComboBoxes()
 		{
 			return new ComboBox[]
 			{
@@ -231,6 +231,13 @@ namespace Gui.Form
 		private bool _isCalculationResultDirty = true;
 
 		private List<ShikigamiDto> _shikigamiList = null;
+
+		private MitamaSlotInputControl[] _mitamaSlotInputControls = null;
+
+		private ComboBox[] _setEffectComboBoxes = null;
+
+		private ComboBox[] _uniqueEffectComboBoxes = null;
+
 		/****************************************************************************************************
 		  コンストラクタ
 		****************************************************************************************************/
@@ -288,7 +295,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void btnCalc_Click(object sender, EventArgs e)
 		{
-			CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
+			CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(_mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
 
 			if (CalculationInputValidationErrorHandler.Handle(validationOutcome))
 			{
@@ -296,7 +303,7 @@ namespace Gui.Form
 			}
 
 			var baseStatus = getSelectedShikigamiStatus();
-			var mitamaSet = MitamaSetFactory.Create(getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
+			var mitamaSet = MitamaSetFactory.Create(_mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
 
 			try
 			{
@@ -453,8 +460,17 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void MainForm_Load(object sender, EventArgs e)
 		{
+			initializeInputControls();
+
 			initializeComboBoxes();
 			registerCalculationInputChangedEvents();
+		}
+
+		private void initializeInputControls()
+		{
+			_mitamaSlotInputControls = createMitamaSlotInputControls();
+			_setEffectComboBoxes = createSetEffectComboBoxes();
+			_uniqueEffectComboBoxes = createUniqueEffectComboBoxes();
 		}
 
 		private void initializeComboBoxes()
@@ -540,7 +556,7 @@ namespace Gui.Form
 
 		private void initializeSubStatComboBoxes()
 		{
-			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
+			foreach (MitamaSlotInputControl slot in _mitamaSlotInputControls)
 			{
 				foreach (SubStatInputControl subStat in slot.SubStats)
 				{
@@ -563,7 +579,7 @@ namespace Gui.Form
 
 		private void initializeSetEffectComboBoxes()
 		{
-			foreach (ComboBox comboBox in getSetEffectComboBoxes())
+			foreach (ComboBox comboBox in _setEffectComboBoxes)
 			{
 				setComboItems(comboBox,
 					DisplayText.None,
@@ -579,7 +595,7 @@ namespace Gui.Form
 
 		private void initializeUniqueEffectComboBoxes()
 		{
-			foreach (ComboBox comboBox in getUniqueEffectComboBoxes())
+			foreach (ComboBox comboBox in _uniqueEffectComboBoxes)
 			{
 				setComboItems(comboBox,
 					DisplayText.None,
@@ -613,7 +629,7 @@ namespace Gui.Form
 
 		private void registerCalculationInputChangedEvents()
 		{
-			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
+			foreach (MitamaSlotInputControl slot in _mitamaSlotInputControls)
 			{
 				foreach (SubStatInputControl subStat in slot.SubStats)
 				{
@@ -622,12 +638,12 @@ namespace Gui.Form
 				}
 			}
 
-			foreach (ComboBox comboBox in getSetEffectComboBoxes())
+			foreach (ComboBox comboBox in _setEffectComboBoxes)
 			{
 				comboBox.SelectedIndexChanged += calculationInputChanged;
 			}
 
-			foreach (ComboBox comboBox in getUniqueEffectComboBoxes())
+			foreach (ComboBox comboBox in _uniqueEffectComboBoxes)
 			{
 				comboBox.SelectedIndexChanged += calculationInputChanged;
 			}
@@ -752,19 +768,19 @@ namespace Gui.Form
 				{
 					if (dialog._selectedSaveType == SaveDataSaveType.Build)
 					{
-						var data = BuildSaveDataFactory.Create(cmbShikigami, getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
+						var data = BuildSaveDataFactory.Create(cmbShikigami, _mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
 						SaveDataAccess.SaveBuild(dialog._filePath, data);
 					}
 					else if (dialog._selectedSaveType == SaveDataSaveType.MitamaSet)
 					{
-						var data = MitamaSetSaveDataFactory.Create(getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
+						var data = MitamaSetSaveDataFactory.Create(_mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
 						SaveDataAccess.SaveMitamaSet(dialog._filePath, data);
 					}
 					else if (dialog._selectedSaveType == SaveDataSaveType.CalculationSnapshot)
 					{
 						string snapshotName = createSnapshotNameFromFilePath(dialog._filePath);
 
-						var data = CalculationSnapshotSaveDataFactory.Create(cmbShikigami, getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes(), snapshotName, _lastCalculationResult);
+						var data = CalculationSnapshotSaveDataFactory.Create(cmbShikigami, _mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes, snapshotName, _lastCalculationResult);
 						SaveDataAccess.SaveSnapshot(dialog._filePath, data);
 					}
 				}
@@ -792,7 +808,7 @@ namespace Gui.Form
 
 		private void updateSaveButtonEnabled()
 		{
-			btnSave.Enabled = CalculationInputValidator.Validate(getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes()) != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
+			btnSave.Enabled = CalculationInputValidator.Validate(_mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes) != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
 		}
 
 		/****************************************************************************************************
@@ -819,7 +835,7 @@ namespace Gui.Form
 					else if (dialog._selectedLoadType == SaveDataLoadType.MitamaSet)
 					{
 						var data = SaveDataAccess.LoadMitamaSet(dialog._filePath);
-						MitamaSetSaveDataApplicator.Apply(data, getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
+						MitamaSetSaveDataApplicator.Apply(data, _mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
 					}
 				}
 				finally
@@ -838,7 +854,7 @@ namespace Gui.Form
 			}
 
 			applyShikigami(data.ShikigamiName);
-			MitamaSetSaveDataApplicator.Apply(data.MitamaSet, getMitamaSlotInputControls(), getSetEffectComboBoxes(), getUniqueEffectComboBoxes());
+			MitamaSetSaveDataApplicator.Apply(data.MitamaSet, _mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
 		}
 
 		private void applyShikigami(string name)
@@ -1080,7 +1096,7 @@ namespace Gui.Form
 
 		private void clearMainValueTextBoxes()
 		{
-			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
+			foreach (MitamaSlotInputControl slot in _mitamaSlotInputControls)
 			{
 				slot.MainValueTextBox.Text = "";
 			}
@@ -1088,7 +1104,7 @@ namespace Gui.Form
 
 		private void clearSubValueTextBoxes()
 		{
-			foreach (MitamaSlotInputControl slot in getMitamaSlotInputControls())
+			foreach (MitamaSlotInputControl slot in _mitamaSlotInputControls)
 			{
 				foreach (SubStatInputControl subStat in slot.SubStats)
 				{
