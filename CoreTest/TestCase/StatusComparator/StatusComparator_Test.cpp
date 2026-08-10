@@ -29,14 +29,14 @@ void StatusComparator_Test::compareStatus_returnsPositiveDifferences()
 
 	StatusComparisonResult result = StatusComparator::compare(baseStatus, targetStatus);
 
-	TEST_ASSERT_DOUBLE_EQUAL(50.0, result.AttackDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(200.0, result.HpDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(50.0, result.DefenseDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(20.0, result.SpeedDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(5.0, result.CriticalRateDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(30.0, result.CriticalDamageDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(5.0, result.EffectHitDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(10.0, result.EffectResistDifferense);
+	TEST_ASSERT_DOUBLE_EQUAL(50.0, result.AttackDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(200.0, result.HpDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(50.0, result.DefenseDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(20.0, result.SpeedDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(5.0, result.CriticalRateDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(30.0, result.CriticalDamageDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(5.0, result.EffectHitDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(10.0, result.EffectResistDifference);
 }
 
 void StatusComparator_Test::compareStatus_returnsNegativeDefferences()
@@ -63,14 +63,14 @@ void StatusComparator_Test::compareStatus_returnsNegativeDefferences()
 
 	StatusComparisonResult result = StatusComparator::compare(baseStatus, targetStatus);
 
-	TEST_ASSERT_DOUBLE_EQUAL(-50.0, result.AttackDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(-200.0, result.HpDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(-50.0, result.DefenseDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(-20.0, result.SpeedDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(-5.0, result.CriticalRateDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(-30.0, result.CriticalDamageDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(-5.0, result.EffectHitDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(-10.0, result.EffectResistDifferense);
+	TEST_ASSERT_DOUBLE_EQUAL(-50.0, result.AttackDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(-200.0, result.HpDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(-50.0, result.DefenseDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(-20.0, result.SpeedDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(-5.0, result.CriticalRateDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(-30.0, result.CriticalDamageDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(-5.0, result.EffectHitDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(-10.0, result.EffectResistDifference);
 }
 
 void StatusComparator_Test::compareStatus_returnsZeroDefferences()
@@ -88,14 +88,14 @@ void StatusComparator_Test::compareStatus_returnsZeroDefferences()
 	Status targetStatus = baseStatus;
 	StatusComparisonResult result = StatusComparator::compare(baseStatus, targetStatus);
 
-	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.AttackDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.HpDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.DefenseDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.SpeedDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.CriticalRateDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.CriticalDamageDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.EffectHitDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.EffectResistDifferense);
+	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.AttackDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.HpDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.DefenseDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.SpeedDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.CriticalRateDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.CriticalDamageDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.EffectHitDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.EffectResistDifference);
 }
 
 void StatusComparator_Test::compareStatus_returnsMixedDifferences()
@@ -122,12 +122,12 @@ void StatusComparator_Test::compareStatus_returnsMixedDifferences()
 
 	StatusComparisonResult result = StatusComparator::compare(baseStatus, targetStatus);
 
-	TEST_ASSERT_DOUBLE_EQUAL(50.0, result.AttackDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(-200.0, result.HpDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(50.0, result.DefenseDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.SpeedDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(5.0, result.CriticalRateDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(30.0, result.CriticalDamageDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.EffectHitDifferense);
-	TEST_ASSERT_DOUBLE_EQUAL(-20.0, result.EffectResistDifferense);
+	TEST_ASSERT_DOUBLE_EQUAL(50.0, result.AttackDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(-200.0, result.HpDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(50.0, result.DefenseDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.SpeedDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(5.0, result.CriticalRateDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(30.0, result.CriticalDamageDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(0.0, result.EffectHitDifference);
+	TEST_ASSERT_DOUBLE_EQUAL(-20.0, result.EffectResistDifference);
 }
