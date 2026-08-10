@@ -1,6 +1,6 @@
-using Gui.Common;
 using Gui.Converter;
 using Gui.Form.Control;
+using Gui.Resolver;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -102,7 +102,7 @@ namespace Gui.Factory
 				Stat = new StatValueDto
 				{
 					Type = StatTypeConverter.ToDto(cmbEffect.Text),
-					Value = getSetEffectValue(cmbEffect.Text)
+					Value = MitamaEffectValueResolver.ResolveSetEffect(cmbEffect.Text)
 				}
 			};
 		}
@@ -131,58 +131,9 @@ namespace Gui.Factory
 				Stat = new StatValueDto
 				{
 					Type = StatTypeConverter.ToDto(cmbEffect.Text),
-					Value = getUniqueEffectValue(cmbEffect.Text)
+					Value = MitamaEffectValueResolver.ResolveUniqueEffect(cmbEffect.Text)
 				}
 			};
-		}
-
-		private static double getSetEffectValue(string text)
-		{
-			double ret = 0.0;
-
-			switch (text)
-			{
-				case DisplayText.AdditionalAttackRate:
-				case DisplayText.AdditionalHPRate:
-				case DisplayText.CriticalRate:
-				case DisplayText.EffectHit:
-				case DisplayText.EffectResist:
-					ret = 15.0;
-					break;
-				case DisplayText.CriticalDamage:
-					ret = 20.0;
-					break;
-				case DisplayText.AdditionalDefenseRate:
-					ret = 30.0;
-					break;
-				default:
-					break;
-			}
-
-			return ret;
-		}
-
-		private static double getUniqueEffectValue(string text)
-		{
-			double ret = 0.0;
-
-			switch (text)
-			{
-				case DisplayText.AdditionalAttackRate:
-				case DisplayText.AdditionalHPRate:
-				case DisplayText.CriticalRate:
-				case DisplayText.EffectHit:
-				case DisplayText.EffectResist:
-					ret = 8.0;
-					break;
-				case DisplayText.AdditionalDefenseRate:
-					ret = 16.0;
-					break;
-				default:
-					break;
-			}
-
-			return ret;
 		}
 	}
 }
