@@ -4,6 +4,7 @@ using Gui.Dialog;
 using Gui.Factory;
 using Gui.Form.Applicator;
 using Gui.Form.Control;
+using Gui.Formatter;
 using Gui.IO;
 using Gui.Resolver;
 using Gui.SaveData;
@@ -394,57 +395,16 @@ namespace Gui.Form
 				return;
 			}
 
-			txtMitamaOnly.Text = formatMitamaStatus(result.MitamaOnlyStatus);
+			txtMitamaOnly.Text = StatusFormatter.FormatMitamaSummary(result.MitamaOnlyStatus);
 
 			if (cmbShikigami.SelectedItem != null)
 			{
-				txtFinalStats.Text = formatFinalStatus(result.FinalStatus);
+				txtFinalStats.Text = StatusFormatter.FormatFinalSummary(result.FinalStatus);
 			}
 			else
 			{
 				txtFinalStats.Text = "";
 			}
-		}
-
-		private string formatMitamaStatus(StatusDto s)
-		{
-			if (s == null)
-			{
-				return "";
-			}
-
-			return
-					$"{DisplayText.Attack}: {s.Attack:F2} " +
-					$"{DisplayText.HP}: {s.HP:F2} " +
-					$"{DisplayText.Defense}: {s.Defense:F2} " +
-					$"{DisplayText.Speed}: {s.Speed:F2} " +
-
-					$"{DisplayText.AdditionalAttackRate}: {s.AdditionalAttackRate:F2}% " +
-					$"{DisplayText.AdditionalHPRate}: {s.AdditionalHpRate:F2}% " +
-					$"{DisplayText.AdditionalDefenseRate}: {s.AdditionalDefenseRate:F2}% " +
-
-					$"{DisplayText.CriticalRate}: {s.CritRate:F2}% " +
-					$"{DisplayText.CriticalDamage}: {s.CritDamage:F2}% " +
-					$"{DisplayText.EffectHit}: {s.EffectHit:F2}% " +
-					$"{DisplayText.EffectResist}: {s.EffectResist:F2}%";
-		}
-
-		private string formatFinalStatus(StatusDto s)
-		{
-			if (s == null)
-			{
-				return "";
-			}
-
-			return
-					$"{DisplayText.Attack}: {s.Attack:F2} " +
-					$"{DisplayText.HP}: {s.HP:F2} " +
-					$"{DisplayText.Defense}: {s.Defense:F2} " +
-					$"{DisplayText.Speed}: {s.Speed:F2} " +
-					$"{DisplayText.CriticalRate}: {s.CritRate:F2}% " +
-					$"{DisplayText.CriticalDamage}: {s.CritDamage:F2}% " +
-					$"{DisplayText.EffectHit}: {s.EffectHit:F2}% " +
-					$"{DisplayText.EffectResist}: {s.EffectResist:F2}%";
 		}
 
 		/****************************************************************************************************

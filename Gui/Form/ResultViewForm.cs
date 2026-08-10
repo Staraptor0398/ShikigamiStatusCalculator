@@ -1,4 +1,4 @@
-using Gui.Common;
+using Gui.Formatter;
 using System;
 
 namespace Gui.Form
@@ -23,55 +23,13 @@ namespace Gui.Form
 				return;
 			}
 
-			txtMitamaStatus.Text = formatMitamaStatus(_result.MitamaOnlyStatus);
-			txtFinalStatus.Text = formatFinalStatus(_result.FinalStatus);
+			txtMitamaStatus.Text = StatusFormatter.FormatMitamaDetail(_result.MitamaOnlyStatus);
+			txtFinalStatus.Text = StatusFormatter.FormatFinalDetail(_result.FinalStatus);
 
 			txtMitamaStatus.SelectionLength = 0;
 			txtFinalStatus.SelectionLength = 0;
 
 			btnClose.Focus();
-		}
-
-		private string formatMitamaStatus(StatusDto s)
-		{
-			if (s == null)
-			{
-				return "";
-			}
-
-			return
-					$"{DisplayText.Attack,-8}: {s.Attack:F2}\r\n" +
-					$"{DisplayText.HP,-11}: {s.HP:F2}\r\n" +
-					$"{DisplayText.Defense,-8}: {s.Defense:F2}\r\n" +
-					$"{DisplayText.Speed,-8}: {s.Speed:F2}\r\n" +
-
-					$"{DisplayText.AdditionalAttackRate,-6}: {s.AdditionalAttackRate:F2}%\r\n" +
-					$"{DisplayText.AdditionalHPRate,-9}: {s.AdditionalHpRate:F2}%\r\n" +
-					$"{DisplayText.AdditionalDefenseRate,-6}: {s.AdditionalDefenseRate:F2}%\r\n" +
-
-					$"{DisplayText.CriticalRate,-8}: {s.CritRate:F2}%\r\n" +
-					$"{DisplayText.CriticalDamage,-9}: {s.CritDamage:F2}%\r\n" +
-					$"{DisplayText.EffectHit,-7}: {s.EffectHit:F2}%\r\n" +
-					$"{DisplayText.EffectResist,-7}: {s.EffectResist:F2}%";
-
-		}
-
-		private string formatFinalStatus(StatusDto s)
-		{
-			if (s == null)
-			{
-				return "";
-			}
-
-			return
-					$"{DisplayText.Attack,-8}: {s.Attack:F2}\r\n" +
-					$"{DisplayText.HP,-11}: {s.HP:F2}\r\n" +
-					$"{DisplayText.Defense,-8}: {s.Defense:F2}\r\n" +
-					$"{DisplayText.Speed,-8}: {s.Speed:F2}\r\n" +
-					$"{DisplayText.CriticalRate,-8}: {s.CritRate:F2}%\r\n" +
-					$"{DisplayText.CriticalDamage,-9}: {s.CritDamage:F2}%\r\n" +
-					$"{DisplayText.EffectHit,-7}: {s.EffectHit:F2}%\r\n" +
-					$"{DisplayText.EffectResist,-7}: {s.EffectResist:F2}%";
 		}
 
 		private void btnClose_Click(object sender, EventArgs e)
