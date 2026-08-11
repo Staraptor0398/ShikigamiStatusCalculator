@@ -35,14 +35,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Access\Development\CalculationTestSourceAccess.cs" />
     <Compile Include="Access\JsonDataAccess.cs" />
     <Compile Include="Access\SaveDataAccess.cs" />
+    <Compile Include="Definition\Development\TestSourceVersion.cs" />
+    <Compile Include="Definition\Development\TestSourceVersionDefinition.cs" />
     <Compile Include="Definition\SaveDataType.cs" />
     <Compile Include="Definition\SaveDataVersion.cs" />
     <Compile Include="Definition\SaveDataVersionDefinition.cs" />
     <Compile Include="Migration\SaveDataMigrator.cs" />
     <Compile Include="Model\BuildSaveData.cs" />
     <Compile Include="Model\CalculationSnapshotSaveData.cs" />
+    <Compile Include="Model\Development\CalculationTestSource.cs" />
+    <Compile Include="Model\Development\FullStatusSaveData.cs" />
+    <Compile Include="Model\File\Development\TestSourceFile.cs" />
     <Compile Include="Model\File\SaveDataFile.cs" />
     <Compile Include="Model\MitamaSaveData.cs" />
     <Compile Include="Model\MitamaSetSaveData.cs" />
