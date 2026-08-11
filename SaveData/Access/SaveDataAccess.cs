@@ -1,12 +1,9 @@
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SaveData.Definition;
 using SaveData.Migration;
 using SaveData.Model;
 using SaveData.Model.File;
 using System;
-using System.IO;
-using System.Text;
 
 namespace SaveData.Access
 {
@@ -50,17 +47,12 @@ namespace SaveData.Access
 				Data = data
 			};
 
-			string json = JsonConvert.SerializeObject(file, Formatting.Indented);
-
-			File.WriteAllText(path, json, new UTF8Encoding(false));
+			JsonDataAccess.Save(path, file);
 		}
 
 		private static T load<T>(string path, SaveDataVersion currentVersion)
 		{
-			string json = File.ReadAllText(path, Encoding.UTF8);
-
-			JObject root = JObject.Parse(json);
-
+			JObject root = JsonDataAccess.LoadObject(path);
 			int sourceVersion = getSourceVersion(root);
 
 			if (sourceVersion > currentVersion.Version)
@@ -73,8 +65,7 @@ namespace SaveData.Access
 				root = SaveDataMigrator.Migrate(root, currentVersion, sourceVersion);
 			}
 
-			SaveDataFile<T> file =
-			root.ToObject<SaveDataFile<T>>();
+			SaveDataFile<T> file = root.ToObject<SaveDataFile<T>>();
 
 			if (file == null)
 			{

@@ -35,6 +35,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Access\JsonDataAccess.cs" />
     <Compile Include="Access\SaveDataAccess.cs" />
     <Compile Include="Definition\SaveDataType.cs" />
     <Compile Include="Definition\SaveDataVersion.cs" />
