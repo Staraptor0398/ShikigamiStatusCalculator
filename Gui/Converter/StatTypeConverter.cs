@@ -26,5 +26,10 @@ namespace Gui.Converter
 
 			return dto;
 		}
+
+		public static string ToText(StatTypeDto dto)
+		{
+			return dto.ToString();
+		}
 	}
 }

@@ -1,8 +1,9 @@
 using SaveData.Model;
+using SaveData.Model.Development;
 
 namespace Gui.Converter
 {
-	public static class StatusSaveDataConverter
+	public static class StatusConverter
 	{
 		public static StatusSaveData ToSaveData(StatusDto dto)
 		{
@@ -41,6 +42,24 @@ namespace Gui.Converter
 				CritDamage = saveData.CritDamage,
 				EffectHit = saveData.EffectHit,
 				EffectResist = saveData.EffectResist
+			};
+		}
+
+		public static FullStatusSaveData ToFullSaveData(StatusDto dto)
+		{
+			return new FullStatusSaveData
+			{
+				Attack = dto.Attack,
+				HP = dto.HP,
+				Defense = dto.Defense,
+				Speed = dto.Speed,
+				CritRate = dto.CritRate,
+				CritDamage = dto.CritDamage,
+				EffectHit = dto.EffectHit,
+				EffectResist = dto.EffectResist,
+				AdditionalAttackRate = dto.AdditionalAttackRate,
+				AdditionalHpRate = dto.AdditionalHpRate,
+				AdditionalDefenseRate = dto.AdditionalDefenseRate
 			};
 		}
 	}

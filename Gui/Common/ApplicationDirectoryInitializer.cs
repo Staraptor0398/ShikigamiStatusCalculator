@@ -16,6 +16,11 @@ namespace Gui.Common
 			Directory.CreateDirectory(AppPath.SnapshotSaveDataDirectoryPath);
 
 			Directory.CreateDirectory(AppPath.LogDirectoryPath);
+
+#if DEBUG
+			Directory.CreateDirectory(AppPath.TestSourceDirectoryPath);
+			Directory.CreateDirectory(AppPath.CalculationTestSourceDirectoryPath);
+#endif
 		}
 	}
 }

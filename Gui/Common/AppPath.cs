@@ -13,6 +13,11 @@ namespace Gui.Common
 
 		public const string AppVersionFileName = "AppVersion.txt";
 
+#if DEBUG
+		public const string TestSourceDirectoryPath = "W:\\TestSource";
+		public const string CalculationTestSourceDirectoryPath = TestSourceDirectoryPath + "\\Calculation";
+#endif
+
 		public static string BaseDirectory
 		{
 			get

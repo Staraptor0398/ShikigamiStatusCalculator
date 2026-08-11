@@ -15,6 +15,10 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
+#if DEBUG
+using SaveData.Model.Development;
+#endif
+
 namespace Gui.Form
 {
 	public partial class MainForm : System.Windows.Forms.Form
@@ -240,12 +244,19 @@ namespace Gui.Form
 
 		private ComboBox[] _uniqueEffectComboBoxes = null;
 
+#if DEBUG
+		private CalculationTestSource _lastCalculationTestSource = null;
+#endif
 		/****************************************************************************************************
 		  コンストラクタ
 		****************************************************************************************************/
 		public MainForm()
 		{
 			InitializeComponent();
+
+#if DEBUG
+			initializeDevelopmentControls();
+#endif
 
 			string version = loadAppVersion();
 			this.Text = $"{this.Text} {version}";
@@ -294,6 +305,10 @@ namespace Gui.Form
 			try
 			{
 				_lastCalculationResult = CalculationGateway.Calclutate(baseStatus, mitamaSet);
+
+#if DEBUG
+				_lastCalculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, _lastCalculationResult);
+#endif
 			}
 			catch (Exception ex)
 			{
@@ -842,8 +857,8 @@ namespace Gui.Form
 						return;
 					}
 
-					StatusDto baseStatus = StatusSaveDataConverter.ToDto(baseSnapshot.FinalStatus);
-					StatusDto targetStatus = StatusSaveDataConverter.ToDto(targetSnapshot.FinalStatus);
+					StatusDto baseStatus = StatusConverter.ToDto(baseSnapshot.FinalStatus);
+					StatusDto targetStatus = StatusConverter.ToDto(targetSnapshot.FinalStatus);
 
 					if (baseStatus == null || targetStatus == null)
 					{

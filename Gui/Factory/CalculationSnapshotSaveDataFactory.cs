@@ -21,8 +21,8 @@ namespace Gui.Factory
 				CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
 				ShikigamiName = cmbShikigami.Text,
 				MitamaSet = MitamaSetSaveDataFactory.Create(slots, setEffectComboBoxes, uniqueEffectComboBoxes),
-				MitamaStatus = StatusSaveDataConverter.ToSaveData(calculationResult.MitamaOnlyStatus),
-				FinalStatus = StatusSaveDataConverter.ToSaveData(calculationResult.FinalStatus)
+				MitamaStatus = StatusConverter.ToSaveData(calculationResult.MitamaOnlyStatus),
+				FinalStatus = StatusConverter.ToSaveData(calculationResult.FinalStatus)
 			};
 		}
 	}
