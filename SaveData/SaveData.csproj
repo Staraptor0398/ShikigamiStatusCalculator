@@ -36,12 +36,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Access\SaveDataAccess.cs" />
+    <Compile Include="Definition\SaveDataType.cs" />
+    <Compile Include="Definition\SaveDataVersion.cs" />
+    <Compile Include="Definition\SaveDataVersionDefinition.cs" />
+    <Compile Include="Migration\SaveDataMigrator.cs" />
     <Compile Include="Model\BuildSaveData.cs" />
     <Compile Include="Model\CalculationSnapshotSaveData.cs" />
+    <Compile Include="Model\File\SaveDataFile.cs" />
     <Compile Include="Model\MitamaSaveData.cs" />
     <Compile Include="Model\MitamaSetSaveData.cs" />
-    <Compile Include="Model\EffectSaveData.cs" />
+    <Compile Include="Model\SetEffectSaveData.cs" />
     <Compile Include="Model\StatusSaveData.cs" />
+    <Compile Include="Model\StatValueSaveData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -44,11 +44,11 @@ namespace Gui.Form.Applicator
 
 			for (int i = 0; i < data.SubStats.Count && i < slot.SubStats.Length; i++)
 			{
-				applyEffect(data.SubStats[i], slot.SubStats[i].TypeComboBox, slot.SubStats[i].ValueTextBox);
+				applyStatValue(data.SubStats[i], slot.SubStats[i].TypeComboBox, slot.SubStats[i].ValueTextBox);
 			}
 		}
 
-		private static void applySetEffect(List<EffectSaveData> list, ComboBox[] setEffectComboBoxes)
+		private static void applySetEffect(List<SetEffectSaveData> list, ComboBox[] setEffectComboBoxes)
 		{
 			if (list == null)
 			{
@@ -57,11 +57,11 @@ namespace Gui.Form.Applicator
 
 			for (int i = 0; i < list.Count && i < setEffectComboBoxes.Length; i++)
 			{
-				applyEffect(list[i], setEffectComboBoxes[i]);
+				applySingleSetEffect(list[i], setEffectComboBoxes[i]);
 			}
 		}
 
-		private static void applyUniqueEffect(List<EffectSaveData> list, ComboBox[] uniqueEffectComboBoxes)
+		private static void applyUniqueEffect(List<SetEffectSaveData> list, ComboBox[] uniqueEffectComboBoxes)
 		{
 			if (list == null)
 			{
@@ -70,11 +70,21 @@ namespace Gui.Form.Applicator
 
 			for (int i = 0; i < list.Count && i < uniqueEffectComboBoxes.Length; i++)
 			{
-				applyEffect(list[i], uniqueEffectComboBoxes[i]);
+				applySingleSetEffect(list[i], uniqueEffectComboBoxes[i]);
 			}
 		}
 
-		private static void applyEffect(EffectSaveData data, ComboBox comboBox, TextBox textBox)
+		private static void applySingleSetEffect(SetEffectSaveData data, ComboBox comboBox)
+		{
+			if (data?.Stat == null || comboBox == null)
+			{
+				return;
+			}
+
+			applyStatValue(data.Stat, comboBox);
+		}
+
+		private static void applyStatValue(StatValueSaveData data, ComboBox comboBox, TextBox textBox)
 		{
 			if (data == null || comboBox == null || textBox == null)
 			{
@@ -85,7 +95,7 @@ namespace Gui.Form.Applicator
 			textBox.Text = data.Value.ToString();
 		}
 
-		private static void applyEffect(EffectSaveData data, ComboBox comboBox)
+		private static void applyStatValue(StatValueSaveData data, ComboBox comboBox)
 		{
 			if (data == null || comboBox == null)
 			{

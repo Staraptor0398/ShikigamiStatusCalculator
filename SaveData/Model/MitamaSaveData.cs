@@ -6,8 +6,8 @@ namespace SaveData.Model
 	{
 		public int Slot { get; set; }
 
-		public EffectSaveData MainStat { get; set; }
+		public StatValueSaveData MainStat { get; set; }
 
-		public List<EffectSaveData> SubStats { get; set; }
+		public List<StatValueSaveData> SubStats { get; set; }
 	}
 }

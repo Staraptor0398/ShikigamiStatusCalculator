@@ -41,7 +41,7 @@ namespace Gui.Factory
 			{
 				Slot = slot,
 
-				MainStat = new EffectSaveData
+				MainStat = new StatValueSaveData
 				{
 					Type = input.MainStatComboBox.Text,
 					Value = MainStatValueResolver.Resolve(input.MainStatComboBox.Text, slot)
@@ -51,48 +51,48 @@ namespace Gui.Factory
 			};
 		}
 
-		private static List<EffectSaveData> createSubStatSaveDataList(SubStatInputControl[] subStats)
+		private static List<StatValueSaveData> createSubStatSaveDataList(SubStatInputControl[] subStats)
 		{
 			if (subStats == null)
 			{
 				return null;
 			}
 
-			List<EffectSaveData> list = new List<EffectSaveData>();
+			List<StatValueSaveData> list = new List<StatValueSaveData>();
 
 			foreach (SubStatInputControl subStat in subStats)
 			{
-				list.Add(createEffectSaveData(subStat.TypeComboBox, subStat.ValueTextBox));
+				list.Add(createStatValueSaveData(subStat.TypeComboBox, subStat.ValueTextBox));
 			}
 
 			return list;
 		}
 
-		private static List<EffectSaveData> createSetEffectSaveData(ComboBox[] setEffectComboBoxes)
+		private static List<SetEffectSaveData> createSetEffectSaveData(ComboBox[] setEffectComboBoxes)
 		{
-			List<EffectSaveData> list = new List<EffectSaveData>();
+			List<SetEffectSaveData> list = new List<SetEffectSaveData>();
 
 			foreach (ComboBox comboBox in setEffectComboBoxes)
 			{
-				list.Add(createEffectSaveData(comboBox));
+				list.Add(createSetEffectSaveData(comboBox));
 			}
 
 			return list;
 		}
 
-		private static List<EffectSaveData> createUniqueEffectSaveData(ComboBox[] uniqueEffectComboBoxes)
+		private static List<SetEffectSaveData> createUniqueEffectSaveData(ComboBox[] uniqueEffectComboBoxes)
 		{
-			List<EffectSaveData> list = new List<EffectSaveData>();
+			List<SetEffectSaveData> list = new List<SetEffectSaveData>();
 
 			foreach (ComboBox comboBox in uniqueEffectComboBoxes)
 			{
-				list.Add(createEffectSaveData(comboBox));
+				list.Add(createSetEffectSaveData(comboBox));
 			}
 
 			return list;
 		}
 
-		private static EffectSaveData createEffectSaveData(ComboBox cmb, TextBox txt)
+		private static StatValueSaveData createStatValueSaveData(ComboBox cmb, TextBox txt)
 		{
 			if (cmb == null || txt == null)
 			{
@@ -101,24 +101,27 @@ namespace Gui.Factory
 
 			double.TryParse(txt.Text, out double value);
 
-			return new EffectSaveData
+			return new StatValueSaveData
 			{
 				Type = cmb.Text,
 				Value = value
 			};
 		}
 
-		private static EffectSaveData createEffectSaveData(ComboBox cmb)
+		private static SetEffectSaveData createSetEffectSaveData(ComboBox cmb)
 		{
 			if (cmb == null)
 			{
 				return null;
 			}
 
-			return new EffectSaveData
+			return new SetEffectSaveData
 			{
-				Type = cmb.Text,
-				Value = 0.0
+				Stat = new StatValueSaveData
+				{
+					Type = cmb.Text,
+					Value = 0.0
+				}
 			};
 		}
 	}

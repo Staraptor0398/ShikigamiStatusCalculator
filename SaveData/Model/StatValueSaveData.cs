@@ -1,6 +1,6 @@
 namespace SaveData.Model
 {
-	public class EffectSaveData
+	public class StatValueSaveData
 	{
 		public string Type { get; set; }
 

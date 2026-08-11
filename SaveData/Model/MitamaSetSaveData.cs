@@ -6,8 +6,8 @@ namespace SaveData.Model
 	{
 		public List<MitamaSaveData> Mitamas { get; set; }
 
-		public List<EffectSaveData> SetEffects { get; set; }
+		public List<SetEffectSaveData> SetEffects { get; set; }
 
-		public List<EffectSaveData> UniqueEffects { get; set; }
+		public List<SetEffectSaveData> UniqueEffects { get; set; }
 	}
 }
