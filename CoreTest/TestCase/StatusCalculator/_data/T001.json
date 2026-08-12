@@ -1,0 +1,37 @@
+{
+  "Input": {
+    "BaseStatus": {
+      "Attack": 2224.0,
+      "HP": 13557.0,
+      "Defense": 432.0,
+      "Speed": 108.0,
+      "CritRate": 10.0,
+      "CritDamage": 150.0,
+      "EffectHit": 0.0,
+      "EffectResist": 0.0
+    },
+    "MitamaStatus": {
+      "Attack": 554.13,
+      "HP": 2259.59,
+      "Defense": 113.07000000000001,
+      "Speed": 62.559999999999995,
+      "CritRate": 86.02000000000001,
+      "CritDamage": 125.35,
+      "EffectHit": 21.48,
+      "EffectResist": 3.5,
+      "AdditionalAttackRate": 5.35,
+      "AdditionalHpRate": 57.52,
+      "AdditionalDefenseRate": 4.98
+    }
+  },
+  "Expected": {
+    "Attack": 2897.114,
+    "HP": 23614.576399999998,
+    "Defense": 566.5836,
+    "Speed": 170.56,
+    "CritRate": 96.02000000000001,
+    "CritDamage": 275.35,
+    "EffectHit": 21.48,
+    "EffectResist": 3.5
+  }
+}

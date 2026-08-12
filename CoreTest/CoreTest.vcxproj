@@ -109,6 +109,17 @@
     <ClInclude Include="TestCase\StatusComparator\StatusComparator_Test.h" />
     <ClInclude Include="TestCommon\TestAssert.h" />
     <ClInclude Include="TestCommon\TestResultLogger.h" />
+    <ClInclude Include="TestData\Access\JsonDataAccess.h" />
+    <ClInclude Include="TestData\Converter\FullStatusConverter.h" />
+    <ClInclude Include="TestData\Converter\StatusCalculator\StatusCalculatorInputConverter.h" />
+    <ClInclude Include="TestData\Converter\StatusCalculator\StatusCalculatorTestDataConverter.h" />
+    <ClInclude Include="TestData\Converter\StatusConverter.h" />
+    <ClInclude Include="TestData\Model\FullStatusTestData.h" />
+    <ClInclude Include="TestData\Model\StatusCalculator\StatusCalculatorInputTestData.h" />
+    <ClInclude Include="TestData\Model\StatusCalculator\StatusCalculatorTestData.h" />
+    <ClInclude Include="TestData\Model\StatusTestData.h" />
+    <ClInclude Include="TestData\Model\TestData.h" />
+    <ClInclude Include="TestData\TestDataDirectory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -125,6 +136,11 @@
     <ClCompile Include="TestCase\StatusComparator\StatusComparator_Test.cpp" />
     <ClCompile Include="TestCase\StatusComparator\StatusComparator_TestEntry.cpp" />
     <ClCompile Include="TestCommon\TestResultLogger.cpp" />
+    <ClCompile Include="TestData\Converter\FullStatusConverter.cpp" />
+    <ClCompile Include="TestData\Converter\StatusCalculator\StatusCalculatorInputConverter.cpp" />
+    <ClCompile Include="TestData\Converter\StatusCalculator\StatusCalculatorTestDataConverter.cpp" />
+    <ClCompile Include="TestData\Converter\StatusConverter.cpp" />
+    <ClCompile Include="TestData\TestDataDirectory.cpp" />
     <ClCompile Include="TestMain.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -4,37 +4,28 @@
 #include "../../../Core/Model/Status.h"
 #include "../../../Core/Status/StatusCalculator.h"
 #include "../../TestCommon/TestAssert.h"
+#include "../../TestData/Access/JsonDataAccess.h"
+#include "../../TestData/Converter/FullStatusConverter.h"
+#include "../../TestData/Converter/StatusCalculator/StatusCalculatorTestDataConverter.h"
+#include "../../TestData/Converter/StatusConverter.h"
+#include "../../TestData/Model/StatusCalculator/StatusCalculatorTestData.h"
+#include "../../TestData/TestDataDirectory.h"
 
 void StatusCalculator_Test::calculateFinalStatus_addsBaseAndMitamaStatus()
 {
-	Status baseStatus{};
-	baseStatus.Attack = 100.0;
-	baseStatus.Hp = 1000.0;
-	baseStatus.Defense = 200.0;
-	baseStatus.Speed = 110.0;
-	baseStatus.CriticalRate = 10.0;
-	baseStatus.CriticalDamage = 150.0;
-	baseStatus.EffectHit = 20.0;
-	baseStatus.EffectResist = 30.0;
+	const auto testData = JsonDataAccess::load<StatusCalculatorTestData, StatusCalculatorTestDataConverter>(TestDataDirectory::getPath("T001.json"));
 
-	Status mitamaOnlyStatus{};
-	mitamaOnlyStatus.Attack = 50.0;
-	mitamaOnlyStatus.Hp = 300.0;
-	mitamaOnlyStatus.Defense = 40.0;
-	mitamaOnlyStatus.Speed = 18.0;
-	mitamaOnlyStatus.CriticalRate = 15.0;
-	mitamaOnlyStatus.CriticalDamage = 25.0;
-	mitamaOnlyStatus.EffectHit = 12.0;
-	mitamaOnlyStatus.EffectResist = 8.0;
+	const Status baseStatus = StatusConverter::toNative(testData.Input.BaseStatus);
+	const Status mitamaStatus = FullStatusConverter::toNative(testData.Input.MitamaStatus);
+	const Status expected = StatusConverter::toNative(testData.Expected);
+	const Status actual = StatusCalculator::calculateFinalStatus(baseStatus, mitamaStatus);
 
-	Status result = StatusCalculator::calculateFinalStatus(baseStatus, mitamaOnlyStatus);
-
-	TEST_ASSERT_DOUBLE_EQUAL(150.0, result.Attack);
-	TEST_ASSERT_DOUBLE_EQUAL(1300.0, result.Hp);
-	TEST_ASSERT_DOUBLE_EQUAL(240.0, result.Defense);
-	TEST_ASSERT_DOUBLE_EQUAL(128.0, result.Speed);
-	TEST_ASSERT_DOUBLE_EQUAL(25.0, result.CriticalRate);
-	TEST_ASSERT_DOUBLE_EQUAL(175.0, result.CriticalDamage);
-	TEST_ASSERT_DOUBLE_EQUAL(32.0, result.EffectHit);
-	TEST_ASSERT_DOUBLE_EQUAL(38.0, result.EffectResist);
+	TEST_ASSERT_DOUBLE_EQUAL(expected.Attack, actual.Attack);
+	TEST_ASSERT_DOUBLE_EQUAL(expected.Hp, actual.Hp);
+	TEST_ASSERT_DOUBLE_EQUAL(expected.Defense, actual.Defense);
+	TEST_ASSERT_DOUBLE_EQUAL(expected.Speed, actual.Speed);
+	TEST_ASSERT_DOUBLE_EQUAL(expected.CriticalRate, actual.CriticalRate);
+	TEST_ASSERT_DOUBLE_EQUAL(expected.CriticalDamage, actual.CriticalDamage);
+	TEST_ASSERT_DOUBLE_EQUAL(expected.EffectHit, actual.EffectHit);
+	TEST_ASSERT_DOUBLE_EQUAL(expected.EffectResist, actual.EffectResist);
 }

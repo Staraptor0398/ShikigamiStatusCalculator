@@ -27,6 +27,21 @@
     <ClCompile Include="TestCase\MitamaCalculator\MitamaCalculator_TestEntry.cpp">
       <Filter>TestCase\MitamaCalculator</Filter>
     </ClCompile>
+    <ClCompile Include="TestData\Converter\StatusConverter.cpp">
+      <Filter>TestData\Converter</Filter>
+    </ClCompile>
+    <ClCompile Include="TestData\Converter\FullStatusConverter.cpp">
+      <Filter>TestData\Converter</Filter>
+    </ClCompile>
+    <ClCompile Include="TestData\Converter\StatusCalculator\StatusCalculatorInputConverter.cpp">
+      <Filter>TestData\Converter\StatusCalculator</Filter>
+    </ClCompile>
+    <ClCompile Include="TestData\Converter\StatusCalculator\StatusCalculatorTestDataConverter.cpp">
+      <Filter>TestData\Converter\StatusCalculator</Filter>
+    </ClCompile>
+    <ClCompile Include="TestData\TestDataDirectory.cpp">
+      <Filter>TestData</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -48,6 +63,39 @@
     <ClInclude Include="TestCase\MitamaCalculator\MitamaCalculator_Test.h">
       <Filter>TestCase\MitamaCalculator</Filter>
     </ClInclude>
+    <ClInclude Include="TestData\Model\TestData.h">
+      <Filter>TestData\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="TestData\Model\StatusTestData.h">
+      <Filter>TestData\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="TestData\Model\FullStatusTestData.h">
+      <Filter>TestData\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="TestData\Model\StatusCalculator\StatusCalculatorInputTestData.h">
+      <Filter>TestData\Model\StatusCalculator</Filter>
+    </ClInclude>
+    <ClInclude Include="TestData\Model\StatusCalculator\StatusCalculatorTestData.h">
+      <Filter>TestData\Model\StatusCalculator</Filter>
+    </ClInclude>
+    <ClInclude Include="TestData\Access\JsonDataAccess.h">
+      <Filter>TestData\Access</Filter>
+    </ClInclude>
+    <ClInclude Include="TestData\Converter\StatusConverter.h">
+      <Filter>TestData\Converter</Filter>
+    </ClInclude>
+    <ClInclude Include="TestData\Converter\FullStatusConverter.h">
+      <Filter>TestData\Converter</Filter>
+    </ClInclude>
+    <ClInclude Include="TestData\Converter\StatusCalculator\StatusCalculatorInputConverter.h">
+      <Filter>TestData\Converter\StatusCalculator</Filter>
+    </ClInclude>
+    <ClInclude Include="TestData\Converter\StatusCalculator\StatusCalculatorTestDataConverter.h">
+      <Filter>TestData\Converter\StatusCalculator</Filter>
+    </ClInclude>
+    <ClInclude Include="TestData\TestDataDirectory.h">
+      <Filter>TestData</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TestCommon">
@@ -67,6 +115,24 @@
     </Filter>
     <Filter Include="TestCase\MitamaCalculator\_data">
       <UniqueIdentifier>{dafb945a-c9ab-4a1c-b2d8-f0c938c58f23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestData">
+      <UniqueIdentifier>{7628e04e-b99b-48a5-8311-e0286e9f4ef2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestData\Access">
+      <UniqueIdentifier>{c0f0f78b-cdf3-41b2-97cf-b6881118741b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestData\Model">
+      <UniqueIdentifier>{beb9cc92-89b4-4464-bd66-33649d9768be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestData\Converter">
+      <UniqueIdentifier>{1a3c9784-da4e-4293-b46a-f5930377ae64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestData\Model\StatusCalculator">
+      <UniqueIdentifier>{244d8ff8-c4a0-4336-ad1e-c69d55db9d30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestData\Converter\StatusCalculator">
+      <UniqueIdentifier>{faaff33e-a1ed-447a-8f3a-31b91ab64783}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
