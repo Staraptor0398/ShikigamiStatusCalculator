@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="../SaveData/SaveData.csproj" Id="e8564587-6700-48af-8200-48d33e666f70">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="CoreTestDataConverter.csproj" Id="48702b8a-638e-42d7-a41d-7655420d228f">
+    <Platform Solution="*|x64" Project="x64" />
+    <Platform Solution="*|x86" Project="x86" />
+  </Project>
+</Solution>
