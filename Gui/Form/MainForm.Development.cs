@@ -28,7 +28,7 @@ namespace Gui.Form
 
 		private void btnExportCalculationTestSource_Click(object sender, EventArgs e)
 		{
-			if (_lastCalculationTestSource == null)
+			if (mLastCalculationTestSource == null)
 			{
 				MessageBox.Show(
 					"出力できる計算結果がありません。",
@@ -51,7 +51,7 @@ namespace Gui.Form
 				}
 				try
 				{
-					CalculationTestSourceAccess.Save(dialog.FileName, _lastCalculationTestSource);
+					CalculationTestSourceAccess.Save(dialog.FileName, mLastCalculationTestSource);
 				}
 				catch (Exception ex)
 				{

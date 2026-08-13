@@ -245,7 +245,7 @@ namespace Gui.Form
 		private ComboBox[] mUniqueEffectComboBoxes = null;
 
 #if DEBUG
-		private CalculationTestSource _lastCalculationTestSource = null;
+		private CalculationTestSource mLastCalculationTestSource = null;
 #endif
 		/****************************************************************************************************
 		  コンストラクタ
@@ -307,7 +307,7 @@ namespace Gui.Form
 				mLastCalculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
 
 #if DEBUG
-				_lastCalculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, mLastCalculationResult);
+				mLastCalculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, mLastCalculationResult);
 #endif
 			}
 			catch (Exception ex)
