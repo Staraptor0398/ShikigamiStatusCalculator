@@ -10,17 +10,17 @@ namespace Gui.Converter
 
 			switch (text)
 			{
-				case DisplayText.Attack: dto = StatTypeDto.Attack; break;
+				case DisplayText.ATTACK: dto = StatTypeDto.Attack; break;
 				case DisplayText.HP: dto = StatTypeDto.Hp; break;
-				case DisplayText.Defense: dto = StatTypeDto.Defense; break;
-				case DisplayText.Speed: dto = StatTypeDto.Speed; break;
-				case DisplayText.CriticalRate: dto = StatTypeDto.CriticalRate; break;
-				case DisplayText.CriticalDamage: dto = StatTypeDto.CriticalDamage; break;
-				case DisplayText.EffectHit: dto = StatTypeDto.EffectHit; break;
-				case DisplayText.EffectResist: dto = StatTypeDto.EffectResist; break;
-				case DisplayText.AdditionalAttackRate: dto = StatTypeDto.AdditionalAttackRate; break;
-				case DisplayText.AdditionalHPRate: dto = StatTypeDto.AdditionalHpRate; break;
-				case DisplayText.AdditionalDefenseRate: dto = StatTypeDto.AdditionalDefenseRate; break;
+				case DisplayText.DEFENCSE: dto = StatTypeDto.Defense; break;
+				case DisplayText.SPEED: dto = StatTypeDto.Speed; break;
+				case DisplayText.CRITICAL_RATE: dto = StatTypeDto.CriticalRate; break;
+				case DisplayText.CRITICAL_DAMAGE: dto = StatTypeDto.CriticalDamage; break;
+				case DisplayText.EFFECT_HIT: dto = StatTypeDto.EffectHit; break;
+				case DisplayText.EFFECT_RESIST: dto = StatTypeDto.EffectResist; break;
+				case DisplayText.ADDITIONAL_ATTACK_RATE: dto = StatTypeDto.AdditionalAttackRate; break;
+				case DisplayText.ADDITIONAL_HP_RATE: dto = StatTypeDto.AdditionalHpRate; break;
+				case DisplayText.ADDITIONAL_DEFENSE_RATE: dto = StatTypeDto.AdditionalDefenseRate; break;
 				default: break;
 			}
 

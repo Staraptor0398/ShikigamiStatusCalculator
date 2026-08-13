@@ -10,17 +10,17 @@ namespace Gui.Resolver
 
 			switch (text)
 			{
-				case DisplayText.AdditionalAttackRate:
-				case DisplayText.AdditionalHPRate:
-				case DisplayText.CriticalRate:
-				case DisplayText.EffectHit:
-				case DisplayText.EffectResist:
+				case DisplayText.ADDITIONAL_ATTACK_RATE:
+				case DisplayText.ADDITIONAL_HP_RATE:
+				case DisplayText.CRITICAL_RATE:
+				case DisplayText.EFFECT_HIT:
+				case DisplayText.EFFECT_RESIST:
 					setEffectValue = 15.0;
 					break;
-				case DisplayText.CriticalDamage:
+				case DisplayText.CRITICAL_DAMAGE:
 					setEffectValue = 20.0;
 					break;
-				case DisplayText.AdditionalDefenseRate:
+				case DisplayText.ADDITIONAL_DEFENSE_RATE:
 					setEffectValue = 30.0;
 					break;
 				default:
@@ -36,14 +36,14 @@ namespace Gui.Resolver
 
 			switch (text)
 			{
-				case DisplayText.AdditionalAttackRate:
-				case DisplayText.AdditionalHPRate:
-				case DisplayText.CriticalRate:
-				case DisplayText.EffectHit:
-				case DisplayText.EffectResist:
+				case DisplayText.ADDITIONAL_ATTACK_RATE:
+				case DisplayText.ADDITIONAL_HP_RATE:
+				case DisplayText.CRITICAL_RATE:
+				case DisplayText.EFFECT_HIT:
+				case DisplayText.EFFECT_RESIST:
 					uniqueEffectValue = 8.0;
 					break;
-				case DisplayText.AdditionalDefenseRate:
+				case DisplayText.ADDITIONAL_DEFENSE_RATE:
 					uniqueEffectValue = 16.0;
 					break;
 				default:

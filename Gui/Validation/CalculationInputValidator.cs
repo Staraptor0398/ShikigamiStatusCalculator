@@ -87,7 +87,7 @@ namespace Gui.Validation
 
 		private static bool hasSubStatInput(ComboBox cmbSubStat, TextBox txtSubvalue)
 		{
-			return (!string.IsNullOrWhiteSpace(cmbSubStat.Text) && cmbSubStat.Text != DisplayText.None) || !string.IsNullOrWhiteSpace(txtSubvalue.Text);
+			return (!string.IsNullOrWhiteSpace(cmbSubStat.Text) && cmbSubStat.Text != DisplayText.NONE) || !string.IsNullOrWhiteSpace(txtSubvalue.Text);
 		}
 
 		private static CalculationInputValidationOutcome validateEffectSlotCount(MitamaSlotInputControl[] slots, ComboBox[] setEffectComboBoxes, ComboBox[] uniqueEffectComboBoxes)
@@ -159,7 +159,7 @@ namespace Gui.Validation
 				return false;
 			}
 
-			if (comboBox.Text == DisplayText.None)
+			if (comboBox.Text == DisplayText.NONE)
 			{
 				return false;
 			}
@@ -188,7 +188,7 @@ namespace Gui.Validation
 
 			foreach (SubStatInputControl subStat in subStats)
 			{
-				bool hasType = !string.IsNullOrWhiteSpace(subStat.TypeComboBox.Text) && subStat.TypeComboBox.Text != DisplayText.None;
+				bool hasType = !string.IsNullOrWhiteSpace(subStat.TypeComboBox.Text) && subStat.TypeComboBox.Text != DisplayText.NONE;
 				bool hasValue = !string.IsNullOrWhiteSpace(subStat.ValueTextBox.Text);
 
 				if (!hasType && !hasValue)

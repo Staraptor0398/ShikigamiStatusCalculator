@@ -66,10 +66,10 @@ namespace Gui.Form
 		{
 			cmbRarity.Items.Clear();
 
-			cmbRarity.Items.Add(DisplayText.RarityUR);
-			cmbRarity.Items.Add(DisplayText.RaritySP);
-			cmbRarity.Items.Add(DisplayText.RaritySSR);
-			cmbRarity.Items.Add(DisplayText.RaritySR);
+			cmbRarity.Items.Add(DisplayText.RARITY_UR);
+			cmbRarity.Items.Add(DisplayText.RARITY_SP);
+			cmbRarity.Items.Add(DisplayText.RARITY_SSR);
+			cmbRarity.Items.Add(DisplayText.RARITY_SR);
 
 			cmbRarity.SelectedIndex = -1;
 		}
@@ -207,7 +207,7 @@ namespace Gui.Form
 				return false;
 			}
 
-			if (!tryGetDouble(txtAttack, DisplayText.Attack, out double attack))
+			if (!tryGetDouble(txtAttack, DisplayText.ATTACK, out double attack))
 			{
 				return false;
 			}
@@ -217,32 +217,32 @@ namespace Gui.Form
 				return false;
 			}
 
-			if (!tryGetDouble(txtDefense, DisplayText.Defense, out double deffense))
+			if (!tryGetDouble(txtDefense, DisplayText.DEFENCSE, out double deffense))
 			{
 				return false;
 			}
 
-			if (!tryGetDouble(txtSpeed, DisplayText.Speed, out double speed))
+			if (!tryGetDouble(txtSpeed, DisplayText.SPEED, out double speed))
 			{
 				return false;
 			}
 
-			if (!tryGetDouble(txtCritRate, DisplayText.CriticalRate, out double critRate))
+			if (!tryGetDouble(txtCritRate, DisplayText.CRITICAL_RATE, out double critRate))
 			{
 				return false;
 			}
 
-			if (!tryGetDouble(txtCritDamage, DisplayText.CriticalDamage, out double critDamage))
+			if (!tryGetDouble(txtCritDamage, DisplayText.CRITICAL_DAMAGE, out double critDamage))
 			{
 				return false;
 			}
 
-			if (!tryGetDouble(txtEffectHit, DisplayText.EffectHit, out double effectHit))
+			if (!tryGetDouble(txtEffectHit, DisplayText.EFFECT_HIT, out double effectHit))
 			{
 				return false;
 			}
 
-			if (!tryGetDouble(txtEffectResist, DisplayText.EffectResist, out double effectResist))
+			if (!tryGetDouble(txtEffectResist, DisplayText.EFFECT_RESIST, out double effectResist))
 			{
 				return false;
 			}

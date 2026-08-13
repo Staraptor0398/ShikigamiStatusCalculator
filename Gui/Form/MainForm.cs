@@ -428,11 +428,11 @@ namespace Gui.Form
 		{
 			setComboItems(
 				cmbRarityFilter,
-				DisplayText.RarityAll,
-				DisplayText.RarityUR,
-				DisplayText.RaritySP,
-				DisplayText.RaritySSR,
-				DisplayText.RaritySR);
+				DisplayText.RARITY_ALL,
+				DisplayText.RARITY_UR,
+				DisplayText.RARITY_SP,
+				DisplayText.RARITY_SSR,
+				DisplayText.RARITY_SR);
 
 			cmbRarityFilter.SelectedIndex = 0;
 		}
@@ -465,33 +465,33 @@ namespace Gui.Form
 		private void initializeMainStatComboBoxes()
 		{
 			setComboItems(cmbMainStat1,
-				DisplayText.Attack);
+				DisplayText.ATTACK);
 
 			setComboItems(cmbMainStat2,
-				DisplayText.Speed,
-				DisplayText.AdditionalAttackRate,
-				DisplayText.AdditionalHPRate,
-				DisplayText.AdditionalDefenseRate);
+				DisplayText.SPEED,
+				DisplayText.ADDITIONAL_ATTACK_RATE,
+				DisplayText.ADDITIONAL_HP_RATE,
+				DisplayText.ADDITIONAL_DEFENSE_RATE);
 
 			setComboItems(cmbMainStat3,
-				DisplayText.Defense);
+				DisplayText.DEFENCSE);
 
 			setComboItems(cmbMainStat4,
-				DisplayText.EffectHit,
-				DisplayText.EffectResist,
-				DisplayText.AdditionalAttackRate,
-				DisplayText.AdditionalHPRate,
-				DisplayText.AdditionalDefenseRate);
+				DisplayText.EFFECT_HIT,
+				DisplayText.EFFECT_RESIST,
+				DisplayText.ADDITIONAL_ATTACK_RATE,
+				DisplayText.ADDITIONAL_HP_RATE,
+				DisplayText.ADDITIONAL_DEFENSE_RATE);
 
 			setComboItems(cmbMainStat5,
 				DisplayText.HP);
 
 			setComboItems(cmbMainStat6,
-				DisplayText.CriticalRate,
-				DisplayText.CriticalDamage,
-				DisplayText.AdditionalAttackRate,
-				DisplayText.AdditionalHPRate,
-				DisplayText.AdditionalDefenseRate);
+				DisplayText.CRITICAL_RATE,
+				DisplayText.CRITICAL_DAMAGE,
+				DisplayText.ADDITIONAL_ATTACK_RATE,
+				DisplayText.ADDITIONAL_HP_RATE,
+				DisplayText.ADDITIONAL_DEFENSE_RATE);
 		}
 
 		private void initializeSubStatComboBoxes()
@@ -501,18 +501,18 @@ namespace Gui.Form
 				foreach (SubStatInputControl subStat in slot.SubStats)
 				{
 					setComboItems(subStat.TypeComboBox,
-						DisplayText.None,
-						DisplayText.Speed,
-						DisplayText.AdditionalAttackRate,
-						DisplayText.AdditionalHPRate,
-						DisplayText.AdditionalDefenseRate,
-						DisplayText.CriticalRate,
-						DisplayText.CriticalDamage,
-						DisplayText.EffectHit,
-						DisplayText.EffectResist,
-						DisplayText.Attack,
+						DisplayText.NONE,
+						DisplayText.SPEED,
+						DisplayText.ADDITIONAL_ATTACK_RATE,
+						DisplayText.ADDITIONAL_HP_RATE,
+						DisplayText.ADDITIONAL_DEFENSE_RATE,
+						DisplayText.CRITICAL_RATE,
+						DisplayText.CRITICAL_DAMAGE,
+						DisplayText.EFFECT_HIT,
+						DisplayText.EFFECT_RESIST,
+						DisplayText.ATTACK,
 						DisplayText.HP,
-						DisplayText.Defense);
+						DisplayText.DEFENCSE);
 				}
 			}
 		}
@@ -522,14 +522,14 @@ namespace Gui.Form
 			foreach (ComboBox comboBox in mSetEffectComboBoxes)
 			{
 				setComboItems(comboBox,
-					DisplayText.None,
-					DisplayText.CriticalRate,
-					DisplayText.CriticalDamage,
-					DisplayText.EffectHit,
-					DisplayText.EffectResist,
-					DisplayText.AdditionalAttackRate,
-					DisplayText.AdditionalHPRate,
-					DisplayText.AdditionalDefenseRate);
+					DisplayText.NONE,
+					DisplayText.CRITICAL_RATE,
+					DisplayText.CRITICAL_DAMAGE,
+					DisplayText.EFFECT_HIT,
+					DisplayText.EFFECT_RESIST,
+					DisplayText.ADDITIONAL_ATTACK_RATE,
+					DisplayText.ADDITIONAL_HP_RATE,
+					DisplayText.ADDITIONAL_DEFENSE_RATE);
 			}
 		}
 
@@ -538,13 +538,13 @@ namespace Gui.Form
 			foreach (ComboBox comboBox in mUniqueEffectComboBoxes)
 			{
 				setComboItems(comboBox,
-					DisplayText.None,
-					DisplayText.CriticalRate,
-					DisplayText.EffectHit,
-					DisplayText.EffectResist,
-					DisplayText.AdditionalAttackRate,
-					DisplayText.AdditionalHPRate,
-					DisplayText.AdditionalDefenseRate);
+					DisplayText.NONE,
+					DisplayText.CRITICAL_RATE,
+					DisplayText.EFFECT_HIT,
+					DisplayText.EFFECT_RESIST,
+					DisplayText.ADDITIONAL_ATTACK_RATE,
+					DisplayText.ADDITIONAL_HP_RATE,
+					DisplayText.ADDITIONAL_DEFENSE_RATE);
 			}
 		}
 
@@ -764,7 +764,7 @@ namespace Gui.Form
 				return;
 			}
 
-			cmbRarityFilter.SelectedItem = DisplayText.RarityAll;
+			cmbRarityFilter.SelectedItem = DisplayText.RARITY_ALL;
 
 			if (trySelectShikigami(name))
 			{
@@ -1066,7 +1066,7 @@ namespace Gui.Form
 
 			var filteredList = mShikigamiList;
 
-			if (selectedRarity != DisplayText.RarityAll)
+			if (selectedRarity != DisplayText.RARITY_ALL)
 			{
 				filteredList = mShikigamiList.Where(x => x.Rarity == selectedRarity).ToList();
 			}

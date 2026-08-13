@@ -14,7 +14,7 @@ namespace Gui.Resolver
 					statValue = 486.0;
 					break;
 				case 2:
-					if (statText == DisplayText.Speed)
+					if (statText == DisplayText.SPEED)
 					{
 						statValue = 57.0;
 					}
@@ -33,7 +33,7 @@ namespace Gui.Resolver
 					statValue = 2052.0;
 					break;
 				case 6:
-					if (statText == DisplayText.CriticalDamage)
+					if (statText == DisplayText.CRITICAL_DAMAGE)
 					{
 						statValue = 89.0;
 					}
