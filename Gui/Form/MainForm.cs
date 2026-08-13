@@ -474,7 +474,7 @@ namespace Gui.Form
 				DisplayText.ADDITIONAL_DEFENSE_RATE);
 
 			setComboItems(cmbMainStat3,
-				DisplayText.DEFENCSE);
+				DisplayText.DEFENSE);
 
 			setComboItems(cmbMainStat4,
 				DisplayText.EFFECT_HIT,
@@ -512,7 +512,7 @@ namespace Gui.Form
 						DisplayText.EFFECT_RESIST,
 						DisplayText.ATTACK,
 						DisplayText.HP,
-						DisplayText.DEFENCSE);
+						DisplayText.DEFENSE);
 				}
 			}
 		}

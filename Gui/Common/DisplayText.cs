@@ -4,7 +4,7 @@ namespace Gui.Common
 	{
 		public const string ATTACK = "攻撃力";
 		public const string HP = "HP";
-		public const string DEFENCSE = "防御力";
+		public const string DEFENSE = "防御力";
 		public const string SPEED = "素早さ";
 
 		public const string CRITICAL_RATE = "会心率";

@@ -217,7 +217,7 @@ namespace Gui.Form
 				return false;
 			}
 
-			if (!tryGetDouble(txtDefense, DisplayText.DEFENCSE, out double deffense))
+			if (!tryGetDouble(txtDefense, DisplayText.DEFENSE, out double deffense))
 			{
 				return false;
 			}

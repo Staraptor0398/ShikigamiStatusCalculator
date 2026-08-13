@@ -14,7 +14,7 @@ namespace Gui.Formatter
 			return
 					$"{DisplayText.ATTACK}: {status.Attack:F2} " +
 					$"{DisplayText.HP}: {status.HP:F2} " +
-					$"{DisplayText.DEFENCSE}: {status.Defense:F2} " +
+					$"{DisplayText.DEFENSE}: {status.Defense:F2} " +
 					$"{DisplayText.SPEED}: {status.Speed:F2} " +
 
 					$"{DisplayText.ADDITIONAL_ATTACK_RATE}: {status.AdditionalAttackRate:F2}% " +
@@ -37,7 +37,7 @@ namespace Gui.Formatter
 			return
 					$"{DisplayText.ATTACK}: {status.Attack:F2} " +
 					$"{DisplayText.HP}: {status.HP:F2} " +
-					$"{DisplayText.DEFENCSE}: {status.Defense:F2} " +
+					$"{DisplayText.DEFENSE}: {status.Defense:F2} " +
 					$"{DisplayText.SPEED}: {status.Speed:F2} " +
 					$"{DisplayText.CRITICAL_RATE}: {status.CritRate:F2}% " +
 					$"{DisplayText.CRITICAL_DAMAGE}: {status.CritDamage:F2}% " +
@@ -55,7 +55,7 @@ namespace Gui.Formatter
 			return
 					$"{DisplayText.ATTACK,-8}: {status.Attack:F2}\r\n" +
 					$"{DisplayText.HP,-11}: {status.HP:F2}\r\n" +
-					$"{DisplayText.DEFENCSE,-8}: {status.Defense:F2}\r\n" +
+					$"{DisplayText.DEFENSE,-8}: {status.Defense:F2}\r\n" +
 					$"{DisplayText.SPEED,-8}: {status.Speed:F2}\r\n" +
 
 					$"{DisplayText.ADDITIONAL_ATTACK_RATE,-6}: {status.AdditionalAttackRate:F2}%\r\n" +
@@ -78,7 +78,7 @@ namespace Gui.Formatter
 			return
 					$"{DisplayText.ATTACK,-8}: {status.Attack:F2}\r\n" +
 					$"{DisplayText.HP,-11}: {status.HP:F2}\r\n" +
-					$"{DisplayText.DEFENCSE,-8}: {status.Defense:F2}\r\n" +
+					$"{DisplayText.DEFENSE,-8}: {status.Defense:F2}\r\n" +
 					$"{DisplayText.SPEED,-8}: {status.Speed:F2}\r\n" +
 					$"{DisplayText.CRITICAL_RATE,-8}: {status.CritRate:F2}%\r\n" +
 					$"{DisplayText.CRITICAL_DAMAGE,-9}: {status.CritDamage:F2}%\r\n" +
@@ -96,7 +96,7 @@ namespace Gui.Formatter
 			return
 					$"{DisplayText.ATTACK}: {status.Attack:F2} " +
 					$"{DisplayText.HP}: {status.HP:F2} " +
-					$"{DisplayText.DEFENCSE}: {status.Defense:F2} " +
+					$"{DisplayText.DEFENSE}: {status.Defense:F2} " +
 					$"{DisplayText.SPEED}: {status.Speed:F2} " +
 					$"{DisplayText.CRITICAL_RATE}: {status.CritRate:F2}% " +
 					$"{DisplayText.CRITICAL_DAMAGE}: {status.CritDamage:F2}% " +

@@ -12,7 +12,7 @@ namespace Gui.Converter
 			{
 				case DisplayText.ATTACK: dto = StatTypeDto.Attack; break;
 				case DisplayText.HP: dto = StatTypeDto.Hp; break;
-				case DisplayText.DEFENCSE: dto = StatTypeDto.Defense; break;
+				case DisplayText.DEFENSE: dto = StatTypeDto.Defense; break;
 				case DisplayText.SPEED: dto = StatTypeDto.Speed; break;
 				case DisplayText.CRITICAL_RATE: dto = StatTypeDto.CriticalRate; break;
 				case DisplayText.CRITICAL_DAMAGE: dto = StatTypeDto.CriticalDamage; break;
