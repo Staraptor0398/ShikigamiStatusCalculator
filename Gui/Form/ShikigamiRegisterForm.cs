@@ -20,9 +20,9 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  フィールド・プロパティ
 		****************************************************************************************************/
-		private readonly ShikigamiFormMode _mode;
+		private readonly ShikigamiFormMode mMode;
 
-		private readonly ShikigamiDto _editTarget;
+		private readonly ShikigamiDto mEditTarget;
 
 		public ShikigamiDto EditedShikigami { get; private set; }
 
@@ -33,28 +33,28 @@ namespace Gui.Form
 		{
 			InitializeComponent();
 
-			_mode = ShikigamiFormMode.Register;
-			_editTarget = null;
+			mMode = ShikigamiFormMode.Register;
+			mEditTarget = null;
 		}
 
 		public ShikigamiRegisterForm(ShikigamiDto editTarget)
 		{
 			InitializeComponent();
 
-			_mode = ShikigamiFormMode.Edit;
-			_editTarget = editTarget;
+			mMode = ShikigamiFormMode.Edit;
+			mEditTarget = editTarget;
 		}
 
 		/****************************************************************************************************
 		  初期化
 		****************************************************************************************************/
-		private void ShikigamiResisterForm_Load(object sender, EventArgs e)
+		private void ShikigamiRegisterForm_Load(object sender, EventArgs e)
 		{
 			initializeRarityComboBox();
 
-			if (_mode == ShikigamiFormMode.Register)
+			if (mMode == ShikigamiFormMode.Register)
 			{
-				initializeResisterMode();
+				initializeRegisterMode();
 			}
 			else
 			{
@@ -74,34 +74,34 @@ namespace Gui.Form
 			cmbRarity.SelectedIndex = -1;
 		}
 
-		private void initializeResisterMode()
+		private void initializeRegisterMode()
 		{
 			this.Text = "式神登録";
-			btnResister.Text = "登録";
+			btnRegister.Text = "登録";
 		}
 
 		private void initializeEditMode()
 		{
 			this.Text = "式神編集";
-			btnResister.Text = "更新";
+			btnRegister.Text = "更新";
 
-			if (_editTarget == null)
+			if (mEditTarget == null)
 			{
 				return;
 			}
 
-			cmbRarity.SelectedItem = _editTarget.Rarity;
-			txtName.Text = _editTarget.Name;
+			cmbRarity.SelectedItem = mEditTarget.Rarity;
+			txtName.Text = mEditTarget.Name;
 
-			txtAttck.Text = _editTarget.Status.Attack.ToString();
-			txtHP.Text = _editTarget.Status.HP.ToString();
-			txtDeffense.Text = _editTarget.Status.Defense.ToString();
-			txtSpeed.Text = _editTarget.Status.Speed.ToString();
+			txtAttack.Text = mEditTarget.Status.Attack.ToString();
+			txtHP.Text = mEditTarget.Status.HP.ToString();
+			txtDefense.Text = mEditTarget.Status.Defense.ToString();
+			txtSpeed.Text = mEditTarget.Status.Speed.ToString();
 
-			txtCritRate.Text = _editTarget.Status.CritRate.ToString();
-			txtCritDamage.Text = _editTarget.Status.CritDamage.ToString();
-			txtEffectHit.Text = _editTarget.Status.EffectHit.ToString();
-			txtEffectResist.Text = _editTarget.Status.EffectResist.ToString();
+			txtCritRate.Text = mEditTarget.Status.CritRate.ToString();
+			txtCritDamage.Text = mEditTarget.Status.CritDamage.ToString();
+			txtEffectHit.Text = mEditTarget.Status.EffectHit.ToString();
+			txtEffectResist.Text = mEditTarget.Status.EffectResist.ToString();
 		}
 
 		/****************************************************************************************************
@@ -114,7 +114,7 @@ namespace Gui.Form
 				return;
 			}
 
-			if (_mode == ShikigamiFormMode.Register)
+			if (mMode == ShikigamiFormMode.Register)
 			{
 				registerShikigami(dto);
 			}
@@ -148,7 +148,7 @@ namespace Gui.Form
 
 		private void updateShikigami(ShikigamiDto newDto)
 		{
-			if (_editTarget == null)
+			if (mEditTarget == null)
 			{
 				Logger.Error("式神データ編集に失敗しました。編集対象の式神データがnullです。");
 
@@ -160,7 +160,7 @@ namespace Gui.Form
 				return;
 			}
 
-			var dupplicateOutcome = validateDupplicateForEdit(_editTarget, newDto);
+			var dupplicateOutcome = validateDupplicateForEdit(mEditTarget, newDto);
 
 			if (ShikigamiDataErrorHandler.Handle(dupplicateOutcome, "式神データ編集"))
 			{
@@ -169,7 +169,7 @@ namespace Gui.Form
 
 			ShikigamiDataFileManager.CreateBackup();
 
-			var outcome = ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, _editTarget, newDto);
+			var outcome = ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, mEditTarget, newDto);
 
 			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ編集"))
 			{
@@ -207,7 +207,7 @@ namespace Gui.Form
 				return false;
 			}
 
-			if (!tryGetDouble(txtAttck, DisplayText.Attack, out double attack))
+			if (!tryGetDouble(txtAttack, DisplayText.Attack, out double attack))
 			{
 				return false;
 			}
@@ -217,7 +217,7 @@ namespace Gui.Form
 				return false;
 			}
 
-			if (!tryGetDouble(txtDeffense, DisplayText.Defense, out double deffense))
+			if (!tryGetDouble(txtDefense, DisplayText.Defense, out double deffense))
 			{
 				return false;
 			}

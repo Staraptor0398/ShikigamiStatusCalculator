@@ -32,7 +32,7 @@ namespace Gui.Form
 			this.label2 = new System.Windows.Forms.Label();
 			this.cmbRarity = new System.Windows.Forms.ComboBox();
 			this.txtName = new System.Windows.Forms.TextBox();
-			this.btnResister = new System.Windows.Forms.Button();
+			this.btnRegister = new System.Windows.Forms.Button();
 			this.btnCancel = new System.Windows.Forms.Button();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -41,9 +41,9 @@ namespace Gui.Form
 			this.txtCritDamage = new System.Windows.Forms.TextBox();
 			this.txtCritRate = new System.Windows.Forms.TextBox();
 			this.txtSpeed = new System.Windows.Forms.TextBox();
-			this.txtDeffense = new System.Windows.Forms.TextBox();
+			this.txtDefense = new System.Windows.Forms.TextBox();
 			this.txtHP = new System.Windows.Forms.TextBox();
-			this.txtAttck = new System.Windows.Forms.TextBox();
+			this.txtAttack = new System.Windows.Forms.TextBox();
 			this.label7 = new System.Windows.Forms.Label();
 			this.label8 = new System.Windows.Forms.Label();
 			this.label9 = new System.Windows.Forms.Label();
@@ -91,15 +91,15 @@ namespace Gui.Form
 			this.txtName.Size = new System.Drawing.Size(121, 19);
 			this.txtName.TabIndex = 3;
 			// 
-			// btnResister
+			// btnRegister
 			// 
-			this.btnResister.Location = new System.Drawing.Point(47, 272);
-			this.btnResister.Name = "btnResister";
-			this.btnResister.Size = new System.Drawing.Size(75, 23);
-			this.btnResister.TabIndex = 4;
-			this.btnResister.Text = "登録";
-			this.btnResister.UseVisualStyleBackColor = true;
-			this.btnResister.Click += new System.EventHandler(this.btnResister_Click);
+			this.btnRegister.Location = new System.Drawing.Point(47, 272);
+			this.btnRegister.Name = "btnRegister";
+			this.btnRegister.Size = new System.Drawing.Size(75, 23);
+			this.btnRegister.TabIndex = 4;
+			this.btnRegister.Text = "登録";
+			this.btnRegister.UseVisualStyleBackColor = true;
+			this.btnRegister.Click += new System.EventHandler(this.btnResister_Click);
 			// 
 			// btnCancel
 			// 
@@ -131,9 +131,9 @@ namespace Gui.Form
 			this.groupBox2.Controls.Add(this.txtCritDamage);
 			this.groupBox2.Controls.Add(this.txtCritRate);
 			this.groupBox2.Controls.Add(this.txtSpeed);
-			this.groupBox2.Controls.Add(this.txtDeffense);
+			this.groupBox2.Controls.Add(this.txtDefense);
 			this.groupBox2.Controls.Add(this.txtHP);
-			this.groupBox2.Controls.Add(this.txtAttck);
+			this.groupBox2.Controls.Add(this.txtAttack);
 			this.groupBox2.Controls.Add(this.label7);
 			this.groupBox2.Controls.Add(this.label8);
 			this.groupBox2.Controls.Add(this.label9);
@@ -184,12 +184,12 @@ namespace Gui.Form
 			this.txtSpeed.Size = new System.Drawing.Size(49, 19);
 			this.txtSpeed.TabIndex = 11;
 			// 
-			// txtDeffense
+			// txtDefense
 			// 
-			this.txtDeffense.Location = new System.Drawing.Point(78, 65);
-			this.txtDeffense.Name = "txtDeffense";
-			this.txtDeffense.Size = new System.Drawing.Size(49, 19);
-			this.txtDeffense.TabIndex = 10;
+			this.txtDefense.Location = new System.Drawing.Point(78, 65);
+			this.txtDefense.Name = "txtDefense";
+			this.txtDefense.Size = new System.Drawing.Size(49, 19);
+			this.txtDefense.TabIndex = 10;
 			// 
 			// txtHP
 			// 
@@ -198,12 +198,12 @@ namespace Gui.Form
 			this.txtHP.Size = new System.Drawing.Size(49, 19);
 			this.txtHP.TabIndex = 9;
 			// 
-			// txtAttck
+			// txtAttack
 			// 
-			this.txtAttck.Location = new System.Drawing.Point(78, 23);
-			this.txtAttck.Name = "txtAttck";
-			this.txtAttck.Size = new System.Drawing.Size(49, 19);
-			this.txtAttck.TabIndex = 8;
+			this.txtAttack.Location = new System.Drawing.Point(78, 23);
+			this.txtAttack.Name = "txtAttack";
+			this.txtAttack.Size = new System.Drawing.Size(49, 19);
+			this.txtAttack.TabIndex = 8;
 			// 
 			// label7
 			// 
@@ -285,9 +285,9 @@ namespace Gui.Form
 			this.label3.Text = "攻撃力";
 			this.label3.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			// 
-			// ShikigamiResisterForm
+			// ShikigamiRegisterForm
 			// 
-			this.AcceptButton = this.btnResister;
+			this.AcceptButton = this.btnRegister;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this.btnCancel;
@@ -295,15 +295,15 @@ namespace Gui.Form
 			this.Controls.Add(this.groupBox2);
 			this.Controls.Add(this.groupBox1);
 			this.Controls.Add(this.btnCancel);
-			this.Controls.Add(this.btnResister);
+			this.Controls.Add(this.btnRegister);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
-			this.Name = "ShikigamiResisterForm";
+			this.Name = "ShikigamiRegisterForm";
 			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "式神登録";
-			this.Load += new System.EventHandler(this.ShikigamiResisterForm_Load);
+			this.Load += new System.EventHandler(this.ShikigamiRegisterForm_Load);
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
 			this.groupBox2.ResumeLayout(false);
@@ -318,7 +318,7 @@ namespace Gui.Form
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.ComboBox cmbRarity;
 		private System.Windows.Forms.TextBox txtName;
-		private System.Windows.Forms.Button btnResister;
+		private System.Windows.Forms.Button btnRegister;
 		private System.Windows.Forms.Button btnCancel;
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.Windows.Forms.GroupBox groupBox2;
@@ -331,9 +331,9 @@ namespace Gui.Form
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.TextBox txtSpeed;
-		private System.Windows.Forms.TextBox txtDeffense;
+		private System.Windows.Forms.TextBox txtDefense;
 		private System.Windows.Forms.TextBox txtHP;
-		private System.Windows.Forms.TextBox txtAttck;
+		private System.Windows.Forms.TextBox txtAttack;
 		private System.Windows.Forms.TextBox txtEffectResist;
 		private System.Windows.Forms.TextBox txtEffectHit;
 		private System.Windows.Forms.TextBox txtCritDamage;
