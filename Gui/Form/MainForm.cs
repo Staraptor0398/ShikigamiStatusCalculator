@@ -661,17 +661,17 @@ namespace Gui.Form
 
 				try
 				{
-					if (dialog._selectedSaveType == SaveDataSaveType.Build)
+					if (dialog.SelectedSaveType == SaveDataSaveType.Build)
 					{
 						var data = BuildSaveDataFactory.Create(cmbShikigami, _mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
 						SaveDataAccess.SaveBuild(dialog._filePath, data);
 					}
-					else if (dialog._selectedSaveType == SaveDataSaveType.MitamaSet)
+					else if (dialog.SelectedSaveType == SaveDataSaveType.MitamaSet)
 					{
 						var data = MitamaSetSaveDataFactory.Create(_mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
 						SaveDataAccess.SaveMitamaSet(dialog._filePath, data);
 					}
-					else if (dialog._selectedSaveType == SaveDataSaveType.CalculationSnapshot)
+					else if (dialog.SelectedSaveType == SaveDataSaveType.CalculationSnapshot)
 					{
 						string snapshotName = createSnapshotNameFromFilePath(dialog._filePath);
 

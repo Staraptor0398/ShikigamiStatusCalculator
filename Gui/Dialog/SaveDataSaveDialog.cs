@@ -14,10 +14,10 @@ namespace Gui.Dialog
 
 	public partial class SaveDataSaveDialog : System.Windows.Forms.Form
 	{
-		private readonly string _shikigamiName;
-		private readonly SaveDataSaveLevel _saveDataSaveLevel;
+		private readonly string mShikigamiName;
+		private readonly SaveDataSaveLevel mSaveDataSaveLevel;
 
-		public SaveDataSaveType _selectedSaveType { get; private set; }
+		public SaveDataSaveType SelectedSaveType { get; private set; }
 
 		public string _filePath { get; private set; }
 
@@ -25,8 +25,8 @@ namespace Gui.Dialog
 		{
 			InitializeComponent();
 
-			_shikigamiName = shikigamiName;
-			_saveDataSaveLevel = saveDataSaveLevel;
+			mShikigamiName = shikigamiName;
+			mSaveDataSaveLevel = saveDataSaveLevel;
 
 		}
 
@@ -36,12 +36,12 @@ namespace Gui.Dialog
 
 			cmbSaveType.Items.Add(getSaveTypeDisplayText(SaveDataSaveType.MitamaSet));
 
-			if (_saveDataSaveLevel >= SaveDataSaveLevel.BUILD_AVAILABLE)
+			if (mSaveDataSaveLevel >= SaveDataSaveLevel.BUILD_AVAILABLE)
 			{
 				cmbSaveType.Items.Add(getSaveTypeDisplayText(SaveDataSaveType.Build));
 			}
 
-			if (_saveDataSaveLevel >= SaveDataSaveLevel.SNAPSHOT_AVAILABLE)
+			if (mSaveDataSaveLevel >= SaveDataSaveLevel.SNAPSHOT_AVAILABLE)
 			{
 				cmbSaveType.Items.Add(getSaveTypeDisplayText(SaveDataSaveType.CalculationSnapshot));
 			}
@@ -158,13 +158,13 @@ namespace Gui.Dialog
 			switch (saveType)
 			{
 				case SaveDataSaveType.Build:
-					if (string.IsNullOrWhiteSpace(_shikigamiName))
+					if (string.IsNullOrWhiteSpace(mShikigamiName))
 					{
 						fileName = "Build";
 					}
 					else
 					{
-						fileName = _shikigamiName;
+						fileName = mShikigamiName;
 					}
 					break;
 				case SaveDataSaveType.MitamaSet:
@@ -173,13 +173,13 @@ namespace Gui.Dialog
 				case SaveDataSaveType.CalculationSnapshot:
 					string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
 
-					if (string.IsNullOrWhiteSpace(_shikigamiName))
+					if (string.IsNullOrWhiteSpace(mShikigamiName))
 					{
 						fileName = timestamp;
 					}
 					else
 					{
-						fileName = _shikigamiName + "_" + timestamp;
+						fileName = mShikigamiName + "_" + timestamp;
 					}
 					break;
 			}
@@ -238,7 +238,7 @@ namespace Gui.Dialog
 				return;
 			}
 
-			_selectedSaveType = getSelectedSaveType();
+			SelectedSaveType = getSelectedSaveType();
 			_filePath = txtFilePath.Text;
 
 			DialogResult = DialogResult.OK;
