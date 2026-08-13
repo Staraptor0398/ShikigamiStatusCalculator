@@ -841,8 +841,8 @@ namespace Gui.Form
 				try
 				{
 
-					baseSnapshot = SaveDataAccess.LoadSnapshot(dialog._baseSnapshotFilePath);
-					targetSnapshot = SaveDataAccess.LoadSnapshot(dialog._targetSnapshotFilePath);
+					baseSnapshot = SaveDataAccess.LoadSnapshot(dialog.BaseSnapshotFilePath);
+					targetSnapshot = SaveDataAccess.LoadSnapshot(dialog.TargetSnapshotFilePath);
 
 					if (baseSnapshot == null || targetSnapshot == null)
 					{

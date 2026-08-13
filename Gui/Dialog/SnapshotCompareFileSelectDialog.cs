@@ -6,9 +6,9 @@ namespace Gui.Dialog
 	public partial class SnapshotCompareFileSelectDialog : System.Windows.Forms.Form
 	{
 
-		public string _baseSnapshotFilePath { get; private set; }
+		public string BaseSnapshotFilePath { get; private set; }
 
-		public string _targetSnapshotFilePath { get; private set; }
+		public string TargetSnapshotFilePath { get; private set; }
 
 		public SnapshotCompareFileSelectDialog()
 		{
@@ -82,8 +82,8 @@ namespace Gui.Dialog
 				return;
 			}
 
-			_baseSnapshotFilePath = txtBaseSnapshotFilePath.Text;
-			_targetSnapshotFilePath = txtTargetSnapshotFilePath.Text;
+			BaseSnapshotFilePath = txtBaseSnapshotFilePath.Text;
+			TargetSnapshotFilePath = txtTargetSnapshotFilePath.Text;
 
 			DialogResult = DialogResult.OK;
 			this.Close();
@@ -91,8 +91,8 @@ namespace Gui.Dialog
 
 		private void btnCancel_Click(object sender, System.EventArgs e)
 		{
-			_baseSnapshotFilePath = "";
-			_targetSnapshotFilePath = "";
+			BaseSnapshotFilePath = "";
+			TargetSnapshotFilePath = "";
 
 			DialogResult = DialogResult.Cancel;
 			this.Close();
