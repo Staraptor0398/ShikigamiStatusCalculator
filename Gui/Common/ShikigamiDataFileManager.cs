@@ -8,7 +8,7 @@ namespace Gui.Common
 {
 	public class ShikigamiDataFileManager
 	{
-		private static readonly Encoding UTF8_WITHOUT_BOM = new UTF8Encoding(false);
+		private static readonly Encoding mUtf8WithoutBom = new UTF8Encoding(false);
 
 		private const string RESOURCE_NAME = "Gui.Data.ShikigamiData.csv";
 
@@ -30,12 +30,12 @@ namespace Gui.Common
 					return;
 				}
 
-				using (var reader = new StreamReader(stream, UTF8_WITHOUT_BOM))
+				using (var reader = new StreamReader(stream, mUtf8WithoutBom))
 				{
 					File.WriteAllText(
 						AppPath.ShikigamiDataCsvPath,
 						reader.ReadToEnd(),
-						UTF8_WITHOUT_BOM);
+						mUtf8WithoutBom);
 				}
 			}
 
