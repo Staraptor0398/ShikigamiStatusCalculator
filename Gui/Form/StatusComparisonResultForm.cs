@@ -42,25 +42,25 @@ namespace Gui.Form
 			dgvComparisonResult.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
 			dgvComparisonResult.Columns.Add("StatusName", "ステータス");
-			dgvComparisonResult.Columns.Add("Defference", "差分");
+			dgvComparisonResult.Columns.Add("Difference", "差分");
 		}
 
 		private void displayComparisonResult()
 		{
 			dgvComparisonResult.Rows.Clear();
 
-			addComparesonResultRow("攻撃力", mComparisonResult.AttackDifference);
-			addComparesonResultRow("HP", mComparisonResult.HpDifference);
-			addComparesonResultRow("防御力", mComparisonResult.DefenseDifference);
-			addComparesonResultRow("素早さ", mComparisonResult.SpeedDifference);
-			addComparesonResultRow("会心率", mComparisonResult.CriticalRateDifference);
-			addComparesonResultRow("会心DMG", mComparisonResult.CriticalDamageDifference);
-			addComparesonResultRow("効果命中", mComparisonResult.EffectHitDifference);
-			addComparesonResultRow("効果抵抗", mComparisonResult.EffectResistDifference);
+			addComparisonResultRow("攻撃力", mComparisonResult.AttackDifference);
+			addComparisonResultRow("HP", mComparisonResult.HpDifference);
+			addComparisonResultRow("防御力", mComparisonResult.DefenseDifference);
+			addComparisonResultRow("素早さ", mComparisonResult.SpeedDifference);
+			addComparisonResultRow("会心率", mComparisonResult.CriticalRateDifference);
+			addComparisonResultRow("会心DMG", mComparisonResult.CriticalDamageDifference);
+			addComparisonResultRow("効果命中", mComparisonResult.EffectHitDifference);
+			addComparisonResultRow("効果抵抗", mComparisonResult.EffectResistDifference);
 
 		}
 
-		private void addComparesonResultRow(string statusName, double difference)
+		private void addComparisonResultRow(string statusName, double difference)
 		{
 			dgvComparisonResult.Rows.Add(statusName, formatDifference(difference));
 		}
