@@ -9,5 +9,5 @@ public ref class CalculationGateway
 {
 public:
 	// ステータス計算を行う
-	static CalculationResultDto^ Calclutate(StatusDto^ baseStatusDto, MitamaSetDto^ mitamaSetDto);
+	static CalculationResultDto^ Calculate(StatusDto^ baseStatusDto, MitamaSetDto^ mitamaSetDto);
 };
