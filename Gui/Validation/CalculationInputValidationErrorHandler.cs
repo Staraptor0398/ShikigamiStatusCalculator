@@ -36,10 +36,10 @@ namespace Gui.Validation
 				case CalculationInputValidationOutcome.MAIN_STAT_NOT_SELECTED_WITH_SUB_STAT:
 					return "ステータス計算に失敗しました。\n\n" +
 							"未装備の御魂スロットにサブステータスが入力されています。";
-				case CalculationInputValidationOutcome.SUB_STAT_TYPE_WHITHOUT_VALUE:
+				case CalculationInputValidationOutcome.SUB_STAT_TYPE_WITHOUT_VALUE:
 					return "ステータス計算に失敗しました。\n\n" +
 							"サブステータスの種類が選択されていますが、値が入力されていません。";
-				case CalculationInputValidationOutcome.SUB_STAT_VALUE_WHITHOUT_TYPE:
+				case CalculationInputValidationOutcome.SUB_STAT_VALUE_WITHOUT_TYPE:
 					return "ステータス計算に失敗しました。\n\n" +
 							"サブステータスの値が入力されていますが、種類が選択されていません。";
 				case CalculationInputValidationOutcome.INVALID_VALUE:

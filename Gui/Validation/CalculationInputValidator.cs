@@ -198,12 +198,12 @@ namespace Gui.Validation
 
 				if (hasType && !hasValue)
 				{
-					return CalculationInputValidationOutcome.SUB_STAT_TYPE_WHITHOUT_VALUE;
+					return CalculationInputValidationOutcome.SUB_STAT_TYPE_WITHOUT_VALUE;
 				}
 
 				if (!hasType && hasValue)
 				{
-					return CalculationInputValidationOutcome.SUB_STAT_VALUE_WHITHOUT_TYPE;
+					return CalculationInputValidationOutcome.SUB_STAT_VALUE_WITHOUT_TYPE;
 				}
 
 				if (!double.TryParse(subStat.ValueTextBox.Text, out double value))
