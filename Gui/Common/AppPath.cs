@@ -107,7 +107,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					BaseDirectory,
-					SaveDataFileDefinition.SaveDataDirectoryName);
+					SaveDataFileDefinition.SAVE_DATA_DIRECTORY_NAME);
 			}
 		}
 
@@ -117,7 +117,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					SaveDataDirectoryPath,
-					SaveDataFileDefinition.BuildDirectoryName);
+					SaveDataFileDefinition.BUILD_DIRECTORY_NAME);
 			}
 		}
 
@@ -127,7 +127,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					SaveDataDirectoryPath,
-					SaveDataFileDefinition.MitamaSetDirectoryName);
+					SaveDataFileDefinition.MITAMASET_DIRECTORY_NAME);
 			}
 		}
 
@@ -137,7 +137,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					SaveDataDirectoryPath,
-					SaveDataFileDefinition.SnapshotDirectoryName);
+					SaveDataFileDefinition.SNAPSHOT_DIRECTORY_NAME);
 			}
 		}
 	}

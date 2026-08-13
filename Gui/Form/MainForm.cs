@@ -813,9 +813,9 @@ namespace Gui.Form
 		{
 			string fileName = Path.GetFileName(filePath);
 
-			if (fileName.EndsWith(SaveDataFileDefinition.SnapshotExtension))
+			if (fileName.EndsWith(SaveDataFileDefinition.SNAPSHOT_EXTENSION))
 			{
-				return fileName.Substring(0, fileName.Length - SaveDataFileDefinition.SnapshotExtension.Length);
+				return fileName.Substring(0, fileName.Length - SaveDataFileDefinition.SNAPSHOT_EXTENSION.Length);
 			}
 
 			return Path.GetFileNameWithoutExtension(filePath);

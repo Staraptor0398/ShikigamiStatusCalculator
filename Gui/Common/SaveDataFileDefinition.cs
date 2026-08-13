@@ -2,20 +2,20 @@ namespace Gui.Common
 {
 	public static class SaveDataFileDefinition
 	{
-		public const string SaveDataDirectoryName = "SaveData";
+		public const string SAVE_DATA_DIRECTORY_NAME = "SaveData";
 
-		public const string BuildDirectoryName = "Build";
-		public const string MitamaSetDirectoryName = "MitamaSet";
-		public const string SnapshotDirectoryName = "Snapshot";
+		public const string BUILD_DIRECTORY_NAME = "Build";
+		public const string MITAMASET_DIRECTORY_NAME = "MitamaSet";
+		public const string SNAPSHOT_DIRECTORY_NAME = "Snapshot";
 
-		public const string BuildExtension = ".build.json";
-		public const string MitamaSetExtension = ".mitama.json";
-		public const string SnapshotExtension = ".snapshot.json";
+		public const string BUILD_EXTESION = ".build.json";
+		public const string MITAMASET_EXTENSION = ".mitama.json";
+		public const string SNAPSHOT_EXTENSION = ".snapshot.json";
 
-		public static readonly string BuildFilter = $"ビルド保存データ (*{BuildExtension})|*{BuildExtension}";
+		public static readonly string BuildFilter = $"ビルド保存データ (*{BUILD_EXTESION})|*{BUILD_EXTESION}";
 
-		public static readonly string MitamaSetFilter = $"御魂セット保存データ (*{MitamaSetExtension})|*{MitamaSetExtension}";
+		public static readonly string MitamaSetFilter = $"御魂セット保存データ (*{MITAMASET_EXTENSION})|*{MITAMASET_EXTENSION}";
 
-		public static readonly string SnapshotFilter = $"計算結果スナップショット (*{SnapshotExtension})|*{SnapshotExtension}";
+		public static readonly string SnapshotFilter = $"計算結果スナップショット (*{SNAPSHOT_EXTENSION})|*{SNAPSHOT_EXTENSION}";
 	}
 }
