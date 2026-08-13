@@ -232,17 +232,17 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  フィールド・プロパティ
 		****************************************************************************************************/
-		private CalculationResultDto _lastCalculationResult = null;
+		private CalculationResultDto mLastCalculationResult = null;
 
-		private bool _isCalculationResultDirty = true;
+		private bool mIsCalculationResultDirty = true;
 
-		private List<ShikigamiDto> _shikigamiList = null;
+		private List<ShikigamiDto> mShikigamiList = null;
 
-		private MitamaSlotInputControl[] _mitamaSlotInputControls = null;
+		private MitamaSlotInputControl[] mMitamaSlotInputControls = null;
 
-		private ComboBox[] _setEffectComboBoxes = null;
+		private ComboBox[] mSetEffectComboBoxes = null;
 
-		private ComboBox[] _uniqueEffectComboBoxes = null;
+		private ComboBox[] mUniqueEffectComboBoxes = null;
 
 #if DEBUG
 		private CalculationTestSource _lastCalculationTestSource = null;
@@ -292,7 +292,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void btnCalc_Click(object sender, EventArgs e)
 		{
-			CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(_mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
+			CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 
 			if (CalculationInputValidationErrorHandler.Handle(validationOutcome))
 			{
@@ -300,14 +300,14 @@ namespace Gui.Form
 			}
 
 			var baseStatus = getSelectedShikigamiStatus();
-			var mitamaSet = MitamaSetFactory.Create(_mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
+			var mitamaSet = MitamaSetFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 
 			try
 			{
-				_lastCalculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
+				mLastCalculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
 
 #if DEBUG
-				_lastCalculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, _lastCalculationResult);
+				_lastCalculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, mLastCalculationResult);
 #endif
 			}
 			catch (Exception ex)
@@ -330,29 +330,29 @@ namespace Gui.Form
 				markCalculationResultClean();
 			}
 
-			showCalculationResult(_lastCalculationResult);
+			showCalculationResult(mLastCalculationResult);
 		}
 
 		private void markCalculationResultClean()
 		{
-			_isCalculationResultDirty = false;
+			mIsCalculationResultDirty = false;
 		}
 
 		private void markCalculationResultDirty()
 		{
 			updateSaveButtonEnabled();
 
-			if (_lastCalculationResult == null)
+			if (mLastCalculationResult == null)
 			{
 				return;
 			}
 
-			if (_isCalculationResultDirty)
+			if (mIsCalculationResultDirty)
 			{
 				return;
 			}
 
-			_isCalculationResultDirty = true;
+			mIsCalculationResultDirty = true;
 
 			Logger.Info("Operation=ステータス計算結果状態変更 Message=入力内容が変更されたため、前回の計算結果を無効化しました。");
 		}
@@ -408,9 +408,9 @@ namespace Gui.Form
 
 		private void initializeInputControls()
 		{
-			_mitamaSlotInputControls = createMitamaSlotInputControls();
-			_setEffectComboBoxes = createSetEffectComboBoxes();
-			_uniqueEffectComboBoxes = createUniqueEffectComboBoxes();
+			mMitamaSlotInputControls = createMitamaSlotInputControls();
+			mSetEffectComboBoxes = createSetEffectComboBoxes();
+			mUniqueEffectComboBoxes = createUniqueEffectComboBoxes();
 		}
 
 		private void initializeComboBoxes()
@@ -439,23 +439,23 @@ namespace Gui.Form
 
 		private void initializeShikigamiComboBox()
 		{
-			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out _shikigamiList);
+			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out mShikigamiList);
 
 			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
 			{
 				ShikigamiDataFileManager.MoveBrokenFile();
 				ShikigamiDataFileManager.RestoreDefaultIfMissing();
 
-				outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out _shikigamiList);
+				outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out mShikigamiList);
 
 				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ復元後読み込み"))
 				{
-					_shikigamiList = new List<ShikigamiDto>();
+					mShikigamiList = new List<ShikigamiDto>();
 
 				}
 			}
 
-			cmbShikigami.DataSource = _shikigamiList;
+			cmbShikigami.DataSource = mShikigamiList;
 			cmbShikigami.DisplayMember = "Name";
 
 			cmbShikigami.SelectedIndex = -1;
@@ -496,7 +496,7 @@ namespace Gui.Form
 
 		private void initializeSubStatComboBoxes()
 		{
-			foreach (MitamaSlotInputControl slot in _mitamaSlotInputControls)
+			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
 			{
 				foreach (SubStatInputControl subStat in slot.SubStats)
 				{
@@ -519,7 +519,7 @@ namespace Gui.Form
 
 		private void initializeSetEffectComboBoxes()
 		{
-			foreach (ComboBox comboBox in _setEffectComboBoxes)
+			foreach (ComboBox comboBox in mSetEffectComboBoxes)
 			{
 				setComboItems(comboBox,
 					DisplayText.None,
@@ -535,7 +535,7 @@ namespace Gui.Form
 
 		private void initializeUniqueEffectComboBoxes()
 		{
-			foreach (ComboBox comboBox in _uniqueEffectComboBoxes)
+			foreach (ComboBox comboBox in mUniqueEffectComboBoxes)
 			{
 				setComboItems(comboBox,
 					DisplayText.None,
@@ -569,7 +569,7 @@ namespace Gui.Form
 
 		private void registerCalculationInputChangedEvents()
 		{
-			foreach (MitamaSlotInputControl slot in _mitamaSlotInputControls)
+			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
 			{
 				foreach (SubStatInputControl subStat in slot.SubStats)
 				{
@@ -578,12 +578,12 @@ namespace Gui.Form
 				}
 			}
 
-			foreach (ComboBox comboBox in _setEffectComboBoxes)
+			foreach (ComboBox comboBox in mSetEffectComboBoxes)
 			{
 				comboBox.SelectedIndexChanged += calculationInputChanged;
 			}
 
-			foreach (ComboBox comboBox in _uniqueEffectComboBoxes)
+			foreach (ComboBox comboBox in mUniqueEffectComboBoxes)
 			{
 				comboBox.SelectedIndexChanged += calculationInputChanged;
 			}
@@ -663,19 +663,19 @@ namespace Gui.Form
 				{
 					if (dialog.SelectedSaveType == SaveDataSaveType.Build)
 					{
-						var data = BuildSaveDataFactory.Create(cmbShikigami, _mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
+						var data = BuildSaveDataFactory.Create(cmbShikigami, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 						SaveDataAccess.SaveBuild(dialog._filePath, data);
 					}
 					else if (dialog.SelectedSaveType == SaveDataSaveType.MitamaSet)
 					{
-						var data = MitamaSetSaveDataFactory.Create(_mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
+						var data = MitamaSetSaveDataFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 						SaveDataAccess.SaveMitamaSet(dialog._filePath, data);
 					}
 					else if (dialog.SelectedSaveType == SaveDataSaveType.CalculationSnapshot)
 					{
 						string snapshotName = createSnapshotNameFromFilePath(dialog._filePath);
 
-						var data = CalculationSnapshotSaveDataFactory.Create(cmbShikigami, _mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes, snapshotName, _lastCalculationResult);
+						var data = CalculationSnapshotSaveDataFactory.Create(cmbShikigami, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes, snapshotName, mLastCalculationResult);
 						SaveDataAccess.SaveSnapshot(dialog._filePath, data);
 					}
 				}
@@ -703,7 +703,7 @@ namespace Gui.Form
 
 		private void updateSaveButtonEnabled()
 		{
-			btnSave.Enabled = CalculationInputValidator.Validate(_mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes) != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
+			btnSave.Enabled = CalculationInputValidator.Validate(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes) != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
 		}
 
 		/****************************************************************************************************
@@ -730,7 +730,7 @@ namespace Gui.Form
 					else if (dialog.SelectedLoadType == SaveDataLoadType.MitamaSet)
 					{
 						var data = SaveDataAccess.LoadMitamaSet(dialog.FilePath);
-						MitamaSetSaveDataApplicator.Apply(data, _mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
+						MitamaSetSaveDataApplicator.Apply(data, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 					}
 				}
 				finally
@@ -749,7 +749,7 @@ namespace Gui.Form
 			}
 
 			applyShikigami(data.ShikigamiName);
-			MitamaSetSaveDataApplicator.Apply(data.MitamaSet, _mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
+			MitamaSetSaveDataApplicator.Apply(data.MitamaSet, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 		}
 
 		private void applyShikigami(string name)
@@ -806,7 +806,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private bool canSaveCalculationSnapshot()
 		{
-			return _lastCalculationResult != null && !_isCalculationResultDirty;
+			return mLastCalculationResult != null && !mIsCalculationResultDirty;
 		}
 
 		private string createSnapshotNameFromFilePath(string filePath)
@@ -991,7 +991,7 @@ namespace Gui.Form
 
 		private void clearMainValueTextBoxes()
 		{
-			foreach (MitamaSlotInputControl slot in _mitamaSlotInputControls)
+			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
 			{
 				slot.MainValueTextBox.Text = "";
 			}
@@ -999,7 +999,7 @@ namespace Gui.Form
 
 		private void clearSubValueTextBoxes()
 		{
-			foreach (MitamaSlotInputControl slot in _mitamaSlotInputControls)
+			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
 			{
 				foreach (SubStatInputControl subStat in slot.SubStats)
 				{
@@ -1025,7 +1025,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void btnResultView_Click(object sender, EventArgs e)
 		{
-			if (_lastCalculationResult == null)
+			if (mLastCalculationResult == null)
 			{
 				MessageBox.Show(
 					"先に計算を実行してください。",
@@ -1035,7 +1035,7 @@ namespace Gui.Form
 				return;
 			}
 
-			using (var form = new ResultViewForm(_lastCalculationResult))
+			using (var form = new ResultViewForm(mLastCalculationResult))
 			{
 				form.ShowDialog(this);
 			}
@@ -1064,11 +1064,11 @@ namespace Gui.Form
 
 			string selectedRarity = cmbRarityFilter.Text;
 
-			var filteredList = _shikigamiList;
+			var filteredList = mShikigamiList;
 
 			if (selectedRarity != DisplayText.RarityAll)
 			{
-				filteredList = _shikigamiList.Where(x => x.Rarity == selectedRarity).ToList();
+				filteredList = mShikigamiList.Where(x => x.Rarity == selectedRarity).ToList();
 			}
 
 			cmbShikigami.DataSource = null;
