@@ -29,7 +29,7 @@ namespace Gui.Dialog
 		private void InitializeComponent()
 		{
 			this.lblDescription = new System.Windows.Forms.Label();
-			this.lblRecoveryCandinateCount = new System.Windows.Forms.Label();
+			this.lblRecoveryCandidateCount = new System.Windows.Forms.Label();
 			this.dgvRecoveryCandidates = new System.Windows.Forms.DataGridView();
 			this.columnRecovery = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.columnRarity = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -54,14 +54,14 @@ namespace Gui.Dialog
 			this.lblDescription.TabIndex = 0;
 			this.lblDescription.Text = "復旧する式神を選択してください。";
 			// 
-			// lblRecoveryCandinateCount
+			// lblRecoveryCandidateCount
 			// 
-			this.lblRecoveryCandinateCount.AutoSize = true;
-			this.lblRecoveryCandinateCount.Location = new System.Drawing.Point(12, 32);
-			this.lblRecoveryCandinateCount.Name = "lblRecoveryCandinateCount";
-			this.lblRecoveryCandinateCount.Size = new System.Drawing.Size(77, 12);
-			this.lblRecoveryCandinateCount.TabIndex = 1;
-			this.lblRecoveryCandinateCount.Text = "復旧候補：0件";
+			this.lblRecoveryCandidateCount.AutoSize = true;
+			this.lblRecoveryCandidateCount.Location = new System.Drawing.Point(12, 32);
+			this.lblRecoveryCandidateCount.Name = "lblRecoveryCandidateCount";
+			this.lblRecoveryCandidateCount.Size = new System.Drawing.Size(77, 12);
+			this.lblRecoveryCandidateCount.TabIndex = 1;
+			this.lblRecoveryCandidateCount.Text = "復旧候補：0件";
 			// 
 			// dgvRecoveryCandidates
 			// 
@@ -79,7 +79,7 @@ namespace Gui.Dialog
 			this.columnSpeed});
 			this.dgvRecoveryCandidates.Location = new System.Drawing.Point(12, 54);
 			this.dgvRecoveryCandidates.MultiSelect = false;
-			this.dgvRecoveryCandidates.Name = "dgvRecoveryCandinates";
+			this.dgvRecoveryCandidates.Name = "dgvRecoveryCandidates";
 			this.dgvRecoveryCandidates.RowHeadersVisible = false;
 			this.dgvRecoveryCandidates.RowTemplate.Height = 21;
 			this.dgvRecoveryCandidates.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -180,7 +180,7 @@ namespace Gui.Dialog
 			this.Controls.Add(this.btnAllClear);
 			this.Controls.Add(this.btnSelectAll);
 			this.Controls.Add(this.dgvRecoveryCandidates);
-			this.Controls.Add(this.lblRecoveryCandinateCount);
+			this.Controls.Add(this.lblRecoveryCandidateCount);
 			this.Controls.Add(this.lblDescription);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.Name = "ShikigamiRecoveryDialog";
@@ -194,7 +194,7 @@ namespace Gui.Dialog
 		#endregion
 
 		private System.Windows.Forms.Label lblDescription;
-		private System.Windows.Forms.Label lblRecoveryCandinateCount;
+		private System.Windows.Forms.Label lblRecoveryCandidateCount;
 		private System.Windows.Forms.DataGridView dgvRecoveryCandidates;
 		private System.Windows.Forms.Button btnSelectAll;
 		private System.Windows.Forms.Button btnAllClear;

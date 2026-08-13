@@ -9,17 +9,17 @@ namespace Gui.Dialog
 
 		public List<ShikigamiDto> SelectedRecoveryCandidates = new List<ShikigamiDto>();
 
-		public ShikigamiRecoveryDialog(List<ShikigamiDto> recoveryCandinates)
+		public ShikigamiRecoveryDialog(List<ShikigamiDto> recoveryCandidates)
 		{
-			mRecoveryCandidates = recoveryCandinates;
+			mRecoveryCandidates = recoveryCandidates;
 
 			InitializeComponent();
 
-			loadRecoveryCandinates();
-			updateRecoveryCandinateCount();
+			loadRecoveryCandidates();
+			updateRecoveryCandidateCount();
 		}
 
-		private void loadRecoveryCandinates()
+		private void loadRecoveryCandidates()
 		{
 			foreach (var shikigami in mRecoveryCandidates)
 			{
@@ -37,9 +37,9 @@ namespace Gui.Dialog
 			}
 		}
 
-		private void updateRecoveryCandinateCount()
+		private void updateRecoveryCandidateCount()
 		{
-			lblRecoveryCandinateCount.Text = $"復旧候補：{mRecoveryCandidates.Count}件";
+			lblRecoveryCandidateCount.Text = $"復旧候補：{mRecoveryCandidates.Count}件";
 		}
 
 		private void btnSelectAll_Click(object sender, System.EventArgs e)
@@ -64,9 +64,9 @@ namespace Gui.Dialog
 
 			foreach (DataGridViewRow row in dgvRecoveryCandidates.Rows)
 			{
-				bool isCecked = (bool)row.Cells["columnRecovery"].Value;
+				bool isChecked = (bool)row.Cells["columnRecovery"].Value;
 
-				if (!isCecked)
+				if (!isChecked)
 				{
 					continue;
 				}
