@@ -18,8 +18,8 @@ namespace Gui.Common
 			Directory.CreateDirectory(AppPath.LogDirectoryPath);
 
 #if DEBUG
-			Directory.CreateDirectory(AppPath.TestSourceDirectoryPath);
-			Directory.CreateDirectory(AppPath.CalculationTestSourceDirectoryPath);
+			Directory.CreateDirectory(AppPath.TEST_SOURCE_PATH);
+			Directory.CreateDirectory(AppPath.CALCULATION_TEST_SOURCE_DIRECTORY_PATH);
 #endif
 		}
 	}

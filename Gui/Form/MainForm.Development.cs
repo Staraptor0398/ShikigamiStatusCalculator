@@ -42,7 +42,7 @@ namespace Gui.Form
 			using (SaveFileDialog dialog = new SaveFileDialog())
 			{
 				dialog.Filter = "JSONファイル (*.json)|*.json";
-				dialog.InitialDirectory = AppPath.CalculationTestSourceDirectoryPath;
+				dialog.InitialDirectory = AppPath.CALCULATION_TEST_SOURCE_DIRECTORY_PATH;
 				dialog.FileName = $"CalculationTestSource_{DateTime.Now:yyyyMMdd_HHmmss}.json";
 
 				if (dialog.ShowDialog() != DialogResult.OK)

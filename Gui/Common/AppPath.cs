@@ -5,17 +5,17 @@ namespace Gui.Common
 {
 	public static class AppPath
 	{
-		public const string DataDirectoryName = "Data";
-		public const string DataBackupDirectoryName = "Backup";
-		public const string DataBrockenDirectoryName = "Broken";
+		public const string DATA_DIRECTORY_NAME = "Data";
+		public const string DATA_BACKUP_DIRECTORY_NAME = "Backup";
+		public const string DATA_BROKEN_DIRECTORY_NAME = "Broken";
 
-		public const string ShikigamiDataFileName = "ShikigamiData.csv";
+		public const string SHIKIGAMI_DATA_FILE_NAME = "ShikigamiData.csv";
 
-		public const string AppVersionFileName = "AppVersion.txt";
+		public const string APP_VERSION_FILE_NAME = "AppVersion.txt";
 
 #if DEBUG
-		public const string TestSourceDirectoryPath = "W:\\TestSource";
-		public const string CalculationTestSourceDirectoryPath = TestSourceDirectoryPath + "\\Calculation";
+		public const string TEST_SOURCE_PATH = "W:\\TestSource";
+		public const string CALCULATION_TEST_SOURCE_DIRECTORY_PATH = TEST_SOURCE_PATH + "\\Calculation";
 #endif
 
 		public static string BaseDirectory
@@ -32,7 +32,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					BaseDirectory,
-					DataDirectoryName);
+					DATA_DIRECTORY_NAME);
 			}
 		}
 
@@ -42,7 +42,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					DataDirectoryPath,
-					AppVersionFileName);
+					APP_VERSION_FILE_NAME);
 			}
 		}
 
@@ -52,7 +52,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					DataDirectoryPath,
-					DataBackupDirectoryName);
+					DATA_BACKUP_DIRECTORY_NAME);
 			}
 		}
 
@@ -62,7 +62,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					DataDirectoryPath,
-					DataBrockenDirectoryName);
+					DATA_BROKEN_DIRECTORY_NAME);
 			}
 		}
 
@@ -72,7 +72,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					DataDirectoryPath,
-					ShikigamiDataFileName);
+					SHIKIGAMI_DATA_FILE_NAME);
 			}
 		}
 
