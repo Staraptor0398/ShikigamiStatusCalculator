@@ -107,9 +107,9 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  登録・編集
 		****************************************************************************************************/
-		private void btnResister_Click(object sender, EventArgs e)
+		private void btnRegister_Click(object sender, EventArgs e)
 		{
-			if (!tryBuildSikigamiDto(out ShikigamiDto dto))
+			if (!tryBuildShikigamiDto(out ShikigamiDto dto))
 			{
 				return;
 			}
@@ -126,9 +126,9 @@ namespace Gui.Form
 
 		private void registerShikigami(ShikigamiDto dto)
 		{
-			var dupplicateOutcome = validateDupplicateForResister(dto);
+			var duplicateOutcome = validateDuplicateForRegister(dto);
 
-			if (ShikigamiDataErrorHandler.Handle(dupplicateOutcome, "式神データ登録"))
+			if (ShikigamiDataErrorHandler.Handle(duplicateOutcome, "式神データ登録"))
 			{
 				return;
 			}
@@ -160,7 +160,7 @@ namespace Gui.Form
 				return;
 			}
 
-			var dupplicateOutcome = validateDupplicateForEdit(mEditTarget, newDto);
+			var dupplicateOutcome = validateDuplicateForEdit(mEditTarget, newDto);
 
 			if (ShikigamiDataErrorHandler.Handle(dupplicateOutcome, "式神データ編集"))
 			{
@@ -191,7 +191,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  入力値取得・入力チェック
 		****************************************************************************************************/
-		private bool tryBuildSikigamiDto(out ShikigamiDto dto)
+		private bool tryBuildShikigamiDto(out ShikigamiDto dto)
 		{
 			dto = null;
 
@@ -308,7 +308,7 @@ namespace Gui.Form
 			return left.Rarity == right.Rarity && left.Name == right.Name;
 		}
 
-		private ShikigamiDataOutcomeDto validateDupplicateForResister(ShikigamiDto dto)
+		private ShikigamiDataOutcomeDto validateDuplicateForRegister(ShikigamiDto dto)
 		{
 			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out List<ShikigamiDto> list);
 
@@ -328,7 +328,7 @@ namespace Gui.Form
 			return ShikigamiDataOutcomeDto.SUCCESS;
 		}
 
-		private ShikigamiDataOutcomeDto validateDupplicateForEdit(ShikigamiDto oldDto, ShikigamiDto newDto)
+		private ShikigamiDataOutcomeDto validateDuplicateForEdit(ShikigamiDto oldDto, ShikigamiDto newDto)
 		{
 			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out List<ShikigamiDto> list);
 

@@ -99,7 +99,7 @@ namespace Gui.Form
 			this.btnRegister.TabIndex = 4;
 			this.btnRegister.Text = "登録";
 			this.btnRegister.UseVisualStyleBackColor = true;
-			this.btnRegister.Click += new System.EventHandler(this.btnResister_Click);
+			this.btnRegister.Click += new System.EventHandler(this.btnRegister_Click);
 			// 
 			// btnCancel
 			// 
