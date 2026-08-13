@@ -5,13 +5,13 @@ namespace Gui.Dialog
 {
 	public partial class ShikigamiRecoveryDialog : System.Windows.Forms.Form
 	{
-		private List<ShikigamiDto> _recoveryCandinates;
+		private List<ShikigamiDto> mRecoveryCandidates;
 
-		public List<ShikigamiDto> _selectedRecoveryCandinate = new List<ShikigamiDto>();
+		public List<ShikigamiDto> SelectedRecoveryCandidates = new List<ShikigamiDto>();
 
 		public ShikigamiRecoveryDialog(List<ShikigamiDto> recoveryCandinates)
 		{
-			_recoveryCandinates = recoveryCandinates;
+			mRecoveryCandidates = recoveryCandinates;
 
 			InitializeComponent();
 
@@ -21,9 +21,9 @@ namespace Gui.Dialog
 
 		private void loadRecoveryCandinates()
 		{
-			foreach (var shikigami in _recoveryCandinates)
+			foreach (var shikigami in mRecoveryCandidates)
 			{
-				int rowIndex = dgvRecoveryCandinates.Rows.Add(
+				int rowIndex = dgvRecoveryCandidates.Rows.Add(
 					true,
 					shikigami.Rarity,
 					shikigami.Name,
@@ -33,18 +33,18 @@ namespace Gui.Dialog
 					shikigami.Status.Speed
 				);
 
-				dgvRecoveryCandinates.Rows[rowIndex].Tag = shikigami;
+				dgvRecoveryCandidates.Rows[rowIndex].Tag = shikigami;
 			}
 		}
 
 		private void updateRecoveryCandinateCount()
 		{
-			lblRecoveryCandinateCount.Text = $"復旧候補：{_recoveryCandinates.Count}件";
+			lblRecoveryCandinateCount.Text = $"復旧候補：{mRecoveryCandidates.Count}件";
 		}
 
 		private void btnSelectAll_Click(object sender, System.EventArgs e)
 		{
-			foreach (DataGridViewRow row in dgvRecoveryCandinates.Rows)
+			foreach (DataGridViewRow row in dgvRecoveryCandidates.Rows)
 			{
 				row.Cells["columnRecovery"].Value = true;
 			}
@@ -52,7 +52,7 @@ namespace Gui.Dialog
 
 		private void btnAllClear_Click(object sender, System.EventArgs e)
 		{
-			foreach (DataGridViewRow row in dgvRecoveryCandinates.Rows)
+			foreach (DataGridViewRow row in dgvRecoveryCandidates.Rows)
 			{
 				row.Cells["columnRecovery"].Value = false;
 			}
@@ -60,9 +60,9 @@ namespace Gui.Dialog
 
 		private void btnRecovery_Click(object sender, System.EventArgs e)
 		{
-			_selectedRecoveryCandinate.Clear();
+			SelectedRecoveryCandidates.Clear();
 
-			foreach (DataGridViewRow row in dgvRecoveryCandinates.Rows)
+			foreach (DataGridViewRow row in dgvRecoveryCandidates.Rows)
 			{
 				bool isCecked = (bool)row.Cells["columnRecovery"].Value;
 
@@ -71,10 +71,10 @@ namespace Gui.Dialog
 					continue;
 				}
 
-				_selectedRecoveryCandinate.Add((ShikigamiDto)row.Tag);
+				SelectedRecoveryCandidates.Add((ShikigamiDto)row.Tag);
 			}
 
-			if (_selectedRecoveryCandinate.Count == 0)
+			if (SelectedRecoveryCandidates.Count == 0)
 			{
 				MessageBox.Show("復旧する式神を選択してください。");
 				return;

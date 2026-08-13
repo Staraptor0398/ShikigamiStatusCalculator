@@ -1131,7 +1131,7 @@ namespace Gui.Form
 
 					ShikigamiDataFileManager.CreateBackup();
 
-					outcome = ShikigamiGateway.RecoveryShikigami(AppPath.ShikigamiDataCsvPath, shikigamiRecoveryDialog._selectedRecoveryCandinate);
+					outcome = ShikigamiGateway.RecoveryShikigami(AppPath.ShikigamiDataCsvPath, shikigamiRecoveryDialog.SelectedRecoveryCandidates);
 
 					if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧"))
 					{

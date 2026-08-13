@@ -30,7 +30,7 @@ namespace Gui.Dialog
 		{
 			this.lblDescription = new System.Windows.Forms.Label();
 			this.lblRecoveryCandinateCount = new System.Windows.Forms.Label();
-			this.dgvRecoveryCandinates = new System.Windows.Forms.DataGridView();
+			this.dgvRecoveryCandidates = new System.Windows.Forms.DataGridView();
 			this.columnRecovery = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.columnRarity = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.columnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -42,7 +42,7 @@ namespace Gui.Dialog
 			this.btnAllClear = new System.Windows.Forms.Button();
 			this.btnRecovery = new System.Windows.Forms.Button();
 			this.btnCancel = new System.Windows.Forms.Button();
-			((System.ComponentModel.ISupportInitialize)(this.dgvRecoveryCandinates)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.dgvRecoveryCandidates)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// lblDescription
@@ -63,28 +63,28 @@ namespace Gui.Dialog
 			this.lblRecoveryCandinateCount.TabIndex = 1;
 			this.lblRecoveryCandinateCount.Text = "復旧候補：0件";
 			// 
-			// dgvRecoveryCandinates
+			// dgvRecoveryCandidates
 			// 
-			this.dgvRecoveryCandinates.AllowUserToAddRows = false;
-			this.dgvRecoveryCandinates.AllowUserToDeleteRows = false;
-			this.dgvRecoveryCandinates.AllowUserToResizeColumns = false;
-			this.dgvRecoveryCandinates.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.dgvRecoveryCandinates.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.columnRecovery,
-            this.columnRarity,
-            this.columnName,
-            this.columnAttack,
-            this.columnHP,
-            this.columnDefence,
-            this.columnSpeed});
-			this.dgvRecoveryCandinates.Location = new System.Drawing.Point(12, 54);
-			this.dgvRecoveryCandinates.MultiSelect = false;
-			this.dgvRecoveryCandinates.Name = "dgvRecoveryCandinates";
-			this.dgvRecoveryCandinates.RowHeadersVisible = false;
-			this.dgvRecoveryCandinates.RowTemplate.Height = 21;
-			this.dgvRecoveryCandinates.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			this.dgvRecoveryCandinates.Size = new System.Drawing.Size(703, 345);
-			this.dgvRecoveryCandinates.TabIndex = 2;
+			this.dgvRecoveryCandidates.AllowUserToAddRows = false;
+			this.dgvRecoveryCandidates.AllowUserToDeleteRows = false;
+			this.dgvRecoveryCandidates.AllowUserToResizeColumns = false;
+			this.dgvRecoveryCandidates.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.dgvRecoveryCandidates.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+			this.columnRecovery,
+			this.columnRarity,
+			this.columnName,
+			this.columnAttack,
+			this.columnHP,
+			this.columnDefence,
+			this.columnSpeed});
+			this.dgvRecoveryCandidates.Location = new System.Drawing.Point(12, 54);
+			this.dgvRecoveryCandidates.MultiSelect = false;
+			this.dgvRecoveryCandidates.Name = "dgvRecoveryCandinates";
+			this.dgvRecoveryCandidates.RowHeadersVisible = false;
+			this.dgvRecoveryCandidates.RowTemplate.Height = 21;
+			this.dgvRecoveryCandidates.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+			this.dgvRecoveryCandidates.Size = new System.Drawing.Size(703, 345);
+			this.dgvRecoveryCandidates.TabIndex = 2;
 			// 
 			// columnRecovery
 			// 
@@ -179,13 +179,13 @@ namespace Gui.Dialog
 			this.Controls.Add(this.btnRecovery);
 			this.Controls.Add(this.btnAllClear);
 			this.Controls.Add(this.btnSelectAll);
-			this.Controls.Add(this.dgvRecoveryCandinates);
+			this.Controls.Add(this.dgvRecoveryCandidates);
 			this.Controls.Add(this.lblRecoveryCandinateCount);
 			this.Controls.Add(this.lblDescription);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.Name = "ShikigamiRecoveryDialog";
 			this.Text = "式神データ復旧";
-			((System.ComponentModel.ISupportInitialize)(this.dgvRecoveryCandinates)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.dgvRecoveryCandidates)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -195,7 +195,7 @@ namespace Gui.Dialog
 
 		private System.Windows.Forms.Label lblDescription;
 		private System.Windows.Forms.Label lblRecoveryCandinateCount;
-		private System.Windows.Forms.DataGridView dgvRecoveryCandinates;
+		private System.Windows.Forms.DataGridView dgvRecoveryCandidates;
 		private System.Windows.Forms.Button btnSelectAll;
 		private System.Windows.Forms.Button btnAllClear;
 		private System.Windows.Forms.Button btnRecovery;
