@@ -5,26 +5,26 @@ namespace Gui.Form
 {
 	public partial class ResultViewForm : System.Windows.Forms.Form
 	{
-		private readonly CalculationResultDto _result;
+		private readonly CalculationResultDto mResult;
 
 		public ResultViewForm(CalculationResultDto result)
 		{
 			InitializeComponent();
 
-			_result = result;
+			mResult = result;
 
 			showResult();
 		}
 
 		private void showResult()
 		{
-			if (_result == null)
+			if (mResult == null)
 			{
 				return;
 			}
 
-			txtMitamaStatus.Text = StatusFormatter.FormatMitamaDetail(_result.MitamaOnlyStatus);
-			txtFinalStatus.Text = StatusFormatter.FormatFinalDetail(_result.FinalStatus);
+			txtMitamaStatus.Text = StatusFormatter.FormatMitamaDetail(mResult.MitamaOnlyStatus);
+			txtFinalStatus.Text = StatusFormatter.FormatFinalDetail(mResult.FinalStatus);
 
 			txtMitamaStatus.SelectionLength = 0;
 			txtFinalStatus.SelectionLength = 0;
