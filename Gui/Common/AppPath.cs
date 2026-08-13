@@ -82,7 +82,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					BaseDirectory,
-					LogFileDefinition.LogDirectoryName);
+					LogFileDefinition.LOG_DIRECTORY_NAME);
 			}
 		}
 
@@ -91,9 +91,9 @@ namespace Gui.Common
 			get
 			{
 				string fileName =
-					LogFileDefinition.LogFilePrefix +
+					LogFileDefinition.LOG_FILE_PREFIX +
 					DateTime.Now.ToString("yyyyMMdd") +
-					LogFileDefinition.LogFileExtension;
+					LogFileDefinition.LOG_FILE_EXTENSION;
 
 				return Path.Combine(
 					LogDirectoryPath,
