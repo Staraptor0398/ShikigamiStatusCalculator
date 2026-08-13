@@ -304,7 +304,7 @@ namespace Gui.Form
 
 			try
 			{
-				_lastCalculationResult = CalculationGateway.Calclutate(baseStatus, mitamaSet);
+				_lastCalculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
 
 #if DEBUG
 				_lastCalculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, _lastCalculationResult);
