@@ -98,10 +98,10 @@ namespace Gui.Dialog
 			switch (saveType)
 			{
 				case SaveDataSaveType.Build:
-					extension = SaveDataFileDefinition.BUILD_EXTESION;
+					extension = SaveDataFileDefinition.BUILD_EXTENSION;
 					break;
 				case SaveDataSaveType.MitamaSet:
-					extension = SaveDataFileDefinition.MITAMASET_EXTENSION;
+					extension = SaveDataFileDefinition.MITAMA_SET_EXTENSION;
 					break;
 				case SaveDataSaveType.CalculationSnapshot:
 					extension = SaveDataFileDefinition.SNAPSHOT_EXTENSION;

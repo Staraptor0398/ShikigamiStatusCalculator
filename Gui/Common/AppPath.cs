@@ -127,7 +127,7 @@ namespace Gui.Common
 			{
 				return Path.Combine(
 					SaveDataDirectoryPath,
-					SaveDataFileDefinition.MITAMASET_DIRECTORY_NAME);
+					SaveDataFileDefinition.MITAMA_SET_DIRECTORY_NAME);
 			}
 		}
 
