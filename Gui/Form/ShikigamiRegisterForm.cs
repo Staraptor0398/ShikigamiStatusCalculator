@@ -171,7 +171,7 @@ namespace Gui.Form
 
 			var outcome = ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, _editTarget, newDto);
 
-			if (ShikigamiDataErrorHandler.Handle(dupplicateOutcome, "式神データ編集"))
+			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ編集"))
 			{
 				return;
 			}
