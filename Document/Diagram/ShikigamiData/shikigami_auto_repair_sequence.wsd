@@ -1,0 +1,117 @@
+@startuml
+title ShikigamiApp 式神データ自動修復 シーケンス
+
+hide footbox
+
+participant Program
+
+box "Gui"
+   participant MainForm
+   participant ShikigamiDataFileManager
+   participant ShikigamiDataErrorHandler
+end box
+
+box "Gateway"
+   participant ShikigamiGateway
+end box
+
+box "Core"
+   participant ShikigamiService
+   participant ShikigamiRepository
+   participant FileAccess
+end box
+
+database "ShikigamiData.csv" as ShikigamiData
+database "Data/Broken" as Broken
+database "Gui埋め込みリソース\nGui.Data.ShikigamiData.csv" as EmbeddedData
+
+
+== アプリ起動時 ==
+Program -> ShikigamiDataFileManager : RestoreDefaultIfMissing()
+ShikigamiDataFileManager -> ShikigamiDataFileManager : ShikigamiData.csv の存在確認
+
+alt ShikigamiData.csv が存在しない
+   ShikigamiDataFileManager -> EmbeddedData : GetManifestResourceStream()
+   EmbeddedData --> ShikigamiDataFileManager : 埋め込みCSV
+   ShikigamiDataFileManager -> ShikigamiData : UTF-8で復元
+else ShikigamiData.csv が存在する
+   note right of ShikigamiDataFileManager
+       この時点では内容の正常性までは確認せず、
+       既存ファイルをそのまま使用する。
+   end note
+end
+
+Program -> MainForm : new MainForm()
+Program -> MainForm : Application.Run()
+
+== 式神データ初回読込 ==
+MainForm -> MainForm : initializeShikigamiComboBox()
+MainForm -> ShikigamiGateway : GetShikigamiList(path)
+ShikigamiGateway -> ShikigamiService : getShikigamiList(path)
+ShikigamiService -> ShikigamiRepository : getShikigamiList(path)
+ShikigamiRepository -> FileAccess : loadShikigami(path)
+FileAccess -> ShikigamiData : 読込
+ShikigamiData --> FileAccess : CSVデータ
+
+FileAccess --> ShikigamiRepository : FileAccessOutcome
+ShikigamiRepository --> ShikigamiService : ShikigamiDataOutcome
+ShikigamiService --> ShikigamiGateway : ShikigamiDataOutcome
+ShikigamiGateway --> MainForm : Outcome + 式神一覧
+
+alt 読込成功
+   MainForm -> ShikigamiDataErrorHandler : Handle(SUCCESS, ...)
+   ShikigamiDataErrorHandler --> MainForm : false
+   MainForm -> MainForm : 式神一覧をComboBoxへ設定
+else 読込失敗
+   MainForm -> ShikigamiDataErrorHandler : Handle(outcome, "式神データ読み込み")
+   ShikigamiDataErrorHandler -> ShikigamiDataErrorHandler : エラーログ出力
+   ShikigamiDataErrorHandler -> ShikigamiDataErrorHandler : MessageBox表示
+   ShikigamiDataErrorHandler --> MainForm : true
+
+   == 破損データ退避 ==
+   MainForm -> ShikigamiDataFileManager : MoveBrokenFile()
+   ShikigamiDataFileManager -> ShikigamiDataFileManager : ShikigamiData.csv の存在確認
+
+   alt ファイルが存在する
+       ShikigamiDataFileManager -> Broken : ShikigamiData_broken_日時.csv へ移動
+       ShikigamiDataFileManager -> ShikigamiDataFileManager : 古いBrokenファイルを整理
+   else ファイルが存在しない
+       note right of ShikigamiDataFileManager
+           退避対象なし
+       end note
+   end
+
+   == 埋め込み初期データから修復 ==
+   MainForm -> ShikigamiDataFileManager : RestoreDefaultIfMissing()
+   ShikigamiDataFileManager -> EmbeddedData : GetManifestResourceStream()
+   EmbeddedData --> ShikigamiDataFileManager : 埋め込みCSV
+   ShikigamiDataFileManager -> ShikigamiData : UTF-8で復元
+
+   == 修復後の再読込 ==
+   MainForm -> ShikigamiGateway : GetShikigamiList(path)
+
+   ShikigamiGateway -> ShikigamiService : getShikigamiList(path)
+   ShikigamiService -> ShikigamiRepository : getShikigamiList(path)
+   ShikigamiRepository -> FileAccess : loadShikigami(path)
+
+   FileAccess -> ShikigamiData : 読込
+   ShikigamiData --> FileAccess : CSVデータ
+
+   FileAccess --> ShikigamiRepository : FileAccessOutcome
+   ShikigamiRepository --> ShikigamiService : ShikigamiDataOutcome
+   ShikigamiService --> ShikigamiGateway : ShikigamiDataOutcome
+   ShikigamiGateway --> MainForm : Outcome + 式神一覧
+
+   MainForm -> ShikigamiDataErrorHandler : Handle(outcome, "式神データ復元後読み込み")
+
+   alt 修復後の読込成功
+       ShikigamiDataErrorHandler --> MainForm : false
+       MainForm -> MainForm : 復元された式神一覧を設定
+   else 修復後も読込失敗
+       ShikigamiDataErrorHandler -> ShikigamiDataErrorHandler : エラー表示
+       ShikigamiDataErrorHandler --> MainForm : true
+       MainForm -> MainForm : _shikigamiList = 空リスト
+   end
+end
+
+@enduml

@@ -1,0 +1,132 @@
+@startuml
+title ShikigamiApp 主要クラス図
+
+left to right direction
+
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+' ============================================================
+' Gui
+' ============================================================
+package "Gui" {
+   class MainForm <<Form>>
+   class ShikigamiRegisterForm <<Form>>
+   class ResultViewForm <<Form>>
+   class StatusComparisonResultForm <<Form>>
+
+   MainForm ..> ShikigamiRegisterForm : 式神データ編集
+   MainForm ..> ResultViewForm : 計算結果表示
+   MainForm ..> StatusComparisonResultForm : 比較結果表示
+}
+
+' ============================================================
+' Gateway
+' ============================================================
+package "Gateway" {
+   class CalculationGateway <<Gateway>>
+   class ComparisonGateway <<Gateway>>
+   class ShikigamiGateway <<Gateway>>
+
+   class CalculationResultDto <<DTO>>
+   class MitamaSetDto <<DTO>>
+   class StatusComparisonResultDto <<DTO>>
+   class ShikigamiDto <<DTO>>
+
+   CalculationGateway ..> CalculationResultDto
+   CalculationGateway ..> MitamaSetDto
+
+   ComparisonGateway ..> StatusComparisonResultDto
+
+   ShikigamiGateway ..> ShikigamiDto
+}
+
+' ============================================================
+' Core
+' ============================================================
+package "Core" {
+   package "Service" {
+       class CalculationService <<Service>>
+       class ComparisonService <<Service>>
+       class ShikigamiService <<Service>>
+   }
+
+   package "Status" {
+       class StatusCalculator <<Calculator>>
+       class StatusComparator <<Comparator>>
+   }
+
+   package "Mitama" {
+       class MitamaCalculator <<Calculator>>
+   }
+
+   package "Shikigami" {
+       class ShikigamiRepository <<Repository>>
+   }
+
+   package "File Access" {
+       class FileAccess <<IO>>
+   }
+
+   package "Model" {
+       class "Status" as StatusModel <<Model>>
+       class Shikigami <<Model>>
+       class CalculationResult <<Model>>
+       class StatusComparisonResult <<Model>>
+       class MitamaSet <<Model>>
+       class Mitama <<Model>>
+
+       Shikigami --> StatusModel : 基礎ステータス
+       MitamaSet *-- Mitama
+       CalculationResult --> StatusModel
+   }
+
+   ' --------------------------------------------------------
+   ' Service
+   ' --------------------------------------------------------
+   CalculationService ..> StatusCalculator
+   CalculationService ..> MitamaCalculator
+   CalculationService --> CalculationResult
+   ComparisonService ..> StatusComparator
+   ComparisonService --> StatusComparisonResult
+   ShikigamiService ..> ShikigamiRepository
+
+   ' --------------------------------------------------------
+   ' Status
+   ' --------------------------------------------------------
+   StatusCalculator ..> StatusModel
+   StatusComparator ..> StatusModel
+   StatusComparator --> StatusComparisonResult
+
+   ' --------------------------------------------------------
+   ' Mitama
+   ' --------------------------------------------------------
+   MitamaCalculator ..> MitamaSet
+   MitamaCalculator --> StatusModel : 御魂ステータス
+
+   ' --------------------------------------------------------
+   ' Shikigami / File Access
+   ' --------------------------------------------------------
+   ShikigamiRepository ..> FileAccess
+   ShikigamiRepository --> Shikigami
+}
+
+' ============================================================
+' Gui -> Gateway
+' ============================================================
+MainForm ..> CalculationGateway : 計算
+MainForm ..> ComparisonGateway : 比較
+MainForm ..> ShikigamiGateway : 式神取得
+
+ShikigamiRegisterForm ..> ShikigamiGateway : 追加・更新
+
+' ============================================================
+' Gateway -> Core
+' ============================================================
+CalculationGateway ..> CalculationService
+ComparisonGateway ..> ComparisonService
+ShikigamiGateway ..> ShikigamiService
+
+@enduml

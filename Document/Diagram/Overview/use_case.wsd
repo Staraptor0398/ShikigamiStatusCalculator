@@ -1,0 +1,75 @@
+@startuml
+title ShikigamiApp ユースケース図
+
+left to right direction
+
+actor "ユーザー" as User
+
+rectangle "ShikigamiApp" {
+   usecase "式神を選択する" as UC_SelectShikigami
+   usecase "御魂情報を入力する" as UC_InputMitama
+   usecase "最終ステータスを計算する" as UC_Calculate
+
+   usecase "データを保存する" as UC_Save
+   usecase "保存データを読み込む" as UC_Load
+
+   usecase "Buildを保存する" as UC_SaveBuild
+   usecase "MitamaSetを保存する" as UC_SaveMitamaSet
+   usecase "Snapshotを保存する" as UC_SaveSnapshot
+
+   usecase "Buildを読み込む" as UC_LoadBuild
+   usecase "MitamaSetを読み込む" as UC_LoadMitamaSet
+   usecase "Snapshotを読み込む" as UC_LoadSnapshot
+
+   usecase "Snapshotを比較する" as UC_CompareSnapshot
+   usecase "比較結果を表示する" as UC_ShowComparison
+
+   usecase "式神データを管理する" as UC_ManageShikigami
+   usecase "式神データを追加する" as UC_AddShikigami
+   usecase "式神データを編集する" as UC_EditShikigami
+}
+
+' ============================================================
+' User relationships
+' ============================================================
+User --> UC_SelectShikigami
+User --> UC_InputMitama
+User --> UC_Calculate
+User --> UC_Save
+User --> UC_Load
+User --> UC_CompareSnapshot
+User --> UC_ManageShikigami
+
+' ============================================================
+' Calculation
+' ============================================================
+UC_Calculate .> UC_SelectShikigami : <<include>>
+UC_Calculate .> UC_InputMitama : <<include>>
+
+' ============================================================
+' Save
+' ============================================================
+UC_Save <|-- UC_SaveBuild
+UC_Save <|-- UC_SaveMitamaSet
+UC_Save <|-- UC_SaveSnapshot
+
+' ============================================================
+' Load
+' ============================================================
+UC_Load <|-- UC_LoadBuild
+UC_Load <|-- UC_LoadMitamaSet
+UC_Load <|-- UC_LoadSnapshot
+
+' ============================================================
+' Snapshot comparison
+' ============================================================
+UC_CompareSnapshot .> UC_LoadSnapshot : <<include>>
+UC_CompareSnapshot .> UC_ShowComparison : <<include>>
+
+' ============================================================
+' Shikigami management
+' ============================================================
+UC_ManageShikigami <|-- UC_AddShikigami
+UC_ManageShikigami <|-- UC_EditShikigami
+
+@enduml

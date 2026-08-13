@@ -1,0 +1,137 @@
+@startuml
+title ShikigamiApp データ変換フロー
+
+left to right direction
+
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+skinparam nodesep 50
+skinparam ranksep 60
+
+' ============================================================
+' Main Flow
+' ============================================================
+rectangle "Core / Native" as Native {
+   rectangle "Native Model" as NativeModel
+}
+
+package "Gateway / Converter・Mapper" as GatewayBoundary {
+   rectangle "Native ⇔ DTO 変換" as GatewayRole
+   rectangle "StatusConverter\nStatTypeConverter\nStatValueConverter\nMitamaConverter\nMitamaSetConverter\nShikigamiConverter\nCalculationResultConverter\nStatusComparisonResultMapper" as GatewayConverters
+   rectangle "StringConverter" as StringConverter
+}
+
+rectangle "Gateway / DTO" as Dto {
+   rectangle "DTO" as DtoModel
+}
+
+package "Gui / Converter" as GuiBoundary {
+   rectangle "DTO ⇔ SaveData 変換" as GuiRole
+   rectangle "StatusConverter\nStatTypeConverter\nStatValueConverter\nMitamaConverter\nMitamaSetConverter\nSetEffectConverter" as GuiConverters
+}
+
+rectangle "SaveData / Model" as SaveData {
+   rectangle "SaveData Model" as SaveDataModel
+}
+
+' ============================================================
+' Main Relationships
+' ============================================================
+NativeModel <--> GatewayRole : Native
+GatewayRole <--> DtoModel : DTO
+
+DtoModel <--> GuiRole : DTO
+GuiRole <--> SaveDataModel : SaveData
+
+GatewayRole --> GatewayConverters : 担当
+GuiRole --> GuiConverters : 担当
+
+GatewayConverters ..> StringConverter : 文字列変換
+
+' ============================================================
+' Example 1 : Status
+' ============================================================
+package "代表例: Status" as StatusExample {
+   rectangle "Status\n\nHp\nCriticalRate\nCriticalDamage" as ExNativeStatus
+   rectangle "Gateway\nStatusConverter" as ExGatewayStatus
+   rectangle "StatusDto\n\nHP\nCritRate\nCritDamage" as ExDtoStatus
+   rectangle "Gui\nStatusConverter" as ExGuiStatus
+   rectangle "StatusSaveData\n\nHP\nCritRate\nCritDamage\n\nAdditional系なし" as ExSaveStatus
+
+   ExNativeStatus --> ExGatewayStatus
+   ExGatewayStatus --> ExDtoStatus
+
+   ExDtoStatus --> ExGuiStatus
+   ExGuiStatus --> ExSaveStatus
+}
+
+' ============================================================
+' Example 2 : StatType
+' ============================================================
+package "代表例: StatType" as StatTypeExample {
+   rectangle "StatType" as ExNativeStatType
+   rectangle "Gateway\nStatTypeConverter" as ExGatewayStatType
+   rectangle "StatTypeDto" as ExDtoStatType
+   rectangle "Gui\nStatTypeConverter" as ExGuiStatType
+   rectangle "string" as ExSaveStatType
+
+   ExNativeStatType --> ExGatewayStatType
+   ExGatewayStatType --> ExDtoStatType
+
+   ExDtoStatType --> ExGuiStatType
+   ExGuiStatType --> ExSaveStatType : 文字列化
+}
+
+' ============================================================
+' Example 3 : String Boundary
+' ============================================================
+package "代表例: 文字列境界" as StringExample {
+   rectangle "std::string /\nUTF-8" as ExStdString
+   rectangle "StringConverter" as ExStringConverter
+   rectangle "System::String^" as ExManagedString
+
+   ExStdString <--> ExStringConverter
+   ExStringConverter <--> ExManagedString
+}
+
+' ============================================================
+' Notes
+' ============================================================
+note bottom of GatewayBoundary
+<b>Gateway境界の責務</b>
+
+Core / Native と Gateway / DTO の
+型差異・命名差・文字列表現差を吸収する。
+
+例:
+Hp ⇔ HP
+CriticalRate ⇔ CritRate
+CriticalDamage ⇔ CritDamage
+end note
+
+note bottom of GuiBoundary
+<b>Gui境界の責務</b>
+
+DTO と SaveData の
+保存形式上の差異を吸収する。
+
+例:
+StatTypeDto → string
+StatusDto → StatusSaveData
+Additional系は保存対象外
+end note
+
+note bottom of SaveData
+Build / Snapshot のような
+1対1でない保存対応は
+save_data_mapping を参照。
+end note
+
+note bottom of Dto
+個々の型対応は
+data_type_mapping を参照。
+end note
+
+@enduml

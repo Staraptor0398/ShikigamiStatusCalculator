@@ -1,0 +1,34 @@
+@startuml
+title ShikigamiApp データフロー
+
+left to right direction
+
+actor "ユーザー" as User
+
+rectangle "Gui" as Gui
+rectangle "Gateway" as Gateway
+rectangle "Core" as Core
+rectangle "SaveData" as SaveData
+
+artifact "ShikigamiData.csv" as ShikigamiCsv
+
+folder "保存データ" as SaveFiles {
+   artifact "*.build.json" as BuildJson
+   artifact "*.mitama.json" as MitamaJson
+   artifact "*.snapshot.json" as SnapshotJson
+}
+
+User <--> Gui : 入力 / 表示
+
+Gui <--> Gateway : DTO / Outcome\n計算・比較・式神操作
+Gateway <--> Core : Native Model\n処理要求・結果
+
+Core <--> ShikigamiCsv : 式神データ\n読込・更新
+
+Gui <--> SaveData : 保存データ\n読込・保存
+
+SaveData <--> BuildJson
+SaveData <--> MitamaJson
+SaveData <--> SnapshotJson
+
+@enduml

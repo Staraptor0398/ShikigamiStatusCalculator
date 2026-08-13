@@ -1,0 +1,15 @@
+@startuml
+title SaveData 非1対1対応
+
+skinparam shadowing false
+skinparam defaultFontName Meiryo
+
+legend
+|= 元データ型 |= 元メンバ |= 保存先型 |= 保存先メンバ |
+| ShikigamiDto | Name | BuildSaveData | ShikigamiName |
+| ShikigamiDto | Name | CalculationSnapshotSaveData | ShikigamiName |
+| CalculationResultDto | MitamaOnlyStatus | CalculationSnapshotSaveData | MitamaStatus |
+| CalculationResultDto | FinalStatus | CalculationSnapshotSaveData | FinalStatus |
+endlegend
+
+@enduml

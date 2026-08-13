@@ -1,0 +1,74 @@
+@startuml
+title ShikigamiApp Load シーケンス
+
+hide footbox
+
+actor "ユーザー" as User
+
+participant "MainForm" as MainForm
+participant "SaveDataLoadDialog" as LoadDialog
+
+participant "SaveDataAccess" as SaveDataAccess
+participant "JsonDataAccess" as JsonDataAccess
+participant "SaveDataMigrator" as Migrator
+
+database "JSONファイル" as JsonFile
+
+participant "MitamaSetSaveDataApplicator" as MitamaApplicator
+
+User -> MainForm : 読込ボタン押下
+
+MainForm -> LoadDialog : new()
+MainForm -> LoadDialog : ShowDialog()
+
+alt キャンセル
+   LoadDialog --> MainForm : Cancel
+   MainForm --> User : 読込せず終了
+
+else OK
+   LoadDialog --> MainForm : 読込形式 / ファイルパス
+
+   MainForm -> MainForm : 保存・読込ボタン無効化
+
+   alt Build
+       MainForm -> SaveDataAccess : LoadBuild(path)
+   else MitamaSet
+       MainForm -> SaveDataAccess : LoadMitamaSet(path)
+   end
+
+   SaveDataAccess -> JsonDataAccess : LoadObject(path)
+   JsonDataAccess -> JsonFile : UTF-8で読込
+   JsonFile --> JsonDataAccess : JSON文字列
+   JsonDataAccess -> JsonDataAccess : JObject.Parse()
+   JsonDataAccess --> SaveDataAccess : JObject
+
+   SaveDataAccess -> SaveDataAccess : sourceVersion取得
+
+   alt 保存Version > 現行Version
+       SaveDataAccess --> MainForm : NotSupportedException
+
+   else 保存Version < 現行Version
+       SaveDataAccess -> Migrator : Migrate(root,\ncurrentVersion,\nsourceVersion)
+       Migrator --> SaveDataAccess : Migration済みJObject
+   end
+
+   SaveDataAccess -> SaveDataAccess : ToObject<SaveDataFile<T>>()
+   SaveDataAccess --> MainForm : file.Data
+
+   alt Build
+       MainForm -> MainForm : applyShikigami(ShikigamiName)
+       MainForm -> MitamaApplicator : Apply(MitamaSet, ...)
+       MitamaApplicator --> MainForm : UI適用完了
+
+   else MitamaSet
+       MainForm -> MitamaApplicator : Apply(data, ...)
+       MitamaApplicator --> MainForm : UI適用完了
+   end
+
+   MainForm -> MainForm : 保存・読込ボタン有効化
+   MainForm -> MainForm : markCalculationResultDirty()
+
+   MainForm --> User : 読込結果を表示
+end
+
+@enduml

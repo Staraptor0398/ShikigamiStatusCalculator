@@ -1,0 +1,20 @@
+@startuml
+title ShikigamiApp データ型対応表
+
+skinparam shadowing false
+skinparam defaultFontName Meiryo
+
+legend
+|= Native |= DTO |= SaveData |= 備考 |
+| Status | StatusDto | StatusSaveData | SaveDataはAdditional系を保持しない |
+| StatType | StatTypeDto | string | SaveDataでは文字列化 |
+| StatValue | StatValueDto | StatValueSaveData | |
+| Mitama | MitamaDto | MitamaSaveData | |
+| MitamaSet | MitamaSetDto | MitamaSetSaveData | |
+| SetEffect | SetEffectDto | SetEffectSaveData | |
+| Shikigami | ShikigamiDto | 直接対応なし | NameのみBuild/Snapshotへ保存 |
+| CalculationResult | CalculationResultDto | CalculationSnapshotSaveData | 一部をSnapshotへ保存 |
+| StatusComparisonResult | StatusComparisonResultDto | 保存対象外 | |
+endlegend
+
+@enduml

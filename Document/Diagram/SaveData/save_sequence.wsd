@@ -1,0 +1,65 @@
+@startuml
+title ShikigamiApp Save シーケンス
+
+hide footbox
+
+actor "ユーザー" as User
+
+participant "MainForm" as MainForm
+participant "SaveDataSaveDialog" as SaveDialog
+
+participant "BuildSaveDataFactory" as BuildFactory
+participant "MitamaSetSaveDataFactory" as MitamaSetFactory
+participant "CalculationSnapshotSaveDataFactory" as SnapshotFactory
+
+participant "SaveDataAccess" as SaveDataAccess
+participant "JsonDataAccess" as JsonDataAccess
+
+database "JSONファイル" as JsonFile
+
+User -> MainForm : 保存ボタン押下
+
+MainForm -> MainForm : getSaveDataSaveLevel()
+MainForm -> SaveDialog : new(式神名, 保存可能レベル)
+MainForm -> SaveDialog : ShowDialog()
+
+alt キャンセル
+   SaveDialog --> MainForm : Cancel
+   MainForm --> User : 保存せず終了
+else OK
+   SaveDialog --> MainForm : 保存形式 / ファイルパス
+   MainForm -> MainForm : 保存・読込ボタン無効化
+
+   alt Build
+       MainForm -> BuildFactory : Create(...)
+       BuildFactory --> MainForm : BuildSaveData
+       MainForm -> SaveDataAccess : SaveBuild(path, data)
+
+   else MitamaSet
+       MainForm -> MitamaSetFactory : Create(...)
+       MitamaSetFactory --> MainForm : MitamaSetSaveData
+       MainForm -> SaveDataAccess : SaveMitamaSet(path, data)
+
+   else CalculationSnapshot
+       MainForm -> MainForm : createSnapshotNameFromFilePath(path)
+
+       MainForm -> SnapshotFactory : Create(..., snapshotName,\n_lastCalculationResult)
+       SnapshotFactory --> MainForm : CalculationSnapshotSaveData
+
+       MainForm -> SaveDataAccess : SaveSnapshot(path, data)
+   end
+
+   SaveDataAccess -> SaveDataAccess : SaveDataFile<T>生成\nVersion + Data
+   SaveDataAccess -> JsonDataAccess : Save(path, SaveDataFile<T>)
+
+   JsonDataAccess -> JsonDataAccess : JSONへシリアライズ
+   JsonDataAccess -> JsonFile : UTF-8で書込
+   JsonFile --> JsonDataAccess : 完了
+   JsonDataAccess --> SaveDataAccess : 完了
+   SaveDataAccess --> MainForm : 完了
+
+   MainForm -> MainForm : 保存・読込ボタン有効化
+   MainForm --> User : 保存完了
+end
+
+@enduml

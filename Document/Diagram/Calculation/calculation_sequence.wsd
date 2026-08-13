@@ -1,0 +1,78 @@
+@startuml
+title ShikigamiApp Calculation シーケンス
+
+hide footbox
+
+actor ユーザー as User
+
+participant MainForm
+
+box "Gateway"
+   participant CalculationGateway
+   participant CalculationResultConverter
+end box
+
+box "Core"
+   participant CalculationService
+end box
+
+User -> MainForm : 計算ボタン押下
+
+MainForm -> MainForm : 入力内容を取得
+MainForm -> MainForm : 式神選択状態を確認
+MainForm -> MainForm : 御魂入力を検証
+
+alt 入力不正
+   MainForm -> MainForm : Validationエラー表示
+   MainForm --> User : 計算せず終了
+
+else 入力正常
+   MainForm -> CalculationGateway : Calculate(...)
+
+   activate CalculationGateway
+
+   note right of CalculationGateway
+       Guiから受け取ったDTOを
+       Core / Native型へ変換
+       ※詳細は data_conversion_flow 参照
+   end note
+
+   CalculationGateway -> CalculationService : calculate(shikigami, mitamaSet)
+
+   activate CalculationService
+
+   CalculationService -> CalculationService : 御魂ステータスを集計
+   CalculationService -> CalculationService : 式神基礎ステータスと合算
+   CalculationService -> CalculationService : 最終ステータスを生成
+
+   CalculationService --> CalculationGateway : CalculationResult
+
+   deactivate CalculationService
+
+   CalculationGateway -> CalculationResultConverter : toDto(calculationResult)
+   activate CalculationResultConverter
+   CalculationResultConverter --> CalculationGateway : CalculationResultDto
+   deactivate CalculationResultConverter
+
+   CalculationGateway --> MainForm : CalculationResultDto
+
+   deactivate CalculationGateway
+
+   MainForm -> MainForm : 計算結果を保持
+   MainForm -> MainForm : 最終ステータスを表示
+   MainForm -> MainForm : markCalculationResultClean()
+
+   note right of MainForm
+       計算成功後は
+       _lastCalculationResult != null
+       かつ
+       _isCalculationResultDirty == false
+
+       となり、CalculationSnapshotが
+       保存可能になる。
+   end note
+
+   MainForm --> User : 計算結果を表示
+end
+
+@enduml

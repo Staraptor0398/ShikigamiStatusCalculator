@@ -1,0 +1,21 @@
+@echo off
+rem ================================================================
+rem  !! 注意: このファイルは設定ファイルです。直接実行しないでください。!!
+rem
+rem  [使い方]
+rem  1. このファイルをコピーし、同じフォルダ内に
+rem     「_diagram_settings.bat」という名前で保存してください。
+rem  2. 実際の環境に合わせて、以下のツールのパスを設定してください。
+rem
+rem  (このファイルは generate_pdf.bat から呼び出されて使用されます)
+rem ================================================================
+
+rem --- PlantUML本体 (.jar) のフルパス ---
+set "PLANTUML_JAR=C:\path\to\your\plantuml.jar"
+
+rem --- Graphviz の dot.exe のフルパス ---
+set "GRAPHVIZ_DOT=C:\path\to\your\Graphviz\bin\dot.exe"
+
+rem --- Inkscape の inkscape.exe のフルパス ---
+set "INKSCAPE_EXE=C:\path\to\your\Inkscape\bin\inkscape.exe"
+

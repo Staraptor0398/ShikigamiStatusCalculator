@@ -30,3 +30,6 @@ TestLog/
 # App generated data
 Gui/bin/
 TestSource/
+
+# Document generation config
+Document/Tool/_diagram_settings.bat

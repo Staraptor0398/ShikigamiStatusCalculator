@@ -1,0 +1,22 @@
+@startuml
+title Status 型対応詳細
+
+skinparam shadowing false
+skinparam defaultFontName Meiryo
+
+legend
+|= Native: Status |= DTO: StatusDto |= SaveData: StatusSaveData |
+| Attack | Attack | Attack |
+| Hp | HP | HP |
+| Defense | Defense | Defense |
+| Speed | Speed | Speed |
+| CriticalRate | CritRate | CritRate |
+| CriticalDamage | CritDamage | CritDamage |
+| EffectHit | EffectHit | EffectHit |
+| EffectResist | EffectResist | EffectResist |
+| AdditionalAttackRate | AdditionalAttackRate | - |
+| AdditionalHpRate | AdditionalHpRate | - |
+| AdditionalDefenseRate | AdditionalDefenseRate | - |
+endlegend
+
+@enduml

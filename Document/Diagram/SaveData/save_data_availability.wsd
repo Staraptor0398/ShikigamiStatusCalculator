@@ -1,0 +1,115 @@
+​@startuml
+title ShikigamiApp SaveData 保存可能対象
+
+hide empty description
+
+skinparam shadowing false
+
+' ============================================================
+' States
+' ============================================================
+state "保存不可" as Unavailable
+Unavailable : Saveボタン = 無効
+Unavailable : 保存可能対象 = なし
+
+state "MitamaSetのみ保存可能" as MitamaSetOnly
+MitamaSetOnly : Saveボタン = 有効
+MitamaSetOnly : 保存可能対象
+MitamaSetOnly : ・MitamaSet
+
+state "Buildまで保存可能" as BuildAvailable
+BuildAvailable : Saveボタン = 有効
+BuildAvailable : 保存可能対象
+BuildAvailable : ・MitamaSet
+BuildAvailable : ・Build
+
+state "Snapshotまで保存可能" as SnapshotAvailable
+SnapshotAvailable : Saveボタン = 有効
+SnapshotAvailable : 保存可能対象
+SnapshotAvailable : ・MitamaSet
+SnapshotAvailable : ・Build
+SnapshotAvailable : ・CalculationSnapshot
+
+' ============================================================
+' Initial state
+' ============================================================
+[*] --> Unavailable
+
+' ============================================================
+' Save button availability
+' ============================================================
+Unavailable --> MitamaSetOnly : 御魂を1つ以上装備\n[式神未選択]
+
+Unavailable --> BuildAvailable : 御魂を1つ以上装備\n[式神選択済み]
+
+MitamaSetOnly --> Unavailable : 装備中の御魂が0になる
+
+BuildAvailable --> Unavailable : 装備中の御魂が0になる
+
+SnapshotAvailable --> Unavailable : 装備中の御魂が0になる
+
+' ============================================================
+' Shikigami selection
+' ============================================================
+MitamaSetOnly --> BuildAvailable : 式神を選択
+
+BuildAvailable --> MitamaSetOnly : 式神選択を解除
+
+SnapshotAvailable --> MitamaSetOnly : 式神選択を解除\n/ 計算結果をDirty化
+
+' ============================================================
+' Calculation result
+' ============================================================
+BuildAvailable --> SnapshotAvailable : ステータス計算成功\n/ 計算結果をClean化
+
+SnapshotAvailable --> BuildAvailable : 計算入力を変更\n/ 計算結果をDirty化
+
+' ============================================================
+' Additional transitions caused by input changes
+' ============================================================
+SnapshotAvailable --> SnapshotAvailable : 保存実行\n[入力内容に変更なし]
+
+BuildAvailable --> BuildAvailable : 保存実行
+
+MitamaSetOnly --> MitamaSetOnly : 保存実行
+
+' ============================================================
+' Notes
+' ============================================================
+note right of Unavailable
+CalculationInputValidator の結果が
+NO_EQUIPPED_MITAMA の場合、
+Saveボタンを無効化する。
+end note
+
+note right of MitamaSetOnly
+SaveDataSaveLevel:
+MITAMA_SET_ONLY
+end note
+
+note right of BuildAvailable
+SaveDataSaveLevel:
+BUILD_AVAILABLE
+
+式神が選択されていれば
+Buildが保存対象に追加される。
+end note
+
+note right of SnapshotAvailable
+SaveDataSaveLevel:
+SNAPSHOT_AVAILABLE
+
+_lastCalculationResult != null
+かつ
+_isCalculationResultDirty == false
+
+の場合に到達する。
+end note
+
+note bottom of SnapshotAvailable
+計算後に式神または御魂入力を変更すると
+markCalculationResultDirty() により
+Snapshot保存不可へ戻る。
+end note
+
+@enduml
