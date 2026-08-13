@@ -11,7 +11,7 @@ namespace Gui.Validation
 		{
 			CalculationInputValidationOutcome outcome;
 
-			outcome = validateEqueppedMitamaCount(slots);
+			outcome = validateEquippedMitamaCount(slots);
 
 			if (outcome != CalculationInputValidationOutcome.SUCCESS)
 			{
@@ -42,7 +42,7 @@ namespace Gui.Validation
 			return outcome;
 		}
 
-		private static CalculationInputValidationOutcome validateEqueppedMitamaCount(MitamaSlotInputControl[] slots)
+		private static CalculationInputValidationOutcome validateEquippedMitamaCount(MitamaSlotInputControl[] slots)
 		{
 			if (getEquippedSlotCount(slots) <= 0)
 			{
@@ -74,9 +74,9 @@ namespace Gui.Validation
 				return CalculationInputValidationOutcome.SUCCESS;
 			}
 
-			foreach (SubStatInputControl subsStat in slot.SubStats)
+			foreach (SubStatInputControl subStat in slot.SubStats)
 			{
-				if (hasSubStatInput(subsStat.TypeComboBox, subsStat.ValueTextBox))
+				if (hasSubStatInput(subStat.TypeComboBox, subStat.ValueTextBox))
 				{
 					return CalculationInputValidationOutcome.MAIN_STAT_NOT_SELECTED_WITH_SUB_STAT;
 				}
@@ -85,9 +85,9 @@ namespace Gui.Validation
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
-		private static bool hasSubStatInput(ComboBox cmbSubStat, TextBox txtSubvalue)
+		private static bool hasSubStatInput(ComboBox cmbSubStat, TextBox txtSubValue)
 		{
-			return (!string.IsNullOrWhiteSpace(cmbSubStat.Text) && cmbSubStat.Text != DisplayText.NONE) || !string.IsNullOrWhiteSpace(txtSubvalue.Text);
+			return (!string.IsNullOrWhiteSpace(cmbSubStat.Text) && cmbSubStat.Text != DisplayText.NONE) || !string.IsNullOrWhiteSpace(txtSubValue.Text);
 		}
 
 		private static CalculationInputValidationOutcome validateEffectSlotCount(MitamaSlotInputControl[] slots, ComboBox[] setEffectComboBoxes, ComboBox[] uniqueEffectComboBoxes)
