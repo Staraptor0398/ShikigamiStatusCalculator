@@ -664,19 +664,19 @@ namespace Gui.Form
 					if (dialog.SelectedSaveType == SaveDataSaveType.Build)
 					{
 						var data = BuildSaveDataFactory.Create(cmbShikigami, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
-						SaveDataAccess.SaveBuild(dialog._filePath, data);
+						SaveDataAccess.SaveBuild(dialog.FilePath, data);
 					}
 					else if (dialog.SelectedSaveType == SaveDataSaveType.MitamaSet)
 					{
 						var data = MitamaSetSaveDataFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
-						SaveDataAccess.SaveMitamaSet(dialog._filePath, data);
+						SaveDataAccess.SaveMitamaSet(dialog.FilePath, data);
 					}
 					else if (dialog.SelectedSaveType == SaveDataSaveType.CalculationSnapshot)
 					{
-						string snapshotName = createSnapshotNameFromFilePath(dialog._filePath);
+						string snapshotName = createSnapshotNameFromFilePath(dialog.FilePath);
 
 						var data = CalculationSnapshotSaveDataFactory.Create(cmbShikigami, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes, snapshotName, mLastCalculationResult);
-						SaveDataAccess.SaveSnapshot(dialog._filePath, data);
+						SaveDataAccess.SaveSnapshot(dialog.FilePath, data);
 					}
 				}
 				finally

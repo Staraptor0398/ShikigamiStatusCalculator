@@ -19,7 +19,7 @@ namespace Gui.Dialog
 
 		public SaveDataSaveType SelectedSaveType { get; private set; }
 
-		public string _filePath { get; private set; }
+		public string FilePath { get; private set; }
 
 		public SaveDataSaveDialog(string shikigamiName, SaveDataSaveLevel saveDataSaveLevel)
 		{
@@ -239,7 +239,7 @@ namespace Gui.Dialog
 			}
 
 			SelectedSaveType = getSelectedSaveType();
-			_filePath = txtFilePath.Text;
+			FilePath = txtFilePath.Text;
 
 			DialogResult = DialogResult.OK;
 			this.Close();
