@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace Gui.Form
 {
-	public partial class ShikigamiResisterForm : System.Windows.Forms.Form
+	public partial class ShikigamiRegisterForm : System.Windows.Forms.Form
 	{
 
 		/****************************************************************************************************
@@ -13,7 +13,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private enum ShikigamiFormMode
 		{
-			Resister,
+			Register,
 			Edit
 		}
 
@@ -29,15 +29,15 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  コンストラクタ
 		****************************************************************************************************/
-		public ShikigamiResisterForm()
+		public ShikigamiRegisterForm()
 		{
 			InitializeComponent();
 
-			_mode = ShikigamiFormMode.Resister;
+			_mode = ShikigamiFormMode.Register;
 			_editTarget = null;
 		}
 
-		public ShikigamiResisterForm(ShikigamiDto editTarget)
+		public ShikigamiRegisterForm(ShikigamiDto editTarget)
 		{
 			InitializeComponent();
 
@@ -52,7 +52,7 @@ namespace Gui.Form
 		{
 			initializeRarityComboBox();
 
-			if (_mode == ShikigamiFormMode.Resister)
+			if (_mode == ShikigamiFormMode.Register)
 			{
 				initializeResisterMode();
 			}
@@ -114,7 +114,7 @@ namespace Gui.Form
 				return;
 			}
 
-			if (_mode == ShikigamiFormMode.Resister)
+			if (_mode == ShikigamiFormMode.Register)
 			{
 				registerShikigami(dto);
 			}

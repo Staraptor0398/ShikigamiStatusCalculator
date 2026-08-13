@@ -1,6 +1,6 @@
 namespace Gui.Form
 {
-	partial class ShikigamiResisterForm
+	partial class ShikigamiRegisterForm
 	{
 		/// <summary>
 		/// Required designer variable.

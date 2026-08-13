@@ -110,18 +110,20 @@
     <Compile Include="Form\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form\MainForm.Development.cs" />
+    <Compile Include="Form\MainForm.Development.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Form\ResultViewForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form\ResultViewForm.Designer.cs">
       <DependentUpon>ResultViewForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form\ShikigamiResisterForm.cs">
+    <Compile Include="Form\ShikigamiRegisterForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form\ShikigamiResisterForm.Designer.cs">
-      <DependentUpon>ShikigamiResisterForm.cs</DependentUpon>
+    <Compile Include="Form\ShikigamiRegisterForm.Designer.cs">
+      <DependentUpon>ShikigamiRegisterForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Form\StatusComparisonResultForm.cs">
       <SubType>Form</SubType>
@@ -154,8 +156,8 @@
     <EmbeddedResource Include="Form\ResultViewForm.resx">
       <DependentUpon>ResultViewForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form\ShikigamiResisterForm.resx">
-      <DependentUpon>ShikigamiResisterForm.cs</DependentUpon>
+    <EmbeddedResource Include="Form\ShikigamiRegisterForm.resx">
+      <DependentUpon>ShikigamiRegisterForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form\StatusComparisonResultForm.resx">
       <DependentUpon>StatusComparisonResultForm.cs</DependentUpon>

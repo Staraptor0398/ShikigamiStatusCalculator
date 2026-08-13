@@ -897,7 +897,7 @@ namespace Gui.Form
 		{
 			var selectedShikigami = cmbShikigami.SelectedItem as ShikigamiDto;
 
-			using (var form = new ShikigamiResisterForm())
+			using (var form = new ShikigamiRegisterForm())
 			{
 				if (form.ShowDialog(this) == DialogResult.OK)
 				{
@@ -931,7 +931,7 @@ namespace Gui.Form
 				return;
 			}
 
-			using (var form = new ShikigamiResisterForm(selectedShikigami))
+			using (var form = new ShikigamiRegisterForm(selectedShikigami))
 			{
 				if (form.ShowDialog(this) == DialogResult.OK)
 				{
