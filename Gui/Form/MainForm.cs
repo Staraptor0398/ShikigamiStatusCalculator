@@ -722,14 +722,14 @@ namespace Gui.Form
 
 				try
 				{
-					if (dialog._selectedLoadType == SaveDataLoadType.Build)
+					if (dialog.SelectedLoadType == SaveDataLoadType.Build)
 					{
-						var data = SaveDataAccess.LoadBuild(dialog._filePath);
+						var data = SaveDataAccess.LoadBuild(dialog.FilePath);
 						applyBuildSaveDataToUI(data);
 					}
-					else if (dialog._selectedLoadType == SaveDataLoadType.MitamaSet)
+					else if (dialog.SelectedLoadType == SaveDataLoadType.MitamaSet)
 					{
-						var data = SaveDataAccess.LoadMitamaSet(dialog._filePath);
+						var data = SaveDataAccess.LoadMitamaSet(dialog.FilePath);
 						MitamaSetSaveDataApplicator.Apply(data, _mitamaSlotInputControls, _setEffectComboBoxes, _uniqueEffectComboBoxes);
 					}
 				}

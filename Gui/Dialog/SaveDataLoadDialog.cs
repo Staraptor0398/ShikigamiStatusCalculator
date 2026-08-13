@@ -5,9 +5,9 @@ namespace Gui.Dialog
 {
 	public partial class SaveDataLoadDialog : System.Windows.Forms.Form
 	{
-		public SaveDataLoadType _selectedLoadType { get; private set; }
+		public SaveDataLoadType SelectedLoadType { get; private set; }
 
-		public string _filePath { get; private set; }
+		public string FilePath { get; private set; }
 
 		public SaveDataLoadDialog()
 		{
@@ -134,8 +134,8 @@ namespace Gui.Dialog
 				return;
 			}
 
-			_selectedLoadType = getSelectedLoadType();
-			_filePath = txtFilePath.Text;
+			SelectedLoadType = getSelectedLoadType();
+			FilePath = txtFilePath.Text;
 
 			DialogResult = DialogResult.OK;
 			this.Close();
