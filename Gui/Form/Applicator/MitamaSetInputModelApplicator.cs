@@ -40,7 +40,7 @@ namespace Gui.Form.Applicator
 			}
 
 			slot.MainStatComboBox.Text = data.MainStat.Type;
-			slot.MainValueTextBox.Text = data.MainStat.Value.ToString();
+			slot.MainValueTextBox.Text = data.MainStat.ValueText;
 
 			for (int i = 0; i < data.SubStat.Count && i < slot.SubStats.Length; i++)
 			{
@@ -92,7 +92,7 @@ namespace Gui.Form.Applicator
 			}
 
 			comboBox.SelectedItem = data.Type;
-			textBox.Text = data.Value.ToString();
+			textBox.Text = data.ValueText;
 		}
 
 		private static void applyStatValue(StatValueInputModel data, ComboBox comboBox)
