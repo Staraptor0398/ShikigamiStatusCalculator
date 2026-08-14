@@ -18,6 +18,19 @@ namespace Gui.Converter
 			};
 		}
 
+		public static SetEffectSaveData ToSaveData(SetEffectInputModel inputModel)
+		{
+			if (inputModel == null)
+			{
+				return null;
+			}
+
+			return new SetEffectSaveData
+			{
+				Stat = StatValueConverter.ToSaveData(inputModel.Stat)
+			};
+		}
+
 		public static SetEffectDto ToDto(SetEffectInputModel inputModel)
 		{
 			if (inputModel == null)

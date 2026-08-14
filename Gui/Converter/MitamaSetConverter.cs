@@ -21,6 +21,21 @@ namespace Gui.Converter
 			};
 		}
 
+		public static MitamaSetSaveData ToSaveData(MitamaSetInputModel inputModel)
+		{
+			if (inputModel == null)
+			{
+				return null;
+			}
+
+			return new MitamaSetSaveData
+			{
+				Mitamas = inputModel.Mitamas.Select((mitama, index) => MitamaConverter.ToSaveData(index + 1, mitama)).ToList(),
+				SetEffects = inputModel.SetEffects.Select(SetEffectConverter.ToSaveData).ToList(),
+				UniqueEffects = inputModel.UniqueEffects.Select(SetEffectConverter.ToSaveData).ToList()
+			};
+		}
+
 		public static MitamaSetDto ToDto(MitamaSetInputModel inputModel)
 		{
 			if (inputModel == null)

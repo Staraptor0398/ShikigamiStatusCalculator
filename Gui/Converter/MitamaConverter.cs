@@ -21,6 +21,21 @@ namespace Gui.Converter
 			};
 		}
 
+		public static MitamaSaveData ToSaveData(int slot, MitamaInputModel inputModel)
+		{
+			if (inputModel == null)
+			{
+				return null;
+			}
+
+			return new MitamaSaveData
+			{
+				Slot = slot,
+				MainStat = StatValueConverter.ToSaveData(inputModel.MainStat),
+				SubStats = inputModel.SubStat.Select(StatValueConverter.ToSaveData).ToList()
+			};
+		}
+
 		public static MitamaDto ToDto(MitamaInputModel inputModel)
 		{
 			if (inputModel == null)

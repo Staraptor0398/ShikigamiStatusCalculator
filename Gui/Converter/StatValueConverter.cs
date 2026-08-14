@@ -19,6 +19,20 @@ namespace Gui.Converter
 			};
 		}
 
+		public static StatValueSaveData ToSaveData(StatValueInputModel inputModel)
+		{
+			if (inputModel == null)
+			{
+				return null;
+			}
+
+			return new StatValueSaveData
+			{
+				Type = inputModel.Type,
+				Value = inputModel.Value
+			};
+		}
+
 		public static StatValueDto ToDto(StatValueInputModel inputModel)
 		{
 			if (inputModel == null)
