@@ -1,0 +1,215 @@
+{
+  "Version": 2,
+  "Data": {
+    "Mitamas": [
+      {
+        "Slot": 1,
+        "MainStat": {
+          "Type": "攻撃力",
+          "Value": 486.0
+        },
+        "SubStats": [
+          {
+            "Type": "防御力",
+            "Value": 4.79
+          },
+          {
+            "Type": "攻撃力",
+            "Value": 46.42
+          },
+          {
+            "Type": "会心率",
+            "Value": 11.39
+          },
+          {
+            "Type": "会心DMG",
+            "Value": 7.59
+          }
+        ]
+      },
+      {
+        "Slot": 2,
+        "MainStat": {
+          "Type": "素早さ",
+          "Value": 57.0
+        },
+        "SubStats": [
+          {
+            "Type": "追加HP",
+            "Value": 2.52
+          },
+          {
+            "Type": "追加攻撃力",
+            "Value": 2.69
+          },
+          {
+            "Type": "会心率",
+            "Value": 10.6
+          },
+          {
+            "Type": "会心DMG",
+            "Value": 6.54
+          }
+        ]
+      },
+      {
+        "Slot": 3,
+        "MainStat": {
+          "Type": "防御力",
+          "Value": 104.0
+        },
+        "SubStats": [
+          {
+            "Type": "攻撃力",
+            "Value": 21.71
+          },
+          {
+            "Type": "会心率",
+            "Value": 11.07
+          },
+          {
+            "Type": "会心DMG",
+            "Value": 7.03
+          },
+          {
+            "Type": "効果命中",
+            "Value": 6.48
+          }
+        ]
+      },
+      {
+        "Slot": 4,
+        "MainStat": {
+          "Type": "追加HP",
+          "Value": 55.0
+        },
+        "SubStats": [
+          {
+            "Type": "防御力",
+            "Value": 4.28
+          },
+          {
+            "Type": "素早さ",
+            "Value": 2.83
+          },
+          {
+            "Type": "会心率",
+            "Value": 13.42
+          },
+          {
+            "Type": "会心DMG",
+            "Value": 7.66
+          }
+        ]
+      },
+      {
+        "Slot": 5,
+        "MainStat": {
+          "Type": "HP",
+          "Value": 2052.0
+        },
+        "SubStats": [
+          {
+            "Type": "HP",
+            "Value": 207.59
+          },
+          {
+            "Type": "会心率",
+            "Value": 10.46
+          },
+          {
+            "Type": "会心DMG",
+            "Value": 7.53
+          },
+          {
+            "Type": "効果抵抗",
+            "Value": 3.5
+          }
+        ]
+      },
+      {
+        "Slot": 6,
+        "MainStat": {
+          "Type": "会心DMG",
+          "Value": 89.0
+        },
+        "SubStats": [
+          {
+            "Type": "追加防御力",
+            "Value": 4.98
+          },
+          {
+            "Type": "追加攻撃力",
+            "Value": 2.66
+          },
+          {
+            "Type": "素早さ",
+            "Value": 2.73
+          },
+          {
+            "Type": "会心率",
+            "Value": 14.08
+          }
+        ]
+      }
+    ],
+    "SetEffects": [
+      {
+        "Stat": {
+          "Type": "会心率",
+          "Value": 15.0
+        }
+      },
+      {
+        "Stat": {
+          "Type": "効果命中",
+          "Value": 15.0
+        }
+      },
+      {
+        "Stat": {
+          "Type": "該当なし",
+          "Value": 0.0
+        }
+      }
+    ],
+    "UniqueEffects": [
+      {
+        "Stat": {
+          "Type": "該当なし",
+          "Value": 0.0
+        }
+      },
+      {
+        "Stat": {
+          "Type": "該当なし",
+          "Value": 0.0
+        }
+      },
+      {
+        "Stat": {
+          "Type": "該当なし",
+          "Value": 0.0
+        }
+      },
+      {
+        "Stat": {
+          "Type": "該当なし",
+          "Value": 0.0
+        }
+      },
+      {
+        "Stat": {
+          "Type": "該当なし",
+          "Value": 0.0
+        }
+      },
+      {
+        "Stat": {
+          "Type": "該当なし",
+          "Value": 0.0
+        }
+      }
+    ]
+  }
+}
