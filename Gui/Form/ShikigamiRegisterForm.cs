@@ -160,9 +160,9 @@ namespace Gui.Form
 				return;
 			}
 
-			var dupplicateOutcome = validateDuplicateForEdit(mEditTarget, newDto);
+			var duplicateOutcome = validateDuplicateForEdit(mEditTarget, newDto);
 
-			if (ShikigamiDataErrorHandler.Handle(dupplicateOutcome, "式神データ編集"))
+			if (ShikigamiDataErrorHandler.Handle(duplicateOutcome, "式神データ編集"))
 			{
 				return;
 			}
@@ -217,7 +217,7 @@ namespace Gui.Form
 				return false;
 			}
 
-			if (!tryGetDouble(txtDefense, DisplayText.DEFENSE, out double deffense))
+			if (!tryGetDouble(txtDefense, DisplayText.DEFENSE, out double defense))
 			{
 				return false;
 			}
@@ -256,7 +256,7 @@ namespace Gui.Form
 				{
 					Attack = attack,
 					HP = hp,
-					Defense = deffense,
+					Defense = defense,
 					Speed = speed,
 					CritRate = critRate,
 					CritDamage = critDamage,
