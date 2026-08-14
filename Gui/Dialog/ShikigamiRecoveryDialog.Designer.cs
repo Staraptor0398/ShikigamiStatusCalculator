@@ -36,7 +36,7 @@ namespace Gui.Dialog
 			this.columnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.columnAttack = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.columnHP = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.columnDefence = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.columnDefense = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.columnSpeed = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.btnSelectAll = new System.Windows.Forms.Button();
 			this.btnAllClear = new System.Windows.Forms.Button();
@@ -75,7 +75,7 @@ namespace Gui.Dialog
 			this.columnName,
 			this.columnAttack,
 			this.columnHP,
-			this.columnDefence,
+			this.columnDefense,
 			this.columnSpeed});
 			this.dgvRecoveryCandidates.Location = new System.Drawing.Point(12, 54);
 			this.dgvRecoveryCandidates.MultiSelect = false;
@@ -115,11 +115,11 @@ namespace Gui.Dialog
 			this.columnHP.Name = "columnHP";
 			this.columnHP.ReadOnly = true;
 			// 
-			// columnDefence
+			// columnDefense
 			// 
-			this.columnDefence.HeaderText = "防御力";
-			this.columnDefence.Name = "columnDefence";
-			this.columnDefence.ReadOnly = true;
+			this.columnDefense.HeaderText = "防御力";
+			this.columnDefense.Name = "columnDefense";
+			this.columnDefense.ReadOnly = true;
 			// 
 			// columnSpeed
 			// 
@@ -205,7 +205,7 @@ namespace Gui.Dialog
 		private System.Windows.Forms.DataGridViewTextBoxColumn columnName;
 		private System.Windows.Forms.DataGridViewTextBoxColumn columnAttack;
 		private System.Windows.Forms.DataGridViewTextBoxColumn columnHP;
-		private System.Windows.Forms.DataGridViewTextBoxColumn columnDefence;
+		private System.Windows.Forms.DataGridViewTextBoxColumn columnDefense;
 		private System.Windows.Forms.DataGridViewTextBoxColumn columnSpeed;
 	}
 }
