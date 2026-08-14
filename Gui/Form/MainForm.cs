@@ -668,7 +668,12 @@ namespace Gui.Form
 
 					if (dialog.SelectedSaveType == SaveDataSaveType.Build)
 					{
-						var data = BuildSaveDataFactory.Create(cmbShikigami, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+						BuildSaveData data = new BuildSaveData
+						{
+							MitamaSet = MitamaSetConverter.ToSaveData(inputModel),
+							ShikigamiName = cmbShikigami.Text
+						};
+
 						SaveDataAccess.SaveBuild(dialog.FilePath, data);
 					}
 					else if (dialog.SelectedSaveType == SaveDataSaveType.MitamaSet)
