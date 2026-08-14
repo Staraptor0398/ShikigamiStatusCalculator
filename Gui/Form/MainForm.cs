@@ -300,7 +300,10 @@ namespace Gui.Form
 			}
 
 			var baseStatus = getSelectedShikigamiStatus();
-			var mitamaSet = MitamaSetFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+
+			var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+
+			var mitamaSet = MitamaSetConverter.ToDto(inputModel);
 
 			try
 			{
