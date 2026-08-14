@@ -1,39 +1,35 @@
 using Gui.Common;
-using Gui.Form.Control;
+using Gui.Model;
 using System.Collections.Generic;
-using System.Windows.Forms;
 
 namespace Gui.Validation
 {
 	public static class CalculationInputValidator
 	{
-		public static CalculationInputValidationOutcome Validate(MitamaSlotInputControl[] slots, ComboBox[] setEffectComboBoxes, ComboBox[] uniqueEffectComboBoxes)
+		public static CalculationInputValidationOutcome Validate(MitamaSetInputModel inputModel)
 		{
 			CalculationInputValidationOutcome outcome;
 
-			outcome = validateEquippedMitamaCount(slots);
+			outcome = validateEquippedMitamaCount(inputModel.Mitamas);
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateSubStatsWithoutMainStat(inputModel.Mitamas);
+			if (outcome != CalculationInputValidationOutcome.SUCCESS)
+			{
+				return outcome;
+			}
+
+			outcome = validateEffectSlotCount(inputModel.Mitamas, inputModel.SetEffects, inputModel.UniqueEffects);
 
 			if (outcome != CalculationInputValidationOutcome.SUCCESS)
 			{
 				return outcome;
 			}
 
-			outcome = validateSubStatsInUnequippedSlots(slots);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateEffectSlotCount(slots, setEffectComboBoxes, uniqueEffectComboBoxes);
-
-			if (outcome != CalculationInputValidationOutcome.SUCCESS)
-			{
-				return outcome;
-			}
-
-			outcome = validateSubStats(slots);
-
+			outcome = validateSubStats(inputModel.Mitamas);
 			if (outcome != CalculationInputValidationOutcome.SUCCESS)
 			{
 				return outcome;
@@ -42,9 +38,9 @@ namespace Gui.Validation
 			return outcome;
 		}
 
-		private static CalculationInputValidationOutcome validateEquippedMitamaCount(MitamaSlotInputControl[] slots)
+		private static CalculationInputValidationOutcome validateEquippedMitamaCount(List<MitamaInputModel> mitamas)
 		{
-			if (getEquippedSlotCount(slots) <= 0)
+			if (getEquippedMitamaCount(mitamas) <= 0)
 			{
 				return CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
 			}
@@ -52,11 +48,11 @@ namespace Gui.Validation
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
-		private static CalculationInputValidationOutcome validateSubStatsInUnequippedSlots(MitamaSlotInputControl[] slots)
+		private static CalculationInputValidationOutcome validateSubStatsWithoutMainStat(List<MitamaInputModel> mitamas)
 		{
-			foreach (MitamaSlotInputControl slot in slots)
+			foreach (MitamaInputModel mitama in mitamas)
 			{
-				CalculationInputValidationOutcome outcome = validateSubStatsInUnequippedSlot(slot);
+				CalculationInputValidationOutcome outcome = validateSubStatsWithoutMainStat(mitama);
 
 				if (outcome != CalculationInputValidationOutcome.SUCCESS)
 				{
@@ -67,16 +63,16 @@ namespace Gui.Validation
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
-		private static CalculationInputValidationOutcome validateSubStatsInUnequippedSlot(MitamaSlotInputControl slot)
+		private static CalculationInputValidationOutcome validateSubStatsWithoutMainStat(MitamaInputModel mitama)
 		{
-			if (!string.IsNullOrWhiteSpace(slot.MainStatComboBox.Text))
+			if (!string.IsNullOrWhiteSpace(mitama.MainStat.Type))
 			{
 				return CalculationInputValidationOutcome.SUCCESS;
 			}
 
-			foreach (SubStatInputControl subStat in slot.SubStats)
+			foreach (StatValueInputModel subStat in mitama.SubStat)
 			{
-				if (hasSubStatInput(subStat.TypeComboBox, subStat.ValueTextBox))
+				if (hasSubStatInput(subStat))
 				{
 					return CalculationInputValidationOutcome.MAIN_STAT_NOT_SELECTED_WITH_SUB_STAT;
 				}
@@ -85,21 +81,20 @@ namespace Gui.Validation
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
-		private static bool hasSubStatInput(ComboBox cmbSubStat, TextBox txtSubValue)
+		private static bool hasSubStatInput(StatValueInputModel subStat)
 		{
-			return (!string.IsNullOrWhiteSpace(cmbSubStat.Text) && cmbSubStat.Text != DisplayText.NONE) || !string.IsNullOrWhiteSpace(txtSubValue.Text);
+			return (!string.IsNullOrWhiteSpace(subStat.Type) && subStat.Type != DisplayText.NONE) || !string.IsNullOrWhiteSpace(subStat.ValueText);
 		}
 
-		private static CalculationInputValidationOutcome validateEffectSlotCount(MitamaSlotInputControl[] slots, ComboBox[] setEffectComboBoxes, ComboBox[] uniqueEffectComboBoxes)
+		private static CalculationInputValidationOutcome validateEffectSlotCount(List<MitamaInputModel> mitamas, List<SetEffectInputModel> setEffects, List<SetEffectInputModel> uniqueEffects)
 		{
-			int equippedSlotCount = getEquippedSlotCount(slots);
-
-			int setEffectCount = getSelectedSetEffectCount(setEffectComboBoxes);
-			int uniqueEffectCount = getSelectedUniqueEffectCount(uniqueEffectComboBoxes);
+			int equippedMitamaCount = getEquippedMitamaCount(mitamas);
+			int setEffectCount = getSelectedSetEffectCount(setEffects);
+			int uniqueEffectCount = getSelectedUniqueEffectCount(uniqueEffects);
 
 			int usedSlotCount = setEffectCount * 2 + uniqueEffectCount;
 
-			if (usedSlotCount > equippedSlotCount)
+			if (usedSlotCount > equippedMitamaCount)
 			{
 				return CalculationInputValidationOutcome.EFFECT_SLOT_COUNT_EXCEEDS_EQUIPPED_SLOTS;
 			}
@@ -107,13 +102,13 @@ namespace Gui.Validation
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
-		private static int getEquippedSlotCount(MitamaSlotInputControl[] slots)
+		private static int getEquippedMitamaCount(List<MitamaInputModel> mitamas)
 		{
 			int count = 0;
 
-			foreach (MitamaSlotInputControl slot in slots)
+			foreach (MitamaInputModel mitama in mitamas)
 			{
-				if (!string.IsNullOrWhiteSpace(slot.MainStatComboBox.Text))
+				if (!string.IsNullOrWhiteSpace(mitama.MainStat.Type))
 				{
 					count++;
 				}
@@ -122,13 +117,13 @@ namespace Gui.Validation
 			return count;
 		}
 
-		private static int getSelectedSetEffectCount(ComboBox[] setEffectComboBoxes)
+		private static int getSelectedSetEffectCount(List<SetEffectInputModel> setEffects)
 		{
 			int count = 0;
 
-			foreach (ComboBox comboBox in setEffectComboBoxes)
+			foreach (SetEffectInputModel setEffect in setEffects)
 			{
-				if (isSelectedEffect(comboBox))
+				if (isSelectedEffect(setEffect))
 				{
 					count++;
 				}
@@ -137,13 +132,13 @@ namespace Gui.Validation
 			return count;
 		}
 
-		private static int getSelectedUniqueEffectCount(ComboBox[] uniqueEffectComboBoxes)
+		private static int getSelectedUniqueEffectCount(List<SetEffectInputModel> uniqueEffects)
 		{
 			int count = 0;
 
-			foreach (ComboBox comboBox in uniqueEffectComboBoxes)
+			foreach (SetEffectInputModel uniqueEffect in uniqueEffects)
 			{
-				if (isSelectedEffect(comboBox))
+				if (isSelectedEffect(uniqueEffect))
 				{
 					count++;
 				}
@@ -152,14 +147,14 @@ namespace Gui.Validation
 			return count;
 		}
 
-		private static bool isSelectedEffect(ComboBox comboBox)
+		private static bool isSelectedEffect(SetEffectInputModel effect)
 		{
-			if (string.IsNullOrWhiteSpace(comboBox.Text))
+			if (string.IsNullOrWhiteSpace(effect.Stat.Type))
 			{
 				return false;
 			}
 
-			if (comboBox.Text == DisplayText.NONE)
+			if (effect.Stat.Type == DisplayText.NONE)
 			{
 				return false;
 			}
@@ -167,11 +162,11 @@ namespace Gui.Validation
 			return true;
 		}
 
-		private static CalculationInputValidationOutcome validateSubStats(MitamaSlotInputControl[] slots)
+		private static CalculationInputValidationOutcome validateSubStats(List<MitamaInputModel> mitamas)
 		{
-			foreach (MitamaSlotInputControl slot in slots)
+			foreach (MitamaInputModel mitama in mitamas)
 			{
-				CalculationInputValidationOutcome outcome = validateSubStatsInSlot(slot.SubStats);
+				CalculationInputValidationOutcome outcome = validateSubStatsInMitama(mitama.SubStat);
 
 				if (outcome != CalculationInputValidationOutcome.SUCCESS)
 				{
@@ -182,14 +177,15 @@ namespace Gui.Validation
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
-		private static CalculationInputValidationOutcome validateSubStatsInSlot(SubStatInputControl[] subStats)
+		private static CalculationInputValidationOutcome validateSubStatsInMitama(List<StatValueInputModel> subStats)
 		{
 			List<string> selectedSubStats = new List<string>();
 
-			foreach (SubStatInputControl subStat in subStats)
+			foreach (StatValueInputModel subStat in subStats)
 			{
-				bool hasType = !string.IsNullOrWhiteSpace(subStat.TypeComboBox.Text) && subStat.TypeComboBox.Text != DisplayText.NONE;
-				bool hasValue = !string.IsNullOrWhiteSpace(subStat.ValueTextBox.Text);
+				bool hasType = !string.IsNullOrWhiteSpace(subStat.Type) && subStat.Type != DisplayText.NONE;
+
+				bool hasValue = !string.IsNullOrWhiteSpace(subStat.ValueText);
 
 				if (!hasType && !hasValue)
 				{
@@ -206,7 +202,7 @@ namespace Gui.Validation
 					return CalculationInputValidationOutcome.SUB_STAT_VALUE_WITHOUT_TYPE;
 				}
 
-				if (!double.TryParse(subStat.ValueTextBox.Text, out double value))
+				if (!double.TryParse(subStat.ValueText, out double value))
 				{
 					return CalculationInputValidationOutcome.INVALID_VALUE;
 				}
@@ -216,16 +212,15 @@ namespace Gui.Validation
 					return CalculationInputValidationOutcome.NEGATIVE_VALUE;
 				}
 
-				if (selectedSubStats.Contains(subStat.TypeComboBox.Text))
+				if (selectedSubStats.Contains(subStat.Type))
 				{
 					return CalculationInputValidationOutcome.DUPLICATE_SUB_STAT;
 				}
 
-				selectedSubStats.Add(subStat.TypeComboBox.Text);
+				selectedSubStats.Add(subStat.Type);
 			}
 
 			return CalculationInputValidationOutcome.SUCCESS;
 		}
-
 	}
 }

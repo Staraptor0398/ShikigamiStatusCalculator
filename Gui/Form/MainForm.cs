@@ -292,7 +292,9 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void btnCalc_Click(object sender, EventArgs e)
 		{
-			CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+			var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+
+			CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(inputModel);
 
 			if (CalculationInputValidationErrorHandler.Handle(validationOutcome))
 			{
@@ -300,8 +302,6 @@ namespace Gui.Form
 			}
 
 			var baseStatus = getSelectedShikigamiStatus();
-
-			var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 
 			var mitamaSet = MitamaSetConverter.ToDto(inputModel);
 
@@ -706,7 +706,8 @@ namespace Gui.Form
 
 		private void updateSaveButtonEnabled()
 		{
-			btnSave.Enabled = CalculationInputValidator.Validate(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes) != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
+			var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+			btnSave.Enabled = CalculationInputValidator.Validate(inputModel) != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
 		}
 
 		/****************************************************************************************************
