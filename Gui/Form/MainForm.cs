@@ -747,8 +747,9 @@ namespace Gui.Form
 					}
 					else if (dialog.SelectedLoadType == SaveDataLoadType.MitamaSet)
 					{
-						var data = SaveDataAccess.LoadMitamaSet(dialog.FilePath);
-						MitamaSetSaveDataApplicator.Apply(data, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+						var saveData = SaveDataAccess.LoadMitamaSet(dialog.FilePath);
+						var inputModel = MitamaSetConverter.ToInputModel(saveData);
+						MitamaSetInputModelApplicator.Apply(inputModel, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 					}
 				}
 				finally
@@ -767,7 +768,9 @@ namespace Gui.Form
 			}
 
 			applyShikigami(data.ShikigamiName);
-			MitamaSetSaveDataApplicator.Apply(data.MitamaSet, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+
+			var inputModel = MitamaSetConverter.ToInputModel(data.MitamaSet);
+			MitamaSetInputModelApplicator.Apply(inputModel, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 		}
 
 		private void applyShikigami(string name)

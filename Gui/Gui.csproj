@@ -98,6 +98,7 @@
     </Compile>
     <Compile Include="Factory\MitamaSetInputModelFactory.cs" />
     <Compile Include="Formatter\StatusFormatter.cs" />
+    <Compile Include="Form\Applicator\MitamaSetInputModelApplicator.cs" />
     <Compile Include="Form\Applicator\MitamaSetSaveDataApplicator.cs" />
     <Compile Include="Form\Control\MitamaSlotInputControl.cs" />
     <Compile Include="Form\Control\SubStatInputControl.cs" />
