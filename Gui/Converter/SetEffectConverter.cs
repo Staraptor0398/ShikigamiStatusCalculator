@@ -1,3 +1,4 @@
+using Gui.Model;
 using SaveData.Model;
 
 namespace Gui.Converter
@@ -13,7 +14,20 @@ namespace Gui.Converter
 
 			return new SetEffectSaveData
 			{
-				Stat = StatValueConverter.ToSaveData(dto.Stat),
+				Stat = StatValueConverter.ToSaveData(dto.Stat)
+			};
+		}
+
+		public static SetEffectDto ToDto(SetEffectInputModel inputModel)
+		{
+			if (inputModel == null)
+			{
+				return null;
+			}
+
+			return new SetEffectDto
+			{
+				Stat = StatValueConverter.ToDto(inputModel.Stat)
 			};
 		}
 	}

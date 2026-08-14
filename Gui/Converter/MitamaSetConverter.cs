@@ -1,3 +1,4 @@
+using Gui.Model;
 using SaveData.Model;
 using System.Linq;
 
@@ -17,6 +18,21 @@ namespace Gui.Converter
 				Mitamas = dto.Mitamas.Select((mitama, index) => MitamaConverter.ToSaveData(index + 1, mitama)).ToList(),
 				SetEffects = dto.SetEffects.Select(SetEffectConverter.ToSaveData).ToList(),
 				UniqueEffects = dto.UniqueEffects.Select(SetEffectConverter.ToSaveData).ToList()
+			};
+		}
+
+		public static MitamaSetDto ToDto(MitamaSetInputModel inputModel)
+		{
+			if (inputModel == null)
+			{
+				return null;
+			}
+
+			return new MitamaSetDto
+			{
+				Mitamas = inputModel.Mitamas.Select(MitamaConverter.ToDto).ToList(),
+				SetEffects = inputModel.SetEffects.Select(SetEffectConverter.ToDto).ToList(),
+				UniqueEffects = inputModel.UniqueEffects.Select(SetEffectConverter.ToDto).ToList()
 			};
 		}
 	}

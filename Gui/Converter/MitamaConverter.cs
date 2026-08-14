@@ -1,3 +1,4 @@
+using Gui.Model;
 using SaveData.Model;
 using System.Linq;
 
@@ -16,7 +17,21 @@ namespace Gui.Converter
 			{
 				Slot = slot,
 				MainStat = StatValueConverter.ToSaveData(dto.MainStat),
-				SubStats = dto.SubStat.Select(StatValueConverter.ToSaveData).ToList(),
+				SubStats = dto.SubStat.Select(StatValueConverter.ToSaveData).ToList()
+			};
+		}
+
+		public static MitamaDto ToDto(MitamaInputModel inputModel)
+		{
+			if (inputModel == null)
+			{
+				return null;
+			}
+
+			return new MitamaDto
+			{
+				MainStat = StatValueConverter.ToDto(inputModel.MainStat),
+				SubStat = inputModel.SubStat.Select(StatValueConverter.ToDto).ToList()
 			};
 		}
 	}
