@@ -49,5 +49,19 @@ namespace Gui.Converter
 				SubStat = inputModel.SubStat.Select(StatValueConverter.ToDto).ToList()
 			};
 		}
+
+		public static MitamaInputModel ToInputModel(MitamaSaveData saveData)
+		{
+			if (saveData == null)
+			{
+				return null;
+			}
+
+			return new MitamaInputModel
+			{
+				MainStat = StatValueConverter.ToInputModel(saveData.MainStat),
+				SubStat = saveData.SubStats.Select(StatValueConverter.ToInputModel).ToList()
+			};
+		}
 	}
 }

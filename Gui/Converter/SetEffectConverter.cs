@@ -43,5 +43,18 @@ namespace Gui.Converter
 				Stat = StatValueConverter.ToDto(inputModel.Stat)
 			};
 		}
+
+		public static SetEffectInputModel ToInputModel(SetEffectSaveData saveData)
+		{
+			if (saveData == null)
+			{
+				return null;
+			}
+
+			return new SetEffectInputModel
+			{
+				Stat = StatValueConverter.ToInputModel(saveData.Stat)
+			};
+		}
 	}
 }

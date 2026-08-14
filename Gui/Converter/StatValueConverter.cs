@@ -46,5 +46,19 @@ namespace Gui.Converter
 				Value = inputModel.Value
 			};
 		}
+
+		public static StatValueInputModel ToInputModel(StatValueSaveData saveData)
+		{
+			if (saveData == null)
+			{
+				return null;
+			}
+
+			return new StatValueInputModel
+			{
+				Type = saveData.Type,
+				ValueText = saveData.Value.ToString()
+			};
+		}
 	}
 }

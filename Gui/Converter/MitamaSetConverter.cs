@@ -50,5 +50,20 @@ namespace Gui.Converter
 				UniqueEffects = inputModel.UniqueEffects.Select(SetEffectConverter.ToDto).ToList()
 			};
 		}
+
+		public static MitamaSetInputModel ToInputModel(MitamaSetSaveData saveData)
+		{
+			if (saveData == null)
+			{
+				return null;
+			}
+
+			return new MitamaSetInputModel
+			{
+				Mitamas = saveData.Mitamas.Select(MitamaConverter.ToInputModel).ToList(),
+				SetEffects = saveData.SetEffects.Select(SetEffectConverter.ToInputModel).ToList(),
+				UniqueEffects = saveData.UniqueEffects.Select(SetEffectConverter.ToInputModel).ToList()
+			};
+		}
 	}
 }
