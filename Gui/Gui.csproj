@@ -99,6 +99,7 @@
     <Compile Include="Factory\BuildSaveDataFactory.cs" />
     <Compile Include="Factory\CalculationSnapshotSaveDataFactory.cs" />
     <Compile Include="Factory\MitamaSetFactory.cs" />
+    <Compile Include="Factory\MitamaSetInputModelFactory.cs" />
     <Compile Include="Factory\MitamaSetSaveDataFactory.cs" />
     <Compile Include="Formatter\StatusFormatter.cs" />
     <Compile Include="Form\Applicator\MitamaSetSaveDataApplicator.cs" />
