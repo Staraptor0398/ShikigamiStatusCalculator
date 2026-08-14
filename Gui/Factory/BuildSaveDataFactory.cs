@@ -1,3 +1,4 @@
+using Gui.Converter;
 using Gui.Form.Control;
 using SaveData.Model;
 using System.Windows.Forms;
@@ -11,7 +12,7 @@ namespace Gui.Factory
 			return new BuildSaveData
 			{
 				ShikigamiName = cmbShikigami.Text,
-				MitamaSet = MitamaSetSaveDataFactory.Create(slots, setEffectComboBoxes, uniqueEffectComboBoxes),
+				MitamaSet = MitamaSetConverter.ToSaveData(MitamaSetInputModelFactory.Create(slots, setEffectComboBoxes, uniqueEffectComboBoxes))
 			};
 		}
 	}

@@ -664,6 +664,8 @@ namespace Gui.Form
 
 				try
 				{
+					var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+
 					if (dialog.SelectedSaveType == SaveDataSaveType.Build)
 					{
 						var data = BuildSaveDataFactory.Create(cmbShikigami, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
@@ -671,7 +673,7 @@ namespace Gui.Form
 					}
 					else if (dialog.SelectedSaveType == SaveDataSaveType.MitamaSet)
 					{
-						var data = MitamaSetSaveDataFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+						var data = MitamaSetConverter.ToSaveData(inputModel);
 						SaveDataAccess.SaveMitamaSet(dialog.FilePath, data);
 					}
 					else if (dialog.SelectedSaveType == SaveDataSaveType.CalculationSnapshot)

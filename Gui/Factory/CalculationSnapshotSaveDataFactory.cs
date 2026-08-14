@@ -20,7 +20,7 @@ namespace Gui.Factory
 				SnapshotName = snapshotName,
 				CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
 				ShikigamiName = cmbShikigami.Text,
-				MitamaSet = MitamaSetSaveDataFactory.Create(slots, setEffectComboBoxes, uniqueEffectComboBoxes),
+				MitamaSet = MitamaSetConverter.ToSaveData(MitamaSetInputModelFactory.Create(slots, setEffectComboBoxes, uniqueEffectComboBoxes)),
 				MitamaStatus = StatusConverter.ToSaveData(calculationResult.MitamaOnlyStatus),
 				FinalStatus = StatusConverter.ToSaveData(calculationResult.FinalStatus)
 			};
