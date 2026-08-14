@@ -131,6 +131,10 @@
     <Compile Include="Form\StatusComparisonResultForm.Designer.cs">
       <DependentUpon>StatusComparisonResultForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\MitamaInputModel.cs" />
+    <Compile Include="Model\MitamaSetInputModel.cs" />
+    <Compile Include="Model\SetEffectInputModel.cs" />
+    <Compile Include="Model\StatValueInputModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resolver\MainStatValueResolver.cs" />
