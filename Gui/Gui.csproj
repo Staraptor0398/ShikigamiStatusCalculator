@@ -96,7 +96,6 @@
     <Compile Include="Dialog\SnapshotCompareFileSelectDialog.Designer.cs">
       <DependentUpon>SnapshotCompareFileSelectDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Factory\CalculationSnapshotSaveDataFactory.cs" />
     <Compile Include="Factory\MitamaSetInputModelFactory.cs" />
     <Compile Include="Formatter\StatusFormatter.cs" />
     <Compile Include="Form\Applicator\MitamaSetSaveDataApplicator.cs" />

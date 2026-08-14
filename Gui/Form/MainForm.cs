@@ -683,9 +683,16 @@ namespace Gui.Form
 					}
 					else if (dialog.SelectedSaveType == SaveDataSaveType.CalculationSnapshot)
 					{
-						string snapshotName = createSnapshotNameFromFilePath(dialog.FilePath);
+						CalculationSnapshotSaveData data = new CalculationSnapshotSaveData
+						{
+							SnapshotName = createSnapshotNameFromFilePath(dialog.FilePath),
+							CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+							ShikigamiName = cmbShikigami.Text,
+							MitamaSet = MitamaSetConverter.ToSaveData(inputModel),
+							MitamaStatus = StatusConverter.ToSaveData(mLastCalculationResult.MitamaOnlyStatus),
+							FinalStatus = StatusConverter.ToSaveData(mLastCalculationResult.FinalStatus)
+						};
 
-						var data = CalculationSnapshotSaveDataFactory.Create(cmbShikigami, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes, snapshotName, mLastCalculationResult);
 						SaveDataAccess.SaveSnapshot(dialog.FilePath, data);
 					}
 				}
