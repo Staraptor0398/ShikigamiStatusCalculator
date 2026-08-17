@@ -3,7 +3,6 @@ using Gui.Converter;
 using Gui.Model;
 using Gui.Validation;
 using GuiTest.TestCommon;
-using SaveData.Access;
 using SaveData.Model;
 
 namespace GuiTest.TestCase
@@ -13,10 +12,7 @@ namespace GuiTest.TestCase
 	{
 		private MitamaSetInputModel loadValidInputModel()
 		{
-			string path = Path.Combine(TestDirectory.MitamaSet, "Valid.mitama.json");
-
-			MitamaSetSaveData saveData = SaveDataAccess.LoadMitamaSet(path);
-
+			MitamaSetSaveData saveData = TestDataLoader.LoadValidMitamaSet();
 			return MitamaSetConverter.ToInputModel(saveData);
 		}
 
