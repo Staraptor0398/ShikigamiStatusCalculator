@@ -6,7 +6,7 @@ using GuiTest.TestCommon;
 using SaveData.Access;
 using SaveData.Model;
 
-namespace GuiTest.TetstCase
+namespace GuiTest.TestCase
 {
 	[TestClass]
 	public class CalculationInputValidator_Test
