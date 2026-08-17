@@ -1,0 +1,176 @@
+@startuml
+
+title ShikigamiApp Scenario Runner - Class Diagram
+
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Form" {
+   class MainForm
+}
+
+package "Scenario" {
+   class Scenario {
+       + string FilePath
+       + int StartLine
+       + int EndLine
+       + IReadOnlyList<ScenarioStep> Steps
+   }
+   class ScenarioStep {
+       + int LineNumber
+       + ScenarioCommandType CommandType
+       + IReadOnlyList<string> Arguments
+       + string RawText
+   }
+   enum ScenarioCommandType {
+       OpenGui
+       CloseGui
+       SelectShikigami
+       LoadMitama
+       Calculate
+       Clear
+       ReloadShikigami
+       BreakShikigamiHeader
+       CheckCalculation
+       CheckShikigami
+   }
+   class ScenarioLoader
+   class ScenarioParser
+   class ScenarioValidator
+}
+
+package "Execution" {
+   class ScenarioExecutor
+   class ScenarioCommandExecutor
+   class ScenarioExecutionContext {
+       + string ScenarioPath
+       + GuiSession GuiSession
+       + ScenarioExecutionOptions Options
+   }
+   class ScenarioExecutionOptions {
+       + bool WatchMode
+       + bool KeepGuiOpenOnFailure
+   }
+   class ScenarioExecutionResult {
+       + bool IsSuccess
+       + int PassedCount
+       + int FailedCount
+       + TimeSpan Elapsed
+       + int FailedLineNumber
+       + string ErrorMessage
+   }
+}
+
+package "Automation" {
+   class GuiSession {
+       + Application Application
+       + AutomationBase Automation
+       + Window MainWindow
+   }
+   class GuiOperator
+   class ShikigamiOperator
+   class MitamaOperator
+   class CalculationOperator
+   class ShikigamiDataOperator
+   class ComboBoxOperator
+}
+
+package "Log" {
+   class ScenarioLogger
+}
+
+package "External" {
+   class "FlaUI" as FlaUI <<library>>
+   class "Win32 API" as Win32 <<library>>
+}
+
+' ========================================
+' Form
+' ========================================
+MainForm --> ScenarioLoader : loads
+MainForm --> ScenarioExecutor : executes
+MainForm --> ScenarioLogger : displays logs
+
+' ========================================
+' Scenario
+' ========================================
+ScenarioLoader --> ScenarioParser
+ScenarioLoader --> ScenarioValidator
+ScenarioLoader --> Scenario
+
+Scenario "1" *-- "0..*" ScenarioStep
+ScenarioStep --> ScenarioCommandType
+
+ScenarioParser ..> Scenario : creates
+ScenarioValidator ..> Scenario : validates
+
+' ========================================
+' Execution
+' ========================================
+ScenarioExecutor --> ScenarioCommandExecutor
+ScenarioExecutor --> ScenarioLogger
+ScenarioExecutor ..> ScenarioExecutionContext : creates
+ScenarioExecutor ..> ScenarioExecutionResult : creates
+ScenarioExecutor ..> ScenarioExecutionOptions
+
+ScenarioCommandExecutor --> ScenarioStep
+ScenarioCommandExecutor --> ScenarioExecutionContext
+
+ScenarioExecutionContext --> GuiSession
+ScenarioExecutionContext --> ScenarioExecutionOptions
+
+' ========================================
+' Command -> Operator
+' ========================================
+ScenarioCommandExecutor --> GuiOperator
+ScenarioCommandExecutor --> ShikigamiOperator
+ScenarioCommandExecutor --> MitamaOperator
+ScenarioCommandExecutor --> CalculationOperator
+ScenarioCommandExecutor --> ShikigamiDataOperator
+
+' ========================================
+' Automation
+' ========================================
+GuiOperator ..> GuiSession : creates / closes
+
+ShikigamiOperator --> ComboBoxOperator
+
+GuiOperator ..> FlaUI
+ShikigamiOperator ..> FlaUI
+MitamaOperator ..> FlaUI
+CalculationOperator ..> FlaUI
+ComboBoxOperator ..> FlaUI
+
+ComboBoxOperator ..> Win32
+
+note right of Scenario
+START / END はシナリオの境界を表す。
+ScenarioStep には含めない。
+end note
+
+note right of ScenarioCommandExecutor
+Version 1 では ScenarioCommandType に対して
+単純な switch で処理を分岐する。
+
+Command Handler や Registry などの抽象化は、
+必要になった時点で導入する。
+end note
+
+note bottom of ComboBoxOperator
+WinForms ComboBox の
+UI Automation 上の回避処理を隠蔽する。
+
+Scenario および上位層は、
+FlaUI / Win32 の実装詳細を意識しない。
+end note
+
+note bottom of MainForm
+MainForm の責務は以下に限定する。
+- Scenario ファイル選択
+- Scenario 表示
+- 実行 / 停止
+- Watch 設定
+- 実行ログ表示
+end note
+
+@enduml
