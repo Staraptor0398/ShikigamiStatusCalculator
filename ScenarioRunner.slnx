@@ -1,0 +1,8 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="ScenarioRunner/ScenarioRunner.csproj" Id="c0956784-6889-4493-9880-39b40dbcd43d">
+    <Platform Project="x64" />
+  </Project>
+</Solution>
