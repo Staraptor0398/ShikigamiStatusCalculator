@@ -9,7 +9,7 @@ package "Form" {
    class MainForm
 }
 
-package "Scenario" {
+package "ScenarioFormat" {
    class Scenario {
        + string FilePath
        + int StartLine
