@@ -1,0 +1,15 @@
+# 基本計算試験
+
+START
+
+OPEN GUI
+
+SEL SHIKIGAMI "願紡縁結神"
+LOAD MITAMA "TestData/Valid.mitama.json"
+
+CALC
+CHECK CALC
+
+CLOSE GUI
+
+END
