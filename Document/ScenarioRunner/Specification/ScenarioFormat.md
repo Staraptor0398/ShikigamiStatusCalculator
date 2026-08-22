@@ -185,6 +185,21 @@ Gui.exe起動前、または実行中の式神データ破損状態を作成す�
    BREAK SHIKIGAMI ROW
 Version 1では `HEADER` のみを実装対象とする。
 
+### 9.11 REMOVE SHIKIGAMI
+
+`ShikigamiData.csv` から指定した式神のデータを削除する。
+
+式神データ復旧機能の試験などで、意図的に式神データが欠損した状態を作成するために使用する。
+
+形式：
+   REMOVE SHIKIGAMI "<式神名>"
+例：
+   REMOVE SHIKIGAMI "願紡縁結神"
+
+指定した式神名に一致するデータを `ShikigamiData.csv` から削除する。
+本コマンドはGui.exe上の操作を再現するものではなく、Scenario Runnerが試験用の状態を作成するためにテスト対象データを直接変更するコマンドである。
+指定した式神が `ShikigamiData.csv` に存在しない場合は、コマンドの実行失敗として扱う。
+
 ## 10. CHECK
 試験結果の確認には原則として `CHECK` コマンドを使用する。
 形式：
@@ -316,6 +331,7 @@ Version 1では以下の予約語およびコマンドを実装対象とする�
    CLEAR
    RELOAD SHIKIGAMI
    BREAK SHIKIGAMI HEADER
+   REMOVE SHIKIGAMI "<式神名>"
    CHECK CALC
    CHECK SHIKIGAMI
    CHECK DIALOG "<メッセージ>"
@@ -359,4 +375,5 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
 |---|---|---|
 | 1.0 | 2026-08-17 | 初版作成。Scenarioファイルの基本構造、コメント、キーワード、Version 1実装コマンド、構文チェック、実行ログ等の仕様を定義。 |
 | 1.1 | 2026-08-22 | Scenario内で指定する外部テストデータのパス解決規則を追加。相対パスはScenarioファイルの配置ディレクトリを基準とし、絶対パスも許可する仕様を定義。`CHECK DIALOG` コマンドを追加。 |
+| 1.2 | 2026-08-22 | 式神データ復旧試験用に、`ShikigamiData.csv` から指定した式神データを削除する `REMOVE SHIKIGAMI` コマンドを追加。 |
  
