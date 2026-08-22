@@ -143,7 +143,20 @@ Scenarioファイルでは、ComboBoxのAutomationId、Item index、キー操作
    LOAD MITAMA "<ファイルパス>"
 例：
    LOAD MITAMA "TestData/Valid.mitama.json"
-ファイルパスの基準位置についてはScenario Runnerのファイルパス仕様で別途定義する。
+ファイルパスには相対パスまたは絶対パスを指定できる。
+相対パスを指定した場合、Scenarioファイル自身が存在するディレクトリを基準として解決する。
+Scenarioファイルおよび関連するテストデータを一式として移動可能にするため、原則として相対パスの使用を推奨する。
+例：
+   Scenario/
+   ├─ BasicCalculation.scenario
+   └─ TestData/
+      └─ Valid.mitama.json
+
+上記構成の場合、Scenarioファイルからは以下のように指定する。
+
+   LOAD MITAMA "TestData/Valid.mitama.json"
+
+絶対パスの指定も許可する。
 
 ### 9.7 CALC
 Gui.exeで計算を実行する。
@@ -188,6 +201,18 @@ Version 1では `HEADER` のみを実装対象とする。
 形式：
    CHECK SHIKIGAMI
 式神データ破損・復旧Scenarioなどで使用する。
+
+### 10.3 CHECK DIALOG
+指定したメッセージを持つダイアログが表示されていることを確認する。
+形式：
+    CHECK DIALOG "<メッセージ>"
+例：
+    CHECK DIALOG "御魂が1つも装備されていません。"
+
+Validationエラーなど、Gui.exeが期待したダイアログを表示すること自体を試験結果として確認する場合に使用する。
+
+`CHECK DIALOG` はダイアログを閉じる操作を行わない。
+ダイアログを閉じる操作については別コマンドとして定義する。
 
 ## 11. 実行順序
 Scenario Runnerは `START` から `END` までのコマンドを上から順番に実行する。
@@ -293,6 +318,7 @@ Version 1では以下の予約語およびコマンドを実装対象とする�
    BREAK SHIKIGAMI HEADER
    CHECK CALC
    CHECK SHIKIGAMI
+   CHECK DIALOG "<メッセージ>"
    
 新しいコマンドは、実際のScenarioを作成する上で必要になった時点で追加する。
 Version 1の段階では、条件分岐、ループ、変数、関数、ジャンプなどの汎用プログラミング機能は実装しない。
@@ -332,4 +358,5 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
 | Version | Date | 内容 |
 |---|---|---|
 | 1.0 | 2026-08-17 | 初版作成。Scenarioファイルの基本構造、コメント、キーワード、Version 1実装コマンド、構文チェック、実行ログ等の仕様を定義。 |
+| 1.1 | 2026-08-22 | Scenario内で指定する外部テストデータのパス解決規則を追加。相対パスはScenarioファイルの配置ディレクトリを基準とし、絶対パスも許可する仕様を定義。`CHECK DIALOG` コマンドを追加。 |
  
