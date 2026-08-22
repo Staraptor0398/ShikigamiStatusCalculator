@@ -1,4 +1,5 @@
 using ScenarioRunner.Automation;
+using System.IO;
 
 namespace ScenarioRunner.Execution
 {
@@ -12,6 +13,18 @@ namespace ScenarioRunner.Execution
 		{
 			ScenarioPath = scenarioPath;
 			Options = options;
+		}
+
+		public string ResolvePath(string path)
+		{
+			if (Path.IsPathRooted(path))
+			{
+				return path;
+			}
+
+			string scenarioDirectoryPath = Path.GetDirectoryName(ScenarioPath);
+
+			return Path.GetFullPath(Path.Combine(scenarioDirectoryPath, path));
 		}
 	}
 }

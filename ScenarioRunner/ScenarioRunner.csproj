@@ -53,7 +53,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Automation\GuiSession.cs" />
+    <Compile Include="Automation\Operator\ButtonOperator.cs" />
+    <Compile Include="Automation\Operator\CalculationOperator.cs" />
+    <Compile Include="Automation\Operator\ComboBoxOperator.cs" />
+    <Compile Include="Automation\Operator\DialogOperator.cs" />
+    <Compile Include="Automation\Operator\FileDialogOperator.cs" />
     <Compile Include="Automation\Operator\GuiOperator.cs" />
+    <Compile Include="Automation\Operator\MitamaOperator.cs" />
+    <Compile Include="Automation\Operator\ShikigamiOperator.cs" />
+    <Compile Include="Automation\Operator\TextBoxOperator.cs" />
     <Compile Include="Execution\ScenarioCommandExecutor.cs" />
     <Compile Include="Execution\ScenarioExecutionOptions.cs" />
     <Compile Include="Execution\ScenarioExecutionResult.cs" />

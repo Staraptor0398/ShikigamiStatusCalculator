@@ -7,10 +7,16 @@ namespace ScenarioRunner.Execution
 	public class ScenarioCommandExecutor
 	{
 		private readonly GuiOperator mGuiOperator;
+		private readonly ShikigamiOperator mShikigamiOperator;
+		private readonly CalculationOperator mCalculationOperator;
+		private readonly MitamaOperator mMitamaOperator;
 
 		public ScenarioCommandExecutor(string guiExecutablePath)
 		{
 			mGuiOperator = new GuiOperator(guiExecutablePath);
+			mShikigamiOperator = new ShikigamiOperator();
+			mCalculationOperator = new CalculationOperator();
+			mMitamaOperator = new MitamaOperator();
 		}
 
 		public void Execute(ScenarioStep step, ScenarioExecutonContext context)
@@ -24,12 +30,21 @@ namespace ScenarioRunner.Execution
 					mGuiOperator.Close(context);
 					return;
 				case ScenarioCommandType.SELECT_SHIKIGAMI:
+					mShikigamiOperator.Select(context.GuiSession, step.Arguments[0]);
+					return;
 				case ScenarioCommandType.LOAD_MITAMA:
+					mMitamaOperator.Load(context, step.Arguments[0]);
+					return;
 				case ScenarioCommandType.CALCULATE:
+					mCalculationOperator.Calculate(context.GuiSession);
+					return;
 				case ScenarioCommandType.CLEAR:
 				case ScenarioCommandType.RELOAD_SHIKIGAMI:
 				case ScenarioCommandType.BREAK_SHIKIGAMI_HEADER:
+					return;
 				case ScenarioCommandType.CHECK_CALCULATION:
+					mCalculationOperator.Check(context.GuiSession);
+					return;
 				case ScenarioCommandType.CHECK_SHIKIGAMI:
 					return;
 
