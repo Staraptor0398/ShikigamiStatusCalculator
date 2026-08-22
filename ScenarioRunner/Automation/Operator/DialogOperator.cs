@@ -14,29 +14,14 @@ namespace ScenarioRunner.Automation.Operator
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window[] windows = session.Application.GetAllTopLevelWindows(session.Automation);
+			Window[] modalWindows = session.MainWindow.ModalWindows;
 
-			foreach (Window window in windows)
+			if (modalWindows == null || modalWindows.Length == 0)
 			{
-				if (window.Equals(session.MainWindow))
-				{
-					continue;
-				}
-
-				if (window.ControlType != ControlType.Window)
-				{
-					continue;
-				}
-
-				if (!window.IsModal)
-				{
-					continue;
-				}
-
-				return window;
+				return null;
 			}
 
-			return null;
+			return modalWindows[0];
 		}
 
 		public bool Exists(GuiSession session)
@@ -60,16 +45,38 @@ namespace ScenarioRunner.Automation.Operator
 			return message;
 		}
 
-		public bool HasMessage(GuiSession session, string expectedMessage)
+		public void CheckMessage(GuiSession session, string expectedMessage)
 		{
-			string message = GetMessage(session);
-
-			if (string.IsNullOrEmpty(message))
+			if (session == null)
 			{
-				return false;
+				throw new ArgumentNullException(nameof(session));
 			}
 
-			return message.Contains(expectedMessage);
+			if (string.IsNullOrWhiteSpace(expectedMessage))
+			{
+				throw new ArgumentException("Expected dialog message is empty.", nameof(expectedMessage));
+			}
+
+			Window dialog = GetActiveDialog(session);
+
+			if (dialog == null)
+			{
+				throw new InvalidOperationException("Modal dialog was not found.");
+			}
+
+			var textElements = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Text));
+
+			foreach (var element in textElements)
+			{
+				string text = element.Name;
+
+				if (!string.IsNullOrWhiteSpace(text) && text.Contains(expectedMessage))
+				{
+					return;
+				}
+			}
+
+			throw new InvalidOperationException($"Expected dialog message was not found: {expectedMessage}");
 		}
 	}
 }

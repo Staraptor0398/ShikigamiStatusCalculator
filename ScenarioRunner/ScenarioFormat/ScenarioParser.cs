@@ -118,6 +118,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.CHECK_SHIKIGAMI;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "CHECK", "DIALOG"))
+			{
+				commandType = ScenarioCommandType.CHECK_DIALOG;
+				argumentStartIndex = 2;
+			}
 			else
 			{
 				throw new FormatException($"Unknown command at line {lineNumber}: {line}");

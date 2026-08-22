@@ -15,6 +15,7 @@ namespace ScenarioRunner.ScenarioFormat
 		BREAK_SHIKIGAMI_HEADER,
 
 		CHECK_CALCULATION,
-		CHECK_SHIKIGAMI
+		CHECK_SHIKIGAMI,
+		CHECK_DIALOG
 	}
 }

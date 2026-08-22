@@ -10,6 +10,7 @@ namespace ScenarioRunner.Execution
 		private readonly ShikigamiOperator mShikigamiOperator;
 		private readonly CalculationOperator mCalculationOperator;
 		private readonly MitamaOperator mMitamaOperator;
+		private readonly DialogOperator mDialogOperator;
 
 		public ScenarioCommandExecutor(string guiExecutablePath)
 		{
@@ -17,6 +18,7 @@ namespace ScenarioRunner.Execution
 			mShikigamiOperator = new ShikigamiOperator();
 			mCalculationOperator = new CalculationOperator();
 			mMitamaOperator = new MitamaOperator();
+			mDialogOperator = new DialogOperator();
 		}
 
 		public void Execute(ScenarioStep step, ScenarioExecutonContext context)
@@ -47,7 +49,9 @@ namespace ScenarioRunner.Execution
 					return;
 				case ScenarioCommandType.CHECK_SHIKIGAMI:
 					return;
-
+				case ScenarioCommandType.CHECK_DIALOG:
+					mDialogOperator.CheckMessage(context.GuiSession, step.Arguments[0]);
+					return;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(step.CommandType), step.CommandType, null);
 			}
