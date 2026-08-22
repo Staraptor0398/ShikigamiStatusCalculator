@@ -1,0 +1,14 @@
+START
+
+# Gui.exeを起動
+OPEN GUI
+
+# 御魂未設定の状態で計算し、Validationダイアログを発生させる
+CALC
+
+# Validationダイアログが表示されていることを確認
+CHECK DIALOG "御魂が1つも装備されていません。"
+
+CLOSE GUI
+
+END
