@@ -77,6 +77,7 @@ namespace ScenarioRunner.Form
 			this.btnRun.TabIndex = 3;
 			this.btnRun.Text = "実行";
 			this.btnRun.UseVisualStyleBackColor = true;
+			this.btnRun.Click += new System.EventHandler(this.btnRun_Click);
 			// 
 			// btnStop
 			// 

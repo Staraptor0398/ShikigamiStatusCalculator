@@ -1,3 +1,4 @@
+using ScenarioRunner.Execution;
 using ScenarioRunner.ScenarioFormat;
 using System;
 using System.IO;
@@ -49,6 +50,24 @@ namespace ScenarioRunner.Log
 		public void Error(string message)
 		{
 			Write($"ERROR: {message}");
+		}
+		public void ScenarioStarted(Scenario scenario)
+		{
+			Write("========================================");
+			Write($"Scenario started: {Path.GetFileName(scenario.FilePath)}");
+			Write("========================================");
+		}
+		public void ScenarioPassed(ScenarioExecutionResult result)
+		{
+			Write($"Scenario Result: PASS");
+			Write($"Passed: {result.PassedCount}");
+			Write($"Elapsed: {result.Elapsed.TotalSeconds:F2} sec");
+		}
+		public void ScenarioFailed(ScenarioExecutionResult result)
+		{
+			Write($"Scenario Result: FAIL");
+			Write($"Failed line: {result.FailedLineNumber}");
+			Write($"Elapsed: {result.Elapsed.TotalSeconds:F2} sec");
 		}
 	}
 }

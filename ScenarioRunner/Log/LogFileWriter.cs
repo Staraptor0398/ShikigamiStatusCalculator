@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 
 namespace ScenarioRunner.Log
 {
@@ -15,7 +16,7 @@ namespace ScenarioRunner.Log
 
 		public void Write(string message)
 		{
-			File.AppendAllText(mLogFilePath, message);
+			File.AppendAllText(mLogFilePath, message + Environment.NewLine, Encoding.UTF8);
 		}
 	}
 }

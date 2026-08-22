@@ -1,7 +1,9 @@
+using ScenarioRunner.Execution;
 using ScenarioRunner.Log;
 using ScenarioRunner.ScenarioFormat;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ScenarioRunner.Form
@@ -10,6 +12,7 @@ namespace ScenarioRunner.Form
 	{
 		private readonly ScenarioLoader mScenarioLoader;
 		private readonly ScenarioLogger mScenarioLogger;
+		private readonly ScenarioExecutor mScenarioExecutor;
 
 		private Scenario mScenario;
 
@@ -22,6 +25,9 @@ namespace ScenarioRunner.Form
 			string logDirectoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log");
 			mScenarioLogger = new ScenarioLogger(logDirectoryPath);
 			mScenarioLogger.LogWritten += appendLog;
+
+			string guiExucutablePath = @"W:\Gui\bin\x64\Debug\Gui.exe";
+			mScenarioExecutor = new ScenarioExecutor(mScenarioLogger, guiExucutablePath);
 
 			btnRun.Enabled = false;
 			btnStop.Enabled = false;
@@ -69,7 +75,36 @@ namespace ScenarioRunner.Form
 
 		private void appendLog(string message)
 		{
+			if (rtbExecutionLog.InvokeRequired)
+			{
+				rtbExecutionLog.Invoke(new Action<string>(appendLog), message);
+				return;
+			}
+
 			rtbExecutionLog.AppendText(message + Environment.NewLine);
+		}
+
+		private async void btnRun_Click(object sender, EventArgs e)
+		{
+			if (mScenario == null)
+			{
+				return;
+			}
+
+			var options = new ScenarioExecutionOptions(chkWatchMode.Checked, chkKeepGuiOpenOnFailure.Checked);
+
+			btnRun.Enabled = false;
+			btnStop.Enabled = true;
+
+			try
+			{
+				await Task.Run(() => mScenarioExecutor.Execute(mScenario, options));
+			}
+			finally
+			{
+				btnRun.Enabled = true;
+				btnStop.Enabled = false;
+			}
 		}
 	}
 }
