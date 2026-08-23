@@ -12,6 +12,7 @@ namespace ScenarioRunner.Execution
 		private readonly MitamaOperator mMitamaOperator;
 		private readonly DialogOperator mDialogOperator;
 		private readonly ShikigamiDataOperator mShikigamiDataOperator;
+		private readonly InputOperator mInputOperator;
 
 		public ScenarioCommandExecutor()
 		{
@@ -21,6 +22,7 @@ namespace ScenarioRunner.Execution
 			mMitamaOperator = new MitamaOperator();
 			mDialogOperator = new DialogOperator();
 			mShikigamiDataOperator = new ShikigamiDataOperator();
+			mInputOperator = new InputOperator();
 		}
 
 		public void Execute(ScenarioStep step, ScenarioExecutonContext context)
@@ -46,6 +48,7 @@ namespace ScenarioRunner.Execution
 					mCalculationOperator.Calculate(context.GuiSession);
 					return;
 				case ScenarioCommandType.CLEAR:
+					mInputOperator.Clear(context.GuiSession);
 					return;
 				case ScenarioCommandType.RELOAD_SHIKIGAMI:
 					mShikigamiOperator.Reload(context.GuiSession);

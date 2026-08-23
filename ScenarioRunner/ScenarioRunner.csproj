@@ -59,6 +59,7 @@
     <Compile Include="Automation\Operator\DialogOperator.cs" />
     <Compile Include="Automation\Operator\FileDialogOperator.cs" />
     <Compile Include="Automation\Operator\GuiOperator.cs" />
+    <Compile Include="Automation\Operator\InputOperator.cs" />
     <Compile Include="Automation\Operator\MitamaOperator.cs" />
     <Compile Include="Automation\Operator\ShikigamiDataFileOperator.cs" />
     <Compile Include="Automation\Operator\ShikigamiDataOperator.cs" />
