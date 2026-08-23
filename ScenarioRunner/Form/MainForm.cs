@@ -10,6 +10,8 @@ namespace ScenarioRunner.Form
 {
 	public partial class MainForm : System.Windows.Forms.Form
 	{
+		private readonly string mGuiExucutablePath;
+
 		private readonly ScenarioLoader mScenarioLoader;
 		private readonly ScenarioLogger mScenarioLogger;
 		private readonly ScenarioExecutor mScenarioExecutor;
@@ -20,14 +22,15 @@ namespace ScenarioRunner.Form
 		{
 			InitializeComponent();
 
+			mGuiExucutablePath = @"W:\Gui\bin\x64\Debug\Gui.exe";
+
 			mScenarioLoader = new ScenarioLoader();
 
 			string logDirectoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log");
 			mScenarioLogger = new ScenarioLogger(logDirectoryPath);
 			mScenarioLogger.LogWritten += appendLog;
 
-			string guiExucutablePath = @"W:\Gui\bin\x64\Debug\Gui.exe";
-			mScenarioExecutor = new ScenarioExecutor(mScenarioLogger, guiExucutablePath);
+			mScenarioExecutor = new ScenarioExecutor(mScenarioLogger, mGuiExucutablePath);
 
 			btnRun.Enabled = false;
 			btnStop.Enabled = false;
@@ -105,6 +108,17 @@ namespace ScenarioRunner.Form
 				btnRun.Enabled = true;
 				btnStop.Enabled = false;
 			}
+		}
+
+		private void btnShikigamiDataMonitor_Click(object sender, EventArgs e)
+		{
+			string guiDirectoryPath = Path.GetDirectoryName(mGuiExucutablePath);
+
+			string shikigamiDataPath = Path.Combine(guiDirectoryPath, "Data", "ShikigamiData.csv");
+
+			var monitorForm = new ShikigamiDataMonitorForm(shikigamiDataPath);
+
+			monitorForm.Show();
 		}
 	}
 }

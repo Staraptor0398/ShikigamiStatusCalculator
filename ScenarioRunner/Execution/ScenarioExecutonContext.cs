@@ -6,12 +6,14 @@ namespace ScenarioRunner.Execution
 	public class ScenarioExecutonContext
 	{
 		public string ScenarioPath { get; }
+		public string GuiExecutablePath { get; }
 		public ScenarioExecutionOptions Options { get; }
 		public GuiSession GuiSession { get; set; }
 
-		public ScenarioExecutonContext(string scenarioPath, ScenarioExecutionOptions options)
+		public ScenarioExecutonContext(string scenarioPath, string guiExecutablePath, ScenarioExecutionOptions options)
 		{
 			ScenarioPath = scenarioPath;
+			GuiExecutablePath = guiExecutablePath;
 			Options = options;
 		}
 

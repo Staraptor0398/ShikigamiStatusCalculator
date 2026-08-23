@@ -44,8 +44,7 @@ namespace ScenarioRunner.Automation.Operator
 		{
 			ComboBox comboBox = getComboBox(parent, automationId);
 
-			var editElement = comboBox.FindFirstDescendant(
-				cf => cf.ByControlType(ControlType.Edit));
+			var editElement = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
 
 			if (editElement == null)
 			{
@@ -70,6 +69,13 @@ namespace ScenarioRunner.Automation.Operator
 			ComboBox comboBox = getComboBox(parent, automationId);
 
 			return comboBox.Value;
+		}
+
+		public bool HasItems(AutomationElement parent, string automationId)
+		{
+			ComboBox comboBox = getComboBox(parent, automationId);
+
+			return comboBox.Items.Length > 0;
 		}
 
 		private ComboBox getComboBox(AutomationElement parent, string automationId)

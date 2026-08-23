@@ -1,12 +1,13 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
-using System.Linq;
 
 namespace ScenarioRunner.Automation.Operator
 {
 	public class DialogOperator
 	{
+		private const string STANDARD_DIALOG_CLASS_NAME = "#32770";
+
 		public Window GetActiveDialog(GuiSession session)
 		{
 			if (session == null)
@@ -14,14 +15,17 @@ namespace ScenarioRunner.Automation.Operator
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window[] modalWindows = session.MainWindow.ModalWindows;
+			Window[] windows = session.Application.GetAllTopLevelWindows(session.Automation);
 
-			if (modalWindows == null || modalWindows.Length == 0)
+			foreach (Window window in windows)
 			{
-				return null;
+				if (window.ClassName == STANDARD_DIALOG_CLASS_NAME)
+				{
+					return window;
+				}
 			}
 
-			return modalWindows[0];
+			return null;
 		}
 
 		public bool Exists(GuiSession session)
@@ -40,18 +44,19 @@ namespace ScenarioRunner.Automation.Operator
 
 			var textElements = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Text));
 
-			string message = string.Join(Environment.NewLine, textElements.Select(element => element.Name).Where(text => !string.IsNullOrWhiteSpace(text)));
+			foreach (var element in textElements)
+			{
+				if (!string.IsNullOrWhiteSpace(element.Name))
+				{
+					return element.Name;
+				}
+			}
 
-			return message;
+			return null;
 		}
 
 		public void CheckMessage(GuiSession session, string expectedMessage)
 		{
-			if (session == null)
-			{
-				throw new ArgumentNullException(nameof(session));
-			}
-
 			if (string.IsNullOrWhiteSpace(expectedMessage))
 			{
 				throw new ArgumentException("Expected dialog message is empty.", nameof(expectedMessage));

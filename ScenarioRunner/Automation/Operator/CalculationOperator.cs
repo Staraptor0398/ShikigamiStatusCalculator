@@ -1,3 +1,4 @@
+using FlaUI.Core.AutomationElements;
 using System;
 
 namespace ScenarioRunner.Automation.Operator
@@ -14,6 +15,7 @@ namespace ScenarioRunner.Automation.Operator
 		private readonly DialogOperator mDialogOperator;
 		private readonly TextBoxOperator mTextBoxOperator;
 		private readonly ComboBoxOperator mComboBoxOperator;
+		private readonly GuiOperator mGuiOperator;
 
 		public CalculationOperator()
 		{
@@ -21,11 +23,13 @@ namespace ScenarioRunner.Automation.Operator
 			mDialogOperator = new DialogOperator();
 			mTextBoxOperator = new TextBoxOperator();
 			mComboBoxOperator = new ComboBoxOperator();
+			mGuiOperator = new GuiOperator();
 		}
 
 		public void Calculate(GuiSession session)
 		{
-			mButtonOperator.Click(session.MainWindow, CALCULATE_BUTTON_AUTOMATION_ID);
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			mButtonOperator.Click(mainWindow, CALCULATE_BUTTON_AUTOMATION_ID);
 		}
 
 		public void Check(GuiSession session)
@@ -40,18 +44,20 @@ namespace ScenarioRunner.Automation.Operator
 				throw new InvalidOperationException("A modal dialog is displayed after calculation.");
 			}
 
-			string mitamaOnly = mTextBoxOperator.GetText(session.MainWindow, MITAMA_ONLY_TEXT_BOX_AUTOMATION_ID);
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+
+			string mitamaOnly = mTextBoxOperator.GetText(mainWindow, MITAMA_ONLY_TEXT_BOX_AUTOMATION_ID);
 
 			if (string.IsNullOrWhiteSpace(mitamaOnly))
 			{
 				throw new InvalidOperationException("Calculation result for Mitama-only status is empty.");
 			}
 
-			string shikigami = mComboBoxOperator.GetValue(session.MainWindow, SHIKIGAMI_COMBO_BOX_AUTOMATION_ID);
+			string shikigami = mComboBoxOperator.GetValue(mainWindow, SHIKIGAMI_COMBO_BOX_AUTOMATION_ID);
 
 			if (!string.IsNullOrWhiteSpace(shikigami))
 			{
-				string finalStats = mTextBoxOperator.GetText(session.MainWindow, FINAL_STATS_TEXT_BOX_AUTOMATION_ID);
+				string finalStats = mTextBoxOperator.GetText(mainWindow, FINAL_STATS_TEXT_BOX_AUTOMATION_ID);
 
 				if (string.IsNullOrWhiteSpace(finalStats))
 				{

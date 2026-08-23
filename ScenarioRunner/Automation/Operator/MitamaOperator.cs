@@ -15,12 +15,14 @@ namespace ScenarioRunner.Automation.Operator
 		private readonly ButtonOperator mButtonOperator;
 		private readonly ComboBoxOperator mComboBoxOperator;
 		private readonly FileDialogOperator mFileDialogOperator;
+		private readonly GuiOperator mGuiOperator;
 
 		public MitamaOperator()
 		{
 			mButtonOperator = new ButtonOperator();
 			mComboBoxOperator = new ComboBoxOperator();
 			mFileDialogOperator = new FileDialogOperator();
+			mGuiOperator = new GuiOperator();
 		}
 
 		public void Load(ScenarioExecutonContext context, string filePath)
@@ -35,13 +37,15 @@ namespace ScenarioRunner.Automation.Operator
 				throw new InvalidOperationException("Gui.exe is not running.");
 			}
 
+			Window mainWindow = mGuiOperator.GetMainWindow(context.GuiSession);
+
 			string resolvedPath = context.ResolvePath(filePath);
 
-			mButtonOperator.Click(context.GuiSession.MainWindow, MAIN_LOAD_BUTTON_AUTOMATION_ID);
+			mButtonOperator.Click(mainWindow, MAIN_LOAD_BUTTON_AUTOMATION_ID);
 
 			Window loadDialog = getLoadDialog(context.GuiSession);
 
-			mComboBoxOperator.SelectItem(context.GuiSession.MainWindow, LOAD_TYPE_COMBO_BOX_AUTOMATION_ID, MITAMA_SET_LOAD_TYPE);
+			mComboBoxOperator.SelectItem(mainWindow, LOAD_TYPE_COMBO_BOX_AUTOMATION_ID, MITAMA_SET_LOAD_TYPE);
 
 			mButtonOperator.Click(loadDialog, BROWSE_BUTTON_AUTOMATION_ID);
 

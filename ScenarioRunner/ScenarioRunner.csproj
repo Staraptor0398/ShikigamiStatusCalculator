@@ -60,6 +60,8 @@
     <Compile Include="Automation\Operator\FileDialogOperator.cs" />
     <Compile Include="Automation\Operator\GuiOperator.cs" />
     <Compile Include="Automation\Operator\MitamaOperator.cs" />
+    <Compile Include="Automation\Operator\ShikigamiDataFileOperator.cs" />
+    <Compile Include="Automation\Operator\ShikigamiDataOperator.cs" />
     <Compile Include="Automation\Operator\ShikigamiOperator.cs" />
     <Compile Include="Automation\Operator\TextBoxOperator.cs" />
     <Compile Include="Execution\ScenarioCommandExecutor.cs" />
@@ -73,6 +75,12 @@
     <Compile Include="Form\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Form\ShikigamiDataMonitorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\ShikigamiDataMonitorForm.Designer.cs">
+      <DependentUpon>ShikigamiDataMonitorForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Log\LogFileWriter.cs" />
     <Compile Include="Log\ScenarioLogger.cs" />
     <Compile Include="Program.cs" />
@@ -85,6 +93,9 @@
     <Compile Include="ScenarioFormat\ScenarioValidator.cs" />
     <EmbeddedResource Include="Form\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\ShikigamiDataMonitorForm.resx">
+      <DependentUpon>ShikigamiDataMonitorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

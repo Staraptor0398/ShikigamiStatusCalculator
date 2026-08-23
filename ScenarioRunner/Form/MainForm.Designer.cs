@@ -39,6 +39,7 @@ namespace ScenarioRunner.Form
 			this.rtbScenario = new System.Windows.Forms.RichTextBox();
 			this.rtbExecutionLog = new System.Windows.Forms.RichTextBox();
 			this.lblExecutionLog = new System.Windows.Forms.Label();
+			this.btnShikigamiDataMonitor = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// lblScenarioFile
@@ -145,11 +146,22 @@ namespace ScenarioRunner.Form
 			this.lblExecutionLog.TabIndex = 10;
 			this.lblExecutionLog.Text = "Execution Log";
 			// 
+			// btnShikigamiDataMonitor
+			// 
+			this.btnShikigamiDataMonitor.Location = new System.Drawing.Point(331, 68);
+			this.btnShikigamiDataMonitor.Name = "btnShikigamiDataMonitor";
+			this.btnShikigamiDataMonitor.Size = new System.Drawing.Size(92, 23);
+			this.btnShikigamiDataMonitor.TabIndex = 11;
+			this.btnShikigamiDataMonitor.Text = "式神データ監視";
+			this.btnShikigamiDataMonitor.UseVisualStyleBackColor = true;
+			this.btnShikigamiDataMonitor.Click += new System.EventHandler(this.btnShikigamiDataMonitor_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(984, 711);
+			this.Controls.Add(this.btnShikigamiDataMonitor);
 			this.Controls.Add(this.lblExecutionLog);
 			this.Controls.Add(this.rtbExecutionLog);
 			this.Controls.Add(this.rtbScenario);
@@ -183,6 +195,7 @@ namespace ScenarioRunner.Form
 		private System.Windows.Forms.RichTextBox rtbScenario;
 		private System.Windows.Forms.RichTextBox rtbExecutionLog;
 		private System.Windows.Forms.Label lblExecutionLog;
+		private System.Windows.Forms.Button btnShikigamiDataMonitor;
 	}
 }
 

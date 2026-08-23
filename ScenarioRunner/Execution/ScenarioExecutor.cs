@@ -10,17 +10,20 @@ namespace ScenarioRunner.Execution
 	{
 		private readonly ScenarioCommandExecutor mCommandExecutor;
 		private readonly ScenarioLogger mLogger;
+		private readonly string mGuiExecutablePath;
 
 		public ScenarioExecutor(ScenarioLogger logger, string guiExecutablePath)
 		{
-			mCommandExecutor = new ScenarioCommandExecutor(guiExecutablePath);
 			mLogger = logger;
+			mGuiExecutablePath = guiExecutablePath;
+
+			mCommandExecutor = new ScenarioCommandExecutor();
 		}
 
 		public ScenarioExecutionResult Execute(Scenario scenario, ScenarioExecutionOptions options)
 		{
 			var stopwatch = Stopwatch.StartNew();
-			var context = new ScenarioExecutonContext(scenario.FilePath, options);
+			var context = new ScenarioExecutonContext(scenario.FilePath, mGuiExecutablePath, options);
 
 			int passedCount = 0;
 
