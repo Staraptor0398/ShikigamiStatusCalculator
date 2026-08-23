@@ -9,6 +9,8 @@ CALC
 # Validationダイアログが表示されていることを確認
 CHECK DIALOG "御魂が1つも装備されていません。"
 
+CLOSE DIALOG
+
 CLOSE GUI
 
 END
