@@ -1,0 +1,24 @@
+# 式神データ自動修復機能確認
+
+START
+
+# ShikigamiData.csv のヘッダーを意図的に破損させる
+BREAK SHIKIGAMI HEADER
+
+# 起動時の式神データ読み込みで自動修復を発生させる
+OPEN GUI
+
+# 破損検出時のエラーダイアログを確認する
+CHECK DIALOG "式神データファイルの形式が正しくありません。"
+
+CLOSE DIALOG
+
+# 自動修復後のデータが再読み込み可能であることを確認する
+RELOAD SHIKIGAMI
+
+# 再読み込み後の式神データが正常に利用できることを確認する
+CHECK SHIKIGAMI
+
+CLOSE GUI
+
+END
