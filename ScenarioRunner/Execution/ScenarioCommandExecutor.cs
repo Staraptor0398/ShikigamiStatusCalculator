@@ -31,6 +31,9 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.CLOSE_GUI:
 					mGuiOperator.Close(context);
 					return;
+				case ScenarioCommandType.CLOSE_DIALOG:
+					mDialogOperator.Close(context.GuiSession);
+					return;
 				case ScenarioCommandType.SELECT_SHIKIGAMI:
 					mShikigamiOperator.Select(context.GuiSession, step.Arguments[0]);
 					return;

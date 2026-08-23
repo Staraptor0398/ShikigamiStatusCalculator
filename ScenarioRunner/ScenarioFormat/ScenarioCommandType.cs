@@ -4,6 +4,7 @@ namespace ScenarioRunner.ScenarioFormat
 	{
 		OPEN_GUI,
 		CLOSE_GUI,
+		CLOSE_DIALOG,
 
 		SELECT_SHIKIGAMI,
 		LOAD_MITAMA,

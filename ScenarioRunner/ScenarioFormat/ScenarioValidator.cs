@@ -74,6 +74,7 @@ namespace ScenarioRunner.ScenarioFormat
 			{
 				case ScenarioCommandType.OPEN_GUI:
 				case ScenarioCommandType.CLOSE_GUI:
+				case ScenarioCommandType.CLOSE_DIALOG:
 				case ScenarioCommandType.CALCULATE:
 				case ScenarioCommandType.CLEAR:
 				case ScenarioCommandType.RELOAD_SHIKIGAMI:

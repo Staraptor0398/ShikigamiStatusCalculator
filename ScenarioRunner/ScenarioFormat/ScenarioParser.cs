@@ -78,6 +78,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.CLOSE_GUI;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "CLOSE", "DIALOG"))
+			{
+				commandType = ScenarioCommandType.CLOSE_DIALOG;
+				argumentStartIndex = 2;
+			}
 			else if (matches(tokens, "SEL", "SHIKIGAMI"))
 			{
 				commandType = ScenarioCommandType.SELECT_SHIKIGAMI;

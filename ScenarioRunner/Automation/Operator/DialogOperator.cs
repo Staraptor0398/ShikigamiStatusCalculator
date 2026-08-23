@@ -78,5 +78,17 @@ namespace ScenarioRunner.Automation.Operator
 
 			throw new InvalidOperationException($"Expected dialog message was not found: {expectedMessage}");
 		}
+
+		public void Close(GuiSession session)
+		{
+			Window dialog = GetActiveDialog(session);
+
+			if (dialog == null)
+			{
+				throw new InvalidOperationException("Modal dialog was not found.");
+			}
+
+			dialog.Close();
+		}
 	}
 }
