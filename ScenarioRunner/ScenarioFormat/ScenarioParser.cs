@@ -113,6 +113,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.BREAK_SHIKIGAMI_HEADER;
 				argumentStartIndex = 3;
 			}
+			else if (matches(tokens, "REMOVE", "SHIKIGAMI"))
+			{
+				commandType = ScenarioCommandType.REMOVE_SHIKIGAMI;
+				argumentStartIndex = 2;
+			}
 			else if (matches(tokens, "CHECK", "CALC"))
 			{
 				commandType = ScenarioCommandType.CHECK_CALCULATION;

@@ -85,6 +85,7 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.SELECT_SHIKIGAMI:
 				case ScenarioCommandType.LOAD_MITAMA:
 				case ScenarioCommandType.CHECK_DIALOG:
+				case ScenarioCommandType.REMOVE_SHIKIGAMI:
 					return 1;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);

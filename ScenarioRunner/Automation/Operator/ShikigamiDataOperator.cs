@@ -1,5 +1,6 @@
 using ScenarioRunner.Execution;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace ScenarioRunner.Automation.Operator
@@ -34,6 +35,51 @@ namespace ScenarioRunner.Automation.Operator
 			lines[0] = BROKEN_HEADER;
 
 			mFileOperator.WriteAllLines(filePath, lines);
+		}
+
+		public void RemoveShikigami(ScenarioExecutonContext context, string shikigamiName)
+		{
+			if (context == null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
+
+			if (string.IsNullOrWhiteSpace(shikigamiName))
+			{
+				throw new ArgumentException("Shikigami name is empty.", nameof(shikigamiName));
+			}
+
+			string filePath = getShikigamiDataPath(context);
+			string[] lines = mFileOperator.ReadAllLines(filePath);
+
+			if (lines.Length == 0)
+			{
+				throw new InvalidOperationException("ShikigamiData.csv is empty.");
+			}
+
+			var result = new List<string> { lines[0] };
+
+			bool removed = false;
+
+			for (int i = 1; i < lines.Length; i++)
+			{
+				string[] columns = lines[i].Split(',');
+
+				if (columns.Length > 1 && columns[1] == shikigamiName)
+				{
+					removed = true;
+					continue;
+				}
+
+				result.Add(lines[i]);
+			}
+
+			if (!removed)
+			{
+				throw new InvalidOperationException($"Shikigami was not found: {shikigamiName}");
+			}
+
+			mFileOperator.WriteAllLines(filePath, result.ToArray());
 		}
 
 		private string getShikigamiDataPath(ScenarioExecutonContext context)

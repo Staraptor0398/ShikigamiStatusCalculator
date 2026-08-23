@@ -56,6 +56,9 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.BREAK_SHIKIGAMI_HEADER:
 					mShikigamiDataOperator.BreakHeader(context);
 					return;
+				case ScenarioCommandType.REMOVE_SHIKIGAMI:
+					mShikigamiDataOperator.RemoveShikigami(context, step.Arguments[0]);
+					return;
 				case ScenarioCommandType.CHECK_CALCULATION:
 					mCalculationOperator.Check(context.GuiSession);
 					return;
