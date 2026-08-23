@@ -186,6 +186,43 @@ Gui.exeで式神データの再読み込みを実行する。
    RELOAD SHIKIGAMI
 式神データの破損および復旧に関する試験で使用する。
 
+#### CREATE SHIKIGAMI BACKUP
+Gui.exeの式神データ編集機能を使用してBackupデータを生成する。
+形式：
+   CREATE SHIKIGAMI BACKUP
+Scenario Runnerは、Gui.exe上で利用可能な式神を選択し、
+式神データを変更せずに保存する。
+これにより、Gui.exeの通常の式神データ更新処理を経由して
+ShikigamiData.csvのBackupデータを生成する。
+本コマンドはBackupファイルを直接作成またはコピーするものではない。
+生成されたBackupデータは、同一Scenario内で
+`RECOVER SHIKIGAMI BACKUP` の復旧元として使用できる。
+Backupデータの生成に失敗した場合は、
+コマンドの実行失敗として扱う。
+
+#### RECOVER SHIKIGAMI
+Gui.exeの式神データ復旧機能を使用して、
+欠損した式神データを復旧する。
+復旧元の種別として `BROKEN` または `BACKUP` を指定する。
+形式：
+   RECOVER SHIKIGAMI BROKEN
+または、
+   RECOVER SHIKIGAMI BACKUP
+`BROKEN` を指定した場合、
+同一Scenario内で式神データの破損および自動修復によって生成された
+Brokenデータを復旧元として使用する。
+`BACKUP` を指定した場合、
+同一Scenario内で `CREATE SHIKIGAMI BACKUP` によって生成された
+Backupデータを復旧元として使用する。
+Scenarioファイルには、復旧元ファイルの具体的なファイル名または
+ファイルパスを記述しない。
+復旧元として使用するファイルは、
+指定された復旧元種別とScenario実行中に生成された状態を基に
+Scenario Runnerが決定する。
+本コマンドは復旧結果の確認を行わない。
+復旧成功時に表示されるダイアログを確認する場合は
+`CHECK DIALOG` を使用する。
+
 ### 実行操作
 #### CALC
 Gui.exeで計算を実行する。
@@ -352,6 +389,9 @@ Version 1では以下の予約語およびコマンドを実装対象とする�
    RELOAD SHIKIGAMI
    BREAK SHIKIGAMI HEADER
    REMOVE SHIKIGAMI "<式神名>"
+   CREATE SHIKIGAMI BACKUP
+   RECOVER SHIKIGAMI BROKEN
+   RECOVER SHIKIGAMI BACKUP
    CHECK CALC
    CHECK SHIKIGAMI
    CHECK DIALOG "<メッセージ>"
@@ -377,7 +417,7 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
    CLOSE GUI
    END
 
-### 17.2 式神データ破損・復旧試験
+### 17.2 式神データ自動修復試験
    # 式神データ自動復旧試験
    # ShikigamiData.csvのヘッダーが破損している状態から
    # 正常な式神データへ復旧できることを確認する。
@@ -397,4 +437,5 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
 | 1.1 | 2026-08-22 | Scenario内で指定する外部テストデータのパス解決規則を追加。相対パスはScenarioファイルの配置ディレクトリを基準とし、絶対パスも許可する仕様を定義。`CHECK DIALOG` コマンドを追加。 |
 | 1.2 | 2026-08-22 | 式神データ復旧試験用に、`ShikigamiData.csv` から指定した式神データを削除する `REMOVE SHIKIGAMI` コマンドを追加。 |
 | 1.3 | 2026-08-23 | コマンド定義をカテゴリ別に再構成し、`CHECK` コマンドをVersion 1コマンドへ統合。モーダルダイアログを閉じる `CLOSE DIALOG` コマンドを追加。 |
+| 1.4 | 2026-08-23 | 式神データ復旧試験用に、Gui.exeの通常の式神データ更新処理を経由してBackupデータを生成する `CREATE SHIKIGAMI BACKUP` コマンド、およびScenario内で生成されたBrokenまたはBackupデータから式神データを復旧する `RECOVER SHIKIGAMI` コマンドを追加。 |
  
