@@ -46,24 +46,30 @@ namespace ScenarioRunner.Form
 			// 
 			// txtFilePath
 			// 
-			this.txtFilePath.Location = new System.Drawing.Point(3, 18);
+			this.txtFilePath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtFilePath.Location = new System.Drawing.Point(9, 18);
 			this.txtFilePath.Name = "txtFilePath";
 			this.txtFilePath.ReadOnly = true;
-			this.txtFilePath.Size = new System.Drawing.Size(775, 19);
+			this.txtFilePath.Size = new System.Drawing.Size(780, 19);
 			this.txtFilePath.TabIndex = 0;
 			// 
 			// rtbContent
 			// 
+			this.rtbContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.rtbContent.Location = new System.Drawing.Point(7, 17);
 			this.rtbContent.Name = "rtbContent";
 			this.rtbContent.ReadOnly = true;
-			this.rtbContent.Size = new System.Drawing.Size(779, 400);
+			this.rtbContent.Size = new System.Drawing.Size(782, 400);
 			this.rtbContent.TabIndex = 1;
 			this.rtbContent.Text = "";
 			this.rtbContent.WordWrap = false;
 			// 
 			// btnRefresh
 			// 
+			this.btnRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.btnRefresh.Location = new System.Drawing.Point(7, 6);
 			this.btnRefresh.Name = "btnRefresh";
 			this.btnRefresh.Size = new System.Drawing.Size(75, 23);
@@ -74,6 +80,7 @@ namespace ScenarioRunner.Form
 			// 
 			// chkAutoRefresh
 			// 
+			this.chkAutoRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.chkAutoRefresh.AutoSize = true;
 			this.chkAutoRefresh.Checked = true;
 			this.chkAutoRefresh.CheckState = System.Windows.Forms.CheckState.Checked;
