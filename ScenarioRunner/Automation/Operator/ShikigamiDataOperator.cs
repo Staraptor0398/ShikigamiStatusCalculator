@@ -11,10 +11,12 @@ namespace ScenarioRunner.Automation.Operator
 		private const string BROKEN_HEADER = "BROKEN_HEADER";
 
 		private readonly ShikigamiDataFileOperator mFileOperator;
+		private readonly ShikigamiOperator mShikigamiOperator;
 
 		public ShikigamiDataOperator()
 		{
 			mFileOperator = new ShikigamiDataFileOperator();
+			mShikigamiOperator = new ShikigamiOperator();
 		}
 
 		public void BreakHeader(ScenarioExecutonContext context)
@@ -80,6 +82,17 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			mFileOperator.WriteAllLines(filePath, result.ToArray());
+		}
+
+		public void CreateBackup(GuiSession session)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			mShikigamiOperator.SelectFirst(session);
+			mShikigamiOperator.SaveSelectedShikigamiWithoutChanges(session);
 		}
 
 		private string getShikigamiDataPath(ScenarioExecutonContext context)

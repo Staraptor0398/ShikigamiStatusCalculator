@@ -22,5 +22,15 @@ namespace ScenarioRunner.Automation.Operator
 
 			buttonElement.AsButton().Invoke();
 		}
+
+		public void Click(AutomationElement element)
+		{
+			if (element == null)
+			{
+				throw new ArgumentNullException(nameof(element));
+			}
+
+			element.AsButton().Invoke();
+		}
 	}
 }

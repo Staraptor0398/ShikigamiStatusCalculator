@@ -16,6 +16,7 @@ namespace ScenarioRunner.Automation.Operator
 		private readonly ComboBoxOperator mComboBoxOperator;
 		private readonly FileDialogOperator mFileDialogOperator;
 		private readonly GuiOperator mGuiOperator;
+		private readonly WindowOperator mWindowOperator;
 
 		public MitamaOperator()
 		{
@@ -23,6 +24,7 @@ namespace ScenarioRunner.Automation.Operator
 			mComboBoxOperator = new ComboBoxOperator();
 			mFileDialogOperator = new FileDialogOperator();
 			mGuiOperator = new GuiOperator();
+			mWindowOperator = new WindowOperator();
 		}
 
 		public void Load(ScenarioExecutonContext context, string filePath)
@@ -37,19 +39,18 @@ namespace ScenarioRunner.Automation.Operator
 				throw new InvalidOperationException("Gui.exe is not running.");
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(context.GuiSession);
-
+			GuiSession session = context.GuiSession;
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			string resolvedPath = context.ResolvePath(filePath);
 
 			mButtonOperator.Click(mainWindow, MAIN_LOAD_BUTTON_AUTOMATION_ID);
 
-			Window loadDialog = getLoadDialog(context.GuiSession);
-
-			mComboBoxOperator.SelectItem(mainWindow, LOAD_TYPE_COMBO_BOX_AUTOMATION_ID, MITAMA_SET_LOAD_TYPE);
+			Window loadDialog = getLoadDialog(session);
+			mComboBoxOperator.SelectItem(loadDialog, LOAD_TYPE_COMBO_BOX_AUTOMATION_ID, MITAMA_SET_LOAD_TYPE);
 
 			mButtonOperator.Click(loadDialog, BROWSE_BUTTON_AUTOMATION_ID);
 
-			Window fileDialog = getFileDialog(context.GuiSession);
+			Window fileDialog = mWindowOperator.WaitForFileDialog(session);
 			mFileDialogOperator.SelectFile(fileDialog, resolvedPath);
 
 			mButtonOperator.Click(loadDialog, LOAD_BUTTON_AUTOMATION_ID);
@@ -57,37 +58,9 @@ namespace ScenarioRunner.Automation.Operator
 
 		private Window getLoadDialog(GuiSession session)
 		{
-			Window[] windows = session.Application.GetAllTopLevelWindows(session.Automation);
+			int processId = session.Application.ProcessId;
 
-			foreach (Window window in windows)
-			{
-				var browseButton = window.FindFirstDescendant(
-					cf => cf.ByAutomationId(BROWSE_BUTTON_AUTOMATION_ID));
-
-				if (browseButton != null)
-				{
-					return window;
-				}
-			}
-
-			throw new InvalidOperationException("SaveData load dialog was not found.");
-		}
-
-		private Window getFileDialog(GuiSession session)
-		{
-			Window[] windows = session.Application.GetAllTopLevelWindows(session.Automation);
-
-			foreach (Window window in windows)
-			{
-				var openButton = window.FindFirstDescendant(cf => cf.ByAutomationId("1"));
-
-				if (openButton != null)
-				{
-					return window;
-				}
-			}
-
-			throw new InvalidOperationException("OpenFileDialog was not found.");
+			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.FindFirstDescendant(cf => cf.ByAutomationId(BROWSE_BUTTON_AUTOMATION_ID)) != null);
 		}
 	}
 }

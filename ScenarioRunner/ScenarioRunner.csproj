@@ -64,7 +64,11 @@
     <Compile Include="Automation\Operator\ShikigamiDataFileOperator.cs" />
     <Compile Include="Automation\Operator\ShikigamiDataOperator.cs" />
     <Compile Include="Automation\Operator\ShikigamiOperator.cs" />
+    <Compile Include="Automation\Operator\ShikigamiRecoveryOperator.cs" />
     <Compile Include="Automation\Operator\TextBoxOperator.cs" />
+    <Compile Include="Automation\Operator\WindowOperator.cs" />
+    <Compile Include="Automation\Waiter\ShikigamiDataWaiter.cs" />
+    <Compile Include="Automation\Wather\ShikigamiDataFileWatcher.cs" />
     <Compile Include="Execution\ScenarioCommandExecutor.cs" />
     <Compile Include="Execution\ScenarioExecutionOptions.cs" />
     <Compile Include="Execution\ScenarioExecutionResult.cs" />

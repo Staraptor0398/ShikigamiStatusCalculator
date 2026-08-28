@@ -1,6 +1,5 @@
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
-using FlaUI.Core.Definitions;
 using FlaUI.UIA2;
 using ScenarioRunner.Execution;
 using System;
@@ -10,6 +9,15 @@ namespace ScenarioRunner.Automation.Operator
 {
 	public class GuiOperator
 	{
+		private const string MAIN_WINDOW_AUTOMATION_ID = "MainForm";
+
+		private readonly WindowOperator mWindowOperator;
+
+		public GuiOperator()
+		{
+			mWindowOperator = new WindowOperator();
+		}
+
 		public void Open(ScenarioExecutonContext context)
 		{
 			if (context == null)
@@ -48,7 +56,6 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			context.GuiSession.Application.Close();
-
 			context.GuiSession.Dispose();
 			context.GuiSession = null;
 		}
@@ -60,15 +67,9 @@ namespace ScenarioRunner.Automation.Operator
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			var desktop = session.Automation.GetDesktop();
-			var mainWindowElement = desktop.FindFirstDescendant(cf => cf.ByProcessId(session.Application.ProcessId).And(cf.ByControlType(ControlType.Window)).And(cf.ByAutomationId("MainForm")));
+			int processId = session.Application.ProcessId;
 
-			if (mainWindowElement == null)
-			{
-				throw new InvalidOperationException("Gui.exe main window was not found.");
-			}
-
-			return mainWindowElement.AsWindow();
+			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.AutomationId == MAIN_WINDOW_AUTOMATION_ID);
 		}
 	}
 }

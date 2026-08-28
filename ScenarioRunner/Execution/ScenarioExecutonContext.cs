@@ -10,6 +10,11 @@ namespace ScenarioRunner.Execution
 		public ScenarioExecutionOptions Options { get; }
 		public GuiSession GuiSession { get; set; }
 
+		public string ShikigamiDataFilePath { get; set; }
+
+		public string ShikigamiBrokenDataFilePath { get; set; }
+		public string ShikigamiBackupDataFilePath { get; set; }
+
 		public ScenarioExecutonContext(string scenarioPath, string guiExecutablePath, ScenarioExecutionOptions options)
 		{
 			ScenarioPath = scenarioPath;

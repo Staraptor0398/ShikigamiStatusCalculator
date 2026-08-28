@@ -1,4 +1,5 @@
 using ScenarioRunner.Automation.Operator;
+using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.ScenarioFormat;
 using System;
 
@@ -13,6 +14,9 @@ namespace ScenarioRunner.Execution
 		private readonly DialogOperator mDialogOperator;
 		private readonly ShikigamiDataOperator mShikigamiDataOperator;
 		private readonly InputOperator mInputOperator;
+		private readonly ShikigamiRecoveryOperator mShikigamiRecoveryOperator;
+
+		private readonly ShikigamiDataWaiter mShikigamiDataWaiter;
 
 		public ScenarioCommandExecutor()
 		{
@@ -23,6 +27,9 @@ namespace ScenarioRunner.Execution
 			mDialogOperator = new DialogOperator();
 			mShikigamiDataOperator = new ShikigamiDataOperator();
 			mInputOperator = new InputOperator();
+			mShikigamiRecoveryOperator = new ShikigamiRecoveryOperator();
+
+			mShikigamiDataWaiter = new ShikigamiDataWaiter();
 		}
 
 		public void Execute(ScenarioStep step, ScenarioExecutonContext context)
@@ -59,6 +66,30 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.REMOVE_SHIKIGAMI:
 					mShikigamiDataOperator.RemoveShikigami(context, step.Arguments[0]);
 					return;
+				case ScenarioCommandType.CREATE_SHIKIGAMI_BACKUP:
+					mShikigamiDataOperator.CreateBackup(context.GuiSession);
+					return;
+				case ScenarioCommandType.RECOVER_SHIKIGAMI:
+					string source = step.Arguments[0];
+
+					string recoveryFilePath;
+
+					switch (source)
+					{
+						case "BROKEN":
+							recoveryFilePath = context.ShikigamiBrokenDataFilePath;
+							break;
+
+						case "BACKUP":
+							recoveryFilePath = context.ShikigamiBackupDataFilePath;
+							break;
+
+						default:
+							throw new InvalidOperationException($"Unknown recovery source: {source}");
+					}
+
+					mShikigamiRecoveryOperator.Recover(context.GuiSession, recoveryFilePath);
+					break;
 				case ScenarioCommandType.CHECK_CALCULATION:
 					mCalculationOperator.Check(context.GuiSession);
 					return;
@@ -67,6 +98,9 @@ namespace ScenarioRunner.Execution
 					return;
 				case ScenarioCommandType.CHECK_DIALOG:
 					mDialogOperator.CheckMessage(context.GuiSession, step.Arguments[0]);
+					return;
+				case ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR:
+					mShikigamiDataWaiter.WaitForAutoRepair(context);
 					return;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(step.CommandType), step.CommandType, null);

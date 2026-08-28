@@ -1,12 +1,24 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
+using System.Linq;
 
 namespace ScenarioRunner.Automation.Operator
 {
 	public class DialogOperator
 	{
-		private const string STANDARD_DIALOG_CLASS_NAME = "#32770";
+		private readonly WindowOperator mWindowOperator;
+		private readonly ButtonOperator mButtonOperator;
+		private readonly GuiOperator mGuiOperator;
+
+		private Window mLastCheckedDialog;
+
+		public DialogOperator()
+		{
+			mWindowOperator = new WindowOperator();
+			mButtonOperator = new ButtonOperator();
+			mGuiOperator = new GuiOperator();
+		}
 
 		public Window GetActiveDialog(GuiSession session)
 		{
@@ -15,85 +27,98 @@ namespace ScenarioRunner.Automation.Operator
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window[] windows = session.Application.GetAllTopLevelWindows(session.Automation);
+			int processId = session.Application.ProcessId;
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			foreach (Window window in windows)
-			{
-				if (window.ClassName == STANDARD_DIALOG_CLASS_NAME)
-				{
-					return window;
-				}
-			}
-
-			return null;
+			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.Properties.NativeWindowHandle.Value != mainWindowHandle && isDialog(element));
 		}
 
 		public bool Exists(GuiSession session)
 		{
-			return GetActiveDialog(session) != null;
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			int processId = session.Application.ProcessId;
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
+
+			return mWindowOperator.Exists(session, element => element.Properties.ProcessId.Value == processId && element.Properties.NativeWindowHandle.Value != mainWindowHandle);
 		}
 
 		public string GetMessage(GuiSession session)
 		{
-			Window dialog = GetActiveDialog(session);
-
-			if (dialog == null)
+			if (session == null)
 			{
-				return null;
+				throw new ArgumentNullException(nameof(session));
 			}
 
-			var textElements = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Text));
+			Window dialog = mLastCheckedDialog ?? GetActiveDialog(session);
 
-			foreach (var element in textElements)
-			{
-				if (!string.IsNullOrWhiteSpace(element.Name))
-				{
-					return element.Name;
-				}
-			}
-
-			return null;
+			return dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Text)).Select(element => element.Name).FirstOrDefault(text => !string.IsNullOrWhiteSpace(text));
 		}
 
 		public void CheckMessage(GuiSession session, string expectedMessage)
 		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
 			if (string.IsNullOrWhiteSpace(expectedMessage))
 			{
 				throw new ArgumentException("Expected dialog message is empty.", nameof(expectedMessage));
 			}
 
-			Window dialog = GetActiveDialog(session);
+			int processId = session.Application.ProcessId;
 
-			if (dialog == null)
-			{
-				throw new InvalidOperationException("Modal dialog was not found.");
-			}
-
-			var textElements = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Text));
-
-			foreach (var element in textElements)
-			{
-				string text = element.Name;
-
-				if (!string.IsNullOrWhiteSpace(text) && text.Contains(expectedMessage))
-				{
-					return;
-				}
-			}
-
-			throw new InvalidOperationException($"Expected dialog message was not found: {expectedMessage}");
+			mLastCheckedDialog = mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && containsMessage(element, expectedMessage));
 		}
 
 		public void Close(GuiSession session)
 		{
-			Window dialog = GetActiveDialog(session);
-
-			if (dialog == null)
+			if (session == null)
 			{
-				throw new InvalidOperationException("Modal dialog was not found.");
+				throw new ArgumentNullException(nameof(session));
 			}
 
-			dialog.Close();
+			Window dialog = mLastCheckedDialog ?? GetActiveDialog(session);
+
+			AutomationElement[] buttons = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
+
+			AutomationElement button = buttons.FirstOrDefault(element => string.Equals(element.Name, "OK", StringComparison.OrdinalIgnoreCase));
+
+			if (button == null)
+			{
+				button = buttons.FirstOrDefault(element => element.Patterns.Invoke.IsSupported);
+			}
+
+			if (button == null)
+			{
+				throw new InvalidOperationException("Dialog button was not found.");
+			}
+
+			mButtonOperator.Click(button);
+
+			mLastCheckedDialog = null;
+		}
+
+		private bool isDialog(AutomationElement element)
+		{
+			AutomationElement button = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button));
+
+			AutomationElement text = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Text));
+
+			return button != null && text != null;
+		}
+
+		private bool containsMessage(AutomationElement element, string expectedMessage)
+		{
+			AutomationElement[] textElements = element.FindAllDescendants(cf => cf.ByControlType(ControlType.Text));
+
+			return textElements.Any(textElement => !string.IsNullOrWhiteSpace(textElement.Name) && textElement.Name.Contains(expectedMessage));
 		}
 	}
 }

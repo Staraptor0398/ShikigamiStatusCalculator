@@ -118,6 +118,16 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.REMOVE_SHIKIGAMI;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "CREATE", "SHIKIGAMI", "BACKUP"))
+			{
+				commandType = ScenarioCommandType.CREATE_SHIKIGAMI_BACKUP;
+				argumentStartIndex = 3;
+			}
+			else if (matches(tokens, "RECOVER", "SHIKIGAMI"))
+			{
+				commandType = ScenarioCommandType.RECOVER_SHIKIGAMI;
+				argumentStartIndex = 2;
+			}
 			else if (matches(tokens, "CHECK", "CALC"))
 			{
 				commandType = ScenarioCommandType.CHECK_CALCULATION;
@@ -132,6 +142,11 @@ namespace ScenarioRunner.ScenarioFormat
 			{
 				commandType = ScenarioCommandType.CHECK_DIALOG;
 				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "WAIT", "SHIKIGAMI", "AUTO", "REPAIR"))
+			{
+				commandType = ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR;
+				argumentStartIndex = 4;
 			}
 			else
 			{

@@ -71,11 +71,28 @@ namespace ScenarioRunner.Automation.Operator
 			return comboBox.Value;
 		}
 
-		public bool HasItems(AutomationElement parent, string automationId)
+		public bool CanSelectFirstItem(AutomationElement parent, string automationId)
 		{
 			ComboBox comboBox = getComboBox(parent, automationId);
 
-			return comboBox.Items.Length > 0;
+			comboBox.Focus();
+			Keyboard.Press(VirtualKeyShort.HOME);
+			Keyboard.Press(VirtualKeyShort.ENTER);
+			Wait.UntilInputIsProcessed();
+
+			string selectedValue = comboBox.Value;
+
+			return !string.IsNullOrWhiteSpace(selectedValue);
+		}
+
+		public void SelectFirstItem(AutomationElement parent, string automationId)
+		{
+			ComboBox comboBox = getComboBox(parent, automationId);
+
+			comboBox.Focus();
+
+			Keyboard.Press(VirtualKeyShort.HOME);
+			Keyboard.Press(VirtualKeyShort.ENTER);
 		}
 
 		private ComboBox getComboBox(AutomationElement parent, string automationId)
@@ -85,10 +102,7 @@ namespace ScenarioRunner.Automation.Operator
 				throw new ArgumentNullException(nameof(parent));
 			}
 
-			var comboBoxElement = parent.FindFirstDescendant(
-				cf => cf
-					.ByAutomationId(automationId)
-					.And(cf.ByControlType(ControlType.ComboBox)));
+			var comboBoxElement = parent.FindFirstDescendant(cf => cf.ByAutomationId(automationId).And(cf.ByControlType(ControlType.ComboBox)));
 
 			if (comboBoxElement == null)
 			{
