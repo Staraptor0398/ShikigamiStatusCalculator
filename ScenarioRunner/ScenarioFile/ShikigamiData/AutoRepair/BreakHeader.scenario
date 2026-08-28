@@ -13,6 +13,9 @@ CHECK DIALOG "式神データファイルの形式が正しくありません。
 
 CLOSE DIALOG
 
+# Brokenへの退避とShikigamiData.csvの再生成完了を待つ
+WAIT SHIKIGAMI AUTO REPAIR
+
 # 自動修復後のデータが再読み込み可能であることを確認する
 RELOAD SHIKIGAMI
 
