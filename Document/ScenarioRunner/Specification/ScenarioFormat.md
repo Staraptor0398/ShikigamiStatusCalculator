@@ -223,6 +223,24 @@ Scenario Runnerが決定する。
 復旧成功時に表示されるダイアログを確認する場合は
 `CHECK DIALOG` を使用する。
 
+#### WAIT SHIKIGAMI AUTO REPAIR
+Gui.exeによる式神データの自動修復が完了するまで待機する。
+形式：
+  WAIT SHIKIGAMI AUTO REPAIR
+ShikigamiData.csvの破損を検出した際に実行される自動修復処理について、
+Brokenデータへの退避およびShikigamiData.csvの再生成が完了するまで待機する。
+本コマンドは固定時間の待機を行うものではなく、
+自動修復の完了条件が満たされるまでScenario Runnerが待機する。
+式神データ自動修復後の状態を利用する後続コマンドを、
+自動修復処理と競合させずに実行するために使用する。
+例：
+  BREAK SHIKIGAMI HEADER
+  OPEN GUI
+  CHECK DIALOG "式神データファイルの形式が正しくありません。"
+  CLOSE DIALOG
+  WAIT SHIKIGAMI AUTO REPAIR
+  REMOVE SHIKIGAMI "願紡縁結神"
+
 ### 実行操作
 #### CALC
 Gui.exeで計算を実行する。
@@ -392,6 +410,7 @@ Version 1では以下の予約語およびコマンドを実装対象とする�
    CREATE SHIKIGAMI BACKUP
    RECOVER SHIKIGAMI BROKEN
    RECOVER SHIKIGAMI BACKUP
+   WAIT SHIKIGAMI AUTO REPAIR
    CHECK CALC
    CHECK SHIKIGAMI
    CHECK DIALOG "<メッセージ>"
@@ -418,17 +437,31 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
    END
 
 ### 17.2 式神データ自動修復試験
-   # 式神データ自動復旧試験
-   # ShikigamiData.csvのヘッダーが破損している状態から
-   # 正常な式神データへ復旧できることを確認する。
-   START
-   # Gui.exe起動前に式神データを破損させる
-   BREAK SHIKIGAMI HEADER
-   OPEN GUI
-   # 復旧後の式神データが正常であること
-   CHECK SHIKIGAMI
-   CLOSE GUI
-   END
+  # 式神データ自動修復試験
+  # ShikigamiData.csvのヘッダーが破損している状態から
+  # 正常な式神データへ自動修復できることを確認する。
+
+  START
+
+  # Gui.exe起動前に式神データを破損させる
+  BREAK SHIKIGAMI HEADER
+
+  OPEN GUI
+
+  # 破損検出時のダイアログを確認
+  CHECK DIALOG "式神データファイルの形式が正しくありません。"
+  CLOSE DIALOG
+
+  # Brokenへの退避とShikigamiData.csvの再生成完了を待つ
+  WAIT SHIKIGAMI AUTO REPAIR
+
+  # 自動修復後の式神データが正常であること
+  RELOAD SHIKIGAMI
+  CHECK SHIKIGAMI
+
+  CLOSE GUI
+
+  END
 
 ## 18. 改訂履歴
 | Version | Date | 内容 |
@@ -438,4 +471,4 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
 | 1.2 | 2026-08-22 | 式神データ復旧試験用に、`ShikigamiData.csv` から指定した式神データを削除する `REMOVE SHIKIGAMI` コマンドを追加。 |
 | 1.3 | 2026-08-23 | コマンド定義をカテゴリ別に再構成し、`CHECK` コマンドをVersion 1コマンドへ統合。モーダルダイアログを閉じる `CLOSE DIALOG` コマンドを追加。 |
 | 1.4 | 2026-08-23 | 式神データ復旧試験用に、Gui.exeの通常の式神データ更新処理を経由してBackupデータを生成する `CREATE SHIKIGAMI BACKUP` コマンド、およびScenario内で生成されたBrokenまたはBackupデータから式神データを復旧する `RECOVER SHIKIGAMI` コマンドを追加。 |
- 
+| 1.5 | 2026-08-28 | 式神データ自動修復処理との同期用に、Brokenデータへの退避およびShikigamiData.csvの再生成が完了するまで待機する `WAIT SHIKIGAMI AUTO REPAIR` コマンドを追加。 |
