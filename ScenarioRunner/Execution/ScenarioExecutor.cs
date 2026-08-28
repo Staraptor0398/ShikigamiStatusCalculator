@@ -52,6 +52,8 @@ namespace ScenarioRunner.Execution
 				{
 					try
 					{
+						mLogger.StepStarted(step);
+
 						mCommandExecutor.Execute(step, context);
 
 						passedCount++;

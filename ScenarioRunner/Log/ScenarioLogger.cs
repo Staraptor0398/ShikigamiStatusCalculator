@@ -10,6 +10,9 @@ namespace ScenarioRunner.Log
 		private readonly LogFileWriter mFileWriter;
 
 		public event Action<string> LogWritten;
+		public event Action<ScenarioStep> StepStartedEvent;
+		public event Action<ScenarioStep> StepPassedEvent;
+		public event Action<ScenarioStep> StepFailedEvent;
 
 		public ScenarioLogger(string logDirectoryPath)
 		{
@@ -33,18 +36,24 @@ namespace ScenarioRunner.Log
 
 		public void StepStarted(ScenarioStep step)
 		{
-			Write($"[{step.LineNumber:D2}] {step.RawText}");
+			Write($"[{step.LineNumber:D2}] {step.RawText}    START");
+
+			StepStartedEvent?.Invoke(step);
 		}
 
 		public void StepPassed(ScenarioStep step)
 		{
 			Write($"[{step.LineNumber:D2}] {step.RawText}    PASS");
+
+			StepPassedEvent?.Invoke(step);
 		}
 
 		public void StepFailed(ScenarioStep step, string message)
 		{
 			Write($"[{step.LineNumber:D2}] {step.RawText}    FAIL");
 			Write(message);
+
+			StepFailedEvent?.Invoke(step);
 		}
 
 		public void Error(string message)
