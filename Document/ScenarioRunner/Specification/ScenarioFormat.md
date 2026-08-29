@@ -123,11 +123,25 @@ Gui.exeの起動を意味しない。
 Gui.exeの終了を意味しない。
 
 ### Gui操作
+#### LAUNCH GUI
+Gui.exeのプロセスを起動する。
+形式：
+   LAUNCH GUI
+Gui.exeのプロセスが起動した時点でコマンドを完了する。
+Gui.exeのメインウィンドウがScenario Runnerから操作可能な状態になるまでの待機は行わない。
+Gui.exeの起動処理中にモーダルダイアログが表示され、
+メインウィンドウが操作可能になる前にユーザー操作を必要とする試験で使用する。
+起動後に表示されたダイアログを確認する場合は `CHECK DIALOG` を使用し、
+ダイアログを閉じる場合は `CLOSE DIALOG` を使用する。
+
 #### OPEN GUI
 Gui.exeを起動する。
 形式：
    OPEN GUI
 Gui.exeが正常に起動し、Scenario Runnerから操作可能な状態になるまで待機する。
+Gui.exeの起動途中に表示されるモーダルダイアログを
+メインウィンドウ表示前に操作する必要がある場合は、
+`OPEN GUI` ではなく `LAUNCH GUI` を使用する。
 
 #### CLOSE GUI
 起動中のGui.exeを終了する。
@@ -235,7 +249,7 @@ Brokenデータへの退避およびShikigamiData.csvの再生成が完了する
 自動修復処理と競合させずに実行するために使用する。
 例：
   BREAK SHIKIGAMI HEADER
-  OPEN GUI
+  LAUNCH GUI
   CHECK DIALOG "式神データファイルの形式が正しくありません。"
   CLOSE DIALOG
   WAIT SHIKIGAMI AUTO REPAIR
@@ -397,6 +411,7 @@ Scenario RunnerはScenario実行中の状態をアプリ上のログ表示領域
 Version 1では以下の予約語およびコマンドを実装対象とする。
    START
    END
+   LAUNCH GUI
    OPEN GUI
    CLOSE GUI
    CLOSE DIALOG
@@ -446,7 +461,7 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
   # Gui.exe起動前に式神データを破損させる
   BREAK SHIKIGAMI HEADER
 
-  OPEN GUI
+  LAUNCH GUI
 
   # 破損検出時のダイアログを確認
   CHECK DIALOG "式神データファイルの形式が正しくありません。"
@@ -472,3 +487,4 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
 | 1.3 | 2026-08-23 | コマンド定義をカテゴリ別に再構成し、`CHECK` コマンドをVersion 1コマンドへ統合。モーダルダイアログを閉じる `CLOSE DIALOG` コマンドを追加。 |
 | 1.4 | 2026-08-23 | 式神データ復旧試験用に、Gui.exeの通常の式神データ更新処理を経由してBackupデータを生成する `CREATE SHIKIGAMI BACKUP` コマンド、およびScenario内で生成されたBrokenまたはBackupデータから式神データを復旧する `RECOVER SHIKIGAMI` コマンドを追加。 |
 | 1.5 | 2026-08-28 | 式神データ自動修復処理との同期用に、Brokenデータへの退避およびShikigamiData.csvの再生成が完了するまで待機する `WAIT SHIKIGAMI AUTO REPAIR` コマンドを追加。 |
+| 1.6 | 2026-08-29 | Gui.exeのメインウィンドウが操作可能になるまで待機せず、プロセス起動のみを行う `LAUNCH GUI` コマンドを追加。起動途中に表示されるモーダルダイアログを確認する試験で使用する。 |
