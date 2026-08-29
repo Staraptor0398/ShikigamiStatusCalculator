@@ -11,7 +11,7 @@ namespace ScenarioRunner.Log
 		public LogFileWriter(string logDirectoryPath)
 		{
 			Directory.CreateDirectory(logDirectoryPath);
-			mLogFilePath = Path.Combine(logDirectoryPath, $"ScenarioRunner_{DateTime.Now:yyyy-MM-dd}.log");
+			mLogFilePath = Path.Combine(logDirectoryPath, $"ScenarioRunner_{DateTime.Now:yyyyMMdd_HHmmss}.log");
 		}
 
 		public void Write(string message)
