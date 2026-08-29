@@ -8,7 +8,7 @@ START
 BREAK SHIKIGAMI HEADER
 
 # 破損した式神データを読み込ませ、自動修復を発生させる
-OPEN GUI
+LAUNCH GUI
 
 # 式神データの破損が検出されることを確認する
 CHECK DIALOG "式神データファイルの形式が正しくありません。"
