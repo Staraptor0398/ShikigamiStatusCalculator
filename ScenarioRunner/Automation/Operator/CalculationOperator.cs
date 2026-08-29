@@ -1,16 +1,11 @@
 using FlaUI.Core.AutomationElements;
+using ScenarioRunner.Automation.Definition;
 using System;
 
 namespace ScenarioRunner.Automation.Operator
 {
 	public class CalculationOperator
 	{
-		private const string CALCULATE_BUTTON_AUTOMATION_ID = "btnCalc";
-
-		private const string MITAMA_ONLY_TEXT_BOX_AUTOMATION_ID = "txtMitamaOnly";
-		private const string FINAL_STATS_TEXT_BOX_AUTOMATION_ID = "txtFinalStats";
-		private const string SHIKIGAMI_COMBO_BOX_AUTOMATION_ID = "cmbShikigami";
-
 		private readonly ButtonOperator mButtonOperator;
 		private readonly DialogOperator mDialogOperator;
 		private readonly TextBoxOperator mTextBoxOperator;
@@ -29,7 +24,7 @@ namespace ScenarioRunner.Automation.Operator
 		public void Calculate(GuiSession session)
 		{
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mButtonOperator.Click(mainWindow, CALCULATE_BUTTON_AUTOMATION_ID);
+			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.CALCULATE);
 		}
 
 		public void Check(GuiSession session)
@@ -46,18 +41,18 @@ namespace ScenarioRunner.Automation.Operator
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			string mitamaOnly = mTextBoxOperator.GetText(mainWindow, MITAMA_ONLY_TEXT_BOX_AUTOMATION_ID);
+			string mitamaOnly = mTextBoxOperator.GetText(mainWindow, AutomationIds.MainForm.MITAMA_ONLY);
 
 			if (string.IsNullOrWhiteSpace(mitamaOnly))
 			{
 				throw new InvalidOperationException("Calculation result for Mitama-only status is empty.");
 			}
 
-			string shikigami = mComboBoxOperator.GetValue(mainWindow, SHIKIGAMI_COMBO_BOX_AUTOMATION_ID);
+			string shikigami = mComboBoxOperator.GetValue(mainWindow, AutomationIds.MainForm.SHIKIGAMI);
 
 			if (!string.IsNullOrWhiteSpace(shikigami))
 			{
-				string finalStats = mTextBoxOperator.GetText(mainWindow, FINAL_STATS_TEXT_BOX_AUTOMATION_ID);
+				string finalStats = mTextBoxOperator.GetText(mainWindow, AutomationIds.MainForm.FINAL_STATS);
 
 				if (string.IsNullOrWhiteSpace(finalStats))
 				{

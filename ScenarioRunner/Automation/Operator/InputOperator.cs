@@ -1,13 +1,11 @@
 using FlaUI.Core.AutomationElements;
+using ScenarioRunner.Automation.Definition;
 using System;
 
 namespace ScenarioRunner.Automation.Operator
 {
 	public class InputOperator
 	{
-		private const string CLEAR_BUTTON_AUTOMATION_ID = "btnClear";
-		private const string YES_BUTTON_AUTOMATION_ID = "6";
-
 		private readonly ButtonOperator mButtonOperator;
 		private readonly DialogOperator mDialogOperator;
 		private readonly GuiOperator mGuiOperator;
@@ -28,7 +26,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			mButtonOperator.Click(mainWindow, CLEAR_BUTTON_AUTOMATION_ID);
+			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.CLEAR);
 
 			Window dialog = mDialogOperator.GetActiveDialog(session);
 
@@ -37,7 +35,7 @@ namespace ScenarioRunner.Automation.Operator
 				throw new InvalidOperationException("Clear confirmation dialog was not found.");
 			}
 
-			mButtonOperator.Click(dialog, YES_BUTTON_AUTOMATION_ID);
+			mButtonOperator.Click(dialog, AutomationIds.MessageBox.YES);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Operator;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.ScenarioFormat;
@@ -10,8 +11,6 @@ namespace ScenarioRunner.Execution
 {
 	public class ScenarioCommandExecutor
 	{
-		private const string MAIN_WINDOW_AUTOMATION_ID = "MainForm";
-
 		private readonly WindowOperator mWindowOperator;
 		private readonly GuiOperator mGuiOperator;
 		private readonly ShikigamiOperator mShikigamiOperator;
@@ -127,7 +126,7 @@ namespace ScenarioRunner.Execution
 
 			Task.Run(() =>
 			{
-				Window window = mWindowWaiter.WaitForWindow(context.GuiSession, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == MAIN_WINDOW_AUTOMATION_ID, CancellationToken.None);
+				Window window = mWindowWaiter.WaitForWindow(context.GuiSession, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.MainForm.ID, CancellationToken.None);
 
 				mWindowOperator.SetBounds(window, context.GuiBounds);
 			});

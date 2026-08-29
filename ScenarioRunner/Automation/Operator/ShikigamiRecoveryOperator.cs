@@ -1,13 +1,11 @@
 using FlaUI.Core.AutomationElements;
+using ScenarioRunner.Automation.Definition;
 using System;
 
 namespace ScenarioRunner.Automation.Operator
 {
 	public class ShikigamiRecoveryOperator
 	{
-		private const string SHIKIGAMI_RECOVERY_BUTTON_AUTOMATION_ID = "btnRecoveryShikigami";
-		private const string RECOVERY_BUTTON_AUTOMATION_ID = "btnRecovery";
-
 		private readonly ButtonOperator mButtonOperator;
 		private readonly FileDialogOperator mFileDialogOperator;
 		private readonly GuiOperator mGuiOperator;
@@ -34,20 +32,20 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mButtonOperator.Click(mainWindow, SHIKIGAMI_RECOVERY_BUTTON_AUTOMATION_ID);
+			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.SHIKIGAMI_RECOVERY);
 
 			Window fileDialog = mWindowOperator.WaitForFileDialog(session);
 			mFileDialogOperator.SelectFile(fileDialog, recoveryFilePath);
 
 			Window recoveryForm = getRecoveryForm(session);
-			mButtonOperator.Click(recoveryForm, RECOVERY_BUTTON_AUTOMATION_ID);
+			mButtonOperator.Click(recoveryForm, AutomationIds.ShikigamiRecoveryDialog.RECOVERY);
 		}
 
 		private Window getRecoveryForm(GuiSession session)
 		{
 			int processId = session.Application.ProcessId;
 
-			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.FindFirstDescendant(cf => cf.ByAutomationId(RECOVERY_BUTTON_AUTOMATION_ID)) != null);
+			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.FindFirstDescendant(cf => cf.ByAutomationId(AutomationIds.ShikigamiRecoveryDialog.RECOVERY)) != null);
 		}
 	}
 }

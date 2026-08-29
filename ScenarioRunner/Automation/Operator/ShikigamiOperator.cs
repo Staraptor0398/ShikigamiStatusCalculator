@@ -1,16 +1,11 @@
 using FlaUI.Core.AutomationElements;
+using ScenarioRunner.Automation.Definition;
 using System;
 
 namespace ScenarioRunner.Automation.Operator
 {
 	public class ShikigamiOperator
 	{
-		private const string SHIKIGAMI_COMBO_BOX_AUTOMATION_ID = "cmbShikigami";
-		private const string SHIKIGAMI_RELOAD_BUTTON_AUTOMATION_ID = "btnReLoad";
-		private const string SHIKIGAMI_EDIT_BUTTON_AUTOMATION_ID = "btnRegister";
-		private const string SHIKIGAMI_REGISTER_FORM_AUTOMATION_ID = "ShikigamiRegisterForm";
-		private const string SHIKIGAMI_REGISTER_BUTTON_AUTOMATION_ID = "btnRegister";
-
 		private readonly ComboBoxOperator mComboBoxOperator;
 		private readonly ButtonOperator mButtonOperator;
 		private readonly DialogOperator mDialogOperator;
@@ -34,7 +29,7 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mComboBoxOperator.SelectItem(mainWindow, SHIKIGAMI_COMBO_BOX_AUTOMATION_ID, shikigamiName);
+			mComboBoxOperator.SelectItem(mainWindow, AutomationIds.MainForm.SHIKIGAMI, shikigamiName);
 		}
 
 		public void SelectFirst(GuiSession session)
@@ -45,7 +40,7 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mComboBoxOperator.SelectFirstItem(mainWindow, SHIKIGAMI_COMBO_BOX_AUTOMATION_ID);
+			mComboBoxOperator.SelectFirstItem(mainWindow, AutomationIds.MainForm.SHIKIGAMI);
 		}
 
 		public void Reload(GuiSession session)
@@ -56,7 +51,7 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mButtonOperator.Click(mainWindow, SHIKIGAMI_RELOAD_BUTTON_AUTOMATION_ID);
+			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.RELOAD_SHIKIGAMI);
 		}
 
 		public void SaveSelectedShikigamiWithoutChanges(GuiSession session)
@@ -67,7 +62,7 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			Window registerForm = openEditForm(session);
-			mButtonOperator.Click(registerForm, SHIKIGAMI_REGISTER_BUTTON_AUTOMATION_ID);
+			mButtonOperator.Click(registerForm, AutomationIds.ShikigamiRegisterForm.REGISTER);
 		}
 
 		public void Check(GuiSession session)
@@ -84,7 +79,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			if (!mComboBoxOperator.CanSelectFirstItem(mainWindow, SHIKIGAMI_COMBO_BOX_AUTOMATION_ID))
+			if (!mComboBoxOperator.CanSelectFirstItem(mainWindow, AutomationIds.MainForm.SHIKIGAMI))
 			{
 				throw new InvalidOperationException("Shikigami ComboBox has no items.");
 			}
@@ -93,11 +88,11 @@ namespace ScenarioRunner.Automation.Operator
 		private Window openEditForm(GuiSession session)
 		{
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mButtonOperator.Click(mainWindow, SHIKIGAMI_EDIT_BUTTON_AUTOMATION_ID);
+			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.EDIT_SHIKIGAMI);
 
 			int processId = session.Application.ProcessId;
 
-			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.AutomationId == SHIKIGAMI_REGISTER_FORM_AUTOMATION_ID);
+			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.AutomationId == AutomationIds.ShikigamiRegisterForm.ID);
 		}
 	}
 }
