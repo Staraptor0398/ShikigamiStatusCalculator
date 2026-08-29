@@ -2,6 +2,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace ScenarioRunner.Automation.Operator
 {
@@ -31,7 +32,7 @@ namespace ScenarioRunner.Automation.Operator
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.Properties.NativeWindowHandle.Value != mainWindowHandle && isDialog(element));
+			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isDialog(element));
 		}
 
 		public bool Exists(GuiSession session)
@@ -45,7 +46,7 @@ namespace ScenarioRunner.Automation.Operator
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			return mWindowOperator.Exists(session, element => element.Properties.ProcessId.Value == processId && element.Properties.NativeWindowHandle.Value != mainWindowHandle);
+			return mWindowOperator.Exists(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle);
 		}
 
 		public string GetMessage(GuiSession session)
@@ -57,7 +58,17 @@ namespace ScenarioRunner.Automation.Operator
 
 			Window dialog = mLastCheckedDialog ?? GetActiveDialog(session);
 
-			return dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Text)).Select(element => element.Name).FirstOrDefault(text => !string.IsNullOrWhiteSpace(text));
+			try
+			{
+				return dialog
+					.FindAllDescendants(cf => cf.ByControlType(ControlType.Text))
+					.Select(element => element.Properties.Name.ValueOrDefault)
+					.FirstOrDefault(text => !string.IsNullOrWhiteSpace(text));
+			}
+			catch (COMException)
+			{
+				return null;
+			}
 		}
 
 		public void CheckMessage(GuiSession session, string expectedMessage)
@@ -74,7 +85,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			int processId = session.Application.ProcessId;
 
-			mLastCheckedDialog = mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && containsMessage(element, expectedMessage));
+			mLastCheckedDialog = mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && containsMessage(element, expectedMessage));
 		}
 
 		public void Close(GuiSession session)
@@ -86,9 +97,18 @@ namespace ScenarioRunner.Automation.Operator
 
 			Window dialog = mLastCheckedDialog ?? GetActiveDialog(session);
 
-			AutomationElement[] buttons = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
+			AutomationElement[] buttons;
 
-			AutomationElement button = buttons.FirstOrDefault(element => string.Equals(element.Name, "OK", StringComparison.OrdinalIgnoreCase));
+			try
+			{
+				buttons = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
+			}
+			catch (COMException ex)
+			{
+				throw new InvalidOperationException("Failed to inspect dialog buttons.", ex);
+			}
+
+			AutomationElement button = buttons.FirstOrDefault(element => string.Equals(element.Properties.Name.ValueOrDefault, "OK", StringComparison.OrdinalIgnoreCase));
 
 			if (button == null)
 			{
@@ -107,18 +127,39 @@ namespace ScenarioRunner.Automation.Operator
 
 		private bool isDialog(AutomationElement element)
 		{
-			AutomationElement button = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button));
+			try
+			{
+				AutomationElement button = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button));
 
-			AutomationElement text = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Text));
+				AutomationElement text = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Text));
 
-			return button != null && text != null;
+				return button != null && text != null;
+			}
+			catch (COMException)
+			{
+				return false;
+			}
 		}
 
 		private bool containsMessage(AutomationElement element, string expectedMessage)
 		{
-			AutomationElement[] textElements = element.FindAllDescendants(cf => cf.ByControlType(ControlType.Text));
+			try
+			{
+				AutomationElement[] textElements = element.FindAllDescendants(cf => cf.ByControlType(ControlType.Text));
 
-			return textElements.Any(textElement => !string.IsNullOrWhiteSpace(textElement.Name) && textElement.Name.Contains(expectedMessage));
+				return textElements.Any(
+					textElement =>
+					{
+						string text = textElement.Properties.Name.ValueOrDefault;
+
+						return
+							!string.IsNullOrWhiteSpace(text) && text.Contains(expectedMessage);
+					});
+			}
+			catch (COMException)
+			{
+				return false;
+			}
 		}
 	}
 }
