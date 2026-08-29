@@ -68,7 +68,12 @@ namespace ScenarioRunner.ScenarioFormat
 			ScenarioCommandType commandType;
 			int argumentStartIndex;
 
-			if (matches(tokens, "OPEN", "GUI"))
+			if (matches(tokens, "LAUNCH", "GUI"))
+			{
+				commandType = ScenarioCommandType.LAUNCH_GUI;
+				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "OPEN", "GUI"))
 			{
 				commandType = ScenarioCommandType.OPEN_GUI;
 				argumentStartIndex = 2;

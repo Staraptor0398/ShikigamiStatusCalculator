@@ -72,6 +72,7 @@ namespace ScenarioRunner.ScenarioFormat
 		{
 			switch (commandType)
 			{
+				case ScenarioCommandType.LAUNCH_GUI:
 				case ScenarioCommandType.OPEN_GUI:
 				case ScenarioCommandType.CLOSE_GUI:
 				case ScenarioCommandType.CLOSE_DIALOG:

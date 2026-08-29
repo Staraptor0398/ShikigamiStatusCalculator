@@ -18,7 +18,7 @@ namespace ScenarioRunner.Automation.Operator
 			mWindowOperator = new WindowOperator();
 		}
 
-		public void Open(ScenarioExecutonContext context)
+		public void Launch(ScenarioExecutonContext context)
 		{
 			if (context == null)
 			{
@@ -41,6 +41,11 @@ namespace ScenarioRunner.Automation.Operator
 			UIA2Automation automation = new UIA2Automation();
 
 			context.GuiSession = new GuiSession(application, automation);
+		}
+
+		public void Open(ScenarioExecutonContext context)
+		{
+			Launch(context);
 
 			Window mainWindow = GetMainWindow(context.GuiSession);
 
@@ -73,7 +78,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			int processId = session.Application.ProcessId;
 
-			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.AutomationId == MAIN_WINDOW_AUTOMATION_ID);
+			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.Properties.AutomationId.ValueOrDefault == MAIN_WINDOW_AUTOMATION_ID);
 		}
 	}
 }

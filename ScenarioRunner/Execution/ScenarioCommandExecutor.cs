@@ -1,12 +1,18 @@
+using FlaUI.Core.AutomationElements;
 using ScenarioRunner.Automation.Operator;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.ScenarioFormat;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ScenarioRunner.Execution
 {
 	public class ScenarioCommandExecutor
 	{
+		private const string MAIN_WINDOW_AUTOMATION_ID = "MainForm";
+
+		private readonly WindowOperator mWindowOperator;
 		private readonly GuiOperator mGuiOperator;
 		private readonly ShikigamiOperator mShikigamiOperator;
 		private readonly CalculationOperator mCalculationOperator;
@@ -17,9 +23,11 @@ namespace ScenarioRunner.Execution
 		private readonly ShikigamiRecoveryOperator mShikigamiRecoveryOperator;
 
 		private readonly ShikigamiDataWaiter mShikigamiDataWaiter;
+		private readonly WindowWaiter mWindowWaiter;
 
 		public ScenarioCommandExecutor()
 		{
+			mWindowOperator = new WindowOperator();
 			mGuiOperator = new GuiOperator();
 			mShikigamiOperator = new ShikigamiOperator();
 			mCalculationOperator = new CalculationOperator();
@@ -30,12 +38,18 @@ namespace ScenarioRunner.Execution
 			mShikigamiRecoveryOperator = new ShikigamiRecoveryOperator();
 
 			mShikigamiDataWaiter = new ShikigamiDataWaiter();
+			mWindowWaiter = new WindowWaiter();
 		}
 
 		public void Execute(ScenarioStep step, ScenarioExecutonContext context)
 		{
 			switch (step.CommandType)
 			{
+				case ScenarioCommandType.LAUNCH_GUI:
+					mGuiOperator.Launch(context);
+
+					startGuiWindowArrangement(context);
+					return;
 				case ScenarioCommandType.OPEN_GUI:
 					mGuiOperator.Open(context);
 					return;
@@ -89,7 +103,7 @@ namespace ScenarioRunner.Execution
 					}
 
 					mShikigamiRecoveryOperator.Recover(context.GuiSession, recoveryFilePath);
-					break;
+					return;
 				case ScenarioCommandType.CHECK_CALCULATION:
 					mCalculationOperator.Check(context.GuiSession);
 					return;
@@ -106,5 +120,18 @@ namespace ScenarioRunner.Execution
 					throw new ArgumentOutOfRangeException(nameof(step.CommandType), step.CommandType, null);
 			}
 		}
+
+		private void startGuiWindowArrangement(ScenarioExecutonContext context)
+		{
+			int processId = context.GuiSession.Application.ProcessId;
+
+			Task.Run(() =>
+			{
+				Window window = mWindowWaiter.WaitForWindow(context.GuiSession, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == MAIN_WINDOW_AUTOMATION_ID, CancellationToken.None);
+
+				mWindowOperator.SetBounds(window, context.GuiBounds);
+			});
+		}
+
 	}
 }

@@ -2,6 +2,7 @@ namespace ScenarioRunner.ScenarioFormat
 {
 	public enum ScenarioCommandType
 	{
+		LAUNCH_GUI,
 		OPEN_GUI,
 		CLOSE_GUI,
 		CLOSE_DIALOG,
