@@ -1,5 +1,7 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
+using ScenarioRunner.Automation.Interop;
+using ScenarioRunner.Automation.Model;
 using System;
 using System.Linq;
 using System.Threading;
@@ -88,6 +90,44 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			return WaitForWindow(session, isFileDialog);
+		}
+		public void SetBounds(Window window, WindowBounds bounds)
+		{
+			if (window == null)
+			{
+				throw new ArgumentNullException(nameof(window));
+			}
+
+			if (bounds == null)
+			{
+				throw new ArgumentNullException(nameof(bounds));
+			}
+
+			var transformPattern = window.Patterns.Transform.Pattern;
+
+			if (!transformPattern.CanMove.Value)
+			{
+				throw new InvalidOperationException("Window cannot be moved.");
+			}
+
+			if (!transformPattern.CanResize.Value)
+			{
+				throw new InvalidOperationException("Window cannot be resized.");
+			}
+
+			IntPtr windowHandle = window.Properties.NativeWindowHandle.Value;
+
+			// 一度ターゲット位置へ仮配置する。
+			// 不可視フレームは配置位置によって変化するため、
+			// 移動後の状態で補正量を取得する必要がある。
+			transformPattern.Move(bounds.X, bounds.Y);
+			transformPattern.Resize(bounds.Width, bounds.Height);
+
+			WindowBounds adjustedBounds = WindowFrameHelper.GetAdjustedBounds(windowHandle, bounds);
+
+			transformPattern.Move(adjustedBounds.X, adjustedBounds.Y);
+
+			transformPattern.Resize(adjustedBounds.Width, adjustedBounds.Height);
 		}
 
 		private bool isFileDialog(AutomationElement element)

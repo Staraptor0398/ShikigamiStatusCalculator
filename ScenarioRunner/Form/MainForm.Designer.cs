@@ -182,9 +182,9 @@ namespace ScenarioRunner.Form
 			this.Controls.Add(this.btnBrowseScenario);
 			this.Controls.Add(this.txtScenarioPath);
 			this.Controls.Add(this.lblScenarioFile);
-			this.MinimumSize = new System.Drawing.Size(900, 650);
+			this.MinimumSize = new System.Drawing.Size(700, 600);
 			this.Name = "MainForm";
-			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+			this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
 			this.Text = "ShikigamiApp Scenario Runner";
 			this.ResumeLayout(false);
 			this.PerformLayout();

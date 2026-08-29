@@ -1,8 +1,12 @@
+using ScenarioRunner.Automation.Layout;
+using ScenarioRunner.Automation.Model;
 using ScenarioRunner.Execution;
+using ScenarioRunner.Form.Applicator;
 using ScenarioRunner.Log;
 using ScenarioRunner.Presentation;
 using ScenarioRunner.ScenarioFormat;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -21,9 +25,17 @@ namespace ScenarioRunner.Form
 
 		private Scenario mScenario;
 
+		private ScenarioWindowLayout mWindowLayout;
+
 		public MainForm()
 		{
 			InitializeComponent();
+
+			Rectangle workingArea = Screen.PrimaryScreen.WorkingArea;
+
+			WindowBounds workingAreaBounds = new WindowBounds(workingArea.X, workingArea.Y, workingArea.Width, workingArea.Height);
+
+			mWindowLayout = new ScenarioWindowLayout(workingAreaBounds);
 
 			mGuiExucutablePath = @"W:\Gui\bin\x64\Debug\Gui.exe";
 
@@ -39,7 +51,7 @@ namespace ScenarioRunner.Form
 			mScenarioLogger.StepPassedEvent += mScenarioHighlighter.ShowPassed;
 			mScenarioLogger.StepFailedEvent += mScenarioHighlighter.ShowFailed;
 
-			mScenarioExecutor = new ScenarioExecutor(mScenarioLogger, mGuiExucutablePath);
+			mScenarioExecutor = new ScenarioExecutor(mScenarioLogger, mGuiExucutablePath, mWindowLayout.GuiBounds);
 
 			btnRun.Enabled = false;
 			btnStop.Enabled = false;
@@ -125,12 +137,20 @@ namespace ScenarioRunner.Form
 		private void btnShikigamiDataMonitor_Click(object sender, EventArgs e)
 		{
 			string guiDirectoryPath = Path.GetDirectoryName(mGuiExucutablePath);
-
 			string shikigamiDataPath = Path.Combine(guiDirectoryPath, "Data", "ShikigamiData.csv");
 
 			var monitorForm = new ShikigamiDataMonitorForm(shikigamiDataPath);
 
 			monitorForm.Show();
+
+			FormBoundsApplicator.Apply(monitorForm, mWindowLayout.MonitorBounds);
+		}
+
+		protected override void OnShown(EventArgs e)
+		{
+			base.OnShown(e);
+
+			FormBoundsApplicator.Apply(this, mWindowLayout.RunnerBounds);
 		}
 	}
 }

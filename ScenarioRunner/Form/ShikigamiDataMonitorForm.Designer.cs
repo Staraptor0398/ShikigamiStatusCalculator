@@ -154,7 +154,7 @@ namespace ScenarioRunner.Form
 			this.Controls.Add(this.pnlContent);
 			this.Controls.Add(this.pnlHeader);
 			this.Name = "ShikigamiDataMonitorForm";
-			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+			this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
 			this.Text = "ShikigamiData Monitor";
 			this.pnlHeader.ResumeLayout(false);
 			this.pnlHeader.PerformLayout();

@@ -41,6 +41,10 @@ namespace ScenarioRunner.Automation.Operator
 			UIA2Automation automation = new UIA2Automation();
 
 			context.GuiSession = new GuiSession(application, automation);
+
+			Window mainWindow = GetMainWindow(context.GuiSession);
+
+			mWindowOperator.SetBounds(mainWindow, context.GuiBounds);
 		}
 
 		public void Close(ScenarioExecutonContext context)

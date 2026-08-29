@@ -53,6 +53,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Automation\GuiSession.cs" />
+    <Compile Include="Automation\Interop\WindowFrameHelper.cs" />
+    <Compile Include="Automation\Layout\ScenarioWindowLayout.cs" />
+    <Compile Include="Automation\Model\WindowBounds.cs" />
+    <Compile Include="Automation\Model\WindowFrameInfo.cs" />
+    <Compile Include="Automation\Model\WindowFrameInsets.cs" />
     <Compile Include="Automation\Operator\ButtonOperator.cs" />
     <Compile Include="Automation\Operator\CalculationOperator.cs" />
     <Compile Include="Automation\Operator\ComboBoxOperator.cs" />
@@ -74,6 +79,7 @@
     <Compile Include="Execution\ScenarioExecutionResult.cs" />
     <Compile Include="Execution\ScenarioExecutonContext.cs" />
     <Compile Include="Execution\ScenarioExecutor.cs" />
+    <Compile Include="Form\Applicator\FormBoundsApplicator.cs" />
     <Compile Include="Form\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

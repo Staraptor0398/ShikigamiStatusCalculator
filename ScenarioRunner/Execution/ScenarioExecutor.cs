@@ -1,3 +1,4 @@
+using ScenarioRunner.Automation.Model;
 using ScenarioRunner.Automation.Watcher;
 using ScenarioRunner.Log;
 using ScenarioRunner.ScenarioFormat;
@@ -13,11 +14,13 @@ namespace ScenarioRunner.Execution
 		private readonly ScenarioCommandExecutor mCommandExecutor;
 		private readonly ScenarioLogger mLogger;
 		private readonly string mGuiExecutablePath;
+		private readonly WindowBounds mGuiBounds;
 
-		public ScenarioExecutor(ScenarioLogger logger, string guiExecutablePath)
+		public ScenarioExecutor(ScenarioLogger logger, string guiExecutablePath, WindowBounds guiBounds)
 		{
 			mLogger = logger;
 			mGuiExecutablePath = guiExecutablePath;
+			mGuiBounds = guiBounds;
 
 			mCommandExecutor = new ScenarioCommandExecutor();
 		}
@@ -25,7 +28,7 @@ namespace ScenarioRunner.Execution
 		public ScenarioExecutionResult Execute(Scenario scenario, ScenarioExecutionOptions options)
 		{
 			var stopwatch = Stopwatch.StartNew();
-			var context = new ScenarioExecutonContext(scenario.FilePath, mGuiExecutablePath, options);
+			var context = new ScenarioExecutonContext(scenario.FilePath, mGuiExecutablePath, options, mGuiBounds);
 
 			string guiDirectoryPath = Path.GetDirectoryName(mGuiExecutablePath);
 
