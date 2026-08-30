@@ -8,6 +8,7 @@ namespace ScenarioRunner.ScenarioFormat
 		CLOSE_DIALOG,
 
 		SELECT_SHIKIGAMI,
+		EQUIP_MITAMA,
 		LOAD_MITAMA,
 
 		CALCULATE,

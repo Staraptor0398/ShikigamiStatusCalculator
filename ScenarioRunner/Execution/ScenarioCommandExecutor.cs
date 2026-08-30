@@ -61,6 +61,9 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.SELECT_SHIKIGAMI:
 					mShikigamiOperator.Select(context.GuiSession, step.Arguments[0]);
 					return;
+				case ScenarioCommandType.EQUIP_MITAMA:
+					mInputOperator.Equip(context.GuiSession, step.Arguments);
+					return;
 				case ScenarioCommandType.LOAD_MITAMA:
 					mMitamaOperator.Load(context, step.Arguments[0]);
 					return;

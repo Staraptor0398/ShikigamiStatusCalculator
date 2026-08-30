@@ -31,6 +31,12 @@ namespace ScenarioRunner.Automation.Operator
 			comboBox.Focus();
 
 			Keyboard.Type(VirtualKeyShort.HOME);
+			Wait.UntilInputIsProcessed();
+
+			if (string.IsNullOrWhiteSpace(comboBox.Value))
+			{
+				Keyboard.Type(VirtualKeyShort.DOWN);
+			}
 
 			for (int i = 0; i < index; i++)
 			{

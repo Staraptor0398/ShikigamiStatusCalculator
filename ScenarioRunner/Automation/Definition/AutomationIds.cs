@@ -8,6 +8,31 @@ namespace ScenarioRunner.Automation.Definition
 
 			public const string SHIKIGAMI = "cmbShikigami";
 
+			public static string MainStat(int mitamaSlot)
+			{
+				return $"cmbMainStat{mitamaSlot}";
+			}
+
+			public static string SubStat(int mitamaSlot, int subSlot)
+			{
+				return $"cmbSubStat{subSlot}{mitamaSlot}";
+			}
+
+			public static string SubStatValue(int mitamaSlot, int subSlot)
+			{
+				return $"txtSubVal{subSlot}{mitamaSlot}";
+			}
+
+			public static string SetEffect(int slot)
+			{
+				return $"cmbSetBonus{slot}";
+			}
+
+			public static string UniqueEffect(int slot)
+			{
+				return $"cmbUnique{slot}";
+			}
+
 			public const string CALCULATE = "btnCalc";
 			public const string MITAMA_ONLY = "txtMitamaOnly";
 			public const string FINAL_STATS = "txtFinalStats";

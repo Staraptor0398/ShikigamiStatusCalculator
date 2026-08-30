@@ -93,6 +93,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.SELECT_SHIKIGAMI;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "EQUIP", "MITAMA"))
+			{
+				commandType = ScenarioCommandType.EQUIP_MITAMA;
+				argumentStartIndex = 2;
+			}
 			else if (matches(tokens, "LOAD", "MITAMA"))
 			{
 				commandType = ScenarioCommandType.LOAD_MITAMA;
@@ -166,6 +171,7 @@ namespace ScenarioRunner.ScenarioFormat
 			var tokens = new List<string>();
 			var token = new StringBuilder();
 			bool inQuotedString = false;
+			bool hasToken = false;
 
 			for (int i = 0; i < line.Length; i++)
 			{
@@ -174,21 +180,25 @@ namespace ScenarioRunner.ScenarioFormat
 				if (c == '"')
 				{
 					inQuotedString = !inQuotedString;
+					hasToken = true;
+
 					continue;
 				}
 
 				if (char.IsWhiteSpace(c) && !inQuotedString)
 				{
-					if (token.Length > 0)
+					if (hasToken)
 					{
 						tokens.Add(token.ToString());
 						token.Clear();
+						hasToken = false;
 					}
 
 					continue;
 				}
 
 				token.Append(c);
+				hasToken = true;
 			}
 
 			if (inQuotedString)
@@ -196,7 +206,7 @@ namespace ScenarioRunner.ScenarioFormat
 				throw new FormatException("Quoted string is not closed.");
 			}
 
-			if (token.Length > 0)
+			if (hasToken)
 			{
 				tokens.Add(token.ToString());
 			}

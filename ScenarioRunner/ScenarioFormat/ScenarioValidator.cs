@@ -22,7 +22,6 @@ namespace ScenarioRunner.ScenarioFormat
 			{
 				throw new FormatException("START is not defined.");
 			}
-
 			if (scenario.EndLine == -1)
 			{
 				throw new FormatException("END is not defined.");
@@ -54,6 +53,12 @@ namespace ScenarioRunner.ScenarioFormat
 		{
 			foreach (ScenarioStep step in scenario.Steps)
 			{
+				if (step.CommandType == ScenarioCommandType.EQUIP_MITAMA)
+				{
+					validateEquipMitamaArguments(step);
+					continue;
+				}
+
 				int expectedCount = getExpectedArgumentCount(step.CommandType);
 
 				if (step.Arguments.Count < expectedCount)
@@ -65,6 +70,45 @@ namespace ScenarioRunner.ScenarioFormat
 				{
 					throw new FormatException($"Too many arguments at line {step.LineNumber}: {step.RawText}");
 				}
+			}
+		}
+
+		private void validateEquipMitamaArguments(ScenarioStep step)
+		{
+			if (step.Arguments.Count == 0)
+			{
+				throw new FormatException($"Argument is missing at line {step.LineNumber}: {step.RawText}");
+			}
+
+			switch (step.Arguments[0])
+			{
+				case "MAIN":
+					validateArgumentCount(step, 3, 3);
+					break;
+				case "SUB":
+					validateArgumentCount(step, 3, 5);
+					break;
+				case "SET":
+					validateArgumentCount(step, 3, 3);
+					break;
+				case "UNIQUE":
+					validateArgumentCount(step, 3, 3);
+					break;
+				default:
+					throw new FormatException($"Unknown EQUIP MITAMA target at line {step.LineNumber}: {step.RawText}");
+			}
+		}
+
+		private void validateArgumentCount(ScenarioStep step, int minimumCount, int maximumCount)
+		{
+			if (step.Arguments.Count < minimumCount)
+			{
+				throw new FormatException($"Argument is missing at line {step.LineNumber}: {step.RawText}");
+			}
+
+			if (step.Arguments.Count > maximumCount)
+			{
+				throw new FormatException($"Too many arguments at line {step.LineNumber}: {step.RawText}");
 			}
 		}
 
