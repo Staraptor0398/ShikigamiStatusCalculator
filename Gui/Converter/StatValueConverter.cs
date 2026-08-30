@@ -26,6 +26,15 @@ namespace Gui.Converter
 				return null;
 			}
 
+			if (string.IsNullOrWhiteSpace(inputModel.Type) && string.IsNullOrWhiteSpace(inputModel.ValueText))
+			{
+				return new StatValueSaveData
+				{
+					Type = inputModel.Type,
+					Value = 0
+				};
+			}
+
 			return new StatValueSaveData
 			{
 				Type = inputModel.Type,
@@ -38,6 +47,15 @@ namespace Gui.Converter
 			if (inputModel == null)
 			{
 				return null;
+			}
+
+			if (string.IsNullOrWhiteSpace(inputModel.Type) && string.IsNullOrWhiteSpace(inputModel.ValueText))
+			{
+				return new StatValueDto
+				{
+					Type = StatTypeDto.None,
+					Value = 0
+				};
 			}
 
 			return new StatValueDto

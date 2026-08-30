@@ -1,3 +1,4 @@
+using Gui.Common;
 using Gui.Model;
 using SaveData.Model;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace Gui.Converter
 			{
 				Slot = slot,
 				MainStat = StatValueConverter.ToSaveData(inputModel.MainStat),
-				SubStats = inputModel.SubStat.Select(StatValueConverter.ToSaveData).ToList()
+				SubStats = inputModel.SubStat.Where(hasSubStatTypeAndValue).Select(StatValueConverter.ToSaveData).ToList()
 			};
 		}
 
@@ -46,7 +47,7 @@ namespace Gui.Converter
 			return new MitamaDto
 			{
 				MainStat = StatValueConverter.ToDto(inputModel.MainStat),
-				SubStat = inputModel.SubStat.Select(StatValueConverter.ToDto).ToList()
+				SubStat = inputModel.SubStat.Where(hasSubStatTypeAndValue).Select(StatValueConverter.ToDto).ToList()
 			};
 		}
 
@@ -62,6 +63,11 @@ namespace Gui.Converter
 				MainStat = StatValueConverter.ToInputModel(saveData.MainStat),
 				SubStat = saveData.SubStats.Select(StatValueConverter.ToInputModel).ToList()
 			};
+		}
+
+		private static bool hasSubStatTypeAndValue(StatValueInputModel subStat)
+		{
+			return !string.IsNullOrWhiteSpace(subStat.Type) && subStat.Type != DisplayText.NONE && !string.IsNullOrWhiteSpace(subStat.ValueText);
 		}
 	}
 }

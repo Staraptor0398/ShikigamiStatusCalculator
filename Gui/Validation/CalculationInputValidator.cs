@@ -11,12 +11,14 @@ namespace Gui.Validation
 			CalculationInputValidationOutcome outcome;
 
 			outcome = validateEquippedMitamaCount(inputModel.Mitamas);
+
 			if (outcome != CalculationInputValidationOutcome.SUCCESS)
 			{
 				return outcome;
 			}
 
 			outcome = validateSubStatsWithoutMainStat(inputModel.Mitamas);
+
 			if (outcome != CalculationInputValidationOutcome.SUCCESS)
 			{
 				return outcome;
@@ -30,12 +32,13 @@ namespace Gui.Validation
 			}
 
 			outcome = validateSubStats(inputModel.Mitamas);
+
 			if (outcome != CalculationInputValidationOutcome.SUCCESS)
 			{
 				return outcome;
 			}
 
-			return outcome;
+			return CalculationInputValidationOutcome.SUCCESS;
 		}
 
 		private static CalculationInputValidationOutcome validateEquippedMitamaCount(List<MitamaInputModel> mitamas)
@@ -166,6 +169,14 @@ namespace Gui.Validation
 		{
 			foreach (MitamaInputModel mitama in mitamas)
 			{
+				// メインステータス未選択の場合は未装備御魂として扱う。
+				// サブステータスが入力されている場合は、
+				// validateSubStatsWithoutMainStat() で既にエラーとなる。
+				if (string.IsNullOrWhiteSpace(mitama.MainStat.Type))
+				{
+					continue;
+				}
+
 				CalculationInputValidationOutcome outcome = validateSubStatsInMitama(mitama.SubStat);
 
 				if (outcome != CalculationInputValidationOutcome.SUCCESS)
@@ -189,7 +200,7 @@ namespace Gui.Validation
 
 				if (!hasType && !hasValue)
 				{
-					return CalculationInputValidationOutcome.SUCCESS;
+					continue;
 				}
 
 				if (hasType && !hasValue)
@@ -218,6 +229,11 @@ namespace Gui.Validation
 				}
 
 				selectedSubStats.Add(subStat.Type);
+			}
+
+			if (selectedSubStats.Count < 3)
+			{
+				return CalculationInputValidationOutcome.SUB_STAT_COUNT_TOO_LOW;
 			}
 
 			return CalculationInputValidationOutcome.SUCCESS;

@@ -51,6 +51,9 @@ namespace Gui.Validation
 				case CalculationInputValidationOutcome.DUPLICATE_SUB_STAT:
 					return "ステータス計算に失敗しました。\n\n" +
 							"同じ御魂内に重複したサブステータスがあります。";
+				case CalculationInputValidationOutcome.SUB_STAT_COUNT_TOO_LOW:
+					return "ステータス計算に失敗しました。\n\n" +
+							"御魂設定されているサブステータスが3個未満です。";
 				case CalculationInputValidationOutcome.EFFECT_SLOT_COUNT_EXCEEDS_EQUIPPED_SLOTS:
 					return "ステータス計算に失敗しました。\n\n" +
 							"選択されている2セット効果と固有効果に対して、装備中の御魂数が足りません。";
