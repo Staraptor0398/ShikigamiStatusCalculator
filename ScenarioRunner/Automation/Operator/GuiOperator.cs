@@ -2,6 +2,7 @@ using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.UIA2;
 using ScenarioRunner.Automation.Definition;
+using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
 using System;
 using System.IO;
@@ -12,9 +13,13 @@ namespace ScenarioRunner.Automation.Operator
 	{
 		private readonly WindowOperator mWindowOperator;
 
+		private readonly WindowWaiter mWindowWaiter;
+
 		public GuiOperator()
 		{
 			mWindowOperator = new WindowOperator();
+
+			mWindowWaiter = new WindowWaiter();
 		}
 
 		public void Launch(ScenarioExecutonContext context)
@@ -77,7 +82,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			int processId = session.Application.ProcessId;
 
-			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.MainForm.ID);
+			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.MainForm.ID);
 		}
 	}
 }

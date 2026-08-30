@@ -1,5 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using ScenarioRunner.Automation.Definition;
+using ScenarioRunner.Automation.Waiter;
 using System;
 
 namespace ScenarioRunner.Automation.Operator
@@ -9,14 +10,16 @@ namespace ScenarioRunner.Automation.Operator
 		private readonly ButtonOperator mButtonOperator;
 		private readonly FileDialogOperator mFileDialogOperator;
 		private readonly GuiOperator mGuiOperator;
-		private readonly WindowOperator mWindowOperator;
+
+		private readonly WindowWaiter mWindowWaiter;
 
 		public ShikigamiRecoveryOperator()
 		{
 			mButtonOperator = new ButtonOperator();
 			mFileDialogOperator = new FileDialogOperator();
 			mGuiOperator = new GuiOperator();
-			mWindowOperator = new WindowOperator();
+
+			mWindowWaiter = new WindowWaiter();
 		}
 
 		public void Recover(GuiSession session, string recoveryFilePath)
@@ -34,7 +37,7 @@ namespace ScenarioRunner.Automation.Operator
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.SHIKIGAMI_RECOVERY);
 
-			Window fileDialog = mWindowOperator.WaitForFileDialog(session);
+			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
 			mFileDialogOperator.SelectFile(fileDialog, recoveryFilePath);
 
 			Window recoveryForm = getRecoveryForm(session);
@@ -45,7 +48,7 @@ namespace ScenarioRunner.Automation.Operator
 		{
 			int processId = session.Application.ProcessId;
 
-			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.FindFirstDescendant(cf => cf.ByAutomationId(AutomationIds.ShikigamiRecoveryDialog.RECOVERY)) != null);
+			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.FindFirstDescendant(cf => cf.ByAutomationId(AutomationIds.ShikigamiRecoveryDialog.RECOVERY)) != null);
 		}
 	}
 }

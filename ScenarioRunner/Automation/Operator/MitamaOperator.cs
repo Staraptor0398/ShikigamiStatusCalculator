@@ -1,5 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using ScenarioRunner.Automation.Definition;
+using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
 using System;
 
@@ -13,15 +14,17 @@ namespace ScenarioRunner.Automation.Operator
 		private readonly ComboBoxOperator mComboBoxOperator;
 		private readonly FileDialogOperator mFileDialogOperator;
 		private readonly GuiOperator mGuiOperator;
-		private readonly WindowOperator mWindowOperator;
+
+		private readonly WindowWaiter mWindowWaiter;
 
 		public MitamaOperator()
 		{
 			mButtonOperator = new ButtonOperator();
 			mComboBoxOperator = new ComboBoxOperator();
 			mFileDialogOperator = new FileDialogOperator();
-			mGuiOperator = new GuiOperator();
-			mWindowOperator = new WindowOperator();
+			mGuiOperator = new GuiOperator(); ;
+
+			mWindowWaiter = new WindowWaiter();
 		}
 
 		public void Load(ScenarioExecutonContext context, string filePath)
@@ -47,7 +50,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			mButtonOperator.Click(loadDialog, AutomationIds.SaveDataLoadDialog.BROWSE);
 
-			Window fileDialog = mWindowOperator.WaitForFileDialog(session);
+			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
 			mFileDialogOperator.SelectFile(fileDialog, resolvedPath);
 
 			mButtonOperator.Click(loadDialog, AutomationIds.SaveDataLoadDialog.LOAD);
@@ -57,7 +60,7 @@ namespace ScenarioRunner.Automation.Operator
 		{
 			int processId = session.Application.ProcessId;
 
-			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.FindFirstDescendant(cf => cf.ByAutomationId(AutomationIds.SaveDataLoadDialog.BROWSE)) != null);
+			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.FindFirstDescendant(cf => cf.ByAutomationId(AutomationIds.SaveDataLoadDialog.BROWSE)) != null);
 		}
 	}
 }

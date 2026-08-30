@@ -1,5 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
+using ScenarioRunner.Automation.Waiter;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -8,17 +9,19 @@ namespace ScenarioRunner.Automation.Operator
 {
 	public class DialogOperator
 	{
-		private readonly WindowOperator mWindowOperator;
 		private readonly ButtonOperator mButtonOperator;
 		private readonly GuiOperator mGuiOperator;
+
+		private readonly WindowWaiter mWindowWaiter;
 
 		private Window mLastCheckedDialog;
 
 		public DialogOperator()
 		{
-			mWindowOperator = new WindowOperator();
 			mButtonOperator = new ButtonOperator();
 			mGuiOperator = new GuiOperator();
+
+			mWindowWaiter = new WindowWaiter();
 		}
 
 		public Window GetActiveDialog(GuiSession session)
@@ -32,7 +35,7 @@ namespace ScenarioRunner.Automation.Operator
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isDialog(element));
+			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isDialog(element));
 		}
 
 		public bool Exists(GuiSession session)
@@ -46,7 +49,7 @@ namespace ScenarioRunner.Automation.Operator
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			return mWindowOperator.Exists(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle);
+			return mWindowWaiter.Exists(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle);
 		}
 
 		public string GetMessage(GuiSession session)
@@ -85,7 +88,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			int processId = session.Application.ProcessId;
 
-			mLastCheckedDialog = mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && containsMessage(element, expectedMessage));
+			mLastCheckedDialog = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && containsMessage(element, expectedMessage));
 		}
 
 		public void Close(GuiSession session)

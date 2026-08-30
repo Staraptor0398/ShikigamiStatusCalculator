@@ -1,5 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using ScenarioRunner.Automation.Definition;
+using ScenarioRunner.Automation.Waiter;
 using System;
 
 namespace ScenarioRunner.Automation.Operator
@@ -10,7 +11,8 @@ namespace ScenarioRunner.Automation.Operator
 		private readonly ButtonOperator mButtonOperator;
 		private readonly DialogOperator mDialogOperator;
 		private readonly GuiOperator mGuiOperator;
-		private readonly WindowOperator mWindowOperator;
+
+		private readonly WindowWaiter mWindowWaiter;
 
 		public ShikigamiOperator()
 		{
@@ -18,7 +20,8 @@ namespace ScenarioRunner.Automation.Operator
 			mButtonOperator = new ButtonOperator();
 			mDialogOperator = new DialogOperator();
 			mGuiOperator = new GuiOperator();
-			mWindowOperator = new WindowOperator();
+
+			mWindowWaiter = new WindowWaiter();
 		}
 
 		public void Select(GuiSession session, string shikigamiName)
@@ -92,7 +95,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			int processId = session.Application.ProcessId;
 
-			return mWindowOperator.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.AutomationId == AutomationIds.ShikigamiRegisterForm.ID);
+			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.AutomationId == AutomationIds.ShikigamiRegisterForm.ID);
 		}
 	}
 }
