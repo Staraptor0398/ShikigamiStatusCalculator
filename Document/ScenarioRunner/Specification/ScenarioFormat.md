@@ -84,15 +84,20 @@ Scenarioで使用するキーワードは英大文字を基本とする。
 
 ## 7. コマンドの基本形式
 コマンドは原則として以下の形式で記述する。
-   COMMAND
+  COMMAND
 または、
-   COMMAND TARGET
+  COMMAND TARGET
 または、
-   COMMAND TARGET ARGUMENT
+  COMMAND TARGET ARGUMENT
+または、
+  COMMAND TARGET ARGUMENT ...
+コマンドによっては、複数のTARGETまたはARGUMENTを持つ。
 例：
-   CALC
-   OPEN GUI
-   SEL SHIKIGAMI "願紡縁結神"
+  CALC
+  OPEN GUI
+  SEL SHIKIGAMI "願紡縁結神"
+  EQUIP MITAMA MAIN 2 "追加攻撃力"
+  EQUIP MITAMA SUB 2 1 "追加攻撃力" "5"
 1つのコマンドは1行に記述する。
 
 ## 8. 文字列
@@ -169,6 +174,61 @@ Gui.exeの起動途中に表示されるモーダルダイアログを
    SEL SHIKIGAMI "願紡縁結神"
 Scenarioファイルでは、ComboBoxのAutomationId、Item index、キー操作などの実装詳細を指定しない。
 指定された式神を実際に選択する方法はScenario Runner側で決定する。
+
+#### EQUIP MITAMA
+Gui.exe上で御魂のステータスまたは効果を入力する。
+御魂の入力対象として `MAIN`、`SUB`、`SET`、`UNIQUE` を指定する。
+Scenarioファイルでは、ComboBoxやTextBoxのAutomationId、Item index、キー操作などの実装詳細を指定しない。
+指定された内容をGui.exeへ入力する方法はScenario Runner側で決定する。
+
+##### MAIN
+指定した御魂スロットのメインステータスを選択する。
+形式：
+  EQUIP MITAMA MAIN <御魂スロット番号> "<ステータス種類>"
+例：
+  EQUIP MITAMA MAIN 2 "追加攻撃力"
+御魂スロット番号には1から6を指定する。
+メインステータスの値はGui.exe上でステータス種類の選択に応じて設定されるため、
+Scenarioファイルでは指定しない。
+1番、3番、5番の御魂についてもステータス種類を省略せず指定する。
+指定した御魂スロットで選択できないステータス種類が指定された場合は、
+コマンドの実行失敗として扱う。
+
+##### SUB
+指定した御魂スロットのサブステータスを入力する。
+形式：
+  EQUIP MITAMA SUB <御魂スロット番号> <サブスロット番号> ["<ステータス種類>"] ["<値>"]
+例：
+  EQUIP MITAMA SUB 2 1 "追加攻撃力" "5"
+御魂スロット番号には1から6、
+サブスロット番号には1から4を指定する。
+ステータス種類と値はそれぞれ独立して省略できる。
+例：
+  EQUIP MITAMA SUB 2 1 "追加攻撃力"
+  EQUIP MITAMA SUB 2 1 "" "5"
+値はGui.exeの入力欄へ入力する文字列として扱う。
+そのため、数値として解釈できない文字列や負数など、
+Gui.exe側のValidation対象となる値についてもScenario Runnerでは入力を許可する。
+Scenario Runnerは入力内容の妥当性を判定せず、
+指定された内容をGui.exeへ入力する。
+入力内容に対するValidation結果の確認は、
+`CALC` および `CHECK DIALOG` などの後続コマンドによって行う。
+
+##### SET
+指定した2セット効果を選択する。
+形式：
+  EQUIP MITAMA SET <番号> "<ステータス種類>"
+例：
+  EQUIP MITAMA SET 1 "追加攻撃力"
+番号には1から3を指定する。
+
+##### UNIQUE
+指定した固有効果を選択する。
+形式：
+  EQUIP MITAMA UNIQUE <番号> "<ステータス種類>"
+例：
+  EQUIP MITAMA UNIQUE 1 "追加攻撃力"
+番号には1から6を指定する。
 
 #### LOAD MITAMA
 指定された御魂セットファイルをGui.exeへ読み込む。
@@ -416,6 +476,10 @@ Version 1では以下の予約語およびコマンドを実装対象とする�
    CLOSE GUI
    CLOSE DIALOG
    SEL SHIKIGAMI "<式神名>"
+   EQUIP MITAMA MAIN <御魂スロット番号> "<ステータス種類>"
+   EQUIP MITAMA SUB <御魂スロット番号> <サブスロット番号> ["<ステータス種類>"] ["<値>"]
+   EQUIP MITAMA SET <番号> "<ステータス種類>"
+   EQUIP MITAMA UNIQUE <番号> "<ステータス種類>"
    LOAD MITAMA "<ファイルパス>"
    CALC
    CLEAR
@@ -478,6 +542,30 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
 
   END
 
+### 17.3 御魂入力による計算試験
+  # 御魂をGui.exe上で入力し、
+  # 正常に計算できることを確認する。
+  START
+  OPEN GUI
+
+  # 対象式神を選択
+  SEL SHIKIGAMI "願紡縁結神"
+
+  # 1番御魂を入力
+  EQUIP MITAMA MAIN 1 "攻撃力"
+  EQUIP MITAMA SUB 1 1 "追加攻撃力" "5"
+  EQUIP MITAMA SUB 1 2 "追加HP" "3"
+  EQUIP MITAMA SUB 1 3 "会心率" "3"
+
+  # 計算を実行
+  CALC
+
+  # 計算結果が正常に表示されること
+  CHECK CALC
+
+  CLOSE GUI
+  END
+
 ## 18. 改訂履歴
 | Version | Date | 内容 |
 |---|---|---|
@@ -488,3 +576,4 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
 | 1.4 | 2026-08-23 | 式神データ復旧試験用に、Gui.exeの通常の式神データ更新処理を経由してBackupデータを生成する `CREATE SHIKIGAMI BACKUP` コマンド、およびScenario内で生成されたBrokenまたはBackupデータから式神データを復旧する `RECOVER SHIKIGAMI` コマンドを追加。 |
 | 1.5 | 2026-08-28 | 式神データ自動修復処理との同期用に、Brokenデータへの退避およびShikigamiData.csvの再生成が完了するまで待機する `WAIT SHIKIGAMI AUTO REPAIR` コマンドを追加。 |
 | 1.6 | 2026-08-29 | Gui.exeのメインウィンドウが操作可能になるまで待機せず、プロセス起動のみを行う `LAUNCH GUI` コマンドを追加。起動途中に表示されるモーダルダイアログを確認する試験で使用する。 |
+| 1.7 | 2026-08-30 | Gui.exe上で御魂のメインステータス、サブステータス、2セット効果、固有効果を入力する `EQUIP MITAMA` コマンドを追加。サブステータスではGui.exe側のValidation試験を可能とするため、ステータス種類と値をそれぞれ独立して省略可能とした。 |
