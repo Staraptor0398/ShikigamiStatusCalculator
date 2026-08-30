@@ -1,0 +1,78 @@
+# EquipMitamaCalculation.scenario
+#
+# Gui.exe上で式神を選択し、御魂6個のメインステータス、
+# サブステータス、2セット効果、固有効果を入力する。
+# 入力完了後にステータス計算を実行し、
+# 計算結果が正常に表示されることを確認する。
+# 確認完了後、Gui.exeを終了する。
+
+START
+
+# Guiを起動
+OPEN GUI
+
+# 式神選択
+SEL SHIKIGAMI "麓銘大嶽丸"
+
+# 壱番
+EQUIP MITAMA MAIN 1 "攻撃力"
+EQUIP MITAMA SUB 1 1 "追加攻撃力" "8"
+EQUIP MITAMA SUB 1 2 "会心率" "3"
+EQUIP MITAMA SUB 1 3 "会心DMG" "8"
+EQUIP MITAMA SUB 1 4 "素早さ" "3"
+
+# 弐番
+EQUIP MITAMA MAIN 2 "素早さ"
+EQUIP MITAMA SUB 2 1 "追加攻撃力" "5"
+EQUIP MITAMA SUB 2 2 "追加HP" "3"
+EQUIP MITAMA SUB 2 3 "会心率" "3"
+EQUIP MITAMA SUB 2 4 "会心DMG" "8"
+
+# 参番
+EQUIP MITAMA MAIN 3 "防御力"
+EQUIP MITAMA SUB 3 1 "追加攻撃力" "8"
+EQUIP MITAMA SUB 3 2 "素早さ" "3"
+EQUIP MITAMA SUB 3 3 "会心DMG" "8"
+EQUIP MITAMA SUB 3 4 "効果抵抗" "3"
+
+# 肆番
+EQUIP MITAMA MAIN 4 "追加攻撃力"
+EQUIP MITAMA SUB 4 1 "会心率" "3"
+EQUIP MITAMA SUB 4 2 "会心DMG" "8"
+EQUIP MITAMA SUB 4 3 "素早さ" "3"
+EQUIP MITAMA SUB 4 4 "効果命中" "3"
+
+# 伍番
+EQUIP MITAMA MAIN 5 "HP"
+EQUIP MITAMA SUB 5 1 "追加攻撃力" "8"
+EQUIP MITAMA SUB 5 2 "会心率" "3"
+EQUIP MITAMA SUB 5 3 "会心DMG" "8"
+EQUIP MITAMA SUB 5 4 "追加防御力" "3"
+
+# 陸番
+EQUIP MITAMA MAIN 6 "会心DMG"
+EQUIP MITAMA SUB 6 1 "追加攻撃力" "8"
+EQUIP MITAMA SUB 6 2 "会心率" "3"
+EQUIP MITAMA SUB 6 3 "素早さ" "3"
+EQUIP MITAMA SUB 6 4 "追加HP" "3"
+
+# 2セット効果
+# 2個 × 2スロット = 4スロット
+EQUIP MITAMA SET 1 "追加攻撃力"
+EQUIP MITAMA SET 2 "会心率"
+
+# 固有効果
+# 2個 × 1スロット = 2スロット
+EQUIP MITAMA UNIQUE 1 "追加攻撃力"
+EQUIP MITAMA UNIQUE 2 "会心率"
+
+# 計算
+CALC
+
+# 計算結果確認
+CHECK CALC
+
+# Guiを終了
+CLOSE GUI
+
+END
