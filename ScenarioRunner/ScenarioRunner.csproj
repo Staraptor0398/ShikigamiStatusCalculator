@@ -75,7 +75,7 @@
     <Compile Include="Automation\Operator\WindowOperator.cs" />
     <Compile Include="Automation\Waiter\ShikigamiDataWaiter.cs" />
     <Compile Include="Automation\Waiter\WindowWaiter.cs" />
-    <Compile Include="Automation\Wather\ShikigamiDataFileWatcher.cs" />
+    <Compile Include="Automation\Watcher\ShikigamiDataFileWatcher.cs" />
     <Compile Include="Execution\ScenarioCommandExecutor.cs" />
     <Compile Include="Execution\ScenarioExecutionOptions.cs" />
     <Compile Include="Execution\ScenarioExecutionResult.cs" />
