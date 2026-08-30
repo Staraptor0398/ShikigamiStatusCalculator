@@ -82,6 +82,7 @@
     <Compile Include="Execution\ScenarioExecutonContext.cs" />
     <Compile Include="Execution\ScenarioExecutor.cs" />
     <Compile Include="Form\Applicator\FormBoundsApplicator.cs" />
+    <Compile Include="Form\Applicator\RichTextBoxScrollApplicator.cs" />
     <Compile Include="Form\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

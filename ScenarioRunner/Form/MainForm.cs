@@ -48,6 +48,7 @@ namespace ScenarioRunner.Form
 			mScenarioHighlighter = new ScenarioHighlighter(rtbScenario);
 
 			mScenarioLogger.StepStartedEvent += mScenarioHighlighter.ShowRunning;
+			mScenarioLogger.StepStartedEvent += scrollScenario;
 			mScenarioLogger.StepPassedEvent += mScenarioHighlighter.ShowPassed;
 			mScenarioLogger.StepFailedEvent += mScenarioHighlighter.ShowFailed;
 
@@ -108,6 +109,19 @@ namespace ScenarioRunner.Form
 			}
 
 			rtbExecutionLog.AppendText(message + Environment.NewLine);
+
+			RichTextBoxScrollApplicator.Apply(rtbExecutionLog, rtbExecutionLog.Lines.Length - 1);
+		}
+
+		private void scrollScenario(ScenarioStep step)
+		{
+			if (rtbScenario.InvokeRequired)
+			{
+				rtbScenario.Invoke(new Action<ScenarioStep>(scrollScenario), step);
+				return;
+			}
+
+			RichTextBoxScrollApplicator.Apply(rtbScenario, step.LineNumber - 1);
 		}
 
 		private async void btnRun_Click(object sender, EventArgs e)
