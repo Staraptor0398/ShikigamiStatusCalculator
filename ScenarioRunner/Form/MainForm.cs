@@ -86,6 +86,8 @@ namespace ScenarioRunner.Form
 
 			try
 			{
+				mScenarioLogger.ScenarioValidationStarted(filePath);
+
 				mScenario = mScenarioLoader.Load(filePath);
 
 				mScenarioLogger.ScenarioLoaded(mScenario);
@@ -93,6 +95,10 @@ namespace ScenarioRunner.Form
 				mScenarioHighlighter.ApplySyntax(mScenario);
 
 				btnRun.Enabled = true;
+			}
+			catch (ScenarioValidationException ex)
+			{
+				mScenarioLogger.ScenarioValidationFailed(ex.Message);
 			}
 			catch (Exception ex)
 			{

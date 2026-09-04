@@ -8,7 +8,7 @@ namespace ScenarioRunner.ScenarioFormat
 		{
 			if (scenario == null)
 			{
-				throw new ArgumentNullException(nameof(scenario));
+				throw new ScenarioValidationException("Scenario is null.");
 			}
 
 			validateBoundary(scenario);
@@ -20,16 +20,16 @@ namespace ScenarioRunner.ScenarioFormat
 		{
 			if (scenario.StartLine == -1)
 			{
-				throw new FormatException("START is not defined.");
+				throw new ScenarioValidationException("START is not defined.");
 			}
 			if (scenario.EndLine == -1)
 			{
-				throw new FormatException("END is not defined.");
+				throw new ScenarioValidationException("END is not defined.");
 			}
 
 			if (scenario.StartLine > scenario.EndLine)
 			{
-				throw new FormatException("END is defined before START.");
+				throw new ScenarioValidationException("END is defined before START.");
 			}
 		}
 
@@ -39,12 +39,12 @@ namespace ScenarioRunner.ScenarioFormat
 			{
 				if (step.LineNumber < scenario.StartLine)
 				{
-					throw new FormatException($"Command is defined before START at line {step.LineNumber}: {step.RawText}");
+					throw new ScenarioValidationException($"Command is defined before START at line {step.LineNumber}: {step.RawText}");
 				}
 
 				if (step.LineNumber > scenario.EndLine)
 				{
-					throw new FormatException($"Command is defined after END at line {step.LineNumber}: {step.RawText}");
+					throw new ScenarioValidationException($"Command is defined after END at line {step.LineNumber}: {step.RawText}");
 				}
 			}
 		}
@@ -63,12 +63,12 @@ namespace ScenarioRunner.ScenarioFormat
 
 				if (step.Arguments.Count < expectedCount)
 				{
-					throw new FormatException($"Argument is missing at line {step.LineNumber}: {step.RawText}");
+					throw new ScenarioValidationException($"Argument is missing at line {step.LineNumber}: {step.RawText}");
 				}
 
 				if (step.Arguments.Count > expectedCount)
 				{
-					throw new FormatException($"Too many arguments at line {step.LineNumber}: {step.RawText}");
+					throw new ScenarioValidationException($"Too many arguments at line {step.LineNumber}: {step.RawText}");
 				}
 			}
 		}
@@ -77,7 +77,7 @@ namespace ScenarioRunner.ScenarioFormat
 		{
 			if (step.Arguments.Count == 0)
 			{
-				throw new FormatException($"Argument is missing at line {step.LineNumber}: {step.RawText}");
+				throw new ScenarioValidationException($"Argument is missing at line {step.LineNumber}: {step.RawText}");
 			}
 
 			switch (step.Arguments[0])
@@ -95,7 +95,7 @@ namespace ScenarioRunner.ScenarioFormat
 					validateArgumentCount(step, 3, 3);
 					break;
 				default:
-					throw new FormatException($"Unknown EQUIP MITAMA target at line {step.LineNumber}: {step.RawText}");
+					throw new ScenarioValidationException($"Unknown EQUIP MITAMA target at line {step.LineNumber}: {step.RawText}");
 			}
 		}
 
@@ -103,12 +103,12 @@ namespace ScenarioRunner.ScenarioFormat
 		{
 			if (step.Arguments.Count < minimumCount)
 			{
-				throw new FormatException($"Argument is missing at line {step.LineNumber}: {step.RawText}");
+				throw new ScenarioValidationException($"Argument is missing at line {step.LineNumber}: {step.RawText}");
 			}
 
 			if (step.Arguments.Count > maximumCount)
 			{
-				throw new FormatException($"Too many arguments at line {step.LineNumber}: {step.RawText}");
+				throw new ScenarioValidationException($"Too many arguments at line {step.LineNumber}: {step.RawText}");
 			}
 		}
 

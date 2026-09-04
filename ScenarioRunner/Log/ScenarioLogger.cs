@@ -7,7 +7,8 @@ namespace ScenarioRunner.Log
 {
 	public class ScenarioLogger
 	{
-		private readonly LogFileWriter mFileWriter;
+		private readonly string mLogDirectoryPath;
+		private LogFileWriter mFileWriter;
 
 		public event Action<string> LogWritten;
 		public event Action<ScenarioStep> StepStartedEvent;
@@ -16,7 +17,7 @@ namespace ScenarioRunner.Log
 
 		public ScenarioLogger(string logDirectoryPath)
 		{
-			mFileWriter = new LogFileWriter(logDirectoryPath);
+			mLogDirectoryPath = logDirectoryPath;
 		}
 
 		public void Write(string message)
@@ -27,9 +28,28 @@ namespace ScenarioRunner.Log
 			LogWritten?.Invoke(log);
 		}
 
+		public void ScenarioValidationStarted(string filePath)
+		{
+			mFileWriter = new LogFileWriter(mLogDirectoryPath);
+
+			Write("========================================");
+			Write($"Scenario: {Path.GetFileName(filePath)}");
+			Write("========================================");
+			Write("");
+			Write("[Validation]");
+		}
+
+		public void ScenarioValidationFailed(string message)
+		{
+			Write("Validation: FAILED");
+			Write($"Error: {message}");
+			Write("");
+			Write("[Result]");
+			Write("Scenario Result: VALIDATION FAILED");
+		}
+
 		public void ScenarioLoaded(Scenario scenario)
 		{
-			Write($"Scenario loaded: {Path.GetFileName(scenario.FilePath)}");
 			Write("Syntax: OK");
 			Write($"Steps: {scenario.Steps.Count}");
 		}
@@ -60,21 +80,27 @@ namespace ScenarioRunner.Log
 		{
 			Write($"ERROR: {message}");
 		}
+
 		public void ScenarioStarted(Scenario scenario)
 		{
-			Write("========================================");
-			Write($"Scenario started: {Path.GetFileName(scenario.FilePath)}");
-			Write("========================================");
+			Write("");
+			Write("[Execution]");
 		}
+
 		public void ScenarioPassed(ScenarioExecutionResult result)
 		{
-			Write($"Scenario Result: PASS");
+			Write("");
+			Write("[Result]");
+			Write("Scenario Result: PASS");
 			Write($"Passed: {result.PassedCount}");
 			Write($"Elapsed: {result.Elapsed.TotalSeconds:F2} sec");
 		}
+
 		public void ScenarioFailed(ScenarioExecutionResult result)
 		{
-			Write($"Scenario Result: FAIL");
+			Write("");
+			Write("[Result]");
+			Write("Scenario Result: FAIL");
 			Write($"Failed line: {result.FailedLineNumber}");
 			Write($"Elapsed: {result.Elapsed.TotalSeconds:F2} sec");
 		}
