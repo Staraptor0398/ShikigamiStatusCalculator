@@ -1,0 +1,31 @@
+# Backupデータからの式神復旧試験
+
+# Gui.exeの通常の式神データ更新処理によって生成されたBackupデータを使用し、
+# 削除した式神を復旧できることを確認する。
+
+START
+
+OPEN GUI
+
+# Gui.exeの通常の式神データ更新処理を経由してBackupデータを生成する
+CREATE SHIKIGAMI BACKUP
+
+# 復旧対象を作るため、現在の式神データから式神を削除する
+REMOVE SHIKIGAMI "少羽大天狗"
+
+# Backupデータから削除した式神を復旧する
+RECOVER SHIKIGAMI BACKUP
+
+# 復旧処理が正常終了したことを確認する
+CHECK DIALOG "式神の復旧に成功しました。"
+
+CLOSE DIALOG
+
+# 式神データを再読み込みし、復旧後のデータが正常であることを確認する
+RELOAD SHIKIGAMI
+
+CHECK SHIKIGAMI
+
+CLOSE GUI
+
+END
