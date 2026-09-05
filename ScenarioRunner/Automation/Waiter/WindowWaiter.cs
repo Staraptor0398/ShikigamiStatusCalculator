@@ -27,7 +27,12 @@ namespace ScenarioRunner.Automation.Waiter
 
 			AutomationElement desktop = session.Automation.GetDesktop();
 
-			AutomationElement windowElement = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).FirstOrDefault(predicate);
+			AutomationElement windowElement = desktop.FindAllChildren(cf => cf.ByControlType(ControlType.Window)).FirstOrDefault(predicate);
+
+			if (windowElement == null)
+			{
+				windowElement = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).FirstOrDefault(predicate);
+			}
 
 			return windowElement?.AsWindow();
 		}
