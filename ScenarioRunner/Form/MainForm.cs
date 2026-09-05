@@ -171,7 +171,7 @@ namespace ScenarioRunner.Form
 				return;
 			}
 
-			var options = new ScenarioExecutionOptions(chkWatchMode.Checked, chkKeepGuiOpenOnFailure.Checked);
+			var options = new ScenarioExecutionOptions(chkWatchMode.Checked);
 
 			btnRun.Enabled = false;
 			btnStop.Enabled = true;
