@@ -40,6 +40,8 @@ namespace ScenarioRunner.Form
 			this.rtbExecutionLog = new System.Windows.Forms.RichTextBox();
 			this.lblExecutionLog = new System.Windows.Forms.Label();
 			this.btnShikigamiDataMonitor = new System.Windows.Forms.Button();
+			this.btnSave = new System.Windows.Forms.Button();
+			this.btnEdit = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// lblScenarioFile
@@ -54,7 +56,7 @@ namespace ScenarioRunner.Form
 			// txtScenarioPath
 			// 
 			this.txtScenarioPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			| System.Windows.Forms.AnchorStyles.Right)));
 			this.txtScenarioPath.Location = new System.Drawing.Point(14, 24);
 			this.txtScenarioPath.Name = "txtScenarioPath";
 			this.txtScenarioPath.ReadOnly = true;
@@ -96,7 +98,7 @@ namespace ScenarioRunner.Form
 			// chkWatchMode
 			// 
 			this.chkWatchMode.AutoSize = true;
-			this.chkWatchMode.Location = new System.Drawing.Point(176, 72);
+			this.chkWatchMode.Location = new System.Drawing.Point(342, 72);
 			this.chkWatchMode.Name = "chkWatchMode";
 			this.chkWatchMode.Size = new System.Drawing.Size(86, 16);
 			this.chkWatchMode.TabIndex = 5;
@@ -106,7 +108,7 @@ namespace ScenarioRunner.Form
 			// chkKeepGuiOpenOnFailure
 			// 
 			this.chkKeepGuiOpenOnFailure.AutoSize = true;
-			this.chkKeepGuiOpenOnFailure.Location = new System.Drawing.Point(176, 94);
+			this.chkKeepGuiOpenOnFailure.Location = new System.Drawing.Point(342, 94);
 			this.chkKeepGuiOpenOnFailure.Name = "chkKeepGuiOpenOnFailure";
 			this.chkKeepGuiOpenOnFailure.Size = new System.Drawing.Size(156, 16);
 			this.chkKeepGuiOpenOnFailure.TabIndex = 6;
@@ -125,8 +127,8 @@ namespace ScenarioRunner.Form
 			// rtbScenario
 			// 
 			this.rtbScenario.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			| System.Windows.Forms.AnchorStyles.Left) 
+			| System.Windows.Forms.AnchorStyles.Right)));
 			this.rtbScenario.Location = new System.Drawing.Point(14, 151);
 			this.rtbScenario.Name = "rtbScenario";
 			this.rtbScenario.ReadOnly = true;
@@ -137,7 +139,7 @@ namespace ScenarioRunner.Form
 			// rtbExecutionLog
 			// 
 			this.rtbExecutionLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			| System.Windows.Forms.AnchorStyles.Right)));
 			this.rtbExecutionLog.Location = new System.Drawing.Point(12, 433);
 			this.rtbExecutionLog.Name = "rtbExecutionLog";
 			this.rtbExecutionLog.ReadOnly = true;
@@ -157,7 +159,7 @@ namespace ScenarioRunner.Form
 			// 
 			// btnShikigamiDataMonitor
 			// 
-			this.btnShikigamiDataMonitor.Location = new System.Drawing.Point(331, 68);
+			this.btnShikigamiDataMonitor.Location = new System.Drawing.Point(497, 68);
 			this.btnShikigamiDataMonitor.Name = "btnShikigamiDataMonitor";
 			this.btnShikigamiDataMonitor.Size = new System.Drawing.Size(92, 23);
 			this.btnShikigamiDataMonitor.TabIndex = 11;
@@ -165,11 +167,35 @@ namespace ScenarioRunner.Form
 			this.btnShikigamiDataMonitor.UseVisualStyleBackColor = true;
 			this.btnShikigamiDataMonitor.Click += new System.EventHandler(this.btnShikigamiDataMonitor_Click);
 			// 
+			// btnSave
+			// 
+			this.btnSave.Enabled = false;
+			this.btnSave.Location = new System.Drawing.Point(257, 68);
+			this.btnSave.Name = "btnSave";
+			this.btnSave.Size = new System.Drawing.Size(75, 23);
+			this.btnSave.TabIndex = 13;
+			this.btnSave.Text = "保存";
+			this.btnSave.UseVisualStyleBackColor = true;
+			this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+			// 
+			// btnEdit
+			// 
+			this.btnEdit.Enabled = false;
+			this.btnEdit.Location = new System.Drawing.Point(176, 68);
+			this.btnEdit.Name = "btnEdit";
+			this.btnEdit.Size = new System.Drawing.Size(75, 23);
+			this.btnEdit.TabIndex = 12;
+			this.btnEdit.Text = "編集";
+			this.btnEdit.UseVisualStyleBackColor = true;
+			this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(984, 711);
+			this.Controls.Add(this.btnSave);
+			this.Controls.Add(this.btnEdit);
 			this.Controls.Add(this.btnShikigamiDataMonitor);
 			this.Controls.Add(this.lblExecutionLog);
 			this.Controls.Add(this.rtbExecutionLog);
@@ -205,6 +231,8 @@ namespace ScenarioRunner.Form
 		private System.Windows.Forms.RichTextBox rtbExecutionLog;
 		private System.Windows.Forms.Label lblExecutionLog;
 		private System.Windows.Forms.Button btnShikigamiDataMonitor;
+		private System.Windows.Forms.Button btnSave;
+		private System.Windows.Forms.Button btnEdit;
 	}
 }
 

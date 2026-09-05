@@ -5,13 +5,11 @@ namespace ScenarioRunner.ScenarioFormat
 {
 	public class ScenarioLoader
 	{
-		private readonly ScenarioParser mParser;
-		private readonly ScenarioValidator mValidator;
+		private readonly ScenarioCompiler mCompiler;
 
 		public ScenarioLoader()
 		{
-			mParser = new ScenarioParser();
-			mValidator = new ScenarioValidator();
+			mCompiler = new ScenarioCompiler();
 		}
 
 		public Scenario Load(string filePath)
@@ -26,9 +24,7 @@ namespace ScenarioRunner.ScenarioFormat
 			}
 
 			string[] lines = File.ReadAllLines(filePath);
-			Scenario scenario = mParser.Parse(filePath, lines);
-			mValidator.Validate(scenario);
-			return scenario;
+			return mCompiler.Compile(filePath, lines);
 		}
 	}
 }

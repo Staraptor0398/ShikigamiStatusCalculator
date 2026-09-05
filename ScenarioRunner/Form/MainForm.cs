@@ -18,14 +18,17 @@ namespace ScenarioRunner.Form
 		private readonly string mGuiExucutablePath;
 
 		private readonly ScenarioLoader mScenarioLoader;
+		private readonly ScenarioCompiler mScenarioCompiler;
+
 		private readonly ScenarioLogger mScenarioLogger;
 		private readonly ScenarioExecutor mScenarioExecutor;
 
 		private readonly ScenarioHighlighter mScenarioHighlighter;
 
+		private ScenarioWindowLayout mWindowLayout;
 		private Scenario mScenario;
 
-		private ScenarioWindowLayout mWindowLayout;
+		private bool mIsEditMode;
 
 		public MainForm()
 		{
@@ -40,6 +43,7 @@ namespace ScenarioRunner.Form
 			mGuiExucutablePath = @"W:\Gui\bin\x64\Debug\Gui.exe";
 
 			mScenarioLoader = new ScenarioLoader();
+			mScenarioCompiler = new ScenarioCompiler();
 
 			string logDirectoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log");
 			mScenarioLogger = new ScenarioLogger(logDirectoryPath);
@@ -54,11 +58,38 @@ namespace ScenarioRunner.Form
 
 			mScenarioExecutor = new ScenarioExecutor(mScenarioLogger, mGuiExucutablePath, mWindowLayout.GuiBounds);
 
-			btnRun.Enabled = false;
-			btnStop.Enabled = false;
+			setEditMode(false);
 		}
 
 		private void btnBrowseScenario_Click(object sender, EventArgs e)
+		{
+			if (mIsEditMode)
+			{
+				selectScenarioSavePath();
+				return;
+			}
+
+			selectScenarioOpenPath();
+		}
+
+		private void selectScenarioSavePath()
+		{
+			using (var dialog = new SaveFileDialog())
+			{
+				dialog.Title = "Scenarioファイルの保存先を選択";
+				dialog.Filter = "Scenario File (*.scenario)|*.scenario|All Files (*.*)|*.*";
+				dialog.FileName = Path.GetFileName(txtScenarioPath.Text);
+
+				if (dialog.ShowDialog() != DialogResult.OK)
+				{
+					return;
+				}
+
+				txtScenarioPath.Text = dialog.FileName;
+			}
+		}
+
+		private void selectScenarioOpenPath()
 		{
 			using (var dialog = new OpenFileDialog())
 			{
@@ -94,7 +125,7 @@ namespace ScenarioRunner.Form
 
 				mScenarioHighlighter.ApplySyntax(mScenario);
 
-				btnRun.Enabled = true;
+				setEditMode(false);
 			}
 			catch (ScenarioValidationException ex)
 			{
@@ -171,6 +202,63 @@ namespace ScenarioRunner.Form
 			base.OnShown(e);
 
 			FormBoundsApplicator.Apply(this, mWindowLayout.RunnerBounds);
+		}
+
+		private void btnEdit_Click(object sender, EventArgs e)
+		{
+			setEditMode(true);
+		}
+
+		private void setEditMode(bool isEditMode)
+		{
+			mIsEditMode = isEditMode;
+
+			rtbScenario.ReadOnly = !isEditMode;
+
+			btnEdit.Enabled = !isEditMode;
+			btnSave.Enabled = isEditMode;
+			btnRun.Enabled = !isEditMode && mScenario != null;
+		}
+
+		private void btnSave_Click(object sender, EventArgs e)
+		{
+			string filePath = txtScenarioPath.Text;
+
+			if (string.IsNullOrWhiteSpace(filePath))
+			{
+				MessageBox.Show(
+					"保存先のScenarioファイルを指定してください。",
+					"Scenario Save",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
+
+				return;
+			}
+
+			try
+			{
+				mScenarioCompiler.Compile(filePath, rtbScenario.Lines);
+
+				File.WriteAllText(filePath, rtbScenario.Text);
+
+				loadScenario(filePath);
+			}
+			catch (ScenarioValidationException ex)
+			{
+				MessageBox.Show(
+					ex.Message,
+					"Scenario Validation Error",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(
+					ex.Message,
+					"Scenario Save Error",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error);
+			}
 		}
 	}
 }
