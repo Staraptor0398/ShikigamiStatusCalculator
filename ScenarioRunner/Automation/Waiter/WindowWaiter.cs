@@ -1,6 +1,7 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 
@@ -26,7 +27,7 @@ namespace ScenarioRunner.Automation.Waiter
 
 			AutomationElement desktop = session.Automation.GetDesktop();
 
-			AutomationElement windowElement = desktop.FindAllChildren(cf => cf.ByControlType(ControlType.Window)).FirstOrDefault(predicate);
+			AutomationElement windowElement = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).FirstOrDefault(predicate);
 
 			return windowElement?.AsWindow();
 		}
@@ -135,6 +136,52 @@ namespace ScenarioRunner.Automation.Waiter
 			bool hasOpenButton = buttons.Any(button => button.Name.StartsWith("開く", StringComparison.OrdinalIgnoreCase) || button.Name.StartsWith("Open", StringComparison.OrdinalIgnoreCase));
 
 			return hasFileNameInput && hasOpenButton;
+		}
+
+		private void dumpWindows(Window[] windows)
+		{
+			string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WindowDump.txt");
+
+			using (StreamWriter writer = new StreamWriter(filePath, true))
+			{
+				writer.WriteLine("========================================");
+				writer.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+
+				foreach (Window window in windows)
+				{
+					writer.WriteLine(
+					$"Name={window.Properties.Name.ValueOrDefault}, " +
+					$"AutomationId={window.Properties.AutomationId.ValueOrDefault}, " +
+					$"ControlType={window.Properties.ControlType.ValueOrDefault}, " +
+					$"ClassName={window.Properties.ClassName.ValueOrDefault}, " +
+					$"ProcessId={window.Properties.ProcessId.ValueOrDefault}");
+				}
+
+				writer.WriteLine();
+			}
+		}
+
+		private void dumpAutomationElements(AutomationElement[] elements)
+		{
+			string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WindowDump.txt");
+
+			using (StreamWriter writer = new StreamWriter(filePath, true))
+			{
+				writer.WriteLine("========================================");
+				writer.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+
+				foreach (AutomationElement element in elements)
+				{
+					writer.WriteLine(
+					$"Name={element.Properties.Name.ValueOrDefault}, " +
+					$"AutomationId={element.Properties.AutomationId.ValueOrDefault}, " +
+					$"ControlType={element.Properties.ControlType.ValueOrDefault}, " +
+					$"ClassName={element.Properties.ClassName.ValueOrDefault}, " +
+					$"ProcessId={element.Properties.ProcessId.ValueOrDefault}");
+				}
+
+				writer.WriteLine();
+			}
 		}
 	}
 }
