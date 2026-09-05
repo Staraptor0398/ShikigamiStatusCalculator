@@ -29,6 +29,7 @@ namespace ScenarioRunner.Form
 		private Scenario mScenario;
 
 		private bool mIsEditMode;
+		private bool mIsScenarioModified;
 
 		public MainForm()
 		{
@@ -126,6 +127,8 @@ namespace ScenarioRunner.Form
 				mScenarioHighlighter.ApplySyntax(mScenario);
 
 				setEditMode(false);
+
+				mIsScenarioModified = false;
 			}
 			catch (ScenarioValidationException ex)
 			{
@@ -204,6 +207,39 @@ namespace ScenarioRunner.Form
 			FormBoundsApplicator.Apply(this, mWindowLayout.RunnerBounds);
 		}
 
+		protected override void OnFormClosing(FormClosingEventArgs e)
+		{
+			if (mIsScenarioModified)
+			{
+				DialogResult result = MessageBox.Show(
+				"編集中のScenarioが保存されていません。保存しますか？",
+				"Scenario Editor",
+				MessageBoxButtons.YesNoCancel,
+				MessageBoxIcon.Question);
+
+				switch (result)
+				{
+					case DialogResult.Yes:
+						saveScenario();
+
+						if (mIsScenarioModified)
+						{
+							e.Cancel = true;
+						}
+						break;
+
+					case DialogResult.No:
+						break;
+
+					case DialogResult.Cancel:
+						e.Cancel = true;
+						break;
+				}
+			}
+
+			base.OnFormClosing(e);
+		}
+
 		private void btnEdit_Click(object sender, EventArgs e)
 		{
 			setEditMode(true);
@@ -221,6 +257,11 @@ namespace ScenarioRunner.Form
 		}
 
 		private void btnSave_Click(object sender, EventArgs e)
+		{
+			saveScenario();
+		}
+
+		private void saveScenario()
 		{
 			string filePath = txtScenarioPath.Text;
 
@@ -259,6 +300,16 @@ namespace ScenarioRunner.Form
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error);
 			}
+		}
+
+		private void rtbScenario_TextChanged(object sender, EventArgs e)
+		{
+			if (!mIsEditMode)
+			{
+				return;
+			}
+
+			mIsScenarioModified = true;
 		}
 	}
 }

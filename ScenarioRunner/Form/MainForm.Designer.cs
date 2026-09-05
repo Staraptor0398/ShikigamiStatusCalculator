@@ -56,7 +56,7 @@ namespace ScenarioRunner.Form
 			// txtScenarioPath
 			// 
 			this.txtScenarioPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-			| System.Windows.Forms.AnchorStyles.Right)));
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.txtScenarioPath.Location = new System.Drawing.Point(14, 24);
 			this.txtScenarioPath.Name = "txtScenarioPath";
 			this.txtScenarioPath.ReadOnly = true;
@@ -127,19 +127,20 @@ namespace ScenarioRunner.Form
 			// rtbScenario
 			// 
 			this.rtbScenario.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-			| System.Windows.Forms.AnchorStyles.Left) 
-			| System.Windows.Forms.AnchorStyles.Right)));
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.rtbScenario.Location = new System.Drawing.Point(14, 151);
 			this.rtbScenario.Name = "rtbScenario";
 			this.rtbScenario.ReadOnly = true;
 			this.rtbScenario.Size = new System.Drawing.Size(958, 264);
 			this.rtbScenario.TabIndex = 8;
 			this.rtbScenario.Text = "";
+			this.rtbScenario.TextChanged += new System.EventHandler(this.rtbScenario_TextChanged);
 			// 
 			// rtbExecutionLog
 			// 
 			this.rtbExecutionLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-			| System.Windows.Forms.AnchorStyles.Right)));
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.rtbExecutionLog.Location = new System.Drawing.Point(12, 433);
 			this.rtbExecutionLog.Name = "rtbExecutionLog";
 			this.rtbExecutionLog.ReadOnly = true;
