@@ -1,4 +1,5 @@
 # Brokenデータからの式神復旧試験
+
 # 自動修復によってBrokenへ退避された式神データを使用し、
 # 削除した式神を復旧できることを確認する。
 
@@ -12,6 +13,7 @@ LAUNCH GUI
 
 # 式神データの破損が検出されることを確認する
 CHECK DIALOG "式神データファイルの形式が正しくありません。"
+
 CLOSE DIALOG
 
 # Brokenへの退避とShikigamiData.csvの自動修復完了を待つ
@@ -25,10 +27,12 @@ RECOVER SHIKIGAMI BROKEN
 
 # 復旧処理が正常終了したことを確認する
 CHECK DIALOG "式神の復旧に成功しました。"
+
 CLOSE DIALOG
 
 # 式神データを再読み込みし、復旧後のデータが正常であることを確認する
 RELOAD SHIKIGAMI
+
 CHECK SHIKIGAMI
 
 CLOSE GUI
