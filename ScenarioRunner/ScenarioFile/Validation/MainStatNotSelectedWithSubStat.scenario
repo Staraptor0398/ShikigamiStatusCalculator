@@ -1,0 +1,23 @@
+# MainStatNotSelectedWithSubStat.scenario
+#
+# 未装備の御魂スロットにサブステータスが入力されている場合、
+# Validationエラーになることを確認する。
+
+START
+
+OPEN GUI
+
+# 壱番御魂を装備
+EQUIP MITAMA MAIN 1 "攻撃力"
+
+# 未装備の弐番御魂にサブステータスを入力
+EQUIP MITAMA SUB 2 1 "追加攻撃力" "5"
+
+CALC
+
+CHECK DIALOG "未装備の御魂スロットにサブステータスが入力されています。"
+
+CLOSE DIALOG
+CLOSE GUI
+
+END

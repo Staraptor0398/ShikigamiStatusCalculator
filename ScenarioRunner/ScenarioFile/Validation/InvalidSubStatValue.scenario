@@ -1,0 +1,20 @@
+# InvalidSubStatValue.scenario
+#
+# サブステータスの値に数値として扱えない文字列が入力されている場合、
+# Validationエラーになることを確認する。
+
+START
+
+OPEN GUI
+
+EQUIP MITAMA MAIN 1 "攻撃力"
+EQUIP MITAMA SUB 1 1 "追加攻撃力" "abc"
+
+CALC
+
+CHECK DIALOG "数値欄に数値として扱えない文字が入力されています。"
+
+CLOSE DIALOG
+CLOSE GUI
+
+END

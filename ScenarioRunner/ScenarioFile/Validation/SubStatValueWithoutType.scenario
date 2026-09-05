@@ -1,0 +1,20 @@
+# SubStatValueWithoutType.scenario
+#
+# サブステータスの値のみが入力されている場合、
+# Validationエラーになることを確認する。
+
+START
+
+OPEN GUI
+
+EQUIP MITAMA MAIN 1 "攻撃力"
+EQUIP MITAMA SUB 1 1 "" "5"
+
+CALC
+
+CHECK DIALOG "サブステータスの値が入力されていますが、種類が選択されていません。"
+
+CLOSE DIALOG
+CLOSE GUI
+
+END

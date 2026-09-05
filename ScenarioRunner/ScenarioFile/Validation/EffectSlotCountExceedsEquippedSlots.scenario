@@ -1,0 +1,24 @@
+# EffectSlotCountExceedsEquippedSlots.scenario
+#
+# 選択した御魂効果が必要とするスロット数より
+# 装備中の御魂数が少ない場合、
+# Validationエラーになることを確認する。
+
+START
+
+OPEN GUI
+
+# 装備中の御魂は1個
+EQUIP MITAMA MAIN 1 "攻撃力"
+
+# 2セット効果は2スロットを必要とする
+EQUIP MITAMA SET 1 "追加攻撃力"
+
+CALC
+
+CHECK DIALOG "選択されている2セット効果と固有効果に対して、装備中の御魂数が足りません。"
+
+CLOSE DIALOG
+CLOSE GUI
+
+END
