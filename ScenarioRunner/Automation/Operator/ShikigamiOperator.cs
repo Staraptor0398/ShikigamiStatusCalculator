@@ -95,7 +95,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			int processId = session.Application.ProcessId;
 
-			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.AutomationId == AutomationIds.ShikigamiRegisterForm.ID);
+			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRegisterForm.ID);
 		}
 	}
 }
