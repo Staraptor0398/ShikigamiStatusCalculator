@@ -94,6 +94,7 @@ namespace ScenarioRunner.Form
 			this.btnStop.TabIndex = 4;
 			this.btnStop.Text = "停止";
 			this.btnStop.UseVisualStyleBackColor = true;
+			this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
 			// 
 			// chkWatchMode
 			// 

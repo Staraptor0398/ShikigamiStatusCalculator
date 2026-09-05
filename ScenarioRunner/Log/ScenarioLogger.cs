@@ -87,6 +87,15 @@ namespace ScenarioRunner.Log
 			Write("[Execution]");
 		}
 
+		public void ScenarioStopped(ScenarioExecutionResult result)
+		{
+			Write("");
+			Write("[Result]");
+			Write("Scenario Result: STOPPED");
+			Write($"Passed: {result.PassedCount}");
+			Write($"Elapsed: {result.Elapsed.TotalSeconds:F2} sec");
+		}
+
 		public void ScenarioPassed(ScenarioExecutionResult result)
 		{
 			Write("");
