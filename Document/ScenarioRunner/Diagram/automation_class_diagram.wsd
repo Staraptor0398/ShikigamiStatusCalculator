@@ -1,0 +1,202 @@
+@startuml
+
+title ShikigamiApp Scenario Runner - Automation Class Diagram
+
+skinparam classAttributeIconSize 0
+hide empty members
+left to right direction
+
+package "Automation" {
+class GuiSession
+
+package "Definition" {
+class AutomationIds <<static>>
+}
+
+package "Layout" {
+class ScenarioWindowLayout {
++ WindowBounds RunnerBounds
++ WindowBounds MonitorBounds
++ WindowBounds GuiBounds
+}
+}
+
+package "Model" {
+class WindowBounds {
++ int X
++ int Y
++ int Width
++ int Height
+}
+
+class WindowFrameInfo {
++ WindowBounds WindowBounds
++ WindowBounds DwmFrameBounds
++ WindowBounds ClientBounds
++ WindowFrameInsets InvisibleFrame
++ int WindowBorderWidth
++ int WindowBorderHeight
+}
+
+class WindowFrameInsets {
++ int Left
++ int Top
++ int Right
++ int Bottom
+}
+}
+
+package "Interop" {
+class WindowFrameHelper <<static>>
+}
+
+package "Operator" {
+class WindowOperator
+class GuiOperator
+class ButtonOperator
+class ComboBoxOperator
+class TextBoxOperator
+class DialogOperator
+class FileDialogOperator
+class InputOperator
+class ShikigamiOperator
+class MitamaOperator
+class CalculationOperator
+class ShikigamiDataOperator
+class ShikigamiDataFileOperator
+class ShikigamiRecoveryOperator
+}
+
+package "Waiter" {
+class WindowWaiter
+class ShikigamiDataWaiter
+}
+
+package "Watcher" {
+class ShikigamiDataFileWatcher
+}
+}
+
+package "Execution" {
+class ScenarioCommandExecutor
+class ScenarioExecutonContext
+}
+
+package "External" {
+class "FlaUI" as FlaUI <<library>>
+class "Win32 API" as Win32 <<library>>
+}
+
+' ========================================
+' Layout / Window
+' ========================================
+ScenarioWindowLayout --> WindowBounds
+
+WindowFrameInfo *-- WindowBounds
+WindowFrameInfo *-- WindowFrameInsets
+
+WindowFrameHelper ..> WindowBounds
+WindowFrameHelper ..> WindowFrameInfo
+WindowFrameHelper ..> WindowFrameInsets
+WindowFrameHelper ..> Win32
+
+WindowOperator ..> FlaUI
+WindowWaiter ..> FlaUI
+
+' ========================================
+' GUI
+' ========================================
+GuiOperator --> WindowOperator
+GuiOperator --> WindowWaiter
+GuiOperator ..> GuiSession
+GuiOperator ..> AutomationIds
+GuiOperator ..> FlaUI
+
+GuiSession ..> FlaUI
+
+' ========================================
+' Basic controls
+' ========================================
+ButtonOperator ..> FlaUI
+ComboBoxOperator ..> FlaUI
+ComboBoxOperator ..> Win32
+TextBoxOperator ..> FlaUI
+DialogOperator ..> FlaUI
+FileDialogOperator ..> FlaUI
+
+' ========================================
+' Input
+' ========================================
+InputOperator --> ButtonOperator
+InputOperator --> ComboBoxOperator
+InputOperator --> TextBoxOperator
+InputOperator --> DialogOperator
+InputOperator --> GuiOperator
+InputOperator ..> AutomationIds
+
+' ========================================
+' Shikigami
+' ========================================
+ShikigamiOperator --> ButtonOperator
+ShikigamiOperator --> ComboBoxOperator
+ShikigamiOperator --> DialogOperator
+ShikigamiOperator --> GuiOperator
+ShikigamiOperator --> WindowWaiter
+ShikigamiOperator ..> AutomationIds
+
+' ========================================
+' Mitama
+' ========================================
+MitamaOperator --> ButtonOperator
+MitamaOperator --> ComboBoxOperator
+MitamaOperator --> FileDialogOperator
+MitamaOperator --> GuiOperator
+MitamaOperator --> WindowWaiter
+MitamaOperator ..> AutomationIds
+
+' ========================================
+' Calculation
+' ========================================
+CalculationOperator ..> FlaUI
+
+' ========================================
+' Shikigami data
+' ========================================
+ShikigamiDataOperator --> ShikigamiDataFileOperator
+ShikigamiDataOperator --> ShikigamiOperator
+
+ShikigamiRecoveryOperator --> ButtonOperator
+ShikigamiRecoveryOperator --> FileDialogOperator
+ShikigamiRecoveryOperator --> GuiOperator
+ShikigamiRecoveryOperator --> WindowWaiter
+ShikigamiRecoveryOperator ..> AutomationIds
+ShikigamiRecoveryOperator ..> FlaUI
+
+' ========================================
+' Execution boundary
+' ========================================
+ScenarioCommandExecutor --> GuiOperator
+ScenarioCommandExecutor --> InputOperator
+ScenarioCommandExecutor --> ShikigamiOperator
+ScenarioCommandExecutor --> MitamaOperator
+ScenarioCommandExecutor --> CalculationOperator
+ScenarioCommandExecutor --> ShikigamiDataOperator
+ScenarioCommandExecutor --> ShikigamiRecoveryOperator
+ScenarioCommandExecutor --> WindowWaiter
+ScenarioCommandExecutor --> ShikigamiDataWaiter
+
+ShikigamiDataWaiter --> ScenarioExecutonContext
+
+note bottom of WindowFrameHelper
+Win32 / DWM からウィンドウフレーム情報を取得し、
+不可視フレームを考慮した座標計算を行う。
+end note
+
+note bottom of ScenarioCommandExecutor
+Execution 層と Automation 層の境界。
+
+ScenarioCommandExecutor は処理を振り分け、
+具体的な GUI 操作は各 Operator / Waiter が担当する。
+end note
+
+@enduml
