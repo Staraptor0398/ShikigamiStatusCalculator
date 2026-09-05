@@ -1,0 +1,21 @@
+# DuplicateSubStat.scenario
+#
+# 同じ御魂内に同一種類のサブステータスが複数入力されている場合、
+# Validationエラーになることを確認する。
+
+START
+
+OPEN GUI
+
+EQUIP MITAMA MAIN 1 "攻撃力"
+EQUIP MITAMA SUB 1 1 "追加攻撃力" "5"
+EQUIP MITAMA SUB 1 2 "追加攻撃力" "8"
+
+CALC
+
+CHECK DIALOG "同じ御魂内に重複したサブステータスがあります。"
+
+CLOSE DIALOG
+CLOSE GUI
+
+END

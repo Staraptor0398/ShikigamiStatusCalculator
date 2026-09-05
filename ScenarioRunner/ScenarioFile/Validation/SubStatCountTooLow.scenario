@@ -1,0 +1,21 @@
+# SubStatCountTooLow.scenario
+#
+# 装備中の御魂に設定されているサブステータスが3個未満の場合、
+# Validationエラーになることを確認する。
+
+START
+
+OPEN GUI
+
+EQUIP MITAMA MAIN 1 "攻撃力"
+EQUIP MITAMA SUB 1 1 "追加攻撃力" "5"
+EQUIP MITAMA SUB 1 2 "会心率" "3"
+
+CALC
+
+CHECK DIALOG "御魂設定されているサブステータスが3個未満です。"
+
+CLOSE DIALOG
+CLOSE GUI
+
+END

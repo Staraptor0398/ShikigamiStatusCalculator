@@ -1,0 +1,17 @@
+# NoEquippedMitama.scenario
+#
+# 御魂が1つも装備されていない場合、
+# Validationエラーになることを確認する。
+
+START
+
+OPEN GUI
+
+CALC
+
+CHECK DIALOG "御魂が1つも装備されていません。"
+
+CLOSE DIALOG
+CLOSE GUI
+
+END
