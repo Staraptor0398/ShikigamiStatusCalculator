@@ -34,7 +34,6 @@ namespace ScenarioRunner.Form
 			this.btnRun = new System.Windows.Forms.Button();
 			this.btnStop = new System.Windows.Forms.Button();
 			this.chkWatchMode = new System.Windows.Forms.CheckBox();
-			this.chkKeepGuiOpenOnFailure = new System.Windows.Forms.CheckBox();
 			this.lblScenario = new System.Windows.Forms.Label();
 			this.rtbScenario = new System.Windows.Forms.RichTextBox();
 			this.rtbExecutionLog = new System.Windows.Forms.RichTextBox();
@@ -105,16 +104,6 @@ namespace ScenarioRunner.Form
 			this.chkWatchMode.TabIndex = 5;
 			this.chkWatchMode.Text = "Watch Mode";
 			this.chkWatchMode.UseVisualStyleBackColor = true;
-			// 
-			// chkKeepGuiOpenOnFailure
-			// 
-			this.chkKeepGuiOpenOnFailure.AutoSize = true;
-			this.chkKeepGuiOpenOnFailure.Location = new System.Drawing.Point(342, 94);
-			this.chkKeepGuiOpenOnFailure.Name = "chkKeepGuiOpenOnFailure";
-			this.chkKeepGuiOpenOnFailure.Size = new System.Drawing.Size(156, 16);
-			this.chkKeepGuiOpenOnFailure.TabIndex = 6;
-			this.chkKeepGuiOpenOnFailure.Text = "失敗時にGui.exeを閉じない";
-			this.chkKeepGuiOpenOnFailure.UseVisualStyleBackColor = true;
 			// 
 			// lblScenario
 			// 
@@ -203,7 +192,6 @@ namespace ScenarioRunner.Form
 			this.Controls.Add(this.rtbExecutionLog);
 			this.Controls.Add(this.rtbScenario);
 			this.Controls.Add(this.lblScenario);
-			this.Controls.Add(this.chkKeepGuiOpenOnFailure);
 			this.Controls.Add(this.chkWatchMode);
 			this.Controls.Add(this.btnStop);
 			this.Controls.Add(this.btnRun);
@@ -227,7 +215,6 @@ namespace ScenarioRunner.Form
 		private System.Windows.Forms.Button btnRun;
 		private System.Windows.Forms.Button btnStop;
 		private System.Windows.Forms.CheckBox chkWatchMode;
-		private System.Windows.Forms.CheckBox chkKeepGuiOpenOnFailure;
 		private System.Windows.Forms.Label lblScenario;
 		private System.Windows.Forms.RichTextBox rtbScenario;
 		private System.Windows.Forms.RichTextBox rtbExecutionLog;
