@@ -1,6 +1,7 @@
 using ScenarioRunner.Automation;
 using ScenarioRunner.Automation.Model;
 using System.IO;
+using System.Threading;
 
 namespace ScenarioRunner.Execution
 {
@@ -19,12 +20,15 @@ namespace ScenarioRunner.Execution
 		public string ShikigamiBrokenDataFilePath { get; set; }
 		public string ShikigamiBackupDataFilePath { get; set; }
 
-		public ScenarioExecutonContext(string scenarioPath, string guiExecutablePath, ScenarioExecutionOptions options, WindowBounds guiBounds)
+		public CancellationToken CancellationToken { get; }
+
+		public ScenarioExecutonContext(string scenarioPath, string guiExecutablePath, ScenarioExecutionOptions options, WindowBounds guiBounds, CancellationToken cancellationToken)
 		{
 			ScenarioPath = scenarioPath;
 			GuiExecutablePath = guiExecutablePath;
 			Options = options;
 			GuiBounds = guiBounds;
+			CancellationToken = cancellationToken;
 		}
 
 		public string ResolvePath(string path)

@@ -311,5 +311,10 @@ namespace ScenarioRunner.Form
 
 			mIsScenarioModified = true;
 		}
+
+		private void btnStop_Click(object sender, EventArgs e)
+		{
+			mScenarioExecutor.Stop();
+		}
 	}
 }

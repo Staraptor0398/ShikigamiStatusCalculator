@@ -12,9 +12,14 @@ namespace ScenarioRunner.Execution
 	public class ScenarioExecutor
 	{
 		private readonly ScenarioCommandExecutor mCommandExecutor;
+
 		private readonly ScenarioLogger mLogger;
+
 		private readonly string mGuiExecutablePath;
+
 		private readonly WindowBounds mGuiBounds;
+
+		private CancellationTokenSource mCancellationTokenSource;
 
 		public ScenarioExecutor(ScenarioLogger logger, string guiExecutablePath, WindowBounds guiBounds)
 		{
@@ -28,7 +33,10 @@ namespace ScenarioRunner.Execution
 		public ScenarioExecutionResult Execute(Scenario scenario, ScenarioExecutionOptions options)
 		{
 			var stopwatch = Stopwatch.StartNew();
-			var context = new ScenarioExecutonContext(scenario.FilePath, mGuiExecutablePath, options, mGuiBounds);
+
+			mCancellationTokenSource = new CancellationTokenSource();
+
+			var context = new ScenarioExecutonContext(scenario.FilePath, mGuiExecutablePath, options, mGuiBounds, mCancellationTokenSource.Token);
 
 			string guiDirectoryPath = Path.GetDirectoryName(mGuiExecutablePath);
 
@@ -55,6 +63,8 @@ namespace ScenarioRunner.Execution
 				{
 					try
 					{
+						context.CancellationToken.ThrowIfCancellationRequested();
+
 						mLogger.StepStarted(step);
 
 						mCommandExecutor.Execute(step, context);
@@ -67,13 +77,22 @@ namespace ScenarioRunner.Execution
 							Thread.Sleep(500);
 						}
 					}
+					catch (OperationCanceledException)
+					{
+						stopwatch.Stop();
+
+						var stopedResult = new ScenarioExecutionResult(false, true, passedCount, 0, stopwatch.Elapsed, -1, null);
+						mLogger.ScenarioStopped(stopedResult);
+
+						return stopedResult;
+					}
 					catch (Exception ex)
 					{
 						stopwatch.Stop();
 
 						mLogger.StepFailed(step, ex.Message);
 
-						var failedResult = new ScenarioExecutionResult(false, passedCount, 1, stopwatch.Elapsed, step.LineNumber, ex.Message);
+						var failedResult = new ScenarioExecutionResult(false, false, passedCount, 1, stopwatch.Elapsed, step.LineNumber, ex.Message);
 						mLogger.ScenarioFailed(failedResult);
 
 						return failedResult;
@@ -83,12 +102,17 @@ namespace ScenarioRunner.Execution
 
 				stopwatch.Stop();
 
-				var result = new ScenarioExecutionResult(true, passedCount, 0, stopwatch.Elapsed, -1, null);
+				var result = new ScenarioExecutionResult(true, false, passedCount, 0, stopwatch.Elapsed, -1, null);
 				mLogger.ScenarioPassed(result);
 
 				return result;
 
 			}
+		}
+
+		public void Stop()
+		{
+			mCancellationTokenSource?.Cancel();
 		}
 	}
 }
