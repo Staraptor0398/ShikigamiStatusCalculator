@@ -50,16 +50,17 @@ class ScenarioExecutonContext {
 + ScenarioExecutionOptions Options
 + WindowBounds GuiBounds
 + GuiSession GuiSession
++ CancellationToken CancellationToken
 + string ResolvePath(string path)
 }
 
 class ScenarioExecutionOptions {
 + bool WatchMode
-+ bool KeepGuiOpenOnFailure
 }
 
 class ScenarioExecutionResult {
 + bool IsSuccess
++ bool IsStopped
 + int PassedCount
 + int FailedCount
 + TimeSpan Elapsed
