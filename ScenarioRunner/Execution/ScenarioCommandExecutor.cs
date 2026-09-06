@@ -20,6 +20,7 @@ namespace ScenarioRunner.Execution
 		private readonly ShikigamiDataOperator mShikigamiDataOperator;
 		private readonly InputOperator mInputOperator;
 		private readonly ShikigamiRecoveryOperator mShikigamiRecoveryOperator;
+		private readonly SnapshotComparisonOperator mSnapshotComparisonOperator;
 
 		private readonly ShikigamiDataWaiter mShikigamiDataWaiter;
 		private readonly WindowWaiter mWindowWaiter;
@@ -35,6 +36,7 @@ namespace ScenarioRunner.Execution
 			mShikigamiDataOperator = new ShikigamiDataOperator();
 			mInputOperator = new InputOperator();
 			mShikigamiRecoveryOperator = new ShikigamiRecoveryOperator();
+			mSnapshotComparisonOperator = new SnapshotComparisonOperator();
 
 			mShikigamiDataWaiter = new ShikigamiDataWaiter();
 			mWindowWaiter = new WindowWaiter();
@@ -66,6 +68,9 @@ namespace ScenarioRunner.Execution
 					return;
 				case ScenarioCommandType.LOAD_MITAMA:
 					mMitamaOperator.Load(context, step.Arguments[0]);
+					return;
+				case ScenarioCommandType.COMPARE_SNAPSHOT:
+					mSnapshotComparisonOperator.Compare(context, step.Arguments[0], step.Arguments[1]);
 					return;
 				case ScenarioCommandType.CALCULATE:
 					mCalculationOperator.Calculate(context.GuiSession);

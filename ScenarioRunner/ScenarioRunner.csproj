@@ -71,6 +71,7 @@
     <Compile Include="Automation\Operator\ShikigamiDataOperator.cs" />
     <Compile Include="Automation\Operator\ShikigamiOperator.cs" />
     <Compile Include="Automation\Operator\ShikigamiRecoveryOperator.cs" />
+    <Compile Include="Automation\Operator\SnapshotComparisonOperator.cs" />
     <Compile Include="Automation\Operator\TextBoxOperator.cs" />
     <Compile Include="Automation\Operator\WindowOperator.cs" />
     <Compile Include="Automation\Waiter\ShikigamiDataWaiter.cs" />

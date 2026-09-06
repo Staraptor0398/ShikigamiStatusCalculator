@@ -44,6 +44,7 @@ namespace ScenarioRunner.Automation.Definition
 			public const string RELOAD_SHIKIGAMI = "btnReLoad";
 			public const string EDIT_SHIKIGAMI = "btnEditShikigami";
 			public const string SHIKIGAMI_RECOVERY = "btnRecoveryShikigami";
+			public const string COMPARE_SNAPSHOT = "btnCompareResult";
 		}
 
 		internal static class SaveDataLoadDialog
@@ -67,6 +68,20 @@ namespace ScenarioRunner.Automation.Definition
 			public const string ID = "ShikigamiRecoveryDialog";
 
 			public const string RECOVERY = "btnRecovery";
+		}
+
+		internal static class SnapshotCompareFileSelectDialog
+		{
+			public const string ID = "SnapshotCompareFileSelectDialog";
+
+			public const string BROWSE_BASE_SNAPSHOT = "btnBrowseBaseSnapshot";
+			public const string BROWSE_TARGET_SNAPSHOT = "btnBrowseTargetSnapshot";
+			public const string COMPARE = "btnCompare";
+		}
+
+		internal static class StatusComparisonResultForm
+		{
+			public const string ID = "StatusComparisonResultForm";
 		}
 
 		internal static class MessageBox

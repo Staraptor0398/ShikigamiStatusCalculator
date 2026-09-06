@@ -10,6 +10,7 @@ namespace ScenarioRunner.ScenarioFormat
 		SELECT_SHIKIGAMI,
 		EQUIP_MITAMA,
 		LOAD_MITAMA,
+		COMPARE_SNAPSHOT,
 
 		CALCULATE,
 		CLEAR,

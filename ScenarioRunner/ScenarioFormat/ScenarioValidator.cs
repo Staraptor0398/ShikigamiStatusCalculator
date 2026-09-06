@@ -135,6 +135,8 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.REMOVE_SHIKIGAMI:
 				case ScenarioCommandType.RECOVER_SHIKIGAMI:
 					return 1;
+				case ScenarioCommandType.COMPARE_SNAPSHOT:
+					return 2;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
 			}

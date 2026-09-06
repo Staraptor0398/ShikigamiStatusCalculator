@@ -103,6 +103,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.LOAD_MITAMA;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "COMPARE", "SNAPSHOT"))
+			{
+				commandType = ScenarioCommandType.COMPARE_SNAPSHOT;
+				argumentStartIndex = 2;
+			}
 			else if (matches(tokens, "CALC"))
 			{
 				commandType = ScenarioCommandType.CALCULATE;
