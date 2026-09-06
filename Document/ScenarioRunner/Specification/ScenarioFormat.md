@@ -249,6 +249,17 @@ Scenarioファイルおよび関連するテストデータを一式として移
    LOAD MITAMA "TestData/Valid.mitama.json"
 絶対パスの指定も許可する。
 
+#### COMPARE SNAPSHOT
+Gui.exeのスナップショット比較機能を使用して、
+指定した2つのスナップショットファイルを比較する。
+形式：
+  COMPARE SNAPSHOT "<比較元ファイルパス>" "<比較先ファイルパス>"
+例：
+  COMPARE SNAPSHOT "TestData/Snapshot/Base.snapshot.json" "TestData/Snapshot/Changed.snapshot.json"
+Scenario RunnerはGui.exe上でスナップショット比較機能を開き、
+指定された2つのスナップショットファイルを選択して比較を実行する。
+本コマンドは比較結果の確認を行わない。
+
 #### CLEAR
 Gui.exeの入力内容をクリアする。
 形式：
@@ -481,6 +492,7 @@ Version 1では以下の予約語およびコマンドを実装対象とする�
    EQUIP MITAMA SET <番号> "<ステータス種類>"
    EQUIP MITAMA UNIQUE <番号> "<ステータス種類>"
    LOAD MITAMA "<ファイルパス>"
+   COMPARE SNAPSHOT "<比較元ファイルパス>" "<比較先ファイルパス>"
    CALC
    CLEAR
    RELOAD SHIKIGAMI
@@ -577,3 +589,4 @@ Version 1の段階では、条件分岐、ループ、変数、関数、ジャ�
 | 1.5 | 2026-08-28 | 式神データ自動修復処理との同期用に、Brokenデータへの退避およびShikigamiData.csvの再生成が完了するまで待機する `WAIT SHIKIGAMI AUTO REPAIR` コマンドを追加。 |
 | 1.6 | 2026-08-29 | Gui.exeのメインウィンドウが操作可能になるまで待機せず、プロセス起動のみを行う `LAUNCH GUI` コマンドを追加。起動途中に表示されるモーダルダイアログを確認する試験で使用する。 |
 | 1.7 | 2026-08-30 | Gui.exe上で御魂のメインステータス、サブステータス、2セット効果、固有効果を入力する `EQUIP MITAMA` コマンドを追加。サブステータスではGui.exe側のValidation試験を可能とするため、ステータス種類と値をそれぞれ独立して省略可能とした。 |
+| 1.8 | 2026-09-06 | Gui.exeのスナップショット比較機能を使用して、指定した2つのスナップショットファイルを比較する `COMPARE SNAPSHOT` コマンドを追加。 |
