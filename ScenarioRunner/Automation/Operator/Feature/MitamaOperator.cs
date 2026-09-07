@@ -4,7 +4,7 @@ using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
 using System;
 
-namespace ScenarioRunner.Automation.Operator
+namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class MitamaOperator
 	{

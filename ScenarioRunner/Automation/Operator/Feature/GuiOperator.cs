@@ -7,7 +7,7 @@ using ScenarioRunner.Execution;
 using System;
 using System.IO;
 
-namespace ScenarioRunner.Automation.Operator
+namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class GuiOperator
 	{

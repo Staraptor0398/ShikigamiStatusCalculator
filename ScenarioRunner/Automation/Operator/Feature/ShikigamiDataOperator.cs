@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace ScenarioRunner.Automation.Operator
+namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class ShikigamiDataOperator
 	{

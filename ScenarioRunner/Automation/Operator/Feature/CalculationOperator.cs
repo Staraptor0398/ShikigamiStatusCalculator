@@ -2,7 +2,7 @@ using FlaUI.Core.AutomationElements;
 using ScenarioRunner.Automation.Definition;
 using System;
 
-namespace ScenarioRunner.Automation.Operator
+namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class CalculationOperator
 	{

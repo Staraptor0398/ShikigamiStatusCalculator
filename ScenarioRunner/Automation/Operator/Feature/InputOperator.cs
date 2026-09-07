@@ -3,7 +3,7 @@ using ScenarioRunner.Automation.Definition;
 using System;
 using System.Collections.Generic;
 
-namespace ScenarioRunner.Automation.Operator
+namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class InputOperator
 	{

@@ -3,7 +3,7 @@ using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using System;
 
-namespace ScenarioRunner.Automation.Operator
+namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class ShikigamiRecoveryOperator
 	{

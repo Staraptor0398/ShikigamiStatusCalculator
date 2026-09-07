@@ -1,6 +1,7 @@
 using FlaUI.Core.AutomationElements;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Operator;
+using ScenarioRunner.Automation.Operator.Feature;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.ScenarioFormat;
 using System;

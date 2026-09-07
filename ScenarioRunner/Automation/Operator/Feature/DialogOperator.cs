@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace ScenarioRunner.Automation.Operator
+namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class DialogOperator
 	{
