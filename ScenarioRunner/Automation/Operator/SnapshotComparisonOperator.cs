@@ -12,6 +12,7 @@ namespace ScenarioRunner.Automation.Operator
 		private readonly ButtonOperator mButtonOperator;
 		private readonly FileDialogOperator mFileDialogOperator;
 		private readonly WindowWaiter mWindowWaiter;
+		private readonly DataGridViewOperator mDataGridViewOperator;
 
 		public SnapshotComparisonOperator()
 		{
@@ -19,6 +20,7 @@ namespace ScenarioRunner.Automation.Operator
 			mButtonOperator = new ButtonOperator();
 			mFileDialogOperator = new FileDialogOperator();
 			mWindowWaiter = new WindowWaiter();
+			mDataGridViewOperator = new DataGridViewOperator();
 		}
 
 		public void Compare(ScenarioExecutonContext context, string baseSnapshotPath, string targetSnapshotPath)
@@ -57,6 +59,18 @@ namespace ScenarioRunner.Automation.Operator
 			mButtonOperator.Click(fileSelectDialog, AutomationIds.SnapshotCompareFileSelectDialog.COMPARE);
 
 			mWindowWaiter.WaitForWindow(context.GuiSession, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
+		}
+
+		public void Check(GuiSession session, string statusName, string expectedDifference)
+		{
+			Window resultForm = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == session.Application.ProcessId && element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
+
+			string actualDifference = mDataGridViewOperator.GetCellValue(resultForm, AutomationIds.StatusComparisonResultForm.COMPARISON_RESULT, statusName, 1);
+
+			if (actualDifference != expectedDifference)
+			{
+				throw new InvalidOperationException($"Snapshot comparison mismatch. Status: {statusName}, Expected: {expectedDifference}, Actual: {actualDifference}");
+			}
 		}
 	}
 }

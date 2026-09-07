@@ -120,6 +120,9 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.CHECK_DIALOG:
 					mDialogOperator.CheckMessage(context.GuiSession, step.Arguments[0]);
 					return;
+				case ScenarioCommandType.CHECK_SNAPSHOT_COMPARISON:
+					mSnapshotComparisonOperator.Check(context.GuiSession, step.Arguments[0], step.Arguments[1]);
+					return;
 				case ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR:
 					mShikigamiDataWaiter.WaitForAutoRepair(context);
 					return;

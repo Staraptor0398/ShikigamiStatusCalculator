@@ -158,6 +158,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.CHECK_DIALOG;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "CHECK", "SNAPSHOT", "COMPARISON"))
+			{
+				commandType = ScenarioCommandType.CHECK_SNAPSHOT_COMPARISON;
+				argumentStartIndex = 3;
+			}
 			else if (matches(tokens, "WAIT", "SHIKIGAMI", "AUTO", "REPAIR"))
 			{
 				commandType = ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR;

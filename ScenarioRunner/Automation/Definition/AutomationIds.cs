@@ -82,6 +82,8 @@ namespace ScenarioRunner.Automation.Definition
 		internal static class StatusComparisonResultForm
 		{
 			public const string ID = "StatusComparisonResultForm";
+
+			public const string COMPARISON_RESULT = "dgvComparisonResult";
 		}
 
 		internal static class MessageBox
