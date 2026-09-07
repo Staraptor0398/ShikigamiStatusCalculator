@@ -1,0 +1,240 @@
+{
+  "Version": 2,
+  "Data": {
+    "SnapshotName": "SnapshotComparisonBase",
+    "CreatedAt": "2026-09-06 23:19:39",
+    "ShikigamiName": "少羽大天狗",
+    "MitamaSet": {
+      "Mitamas": [
+        {
+          "Slot": 1,
+          "MainStat": {
+            "Type": "攻撃力",
+            "Value": 486.0
+          },
+          "SubStats": [
+            {
+              "Type": "攻撃力",
+              "Value": 10.0
+            },
+            {
+              "Type": "追加HP",
+              "Value": 10.0
+            },
+            {
+              "Type": "会心率",
+              "Value": 5.0
+            },
+            {
+              "Type": "会心DMG",
+              "Value": 10.0
+            }
+          ]
+        },
+        {
+          "Slot": 2,
+          "MainStat": {
+            "Type": "追加攻撃力",
+            "Value": 55.0
+          },
+          "SubStats": [
+            {
+              "Type": "追加攻撃力",
+              "Value": 10.0
+            },
+            {
+              "Type": "HP",
+              "Value": 100.0
+            },
+            {
+              "Type": "防御力",
+              "Value": 10.0
+            },
+            {
+              "Type": "会心DMG",
+              "Value": 10.0
+            }
+          ]
+        },
+        {
+          "Slot": 3,
+          "MainStat": {
+            "Type": "防御力",
+            "Value": 104.0
+          },
+          "SubStats": [
+            {
+              "Type": "攻撃力",
+              "Value": 10.0
+            },
+            {
+              "Type": "追加防御力",
+              "Value": 10.0
+            },
+            {
+              "Type": "会心率",
+              "Value": 5.0
+            },
+            {
+              "Type": "効果命中",
+              "Value": 10.0
+            }
+          ]
+        },
+        {
+          "Slot": 4,
+          "MainStat": {
+            "Type": "追加HP",
+            "Value": 55.0
+          },
+          "SubStats": [
+            {
+              "Type": "HP",
+              "Value": 100.0
+            },
+            {
+              "Type": "追加攻撃力",
+              "Value": 10.0
+            },
+            {
+              "Type": "防御力",
+              "Value": 10.0
+            },
+            {
+              "Type": "効果抵抗",
+              "Value": 10.0
+            }
+          ]
+        },
+        {
+          "Slot": 5,
+          "MainStat": {
+            "Type": "HP",
+            "Value": 2052.0
+          },
+          "SubStats": [
+            {
+              "Type": "追加HP",
+              "Value": 10.0
+            },
+            {
+              "Type": "攻撃力",
+              "Value": 10.0
+            },
+            {
+              "Type": "追加防御力",
+              "Value": 10.0
+            },
+            {
+              "Type": "会心DMG",
+              "Value": 10.0
+            }
+          ]
+        },
+        {
+          "Slot": 6,
+          "MainStat": {
+            "Type": "会心率",
+            "Value": 55.0
+          },
+          "SubStats": [
+            {
+              "Type": "追加攻撃力",
+              "Value": 10.0
+            },
+            {
+              "Type": "HP",
+              "Value": 100.0
+            },
+            {
+              "Type": "防御力",
+              "Value": 10.0
+            },
+            {
+              "Type": "会心DMG",
+              "Value": 10.0
+            }
+          ]
+        }
+      ],
+      "SetEffects": [
+        {
+          "Stat": {
+            "Type": "",
+            "Value": 0.0
+          }
+        },
+        {
+          "Stat": {
+            "Type": "",
+            "Value": 0.0
+          }
+        },
+        {
+          "Stat": {
+            "Type": "",
+            "Value": 0.0
+          }
+        }
+      ],
+      "UniqueEffects": [
+        {
+          "Stat": {
+            "Type": "",
+            "Value": 0.0
+          }
+        },
+        {
+          "Stat": {
+            "Type": "",
+            "Value": 0.0
+          }
+        },
+        {
+          "Stat": {
+            "Type": "",
+            "Value": 0.0
+          }
+        },
+        {
+          "Stat": {
+            "Type": "",
+            "Value": 0.0
+          }
+        },
+        {
+          "Stat": {
+            "Type": "",
+            "Value": 0.0
+          }
+        },
+        {
+          "Stat": {
+            "Type": "",
+            "Value": 0.0
+          }
+        }
+      ]
+    },
+    "MitamaStatus": {
+      "Attack": 516.0,
+      "HP": 2352.0,
+      "Defense": 134.0,
+      "Speed": 0.0,
+      "CritRate": 65.0,
+      "CritDamage": 40.0,
+      "EffectHit": 10.0,
+      "EffectResist": 10.0
+    },
+    "FinalStatus": {
+      "Attack": 6961.4,
+      "HP": 19299.0,
+      "Defense": 584.0,
+      "Speed": 122.0,
+      "CritRate": 75.0,
+      "CritDamage": 190.0,
+      "EffectHit": 10.0,
+      "EffectResist": 10.0
+    }
+  }
+}

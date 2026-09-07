@@ -1,0 +1,20 @@
+# スナップショット比較結果確認シナリオ
+# Base / Target のスナップショットを比較し、
+# 会心DMG の差分が +10 であることを確認する。
+
+START
+
+OPEN GUI
+
+# 比較元・比較先のスナップショットを指定して比較結果画面を表示する。
+COMPARE SNAPSHOT "TestData/SnapshotComparisonBase.snapshot.json" "TestData/SnapshotComparisonTarget.snapshot.json"
+
+# 比較結果の会心DMG差分が +10 であることを確認する。
+CHECK SNAPSHOT COMPARISON "会心DMG" "+10"
+
+# 比較結果画面を閉じる。
+CLOSE DIALOG
+
+CLOSE GUI
+
+END
