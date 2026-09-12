@@ -1,0 +1,38 @@
+@startuml
+
+title Shikigami Data Auditor - External Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam nodesep 30
+skinparam ranksep 40
+
+hide empty members
+top to bottom direction
+
+package "External" {
+    interface IShikigamiStatusSource {
+        + GetStatusAsync(ExternalNameMapEntry): Task<ExternalStatusResult>
+    }
+
+    class MoegirlShikigamiStatusSource
+    class MediaWikiClient
+    class MoegirlWikitextParser
+    class MoegirlHtmlParser
+    class ExternalStatusCache
+
+    IShikigamiStatusSource <|.. MoegirlShikigamiStatusSource
+
+    MoegirlShikigamiStatusSource -down-> MediaWikiClient
+    MoegirlShikigamiStatusSource -down-> MoegirlWikitextParser
+    MoegirlShikigamiStatusSource -down-> MoegirlHtmlParser
+    MoegirlShikigamiStatusSource -down-> ExternalStatusCache
+
+    MediaWikiClient -[hidden]down-> MoegirlWikitextParser
+    MoegirlWikitextParser -[hidden]down-> MoegirlHtmlParser
+    MoegirlHtmlParser -[hidden]down-> ExternalStatusCache
+}
+
+@enduml

@@ -1,0 +1,73 @@
+@startuml
+
+title Shikigami Data Auditor - Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam nodesep 25
+skinparam ranksep 35
+
+hide empty members
+top to bottom direction
+
+package "Application" as ApplicationLayer {
+    class Program <<entry point>>
+    class AuditOptions
+
+    Program -right-> AuditOptions
+}
+
+package "Audit" as AuditLayer {
+    class ShikigamiDataAuditor
+
+    class OfficialChangeResolver
+    class StatScopeMatcher
+    class AuditOutcomeResolver
+
+    ShikigamiDataAuditor -down-> OfficialChangeResolver
+    ShikigamiDataAuditor -down-> StatScopeMatcher
+    ShikigamiDataAuditor -down-> AuditOutcomeResolver
+}
+
+package "Access" as AccessLayer {
+    class ShikigamiDataCsvReader
+    class OfficialChangeHistoryCsvReader
+    class ExternalNameMapCsvReader
+}
+
+package "External" as ExternalLayer {
+    interface IShikigamiStatusSource {
+        + GetStatusAsync(ExternalNameMapEntry): Task<ExternalStatusResult>
+    }
+
+    class MoegirlShikigamiStatusSource
+
+    MoegirlShikigamiStatusSource ..|> IShikigamiStatusSource
+}
+
+package "Report" as ReportLayer {
+    class AuditReportFileWriter
+    class MarkdownAuditReportWriter
+    class CsvAuditReportWriter
+
+    AuditReportFileWriter -down-> MarkdownAuditReportWriter
+    AuditReportFileWriter -down-> CsvAuditReportWriter
+}
+
+ApplicationLayer -[hidden]down-> AuditLayer
+AuditLayer -[hidden]down-> AccessLayer
+AccessLayer -[hidden]down-> ExternalLayer
+ExternalLayer -[hidden]down-> ReportLayer
+
+Program -down-> ShikigamiDataAuditor
+
+ShikigamiDataAuditor -down-> ShikigamiDataCsvReader
+ShikigamiDataAuditor -down-> OfficialChangeHistoryCsvReader
+ShikigamiDataAuditor -down-> ExternalNameMapCsvReader
+
+ShikigamiDataAuditor -down-> IShikigamiStatusSource
+ShikigamiDataAuditor -down-> AuditReportFileWriter
+
+@enduml

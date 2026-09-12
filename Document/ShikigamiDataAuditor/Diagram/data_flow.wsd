@@ -1,0 +1,83 @@
+@startuml
+
+title Shikigami Data Auditor - Data Flow
+
+skinparam linetype ortho
+skinparam shadowing false
+skinparam nodesep 35
+skinparam ranksep 45
+
+top to bottom direction
+
+package "External Source" as ExternalSourceGroup {
+    cloud "日本版公式サイト" as OfficialSite
+    cloud "萌娘百科\nMediaWiki API" as Moegirl
+}
+
+package "Input" as InputGroup {
+    artifact "OfficialChangeHistory.csv" as OfficialCsv
+    artifact "Gui/Data/\nShikigamiData.csv" as AppCsv
+    artifact "ExternalNameMap.csv" as NameMap
+}
+
+rectangle "Shikigami Data Auditor" as Auditor {
+    component "CSV Reader" as CsvReader
+    component "External Data Source" as ExternalSource
+    component "Normalizer / Parser" as Parser
+    component "Audit" as Audit
+    component "Report" as Report
+
+    CsvReader -[hidden]right-> ExternalSource
+    ExternalSource -down-> Parser : Wikitext / HTML
+    CsvReader -down-> Audit : アプリ値 / 公式変更
+    Parser -down-> Audit : 外部参照値
+    Audit -down-> Report : AuditResult
+}
+
+database "External Data Cache" as Cache
+
+folder "Audit Result" as Output {
+    artifact "ShikigamiDataAudit_*.md" as Markdown
+    artifact "ShikigamiDataAudit_*.csv" as Csv
+}
+
+actor "利用者" as User
+
+ExternalSourceGroup -[hidden]down-> InputGroup
+InputGroup -[hidden]down-> Auditor
+Auditor -[hidden]down-> Output
+Output -[hidden]down-> User
+
+OfficialSite ..> OfficialCsv : 人間が確認・記録
+
+AppCsv -down-> CsvReader
+OfficialCsv -down-> CsvReader
+NameMap -down-> ExternalSource
+
+Moegirl <--> ExternalSource : HTTP / JSON
+ExternalSource <--> Cache : 保存 / 再利用
+
+Report -down-> Markdown
+Report -down-> Csv
+
+Markdown -down-> User : 内容確認
+Csv -down-> User : 機械処理 / 差分確認
+
+note right of OfficialCsv
+日本版公式告知を
+比較可能な形式へ正規化する。
+end note
+
+note right of Audit
+公式情報を優先する。
+外部情報だけでは
+アプリの誤りを確定しない。
+end note
+
+note right of Cache
+取得日時と出典を保持する。
+期限切れの場合は
+手動確認対象とする。
+end note
+
+@enduml

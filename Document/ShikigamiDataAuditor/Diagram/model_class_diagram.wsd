@@ -1,0 +1,85 @@
+@startuml
+
+title Shikigami Data Auditor - Model Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+hide empty methods
+left to right direction
+
+package "Model" {
+class ShikigamiStatus {
++ string Rarity
++ string Name
++ StatScope StatScope
++ IReadOnlyDictionary<StatType, double> Values
+}
+
+class OfficialStatChange {
++ DateTime EffectiveDate
++ string Rarity
++ string ShikigamiName
++ StatScope StatScope
++ StatType StatType
++ double? OldValue
++ double NewValue
++ string SourceUrl
+}
+
+class ExternalNameMapEntry {
++ string Rarity
++ string ShikigamiName
++ string Source
++ string PageTitle
++ bool Enabled
+}
+
+class ExternalStatusResult {
++ IReadOnlyList<ShikigamiStatus> Statuses
++ DateTime FetchedAt
++ string SourceUrl
++ bool IsCache
+}
+
+class AuditResult {
++ AuditOutcome Outcome
++ string Rarity
++ string ShikigamiName
++ StatType StatType
++ double? AppValue
++ double? OfficialValue
++ double? ReferenceValue
++ StatScope StatScope
++ string Evidence
++ string SourceUrl
+}
+
+enum StatType
+enum StatScope
+enum AuditOutcome
+}
+
+ExternalStatusResult *-- ShikigamiStatus
+ShikigamiStatus --> StatScope
+ShikigamiStatus --> StatType
+OfficialStatChange --> StatScope
+OfficialStatChange --> StatType
+AuditResult --> StatScope
+AuditResult --> StatType
+AuditResult --> AuditOutcome
+
+note bottom of StatScope
+初期値、覚醒後、最大レベル、
+覚醒後レベル40、覚醒ボーナス、
+不明を区別する。
+end note
+
+note bottom of AuditOutcome
+一致、確定不一致、参考不一致、
+情報源の陳腐化、範囲不一致、
+手動確認などを表す。
+end note
+
+@enduml
