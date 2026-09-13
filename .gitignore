@@ -30,6 +30,9 @@ TestLog/
 # App generated data
 Gui/bin/
 TestSource/
+ShikigamiDataAuditor/Audit/*.csv
+ShikigamiDataAuditor/Audit/*.md
+ShikigamiDataAuditor/Cache/
 
 # Document generation config
 Document/Tool/_diagram_settings.bat

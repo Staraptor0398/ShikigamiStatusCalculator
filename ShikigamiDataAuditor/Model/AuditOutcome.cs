@@ -1,0 +1,16 @@
+namespace ShikigamiDataAuditor.Model
+{
+	public enum AuditOutcome
+	{
+		MATCH,
+		CONFIRMED_MISMATCH,
+		REFERENCE_MISMATCH,
+		SOURCE_STALE,
+		SCOPE_MISMATCH,
+		MANUAL_REVIEW,
+		SHIKIGAMI_NOT_FOUND,
+		REFERENCE_NOT_FOUND,
+		NAME_UNRESOLVED,
+		INVALID_DATA
+	}
+}

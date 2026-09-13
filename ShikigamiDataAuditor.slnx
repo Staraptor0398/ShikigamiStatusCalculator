@@ -1,0 +1,8 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="ShikigamiDataAuditor/ShikigamiDataAuditor.csproj" Id="9c18fd1c-f3b4-4f4c-9e7d-0d80918b1a48">
+    <Platform Project="x64" />
+  </Project>
+</Solution>
