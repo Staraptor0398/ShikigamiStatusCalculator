@@ -8,6 +8,7 @@ using ShikigamiDataAuditor.Official;
 using ShikigamiDataAuditor.Report;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using DataAuditor = ShikigamiDataAuditor.Audit.ShikigamiDataAuditor;
@@ -41,6 +42,11 @@ namespace ShikigamiDataAuditor
 				if (options.GenerateOfficialChangeHistory)
 				{
 					return generateOfficialChangeHistory(options);
+				}
+
+				if (options.ApplyConfirmedChanges)
+				{
+					return applyConfirmedChanges(options);
 				}
 
 				return run(options);
@@ -151,6 +157,32 @@ namespace ShikigamiDataAuditor
 				Console.WriteLine("Entries: " + generatedChanges.Count);
 				Console.WriteLine("CSV:     " + options.OfficialHistoryPath);
 			}
+
+			return EXIT_SUCCESS;
+		}
+
+		private static int applyConfirmedChanges(AuditOptions options)
+		{
+			ShikigamiDataOfficialChangeApplicator applicator = new ShikigamiDataOfficialChangeApplicator(new OfficialChangeResolver(), new StatScopeMatcher(), new AuditOutcomeResolver());
+
+			Console.WriteLine("Applying confirmed official changes.");
+			Console.WriteLine("Target: " + options.AppDataPath);
+			Console.WriteLine("Source: " + options.OfficialHistoryPath);
+
+			IReadOnlyList<AuditResult> appliedChanges = applicator.Apply(options.AppDataPath, options.OfficialHistoryPath);
+
+			foreach (AuditResult result in appliedChanges)
+			{
+				string oldValue = result.AppValue.Value.ToString("0.######", CultureInfo.InvariantCulture);
+				string newValue = result.OfficialValue.Value.ToString("0.######", CultureInfo.InvariantCulture);
+
+				Console.WriteLine("[UPDATE] " + result.Rarity + " " + result.ShikigamiName + " " + StatTypeDefinition.GetDisplayName(result.StatType) + ": " + oldValue + " -> " + newValue);
+			}
+
+			Console.WriteLine();
+			Console.WriteLine("Confirmed official change application completed.");
+			Console.WriteLine("Updated: " + appliedChanges.Count);
+			Console.WriteLine("CSV:     " + options.AppDataPath);
 
 			return EXIT_SUCCESS;
 		}

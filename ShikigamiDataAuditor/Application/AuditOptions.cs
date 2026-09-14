@@ -13,6 +13,7 @@ namespace ShikigamiDataAuditor.Application
 		public string CacheDirectoryPath { get; set; }
 		public bool GenerateExternalNameMap { get; set; }
 		public bool GenerateOfficialChangeHistory { get; set; }
+		public bool ApplyConfirmedChanges { get; set; }
 		public bool RefreshOfficialCache { get; set; }
 		public bool NoNetwork { get; set; }
 		public bool ShowHelp { get; set; }
@@ -47,6 +48,7 @@ namespace ShikigamiDataAuditor.Application
 					case "--cache": options.CacheDirectoryPath = Path.GetFullPath(getValue(args, ref index)); break;
 					case "--generate-external-name-map": options.GenerateExternalNameMap = true; break;
 					case "--generate-official-change-history": options.GenerateOfficialChangeHistory = true; break;
+					case "--apply-confirmed-changes": options.ApplyConfirmedChanges = true; break;
 					case "--refresh-official-cache": options.RefreshOfficialCache = true; break;
 					case "--no-network": options.NoNetwork = true; break;
 					case "--cache-max-age": options.CacheMaxAge = parseDuration(getValue(args, ref index)); break;
@@ -64,8 +66,8 @@ namespace ShikigamiDataAuditor.Application
 		{
 			return "Usage: ShikigamiDataAuditor.exe [--app-data PATH] [--official-history PATH] " +
 				"[--external-name-map PATH] [--output DIRECTORY] [--cache DIRECTORY] [--generate-external-name-map] " +
-				"[--generate-official-change-history] [--refresh-official-cache] [--no-network] [--cache-max-age 7d] " +
-				"[--request-interval 2s] [--http-timeout 30s]";
+				"[--generate-official-change-history] [--apply-confirmed-changes] [--refresh-official-cache] [--no-network] " +
+				"[--cache-max-age 7d] [--request-interval 2s] [--http-timeout 30s]";
 		}
 
 		private static string getValue(string[] args, ref int index)

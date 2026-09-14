@@ -39,6 +39,7 @@
     <Compile Include="Access\ShikigamiDataCsvReader.cs" />
     <Compile Include="Application\AuditOptions.cs" />
     <Compile Include="Application\RepositoryPathResolver.cs" />
+    <Compile Include="Application\ShikigamiDataOfficialChangeApplicator.cs" />
     <Compile Include="Audit\AuditOutcomeResolver.cs" />
     <Compile Include="Audit\OfficialChangeResolver.cs" />
     <Compile Include="Audit\ShikigamiDataAuditor.cs" />
