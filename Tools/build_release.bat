@@ -70,8 +70,7 @@ echo.
 echo Step5. Copy Release Files
 
 copy /Y "Gui\bin\x64\Release\Gui.exe" "%PACKAGE_DIR%\"
-copy /Y "Gui\bin\x64\Release\Gateway.dll" "%PACKAGE_DIR%\"
-copy /Y "Gui\bin\x64\Release\Newtonsoft.Json.dll" "%PACKAGE_DIR%\"
+copy /Y "Gui\bin\x64\Release\*.dll" "%PACKAGE_DIR%\"
 xcopy /E /I /Y "Gui\bin\x64\Release\Data" "%PACKAGE_DIR%\Data"
 copy /Y "README.md" "%PACKAGE_DIR%\"
 
@@ -84,9 +83,9 @@ pushd "%PACKAGE_DIR%"
 popd
 
 if errorlevel 1 (
-  echo Zip failed.
-  pause
-  exit /b 1
+   echo Zip failed.
+   pause
+   exit /b 1
 )
 
 echo.
@@ -95,9 +94,9 @@ echo Step7. Cleanup Package Directory
 rmdir /s /q "%PACKAGE_DIR%"
 
 if exist "%PACKAGE_DIR%" (
-	echo Cleanup failed.
-	pause
-	exit /b 1
+   echo Cleanup failed.
+   pause
+   exit /b 1
 )
 
 echo.
