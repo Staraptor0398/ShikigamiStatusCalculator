@@ -88,6 +88,7 @@ Stores:
 ShikigamiStatusCalculator/
 ├─ Gui.exe
 ├─ Gateway.dll
+├─ SaveData.dll
 ├─ Newtonsoft.Json.dll
 │
 ├─ Data/
@@ -112,7 +113,6 @@ ShikigamiStatusCalculator/
 │
 └─ Log/
    └─ ShikigamiApp_yyyyMMdd.log
-
 ```
 
 ### Data
