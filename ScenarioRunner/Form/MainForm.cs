@@ -5,6 +5,7 @@ using ScenarioRunner.Form.Applicator;
 using ScenarioRunner.Log;
 using ScenarioRunner.Presentation;
 using ScenarioRunner.ScenarioFormat;
+using ScenarioRunner.Startup;
 using System;
 using System.Drawing;
 using System.IO;
@@ -15,7 +16,7 @@ namespace ScenarioRunner.Form
 {
 	public partial class MainForm : System.Windows.Forms.Form
 	{
-		private readonly string mGuiExucutablePath;
+		private readonly string mGuiExecutablePath;
 
 		private readonly ScenarioLoader mScenarioLoader;
 		private readonly ScenarioCompiler mScenarioCompiler;
@@ -32,6 +33,11 @@ namespace ScenarioRunner.Form
 		private bool mIsScenarioModified;
 
 		public MainForm()
+			: this(GuiExecutablePathResolver.Resolve())
+		{
+		}
+
+		public MainForm(string guiExecutablePath)
 		{
 			InitializeComponent();
 
@@ -41,7 +47,7 @@ namespace ScenarioRunner.Form
 
 			mWindowLayout = new ScenarioWindowLayout(workingAreaBounds);
 
-			mGuiExucutablePath = @"W:\Gui\bin\x64\Debug\Gui.exe";
+			mGuiExecutablePath = guiExecutablePath;
 
 			mScenarioLoader = new ScenarioLoader();
 			mScenarioCompiler = new ScenarioCompiler();
@@ -57,7 +63,7 @@ namespace ScenarioRunner.Form
 			mScenarioLogger.StepPassedEvent += mScenarioHighlighter.ShowPassed;
 			mScenarioLogger.StepFailedEvent += mScenarioHighlighter.ShowFailed;
 
-			mScenarioExecutor = new ScenarioExecutor(mScenarioLogger, mGuiExucutablePath, mWindowLayout.GuiBounds);
+			mScenarioExecutor = new ScenarioExecutor(mScenarioLogger, mGuiExecutablePath, mWindowLayout.GuiBounds);
 
 			setEditMode(false);
 		}
@@ -190,7 +196,7 @@ namespace ScenarioRunner.Form
 
 		private void btnShikigamiDataMonitor_Click(object sender, EventArgs e)
 		{
-			string guiDirectoryPath = Path.GetDirectoryName(mGuiExucutablePath);
+			string guiDirectoryPath = Path.GetDirectoryName(mGuiExecutablePath);
 			string shikigamiDataPath = Path.Combine(guiDirectoryPath, "Data", "ShikigamiData.csv");
 
 			var monitorForm = new ShikigamiDataMonitorForm(shikigamiDataPath);

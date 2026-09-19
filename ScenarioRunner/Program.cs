@@ -1,4 +1,5 @@
 using ScenarioRunner.Form;
+using ScenarioRunner.Startup;
 using System;
 using System.Windows.Forms;
 
@@ -14,7 +15,10 @@ namespace ScenarioRunner
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(new MainForm());
+
+			string guiExecutablePath = GuiExecutablePathResolver.Resolve();
+
+			Application.Run(new MainForm(guiExecutablePath));
 		}
 	}
 }
