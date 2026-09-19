@@ -46,6 +46,9 @@ namespace ScenarioRunner.Execution
 
 			string backupDirectoryPath = Path.Combine(guiDirectoryPath, "Data", "Backup");
 
+			Directory.CreateDirectory(brokenDirectoryPath);
+			Directory.CreateDirectory(backupDirectoryPath);
+
 			using (var brokenWatcher = new ShikigamiDataFileWatcher(brokenDirectoryPath))
 			using (var backupWatcher = new ShikigamiDataFileWatcher(backupDirectoryPath))
 			{
