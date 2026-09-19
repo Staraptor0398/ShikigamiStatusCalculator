@@ -1,0 +1,61 @@
+name: Scenario Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  scenario:
+    runs-on: windows-2025-vs2026
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v3
+        with:
+          nuget-version: latest
+
+      - name: Restore SaveData packages
+        shell: pwsh
+        run: nuget restore SaveData\packages.config -PackagesDirectory packages
+
+      - name: Build ShikigamiApp
+        shell: pwsh
+        run: msbuild ShikigamiApp.slnx /m /p:Configuration=Release /p:Platform=x64
+
+      - name: Build ScenarioRunner CLI
+        shell: pwsh
+        run: msbuild ScenarioRunner.slnx /restore /m /p:Configuration=ReleaseCli /p:Platform=x64
+
+      - name: Verify binaries
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "Gui\bin\x64\Release\Gui.exe")) {
+              throw "Gui.exe was not built."
+          }
+
+          if (-not (Test-Path "ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe")) {
+              throw "ScenarioRunnerCli.exe was not built."
+          }
+
+      - name: Run BasicCalculation Scenario
+        shell: pwsh
+        run: |
+          & ".\ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe" `
+            --run ".\Scenario\Calculation\BasicCalculation.scenario"
+
+          exit $LASTEXITCODE
+
+      - name: Upload ScenarioRunner logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-logs
+          path: ScenarioRunnerCli\bin\x64\Release\Log
+          if-no-files-found: ignore
