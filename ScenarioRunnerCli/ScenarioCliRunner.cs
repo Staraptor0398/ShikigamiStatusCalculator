@@ -13,15 +13,15 @@ namespace ScenarioRunnerCli
 {
 	public class ScenarioCliRunner
 	{
-		public bool Run(CommandLineOptions options)
+		public bool Run(string scenarioPath, string guiExecutablePath)
 		{
-			if (options == null)
+			if (string.IsNullOrWhiteSpace(scenarioPath))
 			{
-				throw new ArgumentNullException(nameof(options));
+				throw new ArgumentException("Scenario file path is empty.", nameof(scenarioPath));
 			}
 
-			string scenarioPath = Path.GetFullPath(options.ScenarioPath);
-			string guiExecutablePath = GuiExecutablePathResolver.Resolve(options.GuiExecutablePath);
+			string resolvedScenarioPath = Path.GetFullPath(scenarioPath);
+			string resolvedGuiExecutablePath = GuiExecutablePathResolver.Resolve(guiExecutablePath);
 			string logDirectoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log");
 
 			var logger = new ScenarioLogger(logDirectoryPath);
@@ -29,15 +29,15 @@ namespace ScenarioRunnerCli
 
 			try
 			{
-				logger.ScenarioValidationStarted(scenarioPath);
+				logger.ScenarioValidationStarted(resolvedScenarioPath);
 
 				var loader = new ScenarioLoader();
-				Scenario scenario = loader.Load(scenarioPath);
+				Scenario scenario = loader.Load(resolvedScenarioPath);
 
 				logger.ScenarioLoaded(scenario);
 
 				WindowBounds guiBounds = createGuiBounds();
-				var executor = new ScenarioExecutor(logger, guiExecutablePath, guiBounds);
+				var executor = new ScenarioExecutor(logger, resolvedGuiExecutablePath, guiBounds);
 				var executionOptions = new ScenarioExecutionOptions(false);
 				ScenarioExecutionResult result = executor.Execute(scenario, executionOptions);
 

@@ -21,8 +21,18 @@ namespace ScenarioRunnerCli
 					return EXIT_SUCCESS;
 				}
 
-				var runner = new ScenarioCliRunner();
-				bool isSuccess = runner.Run(options);
+				bool isSuccess;
+
+				if (!string.IsNullOrWhiteSpace(options.ScenarioPath))
+				{
+					var runner = new ScenarioCliRunner();
+					isSuccess = runner.Run(options.ScenarioPath, options.GuiExecutablePath);
+				}
+				else
+				{
+					var runner = new ScenarioBatchRunner();
+					isSuccess = runner.Run(options.ScenarioDirectoryPath, options.GuiExecutablePath);
+				}
 
 				return isSuccess ? EXIT_SUCCESS : EXIT_SCENARIO_FAILED;
 			}
@@ -46,11 +56,13 @@ namespace ScenarioRunnerCli
 			Console.WriteLine();
 			Console.WriteLine("Usage:");
 			Console.WriteLine("  ScenarioRunnerCli.exe --run <scenario path> [--gui-path <Gui.exe path>]");
+			Console.WriteLine("  ScenarioRunnerCli.exe --run-directory <directory path> [--gui-path <Gui.exe path>]");
 			Console.WriteLine();
 			Console.WriteLine("Options:");
-			Console.WriteLine("  --run <path>       Scenario file to execute.");
-			Console.WriteLine("  --gui-path <path>  Optional explicit path to Gui.exe.");
-			Console.WriteLine("  --help, -h         Show this help.");
+			Console.WriteLine("  --run <path>            Scenario file to execute.");
+			Console.WriteLine("  --run-directory <path>  Directory containing Scenario files to execute.");
+			Console.WriteLine("  --gui-path <path>       Optional explicit path to Gui.exe.");
+			Console.WriteLine("  --help, -h              Show this help.");
 		}
 	}
 }

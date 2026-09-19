@@ -5,12 +5,14 @@ namespace ScenarioRunnerCli
 	public class CommandLineOptions
 	{
 		public string ScenarioPath { get; }
+		public string ScenarioDirectoryPath { get; }
 		public string GuiExecutablePath { get; }
 		public bool ShowHelp { get; }
 
-		private CommandLineOptions(string scenarioPath, string guiExecutablePath, bool showHelp)
+		private CommandLineOptions(string scenarioPath, string scenarioDirectoryPath, string guiExecutablePath, bool showHelp)
 		{
 			ScenarioPath = scenarioPath;
+			ScenarioDirectoryPath = scenarioDirectoryPath;
 			GuiExecutablePath = guiExecutablePath;
 			ShowHelp = showHelp;
 		}
@@ -23,6 +25,7 @@ namespace ScenarioRunnerCli
 			}
 
 			string scenarioPath = null;
+			string scenarioDirectoryPath = null;
 			string guiExecutablePath = null;
 			bool showHelp = false;
 
@@ -32,6 +35,10 @@ namespace ScenarioRunnerCli
 				{
 					case "--run":
 						scenarioPath = readValue(args, ref i, "--run");
+						break;
+
+					case "--run-directory":
+						scenarioDirectoryPath = readValue(args, ref i, "--run-directory");
 						break;
 
 					case "--gui-path":
@@ -48,12 +55,23 @@ namespace ScenarioRunnerCli
 				}
 			}
 
-			if (!showHelp && string.IsNullOrWhiteSpace(scenarioPath))
+			if (!showHelp)
 			{
-				throw new ArgumentException("--run is required.");
+				bool hasScenarioPath = !string.IsNullOrWhiteSpace(scenarioPath);
+				bool hasScenarioDirectoryPath = !string.IsNullOrWhiteSpace(scenarioDirectoryPath);
+
+				if (!hasScenarioPath && !hasScenarioDirectoryPath)
+				{
+					throw new ArgumentException("Either --run or --run-directory is required.");
+				}
+
+				if (hasScenarioPath && hasScenarioDirectoryPath)
+				{
+					throw new ArgumentException("--run and --run-directory cannot be used together.");
+				}
 			}
 
-			return new CommandLineOptions(scenarioPath, guiExecutablePath, showHelp);
+			return new CommandLineOptions(scenarioPath, scenarioDirectoryPath, guiExecutablePath, showHelp);
 		}
 
 		private static string readValue(string[] args, ref int index, string optionName)
