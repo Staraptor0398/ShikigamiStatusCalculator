@@ -59,6 +59,12 @@ namespace ScenarioRunner.ScenarioFormat
 					continue;
 				}
 
+				if (step.CommandType == ScenarioCommandType.RECOVER_SHIKIGAMI)
+				{
+					validateRecoverShikigamiArguments(step);
+					continue;
+				}
+
 				int expectedCount = getExpectedArgumentCount(step.CommandType);
 
 				if (step.Arguments.Count < expectedCount)
@@ -99,6 +105,20 @@ namespace ScenarioRunner.ScenarioFormat
 			}
 		}
 
+		private void validateRecoverShikigamiArguments(ScenarioStep step)
+		{
+			validateArgumentCount(step, 1, 1);
+
+			switch (step.Arguments[0])
+			{
+				case "BROKEN":
+				case "BACKUP":
+					return;
+				default:
+					throw new ScenarioValidationException($"Unknown RECOVER SHIKIGAMI target at line {step.LineNumber}: {step.RawText}");
+			}
+		}
+
 		private void validateArgumentCount(ScenarioStep step, int minimumCount, int maximumCount)
 		{
 			if (step.Arguments.Count < minimumCount)
@@ -133,7 +153,6 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.LOAD_MITAMA:
 				case ScenarioCommandType.CHECK_DIALOG:
 				case ScenarioCommandType.REMOVE_SHIKIGAMI:
-				case ScenarioCommandType.RECOVER_SHIKIGAMI:
 					return 1;
 				case ScenarioCommandType.COMPARE_SNAPSHOT:
 				case ScenarioCommandType.CHECK_SNAPSHOT_COMPARISON:
