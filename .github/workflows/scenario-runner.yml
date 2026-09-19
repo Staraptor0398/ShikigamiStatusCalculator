@@ -58,10 +58,12 @@ jobs:
 
           exit $LASTEXITCODE
 
-      - name: Upload ScenarioRunner logs
+      - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: scenario-runner-logs
-          path: ScenarioRunnerCli\bin\x64\Release\Log
+          path: |
+            ScenarioRunnerCli\bin\x64\Release\Log
+            Gui\bin\x64\Release\Log
           if-no-files-found: ignore
