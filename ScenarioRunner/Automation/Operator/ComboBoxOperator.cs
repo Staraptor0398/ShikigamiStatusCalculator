@@ -1,7 +1,5 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
-using FlaUI.Core.Input;
-using FlaUI.Core.WindowsAPI;
 using System;
 using System.Runtime.InteropServices;
 
@@ -9,16 +7,29 @@ namespace ScenarioRunner.Automation.Operator
 {
 	public class ComboBoxOperator
 	{
+		private const uint CB_GETCOUNT = 0x0146;
+		private const uint CB_SETCURSEL = 0x014E;
 		private const uint CB_FINDSTRINGEXACT = 0x0158;
+		private const uint WM_COMMAND = 0x0111;
+
+		private const int CBN_SELCHANGE = 1;
 		private const int CB_ERR = -1;
 
 		[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, string lParam);
 
+		[DllImport("user32.dll")]
+		private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		private static extern IntPtr GetParent(IntPtr hWnd);
+
+		[DllImport("user32.dll")]
+		private static extern int GetDlgCtrlID(IntPtr hWnd);
+
 		public void SelectItem(AutomationElement parent, string automationId, string itemName)
 		{
 			ComboBox comboBox = getComboBox(parent, automationId);
-
 			IntPtr handle = comboBox.Properties.NativeWindowHandle.Value;
 
 			int index = SendMessage(handle, CB_FINDSTRINGEXACT, new IntPtr(-1), itemName).ToInt32();
@@ -28,22 +39,7 @@ namespace ScenarioRunner.Automation.Operator
 				throw new InvalidOperationException($"ComboBox item was not found: {itemName}");
 			}
 
-			comboBox.Focus();
-
-			Keyboard.Type(VirtualKeyShort.HOME);
-			Wait.UntilInputIsProcessed();
-
-			if (string.IsNullOrWhiteSpace(comboBox.Value))
-			{
-				Keyboard.Type(VirtualKeyShort.DOWN);
-			}
-
-			for (int i = 0; i < index; i++)
-			{
-				Keyboard.Type(VirtualKeyShort.DOWN);
-			}
-
-			Wait.UntilInputIsProcessed();
+			selectItem(handle, index);
 		}
 
 		public void SetValue(AutomationElement parent, string automationId, string value)
@@ -57,17 +53,12 @@ namespace ScenarioRunner.Automation.Operator
 				throw new InvalidOperationException($"Editable area of ComboBox was not found: {automationId}");
 			}
 
-			var edit = editElement.AsTextBox();
+			if (!editElement.Patterns.Value.IsSupported)
+			{
+				throw new InvalidOperationException($"ValuePattern is not supported by editable area of ComboBox: {automationId}");
+			}
 
-			edit.Focus();
-
-			Keyboard.Press(VirtualKeyShort.CONTROL);
-			Keyboard.Type(VirtualKeyShort.KEY_A);
-			Keyboard.Release(VirtualKeyShort.CONTROL);
-
-			Keyboard.Type(value);
-
-			Wait.UntilInputIsProcessed();
+			editElement.Patterns.Value.Pattern.SetValue(value);
 		}
 
 		public string GetValue(AutomationElement parent, string automationId)
@@ -80,25 +71,50 @@ namespace ScenarioRunner.Automation.Operator
 		public bool CanSelectFirstItem(AutomationElement parent, string automationId)
 		{
 			ComboBox comboBox = getComboBox(parent, automationId);
+			IntPtr handle = comboBox.Properties.NativeWindowHandle.Value;
 
-			comboBox.Focus();
-			Keyboard.Press(VirtualKeyShort.HOME);
-			Keyboard.Press(VirtualKeyShort.ENTER);
-			Wait.UntilInputIsProcessed();
+			int itemCount = SendMessage(handle, CB_GETCOUNT, IntPtr.Zero, IntPtr.Zero).ToInt32();
 
-			string selectedValue = comboBox.Value;
+			if (itemCount <= 0)
+			{
+				return false;
+			}
 
-			return !string.IsNullOrWhiteSpace(selectedValue);
+			selectItem(handle, 0);
+
+			return !string.IsNullOrWhiteSpace(comboBox.Value);
 		}
 
 		public void SelectFirstItem(AutomationElement parent, string automationId)
 		{
 			ComboBox comboBox = getComboBox(parent, automationId);
+			IntPtr handle = comboBox.Properties.NativeWindowHandle.Value;
 
-			comboBox.Focus();
+			int itemCount = SendMessage(handle, CB_GETCOUNT, IntPtr.Zero, IntPtr.Zero).ToInt32();
 
-			Keyboard.Press(VirtualKeyShort.HOME);
-			Keyboard.Press(VirtualKeyShort.ENTER);
+			if (itemCount <= 0)
+			{
+				throw new InvalidOperationException($"ComboBox has no items: {automationId}");
+			}
+
+			selectItem(handle, 0);
+		}
+
+		private void selectItem(IntPtr handle, int index)
+		{
+			int result = SendMessage(handle, CB_SETCURSEL, new IntPtr(index), IntPtr.Zero).ToInt32();
+
+			if (result == CB_ERR)
+			{
+				throw new InvalidOperationException($"ComboBox item could not be selected: index={index}");
+			}
+
+			IntPtr parentHandle = GetParent(handle);
+			int controlId = GetDlgCtrlID(handle);
+
+			IntPtr wParam = new IntPtr((controlId & 0xFFFF) | (CBN_SELCHANGE << 16));
+
+			SendMessage(parentHandle, WM_COMMAND, wParam, handle);
 		}
 
 		private ComboBox getComboBox(AutomationElement parent, string automationId)
