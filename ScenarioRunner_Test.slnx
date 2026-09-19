@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="ScenarioRunner/ScenarioRunner.csproj" Id="c0956784-6889-4493-9880-39b40dbcd43d">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="ScenarioRunnerTest/ScenarioRunnerTest.csproj" Id="7bf091d8-33b3-49b0-83fb-711af3db5e4b">
+    <Platform Solution="*|x64" Project="x64" />
+    <Build Solution="Release|x64" Project="false" />
+  </Project>
+</Solution>
