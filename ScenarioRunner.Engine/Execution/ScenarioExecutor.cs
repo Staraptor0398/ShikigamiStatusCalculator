@@ -38,84 +38,128 @@ namespace ScenarioRunner.Execution
 
 			var context = new ScenarioExecutonContext(scenario.FilePath, mGuiExecutablePath, options, mGuiBounds, mCancellationTokenSource.Token);
 
-			string guiDirectoryPath = Path.GetDirectoryName(mGuiExecutablePath);
-
-			context.ShikigamiDataFilePath = Path.Combine(guiDirectoryPath, "Data", "ShikigamiData.csv");
-
-			string brokenDirectoryPath = Path.Combine(guiDirectoryPath, "Data", "Broken");
-
-			string backupDirectoryPath = Path.Combine(guiDirectoryPath, "Data", "Backup");
-
-			Directory.CreateDirectory(brokenDirectoryPath);
-			Directory.CreateDirectory(backupDirectoryPath);
-
-			using (var brokenWatcher = new ShikigamiDataFileWatcher(brokenDirectoryPath))
-			using (var backupWatcher = new ShikigamiDataFileWatcher(backupDirectoryPath))
+			try
 			{
-				brokenWatcher.FileCreated += path => context.ShikigamiBrokenDataFilePath = path;
-				backupWatcher.FileCreated += path => context.ShikigamiBackupDataFilePath = path;
+				string guiDirectoryPath = Path.GetDirectoryName(mGuiExecutablePath);
 
-				brokenWatcher.Start();
-				backupWatcher.Start();
+				context.ShikigamiDataFilePath = Path.Combine(guiDirectoryPath, "Data", "ShikigamiData.csv");
 
-				int passedCount = 0;
+				string brokenDirectoryPath = Path.Combine(guiDirectoryPath, "Data", "Broken");
+				string backupDirectoryPath = Path.Combine(guiDirectoryPath, "Data", "Backup");
 
-				mLogger.ScenarioStarted(scenario);
+				Directory.CreateDirectory(brokenDirectoryPath);
+				Directory.CreateDirectory(backupDirectoryPath);
 
-				foreach (ScenarioStep step in scenario.Steps)
+				using (var brokenWatcher = new ShikigamiDataFileWatcher(brokenDirectoryPath))
+				using (var backupWatcher = new ShikigamiDataFileWatcher(backupDirectoryPath))
 				{
-					try
+					brokenWatcher.FileCreated += path => context.ShikigamiBrokenDataFilePath = path;
+					backupWatcher.FileCreated += path => context.ShikigamiBackupDataFilePath = path;
+
+					brokenWatcher.Start();
+					backupWatcher.Start();
+
+					int passedCount = 0;
+
+					mLogger.ScenarioStarted(scenario);
+
+					foreach (ScenarioStep step in scenario.Steps)
 					{
-						context.CancellationToken.ThrowIfCancellationRequested();
-
-						mLogger.StepStarted(step);
-
-						mCommandExecutor.Execute(step, context);
-
-						passedCount++;
-						mLogger.StepPassed(step);
-
-						if (options.WatchMode)
+						try
 						{
-							Thread.Sleep(500);
+							context.CancellationToken.ThrowIfCancellationRequested();
+
+							mLogger.StepStarted(step);
+
+							mCommandExecutor.Execute(step, context);
+
+							passedCount++;
+							mLogger.StepPassed(step);
+
+							if (options.WatchMode)
+							{
+								Thread.Sleep(500);
+							}
+						}
+						catch (OperationCanceledException)
+						{
+							stopwatch.Stop();
+
+							var stoppedResult = new ScenarioExecutionResult(false, true, passedCount, 0, stopwatch.Elapsed, -1, null);
+							mLogger.ScenarioStopped(stoppedResult);
+
+							return stoppedResult;
+						}
+						catch (Exception ex)
+						{
+							stopwatch.Stop();
+
+							mLogger.StepFailed(step, ex.Message);
+
+							var failedResult = new ScenarioExecutionResult(false, false, passedCount, 1, stopwatch.Elapsed, step.LineNumber, ex.Message);
+							mLogger.ScenarioFailed(failedResult);
+
+							return failedResult;
 						}
 					}
-					catch (OperationCanceledException)
-					{
-						stopwatch.Stop();
 
-						var stopedResult = new ScenarioExecutionResult(false, true, passedCount, 0, stopwatch.Elapsed, -1, null);
-						mLogger.ScenarioStopped(stopedResult);
+					stopwatch.Stop();
 
-						return stopedResult;
-					}
-					catch (Exception ex)
-					{
-						stopwatch.Stop();
+					var result = new ScenarioExecutionResult(true, false, passedCount, 0, stopwatch.Elapsed, -1, null);
+					mLogger.ScenarioPassed(result);
 
-						mLogger.StepFailed(step, ex.Message);
-
-						var failedResult = new ScenarioExecutionResult(false, false, passedCount, 1, stopwatch.Elapsed, step.LineNumber, ex.Message);
-						mLogger.ScenarioFailed(failedResult);
-
-						return failedResult;
-					}
+					return result;
 				}
-
-
-				stopwatch.Stop();
-
-				var result = new ScenarioExecutionResult(true, false, passedCount, 0, stopwatch.Elapsed, -1, null);
-				mLogger.ScenarioPassed(result);
-
-				return result;
-
+			}
+			finally
+			{
+				if (options.CleanupGuiOnExit)
+				{
+					cleanupGui(context);
+				}
 			}
 		}
 
 		public void Stop()
 		{
 			mCancellationTokenSource?.Cancel();
+		}
+
+		private static void cleanupGui(ScenarioExecutonContext context)
+		{
+			if (context.GuiSession == null)
+			{
+				return;
+			}
+
+			var session = context.GuiSession;
+
+			try
+			{
+				try
+				{
+					session.Application.Close();
+				}
+				catch
+				{
+					session.Application.Kill();
+				}
+
+				if (!session.Application.HasExited)
+				{
+					session.Application.Kill();
+				}
+
+				if (!session.Application.HasExited)
+				{
+					throw new InvalidOperationException("Gui.exe could not be terminated.");
+				}
+			}
+			finally
+			{
+				context.GuiSession = null;
+				session.Dispose();
+			}
 		}
 	}
 }

@@ -13,7 +13,7 @@ namespace ScenarioRunnerCli
 {
 	public class ScenarioCliRunner
 	{
-		public bool Run(string scenarioPath, string guiExecutablePath)
+		public bool Run(string scenarioPath, string guiExecutablePath, bool cleanupGuiOnExit = false)
 		{
 			if (string.IsNullOrWhiteSpace(scenarioPath))
 			{
@@ -38,7 +38,7 @@ namespace ScenarioRunnerCli
 
 				WindowBounds guiBounds = createGuiBounds();
 				var executor = new ScenarioExecutor(logger, resolvedGuiExecutablePath, guiBounds);
-				var executionOptions = new ScenarioExecutionOptions(false);
+				var executionOptions = new ScenarioExecutionOptions(false, cleanupGuiOnExit);
 				ScenarioExecutionResult result = executor.Execute(scenario, executionOptions);
 
 				return result.IsSuccess;

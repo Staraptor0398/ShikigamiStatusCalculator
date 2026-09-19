@@ -50,7 +50,7 @@ namespace ScenarioRunnerCli
 
 				executedCount++;
 
-				if (runner.Run(scenarioPath, guiExecutablePath))
+				if (runner.Run(scenarioPath, guiExecutablePath, true))
 				{
 					passedCount++;
 					Console.WriteLine($"[Batch] PASS: {relativeScenarioPath}");
