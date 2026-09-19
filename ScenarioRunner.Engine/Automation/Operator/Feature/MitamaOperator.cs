@@ -22,7 +22,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator = new ButtonOperator();
 			mComboBoxOperator = new ComboBoxOperator();
 			mFileDialogOperator = new FileDialogOperator();
-			mGuiOperator = new GuiOperator(); ;
+			mGuiOperator = new GuiOperator();
 
 			mWindowWaiter = new WindowWaiter();
 		}
