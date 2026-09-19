@@ -3,12 +3,16 @@ using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
 using System;
+using System.Threading;
 
 namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class MitamaOperator
 	{
 		private const string MITAMA_SET_LOAD_TYPE = "御魂セット保存データ";
+
+		private const int FILE_PATH_WAIT_TIMEOUT_MS = 5000;
+		private const int FILE_PATH_WAIT_INTERVAL_MS = 100;
 
 		private readonly ButtonOperator mButtonOperator;
 		private readonly ComboBoxOperator mComboBoxOperator;
@@ -66,13 +70,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
 			mFileDialogOperator.SelectFile(fileDialog, resolvedPath);
 
-			string selectedFilePath = mTextBoxOperator.GetText(loadDialog, AutomationIds.SaveDataLoadDialog.FILE_PATH);
-
-			if (!string.Equals(selectedFilePath, resolvedPath, StringComparison.OrdinalIgnoreCase))
-			{
-				throw new InvalidOperationException(
-					$"SaveData file path was not selected correctly. Expected={resolvedPath}, Actual={selectedFilePath}");
-			}
+			waitForFilePath(loadDialog, resolvedPath);
 
 			mButtonOperator.Click(loadDialog, AutomationIds.SaveDataLoadDialog.LOAD);
 
@@ -82,6 +80,28 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private Window getLoadDialog(GuiSession session, int processId)
 		{
 			return mWindowWaiter.WaitForWindow(session, element => isLoadDialog(element, processId));
+		}
+
+		private void waitForFilePath(Window loadDialog, string expectedFilePath)
+		{
+			int elapsed = 0;
+			string actualFilePath = "";
+
+			while (elapsed < FILE_PATH_WAIT_TIMEOUT_MS)
+			{
+				actualFilePath = mTextBoxOperator.GetText(loadDialog, AutomationIds.SaveDataLoadDialog.FILE_PATH);
+
+				if (string.Equals(actualFilePath, expectedFilePath, StringComparison.OrdinalIgnoreCase))
+				{
+					return;
+				}
+
+				Thread.Sleep(FILE_PATH_WAIT_INTERVAL_MS);
+				elapsed += FILE_PATH_WAIT_INTERVAL_MS;
+			}
+
+			throw new InvalidOperationException(
+				$"SaveData file path was not selected correctly within {FILE_PATH_WAIT_TIMEOUT_MS} ms. Expected={expectedFilePath}, Actual={actualFilePath}");
 		}
 
 		private bool isLoadDialog(AutomationElement element, int processId)
