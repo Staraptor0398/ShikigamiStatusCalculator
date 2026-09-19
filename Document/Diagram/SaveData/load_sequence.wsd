@@ -14,7 +14,8 @@ participant "SaveDataMigrator" as Migrator
 
 database "JSONファイル" as JsonFile
 
-participant "MitamaSetSaveDataApplicator" as MitamaApplicator
+participant "MitamaSetConverter" as MitamaSetConverter
+participant "MitamaSetInputModelApplicator" as InputModelApplicator
 
 User -> MainForm : 読込ボタン押下
 
@@ -44,10 +45,11 @@ else OK
 
    SaveDataAccess -> SaveDataAccess : sourceVersion取得
 
-   alt 保存Version > 現行Version
+   break 保存Version > 現行Version
        SaveDataAccess --> MainForm : NotSupportedException
+   end
 
-   else 保存Version < 現行Version
+   opt 保存Version < 現行Version
        SaveDataAccess -> Migrator : Migrate(root,\ncurrentVersion,\nsourceVersion)
        Migrator --> SaveDataAccess : Migration済みJObject
    end
@@ -57,12 +59,19 @@ else OK
 
    alt Build
        MainForm -> MainForm : applyShikigami(ShikigamiName)
-       MainForm -> MitamaApplicator : Apply(MitamaSet, ...)
-       MitamaApplicator --> MainForm : UI適用完了
+
+       MainForm -> MitamaSetConverter : ToInputModel(data.MitamaSet)
+       MitamaSetConverter --> MainForm : MitamaSetInputModel
+
+       MainForm -> InputModelApplicator : Apply(inputModel, ...)
+       InputModelApplicator --> MainForm : UI適用完了
 
    else MitamaSet
-       MainForm -> MitamaApplicator : Apply(data, ...)
-       MitamaApplicator --> MainForm : UI適用完了
+       MainForm -> MitamaSetConverter : ToInputModel(saveData)
+       MitamaSetConverter --> MainForm : MitamaSetInputModel
+
+       MainForm -> InputModelApplicator : Apply(inputModel, ...)
+       InputModelApplicator --> MainForm : UI適用完了
    end
 
    MainForm -> MainForm : 保存・読込ボタン有効化

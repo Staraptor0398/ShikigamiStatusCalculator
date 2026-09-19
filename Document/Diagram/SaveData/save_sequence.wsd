@@ -8,9 +8,9 @@ actor "ユーザー" as User
 participant "MainForm" as MainForm
 participant "SaveDataSaveDialog" as SaveDialog
 
-participant "BuildSaveDataFactory" as BuildFactory
-participant "MitamaSetSaveDataFactory" as MitamaSetFactory
-participant "CalculationSnapshotSaveDataFactory" as SnapshotFactory
+participant "MitamaSetInputModelFactory" as InputModelFactory
+participant "MitamaSetConverter" as MitamaSetConverter
+participant "StatusConverter" as StatusConverter
 
 participant "SaveDataAccess" as SaveDataAccess
 participant "JsonDataAccess" as JsonDataAccess
@@ -30,21 +30,35 @@ else OK
    SaveDialog --> MainForm : 保存形式 / ファイルパス
    MainForm -> MainForm : 保存・読込ボタン無効化
 
+   MainForm -> InputModelFactory : Create(...)
+   InputModelFactory --> MainForm : MitamaSetInputModel
+
    alt Build
-       MainForm -> BuildFactory : Create(...)
-       BuildFactory --> MainForm : BuildSaveData
+       MainForm -> MitamaSetConverter : ToSaveData(inputModel)
+       MitamaSetConverter --> MainForm : MitamaSetSaveData
+
+       MainForm -> MainForm : BuildSaveData生成\nShikigamiName + MitamaSet
        MainForm -> SaveDataAccess : SaveBuild(path, data)
 
    else MitamaSet
-       MainForm -> MitamaSetFactory : Create(...)
-       MitamaSetFactory --> MainForm : MitamaSetSaveData
+       MainForm -> MitamaSetConverter : ToSaveData(inputModel)
+       MitamaSetConverter --> MainForm : MitamaSetSaveData
+
        MainForm -> SaveDataAccess : SaveMitamaSet(path, data)
 
    else CalculationSnapshot
        MainForm -> MainForm : createSnapshotNameFromFilePath(path)
 
-       MainForm -> SnapshotFactory : Create(..., snapshotName,\n_lastCalculationResult)
-       SnapshotFactory --> MainForm : CalculationSnapshotSaveData
+       MainForm -> MitamaSetConverter : ToSaveData(inputModel)
+       MitamaSetConverter --> MainForm : MitamaSetSaveData
+
+       MainForm -> StatusConverter : ToSaveData(MitamaOnlyStatus)
+       StatusConverter --> MainForm : StatusSaveData
+
+       MainForm -> StatusConverter : ToSaveData(FinalStatus)
+       StatusConverter --> MainForm : StatusSaveData
+
+       MainForm -> MainForm : CalculationSnapshotSaveData生成\nSnapshotName + CreatedAt +\nShikigamiName + MitamaSet +\nMitamaStatus + FinalStatus
 
        MainForm -> SaveDataAccess : SaveSnapshot(path, data)
    end
