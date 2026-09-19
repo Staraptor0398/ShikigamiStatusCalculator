@@ -2,6 +2,9 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
+  <Project Path="ScenarioRunner.Engine/ScenarioRunner.Engine.csproj" Id="7c494ce8-804f-4d03-96c0-443bd3c3e3fd">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="ScenarioRunner/ScenarioRunner.csproj" Id="c0956784-6889-4493-9880-39b40dbcd43d">
     <Platform Project="x64" />
   </Project>
