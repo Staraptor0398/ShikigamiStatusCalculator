@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ScenarioRunner\ScenarioRunner.csproj" />
+    <ProjectReference Include="..\ScenarioRunner.Engine\ScenarioRunner.Engine.csproj" />
   </ItemGroup>
 
   <ItemGroup>

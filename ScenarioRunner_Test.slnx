@@ -2,7 +2,7 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
-  <Project Path="ScenarioRunner/ScenarioRunner.csproj" Id="c0956784-6889-4493-9880-39b40dbcd43d">
+  <Project Path="ScenarioRunner.Engine/ScenarioRunner.Engine.csproj" Id="7c494ce8-804f-4d03-96c0-443bd3c3e3fd">
     <Platform Project="x64" />
   </Project>
   <Project Path="ScenarioRunnerTest/ScenarioRunnerTest.csproj" Id="7bf091d8-33b3-49b0-83fb-711af3db5e4b">
