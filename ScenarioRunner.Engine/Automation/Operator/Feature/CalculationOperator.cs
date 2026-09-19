@@ -36,7 +36,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			if (mDialogOperator.Exists(session))
 			{
-				throw new InvalidOperationException("A modal dialog is displayed after calculation.");
+				throw new InvalidOperationException(
+					$"A modal dialog is displayed after calculation.{Environment.NewLine}" +
+					$"Detected Window: {mDialogOperator.LastDetectedDialogInfo}");
 			}
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);

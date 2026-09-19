@@ -20,6 +20,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private Window mLastCheckedDialog;
 
+		public string LastDetectedDialogInfo { get; private set; }
+
 		public DialogOperator()
 		{
 			mButtonOperator = new ButtonOperator();
@@ -57,11 +59,21 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			return mWindowWaiter.Exists(session, element =>
+			Window dialog = mWindowWaiter.FindWindow(session, element =>
 				element.Properties.ProcessId.ValueOrDefault == processId &&
 				element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle &&
 				isVisible(element) &&
 				isDialog(element));
+
+			if (dialog == null)
+			{
+				LastDetectedDialogInfo = null;
+				return false;
+			}
+
+			LastDetectedDialogInfo = createDialogInfo(dialog);
+
+			return true;
 		}
 
 		public string GetMessage(GuiSession session)
@@ -189,6 +201,24 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			catch (COMException)
 			{
 				return false;
+			}
+		}
+
+		private string createDialogInfo(AutomationElement element)
+		{
+			try
+			{
+				return
+					$"Name={element.Properties.Name.ValueOrDefault}, " +
+					$"AutomationId={element.Properties.AutomationId.ValueOrDefault}, " +
+					$"ClassName={element.Properties.ClassName.ValueOrDefault}, " +
+					$"ControlType={element.Properties.ControlType.ValueOrDefault}, " +
+					$"NativeWindowHandle={element.Properties.NativeWindowHandle.ValueOrDefault}, " +
+					$"ProcessId={element.Properties.ProcessId.ValueOrDefault}";
+			}
+			catch (COMException)
+			{
+				return "Detected dialog information could not be read.";
 			}
 		}
 	}
