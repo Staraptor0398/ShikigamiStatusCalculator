@@ -58,7 +58,7 @@ namespace ScenarioRunner.ScenarioFormat
 
 		private ScenarioStep parseStep(int lineNumber, string rawText, string line)
 		{
-			List<string> tokens = tokenize(line);
+			List<string> tokens = tokenize(lineNumber, line);
 
 			if (tokens.Count == 0)
 			{
@@ -176,7 +176,7 @@ namespace ScenarioRunner.ScenarioFormat
 			return new ScenarioStep(lineNumber, commandType, getArguments(tokens, argumentStartIndex), rawText);
 		}
 
-		private List<string> tokenize(string line)
+		private List<string> tokenize(int lineNumber, string line)
 		{
 			var tokens = new List<string>();
 			var token = new StringBuilder();
@@ -213,7 +213,7 @@ namespace ScenarioRunner.ScenarioFormat
 
 			if (inQuotedString)
 			{
-				throw new FormatException("Quoted string is not closed.");
+				throw new FormatException($"Quoted string is not closed at line {lineNumber}.");
 			}
 
 			if (hasToken)
