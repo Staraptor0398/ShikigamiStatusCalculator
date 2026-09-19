@@ -1,11 +1,37 @@
 <Solution>
   <Configurations>
+    <BuildType Name="DebugGui" />
+    <BuildType Name="DebugCli" />
+    <BuildType Name="ReleaseGui" />
+    <BuildType Name="ReleaseCli" />
     <Platform Name="x64" />
   </Configurations>
-  <Project Path="ScenarioRunner.Engine/ScenarioRunner.Engine.csproj" Id="7c494ce8-804f-4d03-96c0-443bd3c3e3fd">
+
+  <Project Path="ScenarioRunner.Engine\ScenarioRunner.Engine.csproj">
+    <BuildType Solution="DebugGui|*" Project="Debug" />
+    <BuildType Solution="DebugCli|*" Project="Debug" />
+    <BuildType Solution="ReleaseGui|*" Project="Release" />
+    <BuildType Solution="ReleaseCli|*" Project="Release" />
     <Platform Project="x64" />
   </Project>
-  <Project Path="ScenarioRunner/ScenarioRunner.csproj" Id="c0956784-6889-4493-9880-39b40dbcd43d">
+
+  <Project Path="ScenarioRunner\ScenarioRunner.csproj" Id="c0956784-6889-4493-9880-39b40dbcd43d">
+    <BuildType Solution="DebugGui|*" Project="Debug" />
+    <BuildType Solution="DebugCli|*" Project="Debug" />
+    <BuildType Solution="ReleaseGui|*" Project="Release" />
+    <BuildType Solution="ReleaseCli|*" Project="Release" />
+    <Build Solution="DebugCli|*" Project="false" />
+    <Build Solution="ReleaseCli|*" Project="false" />
+    <Platform Project="x64" />
+  </Project>
+
+  <Project Path="ScenarioRunnerCli\ScenarioRunnerCli.csproj">
+    <BuildType Solution="DebugGui|*" Project="Debug" />
+    <BuildType Solution="DebugCli|*" Project="Debug" />
+    <BuildType Solution="ReleaseGui|*" Project="Release" />
+    <BuildType Solution="ReleaseCli|*" Project="Release" />
+    <Build Solution="DebugGui|*" Project="false" />
+    <Build Solution="ReleaseGui|*" Project="false" />
     <Platform Project="x64" />
   </Project>
 </Solution>
