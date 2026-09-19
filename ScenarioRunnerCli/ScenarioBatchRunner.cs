@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -33,7 +34,7 @@ namespace ScenarioRunnerCli
 
 			int executedCount = 0;
 			int passedCount = 0;
-			string failedScenarioPath = null;
+			var failedScenarioPaths = new List<string>();
 
 			Console.WriteLine("========================================");
 			Console.WriteLine("Scenario Batch");
@@ -57,14 +58,13 @@ namespace ScenarioRunnerCli
 					continue;
 				}
 
-				failedScenarioPath = relativeScenarioPath;
+				failedScenarioPaths.Add(relativeScenarioPath);
 				Console.WriteLine($"[Batch] FAIL: {relativeScenarioPath}");
-				break;
 			}
 
 			stopwatch.Stop();
 
-			int failedCount = failedScenarioPath == null ? 0 : 1;
+			int failedCount = failedScenarioPaths.Count;
 			bool isSuccess = failedCount == 0;
 
 			Console.WriteLine();
@@ -76,9 +76,15 @@ namespace ScenarioRunnerCli
 			Console.WriteLine($"Passed: {passedCount}");
 			Console.WriteLine($"Failed: {failedCount}");
 
-			if (failedScenarioPath != null)
+			if (failedScenarioPaths.Count > 0)
 			{
-				Console.WriteLine($"Failed Scenario: {failedScenarioPath}");
+				Console.WriteLine();
+				Console.WriteLine("Failed Scenarios:");
+
+				foreach (string failedScenarioPath in failedScenarioPaths)
+				{
+					Console.WriteLine($"  {failedScenarioPath}");
+				}
 			}
 
 			Console.WriteLine($"Elapsed: {stopwatch.Elapsed.TotalSeconds:F2} sec");
