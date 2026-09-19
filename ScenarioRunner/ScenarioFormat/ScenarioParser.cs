@@ -58,7 +58,7 @@ namespace ScenarioRunner.ScenarioFormat
 
 		private ScenarioStep parseStep(int lineNumber, string rawText, string line)
 		{
-			List<string> tokens = tokenize(lineNumber, line);
+			tokenize(lineNumber, line, out List<string> tokens, out List<bool> quotedTokens);
 
 			if (tokens.Count == 0)
 			{
@@ -173,15 +173,21 @@ namespace ScenarioRunner.ScenarioFormat
 				throw new FormatException($"Unknown command at line {lineNumber}: {line}");
 			}
 
+			validateQuotedArguments(lineNumber, rawText, commandType, tokens, quotedTokens);
+
 			return new ScenarioStep(lineNumber, commandType, getArguments(tokens, argumentStartIndex), rawText);
 		}
 
-		private List<string> tokenize(int lineNumber, string line)
+		private void tokenize(int lineNumber, string line, out List<string> tokens, out List<bool> quotedTokens)
 		{
-			var tokens = new List<string>();
+			tokens = new List<string>();
+			quotedTokens = new List<bool>();
+
 			var token = new StringBuilder();
 			bool inQuotedString = false;
 			bool hasToken = false;
+			bool tokenIsQuoted = false;
+			bool quoteClosed = false;
 
 			for (int i = 0; i < line.Length; i++)
 			{
@@ -189,8 +195,26 @@ namespace ScenarioRunner.ScenarioFormat
 
 				if (c == '"')
 				{
-					inQuotedString = !inQuotedString;
-					hasToken = true;
+					if (!inQuotedString)
+					{
+						if (hasToken)
+						{
+							tokenIsQuoted = false;
+						}
+						else
+						{
+							tokenIsQuoted = true;
+						}
+
+						inQuotedString = true;
+						hasToken = true;
+						quoteClosed = false;
+					}
+					else
+					{
+						inQuotedString = false;
+						quoteClosed = true;
+					}
 
 					continue;
 				}
@@ -200,11 +224,20 @@ namespace ScenarioRunner.ScenarioFormat
 					if (hasToken)
 					{
 						tokens.Add(token.ToString());
+						quotedTokens.Add(tokenIsQuoted);
+
 						token.Clear();
 						hasToken = false;
+						tokenIsQuoted = false;
+						quoteClosed = false;
 					}
 
 					continue;
+				}
+
+				if (!inQuotedString && quoteClosed)
+				{
+					tokenIsQuoted = false;
 				}
 
 				token.Append(c);
@@ -219,9 +252,82 @@ namespace ScenarioRunner.ScenarioFormat
 			if (hasToken)
 			{
 				tokens.Add(token.ToString());
+				quotedTokens.Add(tokenIsQuoted);
+			}
+		}
+
+		private void validateQuotedArguments(int lineNumber, string rawText, ScenarioCommandType commandType, IReadOnlyList<string> tokens, IReadOnlyList<bool> quotedTokens)
+		{
+			switch (commandType)
+			{
+				case ScenarioCommandType.SELECT_SHIKIGAMI:
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 2);
+					break;
+
+				case ScenarioCommandType.EQUIP_MITAMA:
+					validateEquipMitamaQuotedArguments(lineNumber, rawText, tokens, quotedTokens);
+					break;
+
+				case ScenarioCommandType.LOAD_MITAMA:
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 2);
+					break;
+
+				case ScenarioCommandType.COMPARE_SNAPSHOT:
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 2);
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 3);
+					break;
+
+				case ScenarioCommandType.REMOVE_SHIKIGAMI:
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 2);
+					break;
+
+				case ScenarioCommandType.CHECK_DIALOG:
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 2);
+					break;
+
+				case ScenarioCommandType.CHECK_SNAPSHOT_COMPARISON:
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 3);
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 4);
+					break;
+			}
+		}
+
+		private void validateEquipMitamaQuotedArguments(int lineNumber, string rawText, IReadOnlyList<string> tokens, IReadOnlyList<bool> quotedTokens)
+		{
+			if (tokens.Count <= 2)
+			{
+				return;
 			}
 
-			return tokens;
+			switch (tokens[2])
+			{
+				case "MAIN":
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 4);
+					break;
+
+				case "SUB":
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 5);
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 6);
+					break;
+
+				case "SET":
+				case "UNIQUE":
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 4);
+					break;
+			}
+		}
+
+		private void requireQuotedToken(int lineNumber, string rawText, IReadOnlyList<bool> quotedTokens, int tokenIndex)
+		{
+			if (tokenIndex >= quotedTokens.Count)
+			{
+				return;
+			}
+
+			if (!quotedTokens[tokenIndex])
+			{
+				throw new FormatException($"String argument must be enclosed in double quotes at line {lineNumber}: {rawText}");
+			}
 		}
 
 		private bool matches(IReadOnlyList<string> tokens, params string[] commandTokens)
