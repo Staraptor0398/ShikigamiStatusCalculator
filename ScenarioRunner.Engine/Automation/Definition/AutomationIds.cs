@@ -52,6 +52,7 @@ namespace ScenarioRunner.Automation.Definition
 			public const string ID = "SaveDataLoadDialog";
 
 			public const string LOAD_TYPE = "cmbLoadType";
+			public const string FILE_PATH = "txtFilePath";
 			public const string BROWSE = "btnBrowse";
 			public const string LOAD = "btnLoad";
 		}

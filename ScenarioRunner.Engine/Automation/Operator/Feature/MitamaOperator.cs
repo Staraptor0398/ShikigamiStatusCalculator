@@ -12,6 +12,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private readonly ButtonOperator mButtonOperator;
 		private readonly ComboBoxOperator mComboBoxOperator;
+		private readonly TextBoxOperator mTextBoxOperator;
 		private readonly FileDialogOperator mFileDialogOperator;
 		private readonly GuiOperator mGuiOperator;
 
@@ -21,6 +22,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		{
 			mButtonOperator = new ButtonOperator();
 			mComboBoxOperator = new ComboBoxOperator();
+			mTextBoxOperator = new TextBoxOperator();
 			mFileDialogOperator = new FileDialogOperator();
 			mGuiOperator = new GuiOperator();
 
@@ -40,27 +42,53 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 
 			GuiSession session = context.GuiSession;
+			int processId = session.Application.ProcessId;
+
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			string resolvedPath = context.ResolvePath(filePath);
 
 			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.LOAD);
 
-			Window loadDialog = getLoadDialog(session);
+			Window loadDialog = getLoadDialog(session, processId);
+
 			mComboBoxOperator.SelectItem(loadDialog, AutomationIds.SaveDataLoadDialog.LOAD_TYPE, MITAMA_SET_LOAD_TYPE);
+
+			string selectedLoadType = mComboBoxOperator.GetValue(loadDialog, AutomationIds.SaveDataLoadDialog.LOAD_TYPE);
+
+			if (!string.Equals(selectedLoadType, MITAMA_SET_LOAD_TYPE, StringComparison.Ordinal))
+			{
+				throw new InvalidOperationException(
+					$"SaveData load type was not selected correctly. Expected={MITAMA_SET_LOAD_TYPE}, Actual={selectedLoadType}");
+			}
 
 			mButtonOperator.Click(loadDialog, AutomationIds.SaveDataLoadDialog.BROWSE);
 
 			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
 			mFileDialogOperator.SelectFile(fileDialog, resolvedPath);
 
+			string selectedFilePath = mTextBoxOperator.GetText(loadDialog, AutomationIds.SaveDataLoadDialog.FILE_PATH);
+
+			if (!string.Equals(selectedFilePath, resolvedPath, StringComparison.OrdinalIgnoreCase))
+			{
+				throw new InvalidOperationException(
+					$"SaveData file path was not selected correctly. Expected={resolvedPath}, Actual={selectedFilePath}");
+			}
+
 			mButtonOperator.Click(loadDialog, AutomationIds.SaveDataLoadDialog.LOAD);
+
+			mWindowWaiter.WaitForWindowClosed(session, element => isLoadDialog(element, processId));
 		}
 
-		private Window getLoadDialog(GuiSession session)
+		private Window getLoadDialog(GuiSession session, int processId)
 		{
-			int processId = session.Application.ProcessId;
+			return mWindowWaiter.WaitForWindow(session, element => isLoadDialog(element, processId));
+		}
 
-			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.FindFirstDescendant(cf => cf.ByAutomationId(AutomationIds.SaveDataLoadDialog.BROWSE)) != null);
+		private bool isLoadDialog(AutomationElement element, int processId)
+		{
+			return
+				element.Properties.ProcessId.ValueOrDefault == processId &&
+				element.FindFirstDescendant(cf => cf.ByAutomationId(AutomationIds.SaveDataLoadDialog.BROWSE)) != null;
 		}
 	}
 }
