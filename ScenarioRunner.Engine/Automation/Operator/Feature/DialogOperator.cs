@@ -9,6 +9,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class DialogOperator
 	{
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool IsWindowVisible(IntPtr hWnd);
+
 		private readonly ButtonOperator mButtonOperator;
 		private readonly GuiOperator mGuiOperator;
 
@@ -35,7 +39,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isDialog(element));
+			return mWindowWaiter.WaitForWindow(session, element =>
+				element.Properties.ProcessId.ValueOrDefault == processId &&
+				element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle &&
+				isVisible(element) &&
+				isDialog(element));
 		}
 
 		public bool Exists(GuiSession session)
@@ -49,7 +57,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			return mWindowWaiter.Exists(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle);
+			return mWindowWaiter.Exists(session, element =>
+				element.Properties.ProcessId.ValueOrDefault == processId &&
+				element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle &&
+				isVisible(element) &&
+				isDialog(element));
 		}
 
 		public string GetMessage(GuiSession session)
@@ -88,7 +100,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			int processId = session.Application.ProcessId;
 
-			mLastCheckedDialog = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && containsMessage(element, expectedMessage));
+			mLastCheckedDialog = mWindowWaiter.WaitForWindow(session, element =>
+				element.Properties.ProcessId.ValueOrDefault == processId &&
+				isVisible(element) &&
+				containsMessage(element, expectedMessage));
 		}
 
 		public void Close(GuiSession session)
@@ -128,12 +143,25 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mLastCheckedDialog = null;
 		}
 
+		private bool isVisible(AutomationElement element)
+		{
+			try
+			{
+				IntPtr handle = element.Properties.NativeWindowHandle.ValueOrDefault;
+
+				return handle != IntPtr.Zero && IsWindowVisible(handle);
+			}
+			catch (COMException)
+			{
+				return false;
+			}
+		}
+
 		private bool isDialog(AutomationElement element)
 		{
 			try
 			{
 				AutomationElement button = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button));
-
 				AutomationElement text = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Text));
 
 				return button != null && text != null;
@@ -155,8 +183,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					{
 						string text = textElement.Properties.Name.ValueOrDefault;
 
-						return
-							!string.IsNullOrWhiteSpace(text) && text.Contains(expectedMessage);
+						return !string.IsNullOrWhiteSpace(text) && text.Contains(expectedMessage);
 					});
 			}
 			catch (COMException)
