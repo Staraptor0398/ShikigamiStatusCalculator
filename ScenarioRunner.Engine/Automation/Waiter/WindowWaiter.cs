@@ -13,7 +13,6 @@ namespace ScenarioRunner.Automation.Waiter
 		private const int DEFAULT_INTERVAL_MS = 100;
 		private const int DEFAULT_WAIT_INTERVAL_MS = 50;
 
-		private const string FILE_DIALOG_CLASS_NAME = "#32770";
 		private const string FILE_NAME_CONTROL_HOST = "FileNameControlHost";
 		private const string FILE_DIALOG_ACTION_BUTTON = "1";
 
@@ -195,32 +194,31 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private Window findFileDialog(GuiSession session)
 		{
-			Window fileDialog = session.Application
-				.GetAllTopLevelWindows(session.Automation)
-				.FirstOrDefault(window => isFileDialog(window));
-
-			if (fileDialog != null)
-			{
-				return fileDialog;
-			}
-
 			int processId = session.Application.ProcessId;
 			AutomationElement desktop = session.Automation.GetDesktop();
 
-			AutomationElement fileDialogElement = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).FirstOrDefault(element => element.Properties.ProcessId.ValueOrDefault == processId && isFileDialog(element));
+			AutomationElement[] candidates = desktop
+				.FindAllDescendants(cf => cf.ByControlType(ControlType.Window))
+				.Where(element => element.Properties.ProcessId.ValueOrDefault == processId && isFileDialog(element))
+				.ToArray();
 
-			return fileDialogElement?.AsWindow();
+			if (candidates.Length == 0)
+			{
+				return null;
+			}
+
+			AutomationElement fileDialog = candidates.OrderBy(getDescendantWindowCount).First();
+
+			return fileDialog.AsWindow();
+		}
+
+		private int getDescendantWindowCount(AutomationElement element)
+		{
+			return element.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).Length;
 		}
 
 		private bool isFileDialog(AutomationElement element)
 		{
-			string className = element.Properties.ClassName.ValueOrDefault;
-
-			if (!string.Equals(className, FILE_DIALOG_CLASS_NAME, StringComparison.Ordinal))
-			{
-				return false;
-			}
-
 			AutomationElement fileNameComboBox = element.FindFirstDescendant(cf => cf.ByAutomationId(FILE_NAME_CONTROL_HOST));
 
 			if (fileNameComboBox == null || fileNameComboBox.Properties.ControlType.ValueOrDefault != ControlType.ComboBox)
