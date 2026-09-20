@@ -28,6 +28,24 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 		}
 
 		[TestMethod]
+		public void Parse_CheckCleared()
+		{
+			var parser = new ScenarioParser();
+			string[] lines =
+			{
+				"START",
+				"CHECK CLEARED",
+				"END"
+			};
+
+			Scenario actual = parser.Parse("Test.scenario", lines);
+			ScenarioStep step = actual.Steps[0];
+
+			Assert.AreEqual(ScenarioCommandType.CHECK_CLEARED, step.CommandType);
+			Assert.AreEqual(0, step.Arguments.Count);
+		}
+
+		[TestMethod]
 		public void Parse_UnquotedString()
 		{
 			var parser = new ScenarioParser();

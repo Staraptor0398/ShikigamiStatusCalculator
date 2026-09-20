@@ -19,6 +19,40 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 		}
 
 		[TestMethod]
+		public void Validate_CheckCleared()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_CLEARED, Array.Empty<string>(), "CHECK CLEARED")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_CheckClearedWithArgument()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_CLEARED, new[] { "HOGE" }, "CHECK CLEARED HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Too many arguments at line 2: CHECK CLEARED HOGE", ex.Message);
+			}
+		}
+
+		[TestMethod]
 		public void Validate_RecoverShikigamiBackup()
 		{
 			var validator = new ScenarioValidator();
