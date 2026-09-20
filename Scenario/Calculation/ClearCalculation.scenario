@@ -1,0 +1,29 @@
+# ClearCalculation.scenario
+#
+# 式神と御魂を設定して計算を実行した後、
+# CLEARによって入力内容および計算結果が
+# 起動直後と同等の状態へ戻ることを確認する。
+
+START
+
+OPEN GUI
+
+# 式神選択
+SEL SHIKIGAMI "願紡縁結神"
+
+# 御魂読み込み
+LOAD MITAMA "TestData/Valid.mitama.json"
+
+# 計算
+CALC
+CHECK CALC
+
+# 入力内容と計算結果をクリア
+CLEAR
+
+# クリア後の状態確認
+CHECK CLEARED
+
+CLOSE GUI
+
+END
