@@ -3,6 +3,7 @@ using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
 using System;
+using System.IO;
 
 namespace ScenarioRunner.Automation.Operator.Feature
 {
@@ -44,6 +45,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.COMPARE_SNAPSHOT);
 
 			int processId = context.GuiSession.Application.ProcessId;
+
 			Window fileSelectDialog = mWindowWaiter.WaitForWindow(context.GuiSession, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
 
 			mButtonOperator.Click(fileSelectDialog, AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_BASE_SNAPSHOT);
@@ -59,6 +61,36 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(fileSelectDialog, AutomationIds.SnapshotCompareFileSelectDialog.COMPARE);
 
 			mWindowWaiter.WaitForWindow(context.GuiSession, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
+		}
+
+		public void CompareSaved(ScenarioExecutonContext context)
+		{
+			if (context == null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
+
+			if (string.IsNullOrWhiteSpace(context.SavedSnapshotBaseFilePath))
+			{
+				throw new InvalidOperationException("Saved BASE snapshot is not defined.");
+			}
+
+			if (string.IsNullOrWhiteSpace(context.SavedSnapshotTargetFilePath))
+			{
+				throw new InvalidOperationException("Saved TARGET snapshot is not defined.");
+			}
+
+			if (!File.Exists(context.SavedSnapshotBaseFilePath))
+			{
+				throw new FileNotFoundException("Saved BASE snapshot was not found.", context.SavedSnapshotBaseFilePath);
+			}
+
+			if (!File.Exists(context.SavedSnapshotTargetFilePath))
+			{
+				throw new FileNotFoundException("Saved TARGET snapshot was not found.", context.SavedSnapshotTargetFilePath);
+			}
+
+			Compare(context, context.SavedSnapshotBaseFilePath, context.SavedSnapshotTargetFilePath);
 		}
 
 		public void Check(GuiSession session, string statusName, string expectedDifference)

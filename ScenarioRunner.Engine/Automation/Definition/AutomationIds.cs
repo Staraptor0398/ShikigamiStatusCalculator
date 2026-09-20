@@ -43,14 +43,24 @@ namespace ScenarioRunner.Automation.Definition
 			public const string MITAMA_ONLY = "txtMitamaOnly";
 			public const string FINAL_STATS = "txtFinalStats";
 
-			public const string CLEAR = "btnClear";
-
+			public const string SAVE = "btnSave";
 			public const string LOAD = "btnLoad";
+			public const string CLEAR = "btnClear";
 
 			public const string RELOAD_SHIKIGAMI = "btnReLoad";
 			public const string EDIT_SHIKIGAMI = "btnEditShikigami";
 			public const string SHIKIGAMI_RECOVERY = "btnRecoveryShikigami";
 			public const string COMPARE_SNAPSHOT = "btnCompareResult";
+		}
+
+		internal static class SaveDataSaveDialog
+		{
+			public const string ID = "SaveDataSaveDialog";
+
+			public const string SAVE_TYPE = "cmbSaveType";
+			public const string FILE_PATH = "txtFilePath";
+			public const string BROWSE = "btnBrowse";
+			public const string SAVE = "btnSave";
 		}
 
 		internal static class SaveDataLoadDialog

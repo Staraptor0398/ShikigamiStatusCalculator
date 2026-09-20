@@ -16,7 +16,7 @@ namespace ScenarioRunner.Execution
 		private readonly GuiOperator mGuiOperator;
 		private readonly ShikigamiOperator mShikigamiOperator;
 		private readonly CalculationOperator mCalculationOperator;
-		private readonly MitamaOperator mMitamaOperator;
+		private readonly SaveDataOperator mSaveDataOperator;
 		private readonly DialogOperator mDialogOperator;
 		private readonly ShikigamiDataOperator mShikigamiDataOperator;
 		private readonly InputOperator mInputOperator;
@@ -32,7 +32,7 @@ namespace ScenarioRunner.Execution
 			mGuiOperator = new GuiOperator();
 			mShikigamiOperator = new ShikigamiOperator();
 			mCalculationOperator = new CalculationOperator();
-			mMitamaOperator = new MitamaOperator();
+			mSaveDataOperator = new SaveDataOperator();
 			mDialogOperator = new DialogOperator();
 			mShikigamiDataOperator = new ShikigamiDataOperator();
 			mInputOperator = new InputOperator();
@@ -68,10 +68,28 @@ namespace ScenarioRunner.Execution
 					mInputOperator.Equip(context.GuiSession, step.Arguments);
 					return;
 				case ScenarioCommandType.LOAD_MITAMA:
-					mMitamaOperator.Load(context, step.Arguments[0]);
+					mSaveDataOperator.LoadMitama(context, step.Arguments[0]);
+					return;
+				case ScenarioCommandType.SAVE_MITAMA:
+					mSaveDataOperator.SaveMitama(context);
+					return;
+				case ScenarioCommandType.SAVE_BUILD:
+					mSaveDataOperator.SaveBuild(context);
+					return;
+				case ScenarioCommandType.SAVE_SNAPSHOT:
+					mSaveDataOperator.SaveSnapshot(context, step.Arguments[0]);
+					return;
+				case ScenarioCommandType.LOAD_SAVED_MITAMA:
+					mSaveDataOperator.LoadSavedMitama(context);
+					return;
+				case ScenarioCommandType.LOAD_SAVED_BUILD:
+					mSaveDataOperator.LoadSavedBuild(context);
 					return;
 				case ScenarioCommandType.COMPARE_SNAPSHOT:
 					mSnapshotComparisonOperator.Compare(context, step.Arguments[0], step.Arguments[1]);
+					return;
+				case ScenarioCommandType.COMPARE_SAVED_SNAPSHOT:
+					mSnapshotComparisonOperator.CompareSaved(context);
 					return;
 				case ScenarioCommandType.CALCULATE:
 					mCalculationOperator.Calculate(context.GuiSession);
@@ -122,7 +140,9 @@ namespace ScenarioRunner.Execution
 					mShikigamiOperator.Check(context.GuiSession);
 					return;
 				case ScenarioCommandType.CHECK_DIALOG:
-					mDialogOperator.CheckMessage(context.GuiSession, step.Arguments[0]);
+					mDialogOperator.CheckMessage(
+						context.GuiSession,
+						step.Arguments[0]);
 					return;
 				case ScenarioCommandType.CHECK_SNAPSHOT_COMPARISON:
 					mSnapshotComparisonOperator.Check(context.GuiSession, step.Arguments[0], step.Arguments[1]);
@@ -146,6 +166,5 @@ namespace ScenarioRunner.Execution
 				mWindowOperator.SetBounds(window, context.GuiBounds);
 			});
 		}
-
 	}
 }

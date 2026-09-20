@@ -98,10 +98,40 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.EQUIP_MITAMA;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "LOAD", "SAVED", "MITAMA"))
+			{
+				commandType = ScenarioCommandType.LOAD_SAVED_MITAMA;
+				argumentStartIndex = 3;
+			}
+			else if (matches(tokens, "LOAD", "SAVED", "BUILD"))
+			{
+				commandType = ScenarioCommandType.LOAD_SAVED_BUILD;
+				argumentStartIndex = 3;
+			}
 			else if (matches(tokens, "LOAD", "MITAMA"))
 			{
 				commandType = ScenarioCommandType.LOAD_MITAMA;
 				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "SAVE", "MITAMA"))
+			{
+				commandType = ScenarioCommandType.SAVE_MITAMA;
+				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "SAVE", "BUILD"))
+			{
+				commandType = ScenarioCommandType.SAVE_BUILD;
+				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "SAVE", "SNAPSHOT"))
+			{
+				commandType = ScenarioCommandType.SAVE_SNAPSHOT;
+				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "COMPARE", "SAVED", "SNAPSHOT"))
+			{
+				commandType = ScenarioCommandType.COMPARE_SAVED_SNAPSHOT;
+				argumentStartIndex = 3;
 			}
 			else if (matches(tokens, "COMPARE", "SNAPSHOT"))
 			{

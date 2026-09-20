@@ -30,6 +30,16 @@ namespace ScenarioRunner.Automation.Operator
 
 		public void SelectFile(Window dialog, string filePath)
 		{
+			selectFile(dialog, filePath, false);
+		}
+
+		public void SelectSaveFile(Window dialog, string filePath)
+		{
+			selectFile(dialog, filePath, true);
+		}
+
+		private void selectFile(Window dialog, string filePath, bool save)
+		{
 			if (dialog == null)
 			{
 				throw new ArgumentNullException(nameof(dialog));
@@ -45,10 +55,10 @@ namespace ScenarioRunner.Automation.Operator
 			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(dialog);
 			AutomationElement fileNameComboBox = selectFileNameComboBox(fileNameComboBoxCandidates);
 			AutomationElement fileNameEdit = getFileNameEdit(fileNameComboBox);
-			AutomationElement openButton = getOpenButton(dialog);
+			AutomationElement actionButton = save ? getSaveButton(dialog) : getOpenButton(dialog);
 
 			IntPtr fileNameEditHandle = getNativeWindowHandle(fileNameEdit, "File name input");
-			IntPtr openButtonHandle = getNativeWindowHandle(openButton, "Open button");
+			IntPtr actionButtonHandle = getNativeWindowHandle(actionButton, save ? "Save button" : "Open button");
 
 			setFilePath(fileNameEditHandle, filePath);
 
@@ -59,11 +69,11 @@ namespace ScenarioRunner.Automation.Operator
 				fileNameComboBoxCandidates,
 				fileNameComboBox,
 				fileNameEdit,
-				openButton,
+				actionButton,
 				filePath,
 				actualFilePath);
 
-			SendMessage(openButtonHandle, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
+			SendMessage(actionButtonHandle, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
 		}
 
 		private AutomationElement[] getFileNameComboBoxCandidates(Window dialog)
@@ -91,10 +101,6 @@ namespace ScenarioRunner.Automation.Operator
 				return nativeCandidates.OrderByDescending(comboBox => comboBox.BoundingRectangle.Y).First();
 			}
 
-			/*
-			 * 標準Win32 ComboBoxとして識別できない環境では、
-			 * 従来どおり最も下に配置されている編集可能ComboBoxを優先する。
-			 */
 			return candidates.OrderByDescending(comboBox => comboBox.BoundingRectangle.Y).First();
 		}
 
@@ -133,18 +139,26 @@ namespace ScenarioRunner.Automation.Operator
 
 		private AutomationElement getOpenButton(Window dialog)
 		{
+			return getActionButton(dialog, "開く", "Open");
+		}
+
+		private AutomationElement getSaveButton(Window dialog)
+		{
+			return getActionButton(dialog, "保存", "Save");
+		}
+
+		private AutomationElement getActionButton(Window dialog, params string[] names)
+		{
 			AutomationElement[] buttons = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
 
-			AutomationElement openButton = buttons.FirstOrDefault(button =>
-				button.Name.StartsWith("開く", StringComparison.OrdinalIgnoreCase) ||
-				button.Name.StartsWith("Open", StringComparison.OrdinalIgnoreCase));
+			AutomationElement actionButton = buttons.FirstOrDefault(button => names.Any(name => button.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase)));
 
-			if (openButton == null)
+			if (actionButton == null)
 			{
-				throw new InvalidOperationException("Open button was not found.");
+				throw new InvalidOperationException($"File dialog action button was not found: {string.Join("/", names)}");
 			}
 
-			return openButton;
+			return actionButton;
 		}
 
 		private IntPtr getNativeWindowHandle(AutomationElement element, string elementName)
@@ -180,7 +194,7 @@ namespace ScenarioRunner.Automation.Operator
 			return builder.ToString();
 		}
 
-		private string createSelectionInfo(Window dialog, AutomationElement[] comboBoxCandidates, AutomationElement selectedComboBox, AutomationElement selectedEdit, AutomationElement openButton, string expectedFilePath, string actualFilePath)
+		private string createSelectionInfo(Window dialog, AutomationElement[] comboBoxCandidates, AutomationElement selectedComboBox, AutomationElement selectedEdit, AutomationElement actionButton, string expectedFilePath, string actualFilePath)
 		{
 			var builder = new StringBuilder();
 
@@ -206,7 +220,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			appendElementInfo(builder, "SelectedComboBox", selectedComboBox);
 			appendElementInfo(builder, "SelectedEdit", selectedEdit);
-			appendElementInfo(builder, "OpenButton", openButton);
+			appendElementInfo(builder, "ActionButton", actionButton);
 
 			builder.AppendLine($"ExpectedFilePath={expectedFilePath}");
 			builder.AppendLine($"EditTextAfterWM_SETTEXT={actualFilePath}");

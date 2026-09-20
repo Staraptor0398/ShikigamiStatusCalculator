@@ -20,6 +20,12 @@ namespace ScenarioRunner.Execution
 		public string ShikigamiBrokenDataFilePath { get; set; }
 		public string ShikigamiBackupDataFilePath { get; set; }
 
+		public string SavedMitamaFilePath { get; set; }
+		public string SavedBuildFilePath { get; set; }
+
+		public string SavedSnapshotBaseFilePath { get; set; }
+		public string SavedSnapshotTargetFilePath { get; set; }
+
 		public CancellationToken CancellationToken { get; }
 
 		public ScenarioExecutonContext(string scenarioPath, string guiExecutablePath, ScenarioExecutionOptions options, WindowBounds guiBounds, CancellationToken cancellationToken)

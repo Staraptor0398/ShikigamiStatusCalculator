@@ -65,6 +65,12 @@ namespace ScenarioRunner.ScenarioFormat
 					continue;
 				}
 
+				if (step.CommandType == ScenarioCommandType.SAVE_SNAPSHOT)
+				{
+					validateSaveSnapshotArguments(step);
+					continue;
+				}
+
 				int expectedCount = getExpectedArgumentCount(step.CommandType);
 
 				if (step.Arguments.Count < expectedCount)
@@ -119,6 +125,20 @@ namespace ScenarioRunner.ScenarioFormat
 			}
 		}
 
+		private void validateSaveSnapshotArguments(ScenarioStep step)
+		{
+			validateArgumentCount(step, 1, 1);
+
+			switch (step.Arguments[0])
+			{
+				case "BASE":
+				case "TARGET":
+					return;
+				default:
+					throw new ScenarioValidationException($"Unknown SAVE SNAPSHOT target at line {step.LineNumber}: {step.RawText}");
+			}
+		}
+
 		private void validateArgumentCount(ScenarioStep step, int minimumCount, int maximumCount)
 		{
 			if (step.Arguments.Count < minimumCount)
@@ -140,6 +160,11 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.OPEN_GUI:
 				case ScenarioCommandType.CLOSE_GUI:
 				case ScenarioCommandType.CLOSE_DIALOG:
+				case ScenarioCommandType.SAVE_MITAMA:
+				case ScenarioCommandType.SAVE_BUILD:
+				case ScenarioCommandType.LOAD_SAVED_MITAMA:
+				case ScenarioCommandType.LOAD_SAVED_BUILD:
+				case ScenarioCommandType.COMPARE_SAVED_SNAPSHOT:
 				case ScenarioCommandType.CALCULATE:
 				case ScenarioCommandType.CLEAR:
 				case ScenarioCommandType.RELOAD_SHIKIGAMI:
