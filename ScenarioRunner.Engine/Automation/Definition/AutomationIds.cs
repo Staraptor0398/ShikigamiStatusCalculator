@@ -7,10 +7,16 @@ namespace ScenarioRunner.Automation.Definition
 			public const string ID = "MainForm";
 
 			public const string SHIKIGAMI = "cmbShikigami";
+			public const string BASE_STATS = "txtBaseStats";
 
 			public static string MainStat(int mitamaSlot)
 			{
 				return $"cmbMainStat{mitamaSlot}";
+			}
+
+			public static string MainStatValue(int mitamaSlot)
+			{
+				return $"txtMainVal{mitamaSlot}";
 			}
 
 			public static string SubStat(int mitamaSlot, int subSlot)

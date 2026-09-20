@@ -166,6 +166,7 @@ namespace ScenarioRunner.Presentation
 			switch (commandType)
 			{
 				case ScenarioCommandType.CHECK_CALCULATION:
+				case ScenarioCommandType.CHECK_CLEARED:
 				case ScenarioCommandType.CHECK_SHIKIGAMI:
 				case ScenarioCommandType.CHECK_DIALOG:
 					return Color.DarkGreen;

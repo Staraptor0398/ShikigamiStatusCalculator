@@ -148,6 +148,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.CHECK_CALCULATION;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "CHECK", "CLEARED"))
+			{
+				commandType = ScenarioCommandType.CHECK_CLEARED;
+				argumentStartIndex = 2;
+			}
 			else if (matches(tokens, "CHECK", "SHIKIGAMI"))
 			{
 				commandType = ScenarioCommandType.CHECK_SHIKIGAMI;

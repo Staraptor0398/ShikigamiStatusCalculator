@@ -115,6 +115,9 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.CHECK_CALCULATION:
 					mCalculationOperator.Check(context.GuiSession);
 					return;
+				case ScenarioCommandType.CHECK_CLEARED:
+					mInputOperator.CheckCleared(context.GuiSession);
+					return;
 				case ScenarioCommandType.CHECK_SHIKIGAMI:
 					mShikigamiOperator.Check(context.GuiSession);
 					return;

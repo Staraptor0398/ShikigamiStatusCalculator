@@ -75,6 +75,63 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(dialog, AutomationIds.MessageBox.YES);
 		}
 
+		public void CheckCleared(GuiSession session)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+
+			checkComboBoxCleared(mainWindow, AutomationIds.MainForm.SHIKIGAMI);
+			checkTextBoxCleared(mainWindow, AutomationIds.MainForm.BASE_STATS);
+
+			for (int mitamaSlot = 1; mitamaSlot <= 6; mitamaSlot++)
+			{
+				checkComboBoxCleared(
+					mainWindow,
+					AutomationIds.MainForm.MainStat(mitamaSlot));
+
+				checkTextBoxCleared(
+					mainWindow,
+					AutomationIds.MainForm.MainStatValue(mitamaSlot));
+
+				for (int subSlot = 1; subSlot <= 4; subSlot++)
+				{
+					checkComboBoxCleared(
+						mainWindow,
+						AutomationIds.MainForm.SubStat(mitamaSlot, subSlot));
+
+					checkTextBoxCleared(
+						mainWindow,
+						AutomationIds.MainForm.SubStatValue(mitamaSlot, subSlot));
+				}
+			}
+
+			for (int slot = 1; slot <= 3; slot++)
+			{
+				checkComboBoxCleared(
+					mainWindow,
+					AutomationIds.MainForm.SetEffect(slot));
+			}
+
+			for (int slot = 1; slot <= 6; slot++)
+			{
+				checkComboBoxCleared(
+					mainWindow,
+					AutomationIds.MainForm.UniqueEffect(slot));
+			}
+
+			checkTextBoxCleared(
+				mainWindow,
+				AutomationIds.MainForm.MITAMA_ONLY);
+
+			checkTextBoxCleared(
+				mainWindow,
+				AutomationIds.MainForm.FINAL_STATS);
+		}
+
 		private void equipMain(Window mainWindow, IReadOnlyList<string> arguments)
 		{
 			int mitamaSlot = int.Parse(arguments[1]);
@@ -113,6 +170,28 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			string statType = arguments[2];
 
 			mComboBoxOperator.SelectItem(mainWindow, AutomationIds.MainForm.UniqueEffect(slot), statType);
+		}
+
+		private void checkComboBoxCleared(AutomationElement parent, string automationId)
+		{
+			string value = mComboBoxOperator.GetValue(parent, automationId);
+
+			if (!string.IsNullOrWhiteSpace(value))
+			{
+				throw new InvalidOperationException(
+					$"ComboBox was not cleared: {automationId}, value={value}");
+			}
+		}
+
+		private void checkTextBoxCleared(AutomationElement parent, string automationId)
+		{
+			string text = mTextBoxOperator.GetText(parent, automationId);
+
+			if (!string.IsNullOrWhiteSpace(text))
+			{
+				throw new InvalidOperationException(
+					$"TextBox was not cleared: {automationId}, value={text}");
+			}
 		}
 	}
 }

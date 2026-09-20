@@ -146,6 +146,7 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.BREAK_SHIKIGAMI_HEADER:
 				case ScenarioCommandType.CREATE_SHIKIGAMI_BACKUP:
 				case ScenarioCommandType.CHECK_CALCULATION:
+				case ScenarioCommandType.CHECK_CLEARED:
 				case ScenarioCommandType.CHECK_SHIKIGAMI:
 				case ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR:
 					return 0;
