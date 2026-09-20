@@ -21,6 +21,10 @@ jobs:
         with:
           nuget-version: latest
 
+      - name: Install FFmpeg
+        shell: pwsh
+        run: choco install ffmpeg -y
+
       - name: Restore SaveData packages
         shell: pwsh
         run: nuget restore SaveData\packages.config -PackagesDirectory packages
@@ -44,13 +48,61 @@ jobs:
               throw "ScenarioRunnerCli.exe was not built."
           }
 
-      - name: Run Scenario Batch
+      - name: Run Scenario Batch with recording
         shell: pwsh
         run: |
-          & ".\ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe" `
-            --run-directory ".\Scenario"
+          New-Item -ItemType Directory -Force -Path "ScenarioVideo" | Out-Null
 
-          exit $LASTEXITCODE
+          $videoPath = Join-Path $PWD "ScenarioVideo\ScenarioBatch.mp4"
+
+          $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+          $startInfo.FileName = "ffmpeg"
+          $startInfo.Arguments = "-y -f gdigrab -framerate 10 -draw_mouse 1 -i desktop -c:v libx264 -preset ultrafast -pix_fmt yuv420p `"$videoPath`""
+          $startInfo.UseShellExecute = $false
+          $startInfo.RedirectStandardInput = $true
+          $startInfo.RedirectStandardOutput = $false
+          $startInfo.RedirectStandardError = $false
+
+          $ffmpeg = New-Object System.Diagnostics.Process
+          $ffmpeg.StartInfo = $startInfo
+
+          $scenarioExitCode = 1
+
+          try {
+              if (-not $ffmpeg.Start()) {
+                  throw "Failed to start FFmpeg."
+              }
+
+              Start-Sleep -Seconds 1
+
+              & ".\ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe" `
+                --run-directory ".\Scenario"
+
+              $scenarioExitCode = $LASTEXITCODE
+          }
+          finally {
+              if (-not $ffmpeg.HasExited) {
+                  $ffmpeg.StandardInput.WriteLine("q")
+                  $ffmpeg.StandardInput.Flush()
+
+                  if (-not $ffmpeg.WaitForExit(10000)) {
+                      $ffmpeg.Kill()
+                      $ffmpeg.WaitForExit()
+                  }
+              }
+
+              $ffmpeg.Dispose()
+          }
+
+          exit $scenarioExitCode
+
+      - name: Upload Scenario Batch video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-batch-video
+          path: ScenarioVideo\ScenarioBatch.mp4
+          if-no-files-found: warn
 
       - name: Upload failure captures
         if: failure()
