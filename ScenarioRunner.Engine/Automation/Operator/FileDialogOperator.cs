@@ -84,12 +84,39 @@ namespace ScenarioRunner.Automation.Operator
 
 		private AutomationElement selectFileNameComboBox(AutomationElement[] candidates)
 		{
+			AutomationElement[] nativeCandidates = candidates.Where(isNativeComboBox).ToArray();
+
+			if (nativeCandidates.Length > 0)
+			{
+				return nativeCandidates.OrderByDescending(comboBox => comboBox.BoundingRectangle.Y).First();
+			}
+
 			/*
-			 * ファイル名入力欄は通常ダイアログ下部に配置される。
-			 * 編集可能なComboBoxが複数存在する場合は、
-			 * 最も下に配置されているものを優先する。
+			 * 標準Win32 ComboBoxとして識別できない環境では、
+			 * 従来どおり最も下に配置されている編集可能ComboBoxを優先する。
 			 */
 			return candidates.OrderByDescending(comboBox => comboBox.BoundingRectangle.Y).First();
+		}
+
+		private bool isNativeComboBox(AutomationElement comboBox)
+		{
+			string comboBoxClassName = comboBox.Properties.ClassName.ValueOrDefault;
+
+			if (!string.Equals(comboBoxClassName, "ComboBox", StringComparison.OrdinalIgnoreCase))
+			{
+				return false;
+			}
+
+			AutomationElement edit = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
+
+			if (edit == null)
+			{
+				return false;
+			}
+
+			string editClassName = edit.Properties.ClassName.ValueOrDefault;
+
+			return string.Equals(editClassName, "Edit", StringComparison.OrdinalIgnoreCase);
 		}
 
 		private AutomationElement getFileNameEdit(AutomationElement comboBox)

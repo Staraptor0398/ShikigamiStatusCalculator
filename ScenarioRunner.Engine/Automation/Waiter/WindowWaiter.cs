@@ -164,7 +164,22 @@ namespace ScenarioRunner.Automation.Waiter
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			return WaitForWindow(session, isFileDialog);
+			int elapsed = 0;
+
+			while (elapsed < DEFAULT_TIMEOUT_MS)
+			{
+				Window fileDialog = findFileDialog(session);
+
+				if (fileDialog != null)
+				{
+					return fileDialog;
+				}
+
+				Thread.Sleep(DEFAULT_INTERVAL_MS);
+				elapsed += DEFAULT_INTERVAL_MS;
+			}
+
+			throw new InvalidOperationException($"File dialog was not found within {DEFAULT_TIMEOUT_MS} ms.");
 		}
 
 		private Window findWindow(GuiSession session, Func<Window, bool> predicate)
@@ -174,10 +189,36 @@ namespace ScenarioRunner.Automation.Waiter
 			.FirstOrDefault(predicate);
 		}
 
+		private Window findFileDialog(GuiSession session)
+		{
+			int processId = session.Application.ProcessId;
+			AutomationElement desktop = session.Automation.GetDesktop();
+
+			AutomationElement[] candidates = desktop
+				.FindAllDescendants(cf => cf.ByControlType(ControlType.Window))
+				.Where(element => element.Properties.ProcessId.ValueOrDefault == processId && isFileDialog(element))
+				.ToArray();
+
+			if (candidates.Length == 0)
+			{
+				return null;
+			}
+
+			AutomationElement fileDialog = candidates
+				.OrderBy(getDescendantWindowCount)
+				.First();
+
+			return fileDialog.AsWindow();
+		}
+
+		private int getDescendantWindowCount(AutomationElement element)
+		{
+			return element.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).Length;
+		}
+
 		private bool isFileDialog(AutomationElement element)
 		{
 			AutomationElement[] comboBoxes = element.FindAllDescendants(cf => cf.ByControlType(ControlType.ComboBox));
-
 			AutomationElement[] buttons = element.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
 
 			bool hasFileNameInput = comboBoxes.Any(comboBox => comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)) != null);
