@@ -1,0 +1,21 @@
+# CompareSnapshotNegativeDifference.scenario
+#
+# 2つのSnapshotを逆順で比較し、
+# 比較対象のステータス差分が負方向として
+# 正しく表示されることを確認する。
+
+START
+
+OPEN GUI
+
+COMPARE SNAPSHOT "TestData/SnapshotComparisonTarget.snapshot.json" "TestData/SnapshotComparisonBase.snapshot.json"
+
+# Base側よりTarget側の会心DMGが10低いため、
+# 差分が -10 と表示されることを確認する。
+CHECK SNAPSHOT COMPARISON "会心DMG" "-10"
+
+CLOSE DIALOG
+
+CLOSE GUI
+
+END
