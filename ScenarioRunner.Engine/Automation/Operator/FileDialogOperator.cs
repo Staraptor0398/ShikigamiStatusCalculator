@@ -94,14 +94,21 @@ namespace ScenarioRunner.Automation.Operator
 
 		private AutomationElement selectFileNameComboBox(AutomationElement[] candidates)
 		{
+			AutomationElement fileNameComboBox = candidates.FirstOrDefault(comboBox => string.Equals(comboBox.Properties.AutomationId.ValueOrDefault, "FileNameControlHost", StringComparison.Ordinal));
+
+			if (fileNameComboBox != null)
+			{
+				return fileNameComboBox;
+			}
+
 			AutomationElement[] nativeCandidates = candidates.Where(isNativeComboBox).ToArray();
 
 			if (nativeCandidates.Length > 0)
 			{
-				return nativeCandidates.OrderByDescending(comboBox => comboBox.BoundingRectangle.Y).First();
+				return nativeCandidates.First();
 			}
 
-			return candidates.OrderByDescending(comboBox => comboBox.BoundingRectangle.Y).First();
+			return candidates.First();
 		}
 
 		private bool isNativeComboBox(AutomationElement comboBox)
