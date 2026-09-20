@@ -1,0 +1,35 @@
+# ClearAndRecalculate.scenario
+#
+# 計算済みの入力内容をCLEARした後、
+# 別の式神と御魂を再設定して再度計算できることを確認する。
+#
+# CLEARによって表示上の入力値だけでなく、
+# 計算に使用する内部状態も正常に初期化され、
+# その後の入力および計算へ影響を残さないことを確認する。
+
+START
+
+OPEN GUI
+
+# 1回目の計算
+SEL SHIKIGAMI "願紡縁結神"
+LOAD MITAMA "TestData/Valid.mitama.json"
+
+CALC
+CHECK CALC
+
+# 入力内容と計算結果を初期化
+CLEAR
+CHECK CLEARED
+
+# CLEAR後に別の式神で入力を再構築
+SEL SHIKIGAMI "麓銘大嶽丸"
+LOAD MITAMA "TestData/Valid.mitama.json"
+
+# CLEAR後も正常に再計算できることを確認
+CALC
+CHECK CALC
+
+CLOSE GUI
+
+END
