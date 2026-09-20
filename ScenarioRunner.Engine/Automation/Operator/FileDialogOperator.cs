@@ -3,19 +3,30 @@ using FlaUI.Core.Definitions;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace ScenarioRunner.Automation.Operator
 {
 	public class FileDialogOperator
 	{
 		private const uint WM_SETTEXT = 0x000C;
+		private const uint WM_GETTEXT = 0x000D;
+		private const uint WM_GETTEXTLENGTH = 0x000E;
 		private const uint BM_CLICK = 0x00F5;
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, string lParam);
 
+		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
+		private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, StringBuilder lParam);
+
 		[DllImport("user32.dll")]
 		private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		private static extern int GetDlgCtrlID(IntPtr hWnd);
+
+		public string LastSelectionInfo { get; private set; }
 
 		public void SelectFile(Window dialog, string filePath)
 		{
@@ -29,7 +40,10 @@ namespace ScenarioRunner.Automation.Operator
 				throw new ArgumentException("File path is empty.", nameof(filePath));
 			}
 
-			AutomationElement fileNameComboBox = getFileNameComboBox(dialog);
+			LastSelectionInfo = null;
+
+			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(dialog);
+			AutomationElement fileNameComboBox = selectFileNameComboBox(fileNameComboBoxCandidates);
 			AutomationElement fileNameEdit = getFileNameEdit(fileNameComboBox);
 			AutomationElement openButton = getOpenButton(dialog);
 
@@ -38,10 +52,21 @@ namespace ScenarioRunner.Automation.Operator
 
 			setFilePath(fileNameEditHandle, filePath);
 
+			string actualFilePath = getText(fileNameEditHandle);
+
+			LastSelectionInfo = createSelectionInfo(
+				dialog,
+				fileNameComboBoxCandidates,
+				fileNameComboBox,
+				fileNameEdit,
+				openButton,
+				filePath,
+				actualFilePath);
+
 			SendMessage(openButtonHandle, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
 		}
 
-		private AutomationElement getFileNameComboBox(Window dialog)
+		private AutomationElement[] getFileNameComboBoxCandidates(Window dialog)
 		{
 			AutomationElement[] comboBoxes = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.ComboBox));
 
@@ -54,6 +79,11 @@ namespace ScenarioRunner.Automation.Operator
 				throw new InvalidOperationException("File name ComboBox was not found.");
 			}
 
+			return candidates;
+		}
+
+		private AutomationElement selectFileNameComboBox(AutomationElement[] candidates)
+		{
 			/*
 			 * ファイル名入力欄は通常ダイアログ下部に配置される。
 			 * 編集可能なComboBoxが複数存在する場合は、
@@ -110,6 +140,67 @@ namespace ScenarioRunner.Automation.Operator
 			{
 				throw new InvalidOperationException("File path could not be set.");
 			}
+		}
+
+		private string getText(IntPtr handle)
+		{
+			int length = SendMessage(handle, WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero).ToInt32();
+
+			var builder = new StringBuilder(length + 1);
+
+			SendMessage(handle, WM_GETTEXT, new IntPtr(builder.Capacity), builder);
+
+			return builder.ToString();
+		}
+
+		private string createSelectionInfo(Window dialog, AutomationElement[] comboBoxCandidates, AutomationElement selectedComboBox, AutomationElement selectedEdit, AutomationElement openButton, string expectedFilePath, string actualFilePath)
+		{
+			var builder = new StringBuilder();
+
+			builder.AppendLine();
+			builder.AppendLine("FileDialog diagnostics:");
+
+			appendElementInfo(builder, "Dialog", dialog);
+
+			builder.AppendLine($"ComboBoxCandidates={comboBoxCandidates.Length}");
+
+			for (int i = 0; i < comboBoxCandidates.Length; i++)
+			{
+				AutomationElement comboBox = comboBoxCandidates[i];
+				AutomationElement edit = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
+
+				appendElementInfo(builder, $"ComboBox[{i}]", comboBox);
+
+				if (edit != null)
+				{
+					appendElementInfo(builder, $"ComboBox[{i}].Edit", edit);
+				}
+			}
+
+			appendElementInfo(builder, "SelectedComboBox", selectedComboBox);
+			appendElementInfo(builder, "SelectedEdit", selectedEdit);
+			appendElementInfo(builder, "OpenButton", openButton);
+
+			builder.AppendLine($"ExpectedFilePath={expectedFilePath}");
+			builder.AppendLine($"EditTextAfterWM_SETTEXT={actualFilePath}");
+
+			return builder.ToString().TrimEnd();
+		}
+
+		private void appendElementInfo(StringBuilder builder, string label, AutomationElement element)
+		{
+			IntPtr handle = element.Properties.NativeWindowHandle.ValueOrDefault;
+			int controlId = handle == IntPtr.Zero ? 0 : GetDlgCtrlID(handle);
+
+			builder.AppendLine(
+				$"{label}: " +
+				$"Name={element.Properties.Name.ValueOrDefault}, " +
+				$"AutomationId={element.Properties.AutomationId.ValueOrDefault}, " +
+				$"ClassName={element.Properties.ClassName.ValueOrDefault}, " +
+				$"ControlType={element.Properties.ControlType.ValueOrDefault}, " +
+				$"NativeWindowHandle={handle}, " +
+				$"ControlId={controlId}, " +
+				$"Bounds={element.BoundingRectangle}");
 		}
 	}
 }

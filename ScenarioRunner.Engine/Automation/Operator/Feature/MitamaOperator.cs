@@ -101,7 +101,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 
 			throw new InvalidOperationException(
-				$"SaveData file path was not selected correctly within {FILE_PATH_WAIT_TIMEOUT_MS} ms. Expected={expectedFilePath}, Actual={actualFilePath}");
+				$"SaveData file path was not selected correctly within {FILE_PATH_WAIT_TIMEOUT_MS} ms. " +
+				$"Expected={expectedFilePath}, Actual={actualFilePath}" +
+				$"{Environment.NewLine}{mFileDialogOperator.LastSelectionInfo}");
 		}
 
 		private bool isLoadDialog(AutomationElement element, int processId)
