@@ -46,6 +46,80 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 		}
 
 		[TestMethod]
+		public void Parse_SaveCommands()
+		{
+			var parser = new ScenarioParser();
+			string[] lines =
+			{
+				"START",
+				"SAVE MITAMA",
+				"SAVE BUILD",
+				"SAVE SNAPSHOT BASE",
+				"SAVE SNAPSHOT TARGET",
+				"END"
+			};
+
+			Scenario actual = parser.Parse("Test.scenario", lines);
+
+			Assert.AreEqual(4, actual.Steps.Count);
+
+			Assert.AreEqual(ScenarioCommandType.SAVE_MITAMA, actual.Steps[0].CommandType);
+			Assert.AreEqual(0, actual.Steps[0].Arguments.Count);
+
+			Assert.AreEqual(ScenarioCommandType.SAVE_BUILD, actual.Steps[1].CommandType);
+			Assert.AreEqual(0, actual.Steps[1].Arguments.Count);
+
+			Assert.AreEqual(ScenarioCommandType.SAVE_SNAPSHOT, actual.Steps[2].CommandType);
+			Assert.AreEqual(1, actual.Steps[2].Arguments.Count);
+			Assert.AreEqual("BASE", actual.Steps[2].Arguments[0]);
+
+			Assert.AreEqual(ScenarioCommandType.SAVE_SNAPSHOT, actual.Steps[3].CommandType);
+			Assert.AreEqual(1, actual.Steps[3].Arguments.Count);
+			Assert.AreEqual("TARGET", actual.Steps[3].Arguments[0]);
+		}
+
+		[TestMethod]
+		public void Parse_LoadSavedCommands()
+		{
+			var parser = new ScenarioParser();
+			string[] lines =
+			{
+				"START",
+				"LOAD SAVED MITAMA",
+				"LOAD SAVED BUILD",
+				"END"
+			};
+
+			Scenario actual = parser.Parse("Test.scenario", lines);
+
+			Assert.AreEqual(2, actual.Steps.Count);
+
+			Assert.AreEqual(ScenarioCommandType.LOAD_SAVED_MITAMA, actual.Steps[0].CommandType);
+			Assert.AreEqual(0, actual.Steps[0].Arguments.Count);
+
+			Assert.AreEqual(ScenarioCommandType.LOAD_SAVED_BUILD, actual.Steps[1].CommandType);
+			Assert.AreEqual(0, actual.Steps[1].Arguments.Count);
+		}
+
+		[TestMethod]
+		public void Parse_CompareSavedSnapshot()
+		{
+			var parser = new ScenarioParser();
+			string[] lines =
+			{
+				"START",
+				"COMPARE SAVED SNAPSHOT",
+				"END"
+			};
+
+			Scenario actual = parser.Parse("Test.scenario", lines);
+			ScenarioStep step = actual.Steps[0];
+
+			Assert.AreEqual(ScenarioCommandType.COMPARE_SAVED_SNAPSHOT, step.CommandType);
+			Assert.AreEqual(0, step.Arguments.Count);
+		}
+
+		[TestMethod]
 		public void Parse_UnquotedString()
 		{
 			var parser = new ScenarioParser();

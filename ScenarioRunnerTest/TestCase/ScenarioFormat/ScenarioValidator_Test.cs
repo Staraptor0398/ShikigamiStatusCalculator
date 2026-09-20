@@ -53,6 +53,204 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 		}
 
 		[TestMethod]
+		public void Validate_SaveMitama()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.SAVE_MITAMA, Array.Empty<string>(), "SAVE MITAMA")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_SaveMitamaWithArgument()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.SAVE_MITAMA, new[] { "HOGE" }, "SAVE MITAMA HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Too many arguments at line 2: SAVE MITAMA HOGE", ex.Message);
+			}
+		}
+
+		[TestMethod]
+		public void Validate_SaveBuild()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.SAVE_BUILD, Array.Empty<string>(), "SAVE BUILD")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_SaveSnapshotBase()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.SAVE_SNAPSHOT, new[] { "BASE" }, "SAVE SNAPSHOT BASE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_SaveSnapshotTarget()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.SAVE_SNAPSHOT, new[] { "TARGET" }, "SAVE SNAPSHOT TARGET")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_SaveSnapshotWithoutTarget()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.SAVE_SNAPSHOT, Array.Empty<string>(), "SAVE SNAPSHOT")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Argument is missing at line 2: SAVE SNAPSHOT", ex.Message);
+			}
+		}
+
+		[TestMethod]
+		public void Validate_SaveSnapshotUnknownTarget()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.SAVE_SNAPSHOT, new[] { "HOGE" }, "SAVE SNAPSHOT HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual(
+					"Unknown SAVE SNAPSHOT target at line 2: SAVE SNAPSHOT HOGE",
+					ex.Message);
+			}
+		}
+
+		[TestMethod]
+		public void Validate_SaveSnapshotWithTooManyArguments()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.SAVE_SNAPSHOT, new[] { "BASE", "HOGE" }, "SAVE SNAPSHOT BASE HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Too many arguments at line 2: SAVE SNAPSHOT BASE HOGE", ex.Message);
+			}
+		}
+
+		[TestMethod]
+		public void Validate_LoadSavedMitama()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.LOAD_SAVED_MITAMA, Array.Empty<string>(), "LOAD SAVED MITAMA")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_LoadSavedBuild()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.LOAD_SAVED_BUILD, Array.Empty<string>(), "LOAD SAVED BUILD")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_CompareSavedSnapshot()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.COMPARE_SAVED_SNAPSHOT, Array.Empty<string>(), "COMPARE SAVED SNAPSHOT")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_CompareSavedSnapshotWithArgument()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.COMPARE_SAVED_SNAPSHOT, new[] { "HOGE" }, "COMPARE SAVED SNAPSHOT HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Too many arguments at line 2: COMPARE SAVED SNAPSHOT HOGE", ex.Message);
+			}
+		}
+
+		[TestMethod]
 		public void Validate_RecoverShikigamiBackup()
 		{
 			var validator = new ScenarioValidator();
