@@ -1,0 +1,41 @@
+# SaveAndLoadMitama.scenario
+#
+# 御魂セットをGui.exeの保存機能で保存した後、
+# 入力内容をCLEARし、同一Scenario内で保存した御魂セットを
+# 再読み込みできることを確認する。
+#
+# SAVE MITAMAによって生成されたファイルが
+# LOAD SAVED MITAMAから正しく参照され、
+# 再読み込み後も正常に計算できることを確認する。
+
+START
+
+OPEN GUI
+
+# 対象式神を選択
+SEL SHIKIGAMI "願紡縁結神"
+
+# 正常な御魂セットを読み込む
+LOAD MITAMA "../Calculation/TestData/Valid.mitama.json"
+
+# Gui.exeの保存機能で御魂セットを保存する
+SAVE MITAMA
+
+# 入力内容を初期化する
+CLEAR
+CHECK CLEARED
+
+# 同一Scenario内で保存した御魂セットを再読み込みする
+LOAD SAVED MITAMA
+
+# 御魂セット保存データには式神が含まれないため再選択する
+SEL SHIKIGAMI "願紡縁結神"
+
+# 再読み込み後も正常に計算できることを確認する
+CALC
+CHECK CALC
+
+CLOSE GUI
+
+END
+
