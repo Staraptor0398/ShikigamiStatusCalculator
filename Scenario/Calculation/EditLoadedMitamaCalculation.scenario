@@ -1,0 +1,33 @@
+# EditLoadedMitamaCalculation.scenario
+#
+# 御魂セットをファイルから読み込んだ後、
+# Gui.exe上で一部の御魂入力を変更し、
+# 変更後の内容で正常に計算できることを確認する。
+#
+# LOAD MITAMAによって読み込まれた御魂データが
+# Gui上の編集可能な入力状態として正しく反映され、
+# その後の手入力変更が計算に使用されることを確認する。
+
+START
+
+OPEN GUI
+
+# 対象式神を選択
+SEL SHIKIGAMI "願紡縁結神"
+
+# 正常な御魂セットを読み込む
+LOAD MITAMA "TestData/Valid.mitama.json"
+
+# 読み込み済みの2番御魂をGui上で変更する
+EQUIP MITAMA MAIN 2 "追加攻撃力"
+EQUIP MITAMA SUB 2 1 "効果抵抗" "5"
+
+# 編集後の御魂状態で計算を実行する
+CALC
+
+# 編集後も正常に計算結果が表示されることを確認する
+CHECK CALC
+
+CLOSE GUI
+
+END
