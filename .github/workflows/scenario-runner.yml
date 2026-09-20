@@ -58,6 +58,14 @@ jobs:
 
           exit $LASTEXITCODE
 
+      - name: Upload failure captures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-captures
+          path: ScenarioRunnerCli\bin\x64\Release\Capture
+          if-no-files-found: ignore
+
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,3 +1,4 @@
+using ScenarioRunner.Automation.Capture;
 using ScenarioRunner.Automation.Model;
 using ScenarioRunner.Automation.Watcher;
 using ScenarioRunner.Log;
@@ -14,6 +15,7 @@ namespace ScenarioRunner.Execution
 		private readonly ScenarioCommandExecutor mCommandExecutor;
 
 		private readonly ScenarioLogger mLogger;
+		private readonly ScreenshotCapturer mScreenshotCapturer;
 
 		private readonly string mGuiExecutablePath;
 
@@ -28,6 +30,9 @@ namespace ScenarioRunner.Execution
 			mGuiBounds = guiBounds;
 
 			mCommandExecutor = new ScenarioCommandExecutor();
+
+			string captureDirectoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Capture");
+			mScreenshotCapturer = new ScreenshotCapturer(captureDirectoryPath);
 		}
 
 		public ScenarioExecutionResult Execute(Scenario scenario, ScenarioExecutionOptions options)
@@ -94,7 +99,18 @@ namespace ScenarioRunner.Execution
 						{
 							stopwatch.Stop();
 
+							string screenshotPath = tryCaptureFailureScreenshot(scenario.FilePath, step.LineNumber, out string screenshotError);
+
 							mLogger.StepFailed(step, ex.Message);
+
+							if (!string.IsNullOrWhiteSpace(screenshotPath))
+							{
+								mLogger.Write($"Screenshot: {screenshotPath}");
+							}
+							else if (!string.IsNullOrWhiteSpace(screenshotError))
+							{
+								mLogger.Write($"Screenshot capture failed: {screenshotError}");
+							}
 
 							var failedResult = new ScenarioExecutionResult(false, false, passedCount, 1, stopwatch.Elapsed, step.LineNumber, ex.Message);
 							mLogger.ScenarioFailed(failedResult);
@@ -123,6 +139,22 @@ namespace ScenarioRunner.Execution
 		public void Stop()
 		{
 			mCancellationTokenSource?.Cancel();
+		}
+
+		private string tryCaptureFailureScreenshot(string scenarioPath, int lineNumber, out string errorMessage)
+		{
+			try
+			{
+				errorMessage = null;
+
+				return mScreenshotCapturer.Capture(scenarioPath, lineNumber);
+			}
+			catch (Exception ex)
+			{
+				errorMessage = ex.Message;
+
+				return null;
+			}
 		}
 
 		private static void cleanupGui(ScenarioExecutonContext context)
