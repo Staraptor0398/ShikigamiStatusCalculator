@@ -129,7 +129,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(loadDialog, AutomationIds.SaveDataLoadDialog.BROWSE);
 
 			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
-			mFileDialogOperator.SelectFile(fileDialog, filePath);
+			mFileDialogOperator.SelectLoadFile(fileDialog, filePath);
 
 			waitForFilePath(loadDialog, AutomationIds.SaveDataLoadDialog.FILE_PATH, filePath);
 

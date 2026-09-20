@@ -38,7 +38,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.SHIKIGAMI_RECOVERY);
 
 			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
-			mFileDialogOperator.SelectFile(fileDialog, recoveryFilePath);
+			mFileDialogOperator.SelectLoadFile(fileDialog, recoveryFilePath);
 
 			Window recoveryForm = getRecoveryForm(session);
 			mButtonOperator.Click(recoveryForm, AutomationIds.ShikigamiRecoveryDialog.RECOVERY);

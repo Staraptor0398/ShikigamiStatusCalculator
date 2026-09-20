@@ -51,12 +51,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(fileSelectDialog, AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_BASE_SNAPSHOT);
 
 			Window baseFileDialog = mWindowWaiter.WaitForFileDialog(context.GuiSession);
-			mFileDialogOperator.SelectFile(baseFileDialog, context.ResolvePath(baseSnapshotPath));
+			mFileDialogOperator.SelectLoadFile(baseFileDialog, context.ResolvePath(baseSnapshotPath));
 
 			mButtonOperator.Click(fileSelectDialog, AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_TARGET_SNAPSHOT);
 
 			Window targetFileDialog = mWindowWaiter.WaitForFileDialog(context.GuiSession);
-			mFileDialogOperator.SelectFile(targetFileDialog, context.ResolvePath(targetSnapshotPath));
+			mFileDialogOperator.SelectLoadFile(targetFileDialog, context.ResolvePath(targetSnapshotPath));
 
 			mButtonOperator.Click(fileSelectDialog, AutomationIds.SnapshotCompareFileSelectDialog.COMPARE);
 

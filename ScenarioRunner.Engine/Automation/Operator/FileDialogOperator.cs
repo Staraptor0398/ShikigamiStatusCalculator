@@ -14,6 +14,8 @@ namespace ScenarioRunner.Automation.Operator
 		private const uint WM_GETTEXTLENGTH = 0x000E;
 		private const uint BM_CLICK = 0x00F5;
 
+		private const string FILE_NAME_CONTROL_HOST = "FileNameControlHost";
+
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, string lParam);
 
@@ -28,17 +30,57 @@ namespace ScenarioRunner.Automation.Operator
 
 		public string LastSelectionInfo { get; private set; }
 
-		public void SelectFile(Window dialog, string filePath)
+		public void SelectLoadFile(Window dialog, string filePath)
 		{
-			selectFile(dialog, filePath, false);
+			validateArguments(dialog, filePath);
+
+			LastSelectionInfo = null;
+
+			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(dialog);
+			AutomationElement fileNameComboBox = selectFileNameComboBox(fileNameComboBoxCandidates);
+			AutomationElement fileNameEdit = getFileNameEdit(fileNameComboBox);
+			AutomationElement openButton = getOpenButton(dialog);
+
+			IntPtr fileNameEditHandle = getNativeWindowHandle(fileNameEdit, "File name input");
+			IntPtr openButtonHandle = getNativeWindowHandle(openButton, "Open button");
+
+			setFilePath(fileNameEditHandle, filePath);
+
+			string actualFilePath = getText(fileNameEditHandle);
+
+			LastSelectionInfo = createSelectionInfo(dialog, fileNameComboBoxCandidates, fileNameComboBox, fileNameEdit, openButton, filePath, actualFilePath);
+
+			SendMessage(openButtonHandle, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
 		}
 
 		public void SelectSaveFile(Window dialog, string filePath)
 		{
-			selectFile(dialog, filePath, true);
+			validateArguments(dialog, filePath);
+
+			LastSelectionInfo = null;
+
+			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(dialog);
+			AutomationElement fileNameComboBox = selectFileNameComboBox(fileNameComboBoxCandidates);
+			AutomationElement fileNameEdit = getFileNameEdit(fileNameComboBox);
+			AutomationElement saveButton = getSaveButton(dialog);
+
+			if (!fileNameEdit.Patterns.Value.IsSupported)
+			{
+				throw new InvalidOperationException("ValuePattern is not supported by file name input.");
+			}
+
+			fileNameEdit.Focus();
+			fileNameEdit.Patterns.Value.Pattern.SetValue(filePath);
+
+			IntPtr fileNameEditHandle = getNativeWindowHandle(fileNameEdit, "File name input");
+			string actualFilePath = getText(fileNameEditHandle);
+
+			LastSelectionInfo = createSelectionInfo(dialog, fileNameComboBoxCandidates, fileNameComboBox, fileNameEdit, saveButton, filePath, actualFilePath);
+
+			saveButton.AsButton().Invoke();
 		}
 
-		private void selectFile(Window dialog, string filePath, bool save)
+		private void validateArguments(Window dialog, string filePath)
 		{
 			if (dialog == null)
 			{
@@ -49,31 +91,6 @@ namespace ScenarioRunner.Automation.Operator
 			{
 				throw new ArgumentException("File path is empty.", nameof(filePath));
 			}
-
-			LastSelectionInfo = null;
-
-			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(dialog);
-			AutomationElement fileNameComboBox = selectFileNameComboBox(fileNameComboBoxCandidates);
-			AutomationElement fileNameEdit = getFileNameEdit(fileNameComboBox);
-			AutomationElement actionButton = save ? getSaveButton(dialog) : getOpenButton(dialog);
-
-			IntPtr fileNameEditHandle = getNativeWindowHandle(fileNameEdit, "File name input");
-			IntPtr actionButtonHandle = getNativeWindowHandle(actionButton, save ? "Save button" : "Open button");
-
-			setFilePath(fileNameEditHandle, filePath);
-
-			string actualFilePath = getText(fileNameEditHandle);
-
-			LastSelectionInfo = createSelectionInfo(
-				dialog,
-				fileNameComboBoxCandidates,
-				fileNameComboBox,
-				fileNameEdit,
-				actionButton,
-				filePath,
-				actualFilePath);
-
-			SendMessage(actionButtonHandle, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
 		}
 
 		private AutomationElement[] getFileNameComboBoxCandidates(Window dialog)
@@ -94,7 +111,7 @@ namespace ScenarioRunner.Automation.Operator
 
 		private AutomationElement selectFileNameComboBox(AutomationElement[] candidates)
 		{
-			AutomationElement fileNameComboBox = candidates.FirstOrDefault(comboBox => string.Equals(comboBox.Properties.AutomationId.ValueOrDefault, "FileNameControlHost", StringComparison.Ordinal));
+			AutomationElement fileNameComboBox = candidates.FirstOrDefault(comboBox => string.Equals(comboBox.Properties.AutomationId.ValueOrDefault, FILE_NAME_CONTROL_HOST, StringComparison.Ordinal));
 
 			if (fileNameComboBox != null)
 			{
@@ -230,7 +247,7 @@ namespace ScenarioRunner.Automation.Operator
 			appendElementInfo(builder, "ActionButton", actionButton);
 
 			builder.AppendLine($"ExpectedFilePath={expectedFilePath}");
-			builder.AppendLine($"EditTextAfterWM_SETTEXT={actualFilePath}");
+			builder.AppendLine($"FileNameTextAfterSet={actualFilePath}");
 
 			return builder.ToString().TrimEnd();
 		}
