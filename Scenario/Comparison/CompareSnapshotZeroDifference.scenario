@@ -1,0 +1,18 @@
+# CompareSnapshotZeroDifference.scenario
+#
+# 内容が同一の別Snapshotファイル同士を比較し、
+# 各ステータスの差分が0として表示されることを確認する。
+
+START
+
+OPEN GUI
+
+COMPARE SNAPSHOT "TestData/SnapshotComparisonSameA.snapshot.json" "TestData/SnapshotComparisonSameB.snapshot.json"
+
+CHECK SNAPSHOT COMPARISON "攻撃力" "0"
+
+CLOSE DIALOG
+
+CLOSE GUI
+
+END
