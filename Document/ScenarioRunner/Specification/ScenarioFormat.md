@@ -599,6 +599,28 @@ Version 2で追加するコマンドを以下に定義する。
 
 ### 入力・データ操作
 
+#### CLEAR SHIKIGAMI
+Gui.exe上で現在選択されている式神の選択を解除する。
+
+形式：
+
+    CLEAR SHIKIGAMI
+
+本コマンドは式神の選択のみを解除する。
+
+御魂のメインステータス、サブステータス、
+2セット効果、固有効果などの御魂入力内容は変更しない。
+
+Gui.exe上のすべての入力内容および計算結果を初期状態へ戻す場合は、
+`CLEAR` を使用する。
+
+本コマンドは、
+御魂入力を保持したまま式神のみを未選択状態へ戻し、
+御魂のみのステータス計算へ切り替える試験などで使用する。
+
+式神が選択されていない状態で実行した場合も、
+未選択状態を維持するものとし、コマンドの実行失敗とは扱わない。
+
 #### SAVE MITAMA
 Gui.exe上の現在の御魂入力内容を、御魂セット保存データとして保存する。
 
@@ -974,6 +996,7 @@ Version 1では以下の予約語およびコマンドを実装対象とする�
 Version 2では、Version 1の実装対象に加えて以下のコマンドを実装対象とする。
 
     CHECK CLEARED
+    CLEAR SHIKIGAMI
     SAVE MITAMA
     SAVE BUILD
     SAVE SNAPSHOT BASE
@@ -1239,3 +1262,4 @@ Scenario実行中に生成される保存ファイルの具体的なパスを
 | 1.9 | 2026-09-06 | スナップショット比較結果の指定ステータスについて、期待差分と一致することを確認する `CHECK SNAPSHOT COMPARISON` コマンドを追加。 |
 | 2.0 | 2026-09-20 | `CHECK CLEARED` コマンドを追加。実装対象一覧をVersion別に整理し、Version 2実装対象として定義。入力クリア試験の記述例を追加。 |
 | 2.1 | 2026-09-20 | Gui.exeの通常の保存処理を使用する `SAVE MITAMA`、`SAVE BUILD`、`SAVE SNAPSHOT BASE`、`SAVE SNAPSHOT TARGET` と、同一Scenario内で保存したデータを利用する `LOAD SAVED MITAMA`、`LOAD SAVED BUILD`、`COMPARE SAVED SNAPSHOT` をVersion 2実装対象として追加。保存ファイルパスをScenario Runnerが管理する仕様を定義。 |
+| 2.2 | 2026-09-22 | 式神選択のみを解除し、御魂入力を保持する `CLEAR SHIKIGAMI` コマンドをVersion 2実装対象として追加。 |
