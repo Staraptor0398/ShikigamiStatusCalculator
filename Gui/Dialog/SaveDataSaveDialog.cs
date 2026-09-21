@@ -216,7 +216,14 @@ namespace Gui.Dialog
 				dialog.InitialDirectory = getSaveTypeDirectoryPath(saveType);
 				dialog.FileName = createDefaultFileName(saveType);
 
-				if (dialog.ShowDialog() != DialogResult.OK)
+				DialogResult result = dialog.ShowDialog();
+
+				Logger.Info(
+					$"Operation=SaveFileDialog " +
+					$"Result={result} " +
+					$"FileName={dialog.FileName}");
+
+				if (result != DialogResult.OK)
 				{
 					return;
 				}
