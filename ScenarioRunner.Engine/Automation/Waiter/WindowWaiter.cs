@@ -14,7 +14,6 @@ namespace ScenarioRunner.Automation.Waiter
 		private const int DEFAULT_WAIT_INTERVAL_MS = 50;
 
 		private const string FILE_NAME_CONTROL_HOST = "FileNameControlHost";
-		private const string FILE_DIALOG_ACTION_BUTTON = "1";
 
 		public Window FindWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
@@ -219,23 +218,16 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private bool isFileDialog(AutomationElement element)
 		{
-			AutomationElement fileNameComboBox = element.FindFirstDescendant(cf => cf.ByAutomationId(FILE_NAME_CONTROL_HOST));
+			AutomationElement[] comboBoxes = element.FindAllDescendants(cf => cf.ByControlType(ControlType.ComboBox));
 
-			if (fileNameComboBox == null || fileNameComboBox.Properties.ControlType.ValueOrDefault != ControlType.ComboBox)
+			AutomationElement fileNameComboBox = comboBoxes.FirstOrDefault(comboBox => string.Equals(comboBox.Properties.AutomationId.ValueOrDefault, FILE_NAME_CONTROL_HOST, StringComparison.Ordinal));
+
+			if (fileNameComboBox == null)
 			{
 				return false;
 			}
 
-			AutomationElement fileNameEdit = fileNameComboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
-
-			if (fileNameEdit == null)
-			{
-				return false;
-			}
-
-			AutomationElement actionButton = element.FindFirstDescendant(cf => cf.ByAutomationId(FILE_DIALOG_ACTION_BUTTON));
-
-			return actionButton != null && actionButton.Properties.ControlType.ValueOrDefault == ControlType.Button;
+			return fileNameComboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)) != null;
 		}
 
 		private void dumpWindows(Window[] windows)
