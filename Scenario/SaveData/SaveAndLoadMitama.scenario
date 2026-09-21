@@ -4,9 +4,9 @@
 # 入力内容をCLEARし、同一Scenario内で保存した御魂セットを
 # 再読み込みできることを確認する。
 #
-# SAVE MITAMAによって生成されたファイルが
-# LOAD SAVED MITAMAから正しく参照され、
-# 再読み込み後も正常に計算できることを確認する。
+# 保存前と再読み込み後の計算結果をSnapshotとして保存し、
+# 全ステータスの差分が0であることを確認することで、
+# 御魂セットの内容が保存前と同等に復元されることを確認する。
 
 START
 
@@ -18,6 +18,13 @@ SEL SHIKIGAMI "願紡縁結神"
 # 正常な御魂セットを読み込む
 LOAD MITAMA "../Calculation/TestData/Valid.mitama.json"
 
+# 保存前の計算結果を作成する
+CALC
+CHECK CALC
+
+# 保存前の状態を比較元Snapshotとして保存する
+SAVE SNAPSHOT BASE
+
 # Gui.exeの保存機能で御魂セットを保存する
 SAVE MITAMA
 
@@ -28,14 +35,34 @@ CHECK CLEARED
 # 同一Scenario内で保存した御魂セットを再読み込みする
 LOAD SAVED MITAMA
 
-# 御魂セット保存データには式神が含まれないため再選択する
+# 御魂セット保存データには式神が含まれないため、
+# 保存前と同じ式神を再選択する
 SEL SHIKIGAMI "願紡縁結神"
 
-# 再読み込み後も正常に計算できることを確認する
+# 再読み込み後の状態で計算する
 CALC
 CHECK CALC
+
+# 再読み込み後の状態を比較先Snapshotとして保存する
+SAVE SNAPSHOT TARGET
+
+# 保存前と再読み込み後の計算結果を比較する
+COMPARE SAVED SNAPSHOT
+
+# 御魂セットが保存前と同等に復元されていることを、
+# 全ステータスの差分が0であることによって確認する
+CHECK SNAPSHOT COMPARISON "攻撃力" "0"
+CHECK SNAPSHOT COMPARISON "HP" "0"
+CHECK SNAPSHOT COMPARISON "防御力" "0"
+CHECK SNAPSHOT COMPARISON "素早さ" "0"
+CHECK SNAPSHOT COMPARISON "会心率" "0"
+CHECK SNAPSHOT COMPARISON "会心DMG" "0"
+CHECK SNAPSHOT COMPARISON "効果命中" "0"
+CHECK SNAPSHOT COMPARISON "効果抵抗" "0"
+
+# 比較結果画面を閉じる
+CLOSE DIALOG
 
 CLOSE GUI
 
 END
-
