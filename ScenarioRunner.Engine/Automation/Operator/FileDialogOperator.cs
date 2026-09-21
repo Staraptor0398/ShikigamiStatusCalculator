@@ -12,7 +12,10 @@ namespace ScenarioRunner.Automation.Operator
 		private const uint WM_SETTEXT = 0x000C;
 		private const uint WM_GETTEXT = 0x000D;
 		private const uint WM_GETTEXTLENGTH = 0x000E;
+		private const uint WM_COMMAND = 0x0111;
 		private const uint BM_CLICK = 0x00F5;
+
+		private const int EN_CHANGE = 0x0300;
 
 		private const string FILE_NAME_CONTROL_HOST = "FileNameControlHost";
 
@@ -27,6 +30,9 @@ namespace ScenarioRunner.Automation.Operator
 
 		[DllImport("user32.dll")]
 		private static extern int GetDlgCtrlID(IntPtr hWnd);
+
+		[DllImport("user32.dll")]
+		private static extern IntPtr GetParent(IntPtr hWnd);
 
 		public string LastSelectionInfo { get; private set; }
 
@@ -64,15 +70,11 @@ namespace ScenarioRunner.Automation.Operator
 			AutomationElement fileNameEdit = getFileNameEdit(fileNameComboBox);
 			AutomationElement saveButton = getSaveButton(dialog);
 
-			if (!fileNameEdit.Patterns.Value.IsSupported)
-			{
-				throw new InvalidOperationException("ValuePattern is not supported by file name input.");
-			}
-
-			fileNameEdit.Focus();
-			fileNameEdit.Patterns.Value.Pattern.SetValue(filePath);
-
 			IntPtr fileNameEditHandle = getNativeWindowHandle(fileNameEdit, "File name input");
+
+			setFilePath(fileNameEditHandle, filePath);
+			notifyFileNameChanged(fileNameEditHandle);
+
 			string actualFilePath = getText(fileNameEditHandle);
 
 			LastSelectionInfo = createSelectionInfo(dialog, fileNameComboBoxCandidates, fileNameComboBox, fileNameEdit, saveButton, filePath, actualFilePath);
@@ -205,6 +207,28 @@ namespace ScenarioRunner.Automation.Operator
 			{
 				throw new InvalidOperationException("File path could not be set.");
 			}
+		}
+
+		private void notifyFileNameChanged(IntPtr fileNameEditHandle)
+		{
+			IntPtr parentHandle = GetParent(fileNameEditHandle);
+
+			if (parentHandle == IntPtr.Zero)
+			{
+				throw new InvalidOperationException("File name input parent window was not found.");
+			}
+
+			int controlId = GetDlgCtrlID(fileNameEditHandle);
+			IntPtr wParam = makeWParam(controlId, EN_CHANGE);
+
+			SendMessage(parentHandle, WM_COMMAND, wParam, fileNameEditHandle);
+		}
+
+		private IntPtr makeWParam(int lowWord, int highWord)
+		{
+			int value = (lowWord & 0xFFFF) | ((highWord & 0xFFFF) << 16);
+
+			return new IntPtr(value);
 		}
 
 		private string getText(IntPtr handle)
