@@ -97,6 +97,9 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.CLEAR:
 					mInputOperator.Clear(context.GuiSession);
 					return;
+				case ScenarioCommandType.CLEAR_SHIKIGAMI:
+					mShikigamiOperator.ClearSelection(context.GuiSession);
+					return;
 				case ScenarioCommandType.RELOAD_SHIKIGAMI:
 					mShikigamiOperator.Reload(context.GuiSession);
 					return;

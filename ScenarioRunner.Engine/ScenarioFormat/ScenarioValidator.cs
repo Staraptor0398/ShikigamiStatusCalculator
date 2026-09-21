@@ -167,6 +167,7 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.COMPARE_SAVED_SNAPSHOT:
 				case ScenarioCommandType.CALCULATE:
 				case ScenarioCommandType.CLEAR:
+				case ScenarioCommandType.CLEAR_SHIKIGAMI:
 				case ScenarioCommandType.RELOAD_SHIKIGAMI:
 				case ScenarioCommandType.BREAK_SHIKIGAMI_HEADER:
 				case ScenarioCommandType.CREATE_SHIKIGAMI_BACKUP:

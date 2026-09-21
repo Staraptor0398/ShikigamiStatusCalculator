@@ -46,6 +46,17 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mComboBoxOperator.SelectFirstItem(mainWindow, AutomationIds.MainForm.SHIKIGAMI);
 		}
 
+		public void ClearSelection(GuiSession session)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.CLEAR_SHIKIGAMI);
+		}
+
 		public void Reload(GuiSession session)
 		{
 			if (session == null)

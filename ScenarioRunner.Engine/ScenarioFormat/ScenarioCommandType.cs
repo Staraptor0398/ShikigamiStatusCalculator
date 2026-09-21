@@ -21,6 +21,7 @@ namespace ScenarioRunner.ScenarioFormat
 
 		CALCULATE,
 		CLEAR,
+		CLEAR_SHIKIGAMI,
 
 		RELOAD_SHIKIGAMI,
 		BREAK_SHIKIGAMI_HEADER,

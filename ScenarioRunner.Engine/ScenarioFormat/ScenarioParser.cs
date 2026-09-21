@@ -143,6 +143,13 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.CALCULATE;
 				argumentStartIndex = 1;
 			}
+			// CLEAR SHIKIGAMI は CLEAR より先に判定する。
+			// 順序を逆にすると CLEAR SHIKIGAMI が CLEAR + 引数として解釈される。
+			else if (matches(tokens, "CLEAR", "SHIKIGAMI"))
+			{
+				commandType = ScenarioCommandType.CLEAR_SHIKIGAMI;
+				argumentStartIndex = 2;
+			}
 			else if (matches(tokens, "CLEAR"))
 			{
 				commandType = ScenarioCommandType.CLEAR;

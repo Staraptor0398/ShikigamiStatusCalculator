@@ -46,7 +46,7 @@ namespace ScenarioRunner.Automation.Definition
 			public const string SAVE = "btnSave";
 			public const string LOAD = "btnLoad";
 			public const string CLEAR = "btnClear";
-
+			public const string CLEAR_SHIKIGAMI = "btnClearShikigami";
 			public const string RELOAD_SHIKIGAMI = "btnReLoad";
 			public const string EDIT_SHIKIGAMI = "btnEditShikigami";
 			public const string SHIKIGAMI_RECOVERY = "btnRecoveryShikigami";
