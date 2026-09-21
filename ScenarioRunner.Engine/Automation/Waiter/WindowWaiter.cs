@@ -13,8 +13,6 @@ namespace ScenarioRunner.Automation.Waiter
 		private const int DEFAULT_INTERVAL_MS = 100;
 		private const int DEFAULT_WAIT_INTERVAL_MS = 50;
 
-		private const string FILE_NAME_CONTROL_HOST = "FileNameControlHost";
-
 		public Window FindWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
 			if (session == null)
@@ -187,8 +185,8 @@ namespace ScenarioRunner.Automation.Waiter
 		private Window findWindow(GuiSession session, Func<Window, bool> predicate)
 		{
 			return session.Application
-				.GetAllTopLevelWindows(session.Automation)
-				.FirstOrDefault(predicate);
+			.GetAllTopLevelWindows(session.Automation)
+			.FirstOrDefault(predicate);
 		}
 
 		private Window findFileDialog(GuiSession session)
@@ -206,7 +204,9 @@ namespace ScenarioRunner.Automation.Waiter
 				return null;
 			}
 
-			AutomationElement fileDialog = candidates.OrderBy(getDescendantWindowCount).First();
+			AutomationElement fileDialog = candidates
+				.OrderBy(getDescendantWindowCount)
+				.First();
 
 			return fileDialog.AsWindow();
 		}
@@ -219,15 +219,12 @@ namespace ScenarioRunner.Automation.Waiter
 		private bool isFileDialog(AutomationElement element)
 		{
 			AutomationElement[] comboBoxes = element.FindAllDescendants(cf => cf.ByControlType(ControlType.ComboBox));
+			AutomationElement[] buttons = element.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
 
-			AutomationElement fileNameComboBox = comboBoxes.FirstOrDefault(comboBox => string.Equals(comboBox.Properties.AutomationId.ValueOrDefault, FILE_NAME_CONTROL_HOST, StringComparison.Ordinal));
+			bool hasFileNameInput = comboBoxes.Any(comboBox => comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)) != null);
+			bool hasOpenButton = buttons.Any(button => button.Name.StartsWith("開く", StringComparison.OrdinalIgnoreCase) || button.Name.StartsWith("Open", StringComparison.OrdinalIgnoreCase));
 
-			if (fileNameComboBox == null)
-			{
-				return false;
-			}
-
-			return fileNameComboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)) != null;
+			return hasFileNameInput && hasOpenButton;
 		}
 
 		private void dumpWindows(Window[] windows)
@@ -242,11 +239,11 @@ namespace ScenarioRunner.Automation.Waiter
 				foreach (Window window in windows)
 				{
 					writer.WriteLine(
-						$"Name={window.Properties.Name.ValueOrDefault}, " +
-						$"AutomationId={window.Properties.AutomationId.ValueOrDefault}, " +
-						$"ControlType={window.Properties.ControlType.ValueOrDefault}, " +
-						$"ClassName={window.Properties.ClassName.ValueOrDefault}, " +
-						$"ProcessId={window.Properties.ProcessId.ValueOrDefault}");
+					$"Name={window.Properties.Name.ValueOrDefault}, " +
+					$"AutomationId={window.Properties.AutomationId.ValueOrDefault}, " +
+					$"ControlType={window.Properties.ControlType.ValueOrDefault}, " +
+					$"ClassName={window.Properties.ClassName.ValueOrDefault}, " +
+					$"ProcessId={window.Properties.ProcessId.ValueOrDefault}");
 				}
 
 				writer.WriteLine();
@@ -265,11 +262,11 @@ namespace ScenarioRunner.Automation.Waiter
 				foreach (AutomationElement element in elements)
 				{
 					writer.WriteLine(
-						$"Name={element.Properties.Name.ValueOrDefault}, " +
-						$"AutomationId={element.Properties.AutomationId.ValueOrDefault}, " +
-						$"ControlType={element.Properties.ControlType.ValueOrDefault}, " +
-						$"ClassName={element.Properties.ClassName.ValueOrDefault}, " +
-						$"ProcessId={element.Properties.ProcessId.ValueOrDefault}");
+					$"Name={element.Properties.Name.ValueOrDefault}, " +
+					$"AutomationId={element.Properties.AutomationId.ValueOrDefault}, " +
+					$"ControlType={element.Properties.ControlType.ValueOrDefault}, " +
+					$"ClassName={element.Properties.ClassName.ValueOrDefault}, " +
+					$"ProcessId={element.Properties.ProcessId.ValueOrDefault}");
 				}
 
 				writer.WriteLine();
