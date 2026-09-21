@@ -3,8 +3,11 @@
 # Gui.exeで計算した結果からBASE / TARGETのSnapshotを保存し、
 # 同一Scenario内で生成した2つのSnapshotを比較できることを確認する。
 #
-# BASEとTARGETは同一の計算結果から保存するため、
-# 比較結果の差分が0になることを確認する。
+# BASE保存後に会心DMGを10増加させて再計算し、
+# TARGETとして保存する。
+#
+# 保存したBASE / TARGETがそれぞれ正しく保持され、
+# TARGET - BASE の会心DMG差分が +10 になることを確認する。
 
 START
 
@@ -16,19 +19,30 @@ SEL SHIKIGAMI "願紡縁結神"
 # 正常な御魂セットを読み込む
 LOAD MITAMA "../Calculation/TestData/Valid.mitama.json"
 
-# Snapshot保存可能な計算済み状態を作成する
+# BASE用の計算結果を作成する
 CALC
 CHECK CALC
 
-# 同一の計算結果を比較元・比較先としてそれぞれ保存する
+# 現在の計算結果を比較元Snapshotとして保存する
 SAVE SNAPSHOT BASE
+
+# 壱番御魂の会心DMGを7.59から17.59へ変更し、
+# BASEより会心DMGが10高い入力状態を作成する
+EQUIP MITAMA SUB 1 4 "会心DMG" "17.59"
+
+# 変更後の入力内容で再計算する
+CALC
+CHECK CALC
+
+# 変更後の計算結果を比較先Snapshotとして保存する
 SAVE SNAPSHOT TARGET
 
-# 同一Scenario内で保存した2つのSnapshotを比較する
+# 同一Scenario内で保存したBASE / TARGETを比較する
 COMPARE SAVED SNAPSHOT
 
-# 同一結果同士なので差分が0であることを確認する
-CHECK SNAPSHOT COMPARISON "会心DMG" "0"
+# TARGET側の会心DMGがBASE側より10高いため、
+# 差分が +10 と表示されることを確認する
+CHECK SNAPSHOT COMPARISON "会心DMG" "+10"
 
 # 比較結果画面を閉じる
 CLOSE DIALOG
@@ -36,4 +50,3 @@ CLOSE DIALOG
 CLOSE GUI
 
 END
-
