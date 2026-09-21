@@ -1,0 +1,24 @@
+# MitamaOnlyCalculation.scenario
+#
+# 式神を選択せずに御魂セットのみを入力し、
+# 御魂のみのステータス計算が正常に実行できることを確認する。
+#
+# 式神未選択はValidationエラーとして扱わず、
+# 御魂のみの計算結果がGui.exe上に表示されることを確認する。
+
+START
+
+OPEN GUI
+
+# 式神を選択せず、正常な御魂セットのみを読み込む
+LOAD MITAMA "TestData/Valid.mitama.json"
+
+# 式神未選択の状態で計算する
+CALC
+
+# 御魂のみの計算結果が正常に表示されることを確認する
+CHECK CALC
+
+CLOSE GUI
+
+END
