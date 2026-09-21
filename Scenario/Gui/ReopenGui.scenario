@@ -1,0 +1,33 @@
+# ReopenGui.scenario
+#
+# 同一Scenario内でGui.exeを一度終了した後、
+# 再度起動して正常に操作できることを確認する。
+#
+# CLOSE GUIによってGuiSessionが正常に破棄され、
+# 後続のOPEN GUIで新しいGuiSessionを作成して
+# Gui.exeを再度操作できることを確認する。
+
+START
+
+# 1回目のGui.exeを起動する
+OPEN GUI
+
+# 1回目のGui.exeを終了する
+CLOSE GUI
+
+# 同一Scenario内でGui.exeを再度起動する
+OPEN GUI
+
+# 再起動後のGui.exeが正常に操作できることを確認するため、
+# 式神と御魂セットを設定する
+SEL SHIKIGAMI "願紡縁結神"
+LOAD MITAMA "../Calculation/TestData/Valid.mitama.json"
+
+# 再起動後も正常に計算できることを確認する
+CALC
+CHECK CALC
+
+# 2回目のGui.exeを終了する
+CLOSE GUI
+
+END
