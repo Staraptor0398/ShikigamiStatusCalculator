@@ -1,0 +1,21 @@
+# InitialGuiState.scenario
+#
+# Gui.exeを起動した直後の入力状態が、
+# CLEAR実行後に期待している初期状態と同等であることを確認する。
+#
+# 式神、御魂入力、御魂効果および計算結果が
+# 起動時点で未入力・未計算の状態になっていることを確認する。
+
+START
+
+# Gui.exeを起動する
+OPEN GUI
+
+# 起動直後の入力内容および計算結果が
+# 初期状態になっていることを確認する
+CHECK CLEARED
+
+# Gui.exeを終了する
+CLOSE GUI
+
+END
