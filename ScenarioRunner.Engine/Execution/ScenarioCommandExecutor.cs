@@ -16,6 +16,7 @@ namespace ScenarioRunner.Execution
 		private readonly GuiOperator mGuiOperator;
 		private readonly ShikigamiOperator mShikigamiOperator;
 		private readonly CalculationOperator mCalculationOperator;
+		private readonly CalculationDetailOperator mCalculationDetailOperator;
 		private readonly SaveDataOperator mSaveDataOperator;
 		private readonly DialogOperator mDialogOperator;
 		private readonly ShikigamiDataOperator mShikigamiDataOperator;
@@ -32,6 +33,7 @@ namespace ScenarioRunner.Execution
 			mGuiOperator = new GuiOperator();
 			mShikigamiOperator = new ShikigamiOperator();
 			mCalculationOperator = new CalculationOperator();
+			mCalculationDetailOperator = new CalculationDetailOperator(); ;
 			mSaveDataOperator = new SaveDataOperator();
 			mDialogOperator = new DialogOperator();
 			mShikigamiDataOperator = new ShikigamiDataOperator();
@@ -94,6 +96,12 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.CALCULATE:
 					mCalculationOperator.Calculate(context.GuiSession);
 					return;
+				case ScenarioCommandType.OPEN_CALC_DETAIL:
+					mCalculationDetailOperator.Open(context.GuiSession);
+					return;
+				case ScenarioCommandType.CLOSE_CALC_DETAIL:
+					mCalculationDetailOperator.Close(context.GuiSession);
+					return;
 				case ScenarioCommandType.CLEAR:
 					mInputOperator.Clear(context.GuiSession);
 					return;
@@ -135,6 +143,9 @@ namespace ScenarioRunner.Execution
 					return;
 				case ScenarioCommandType.CHECK_CALCULATION:
 					mCalculationOperator.Check(context.GuiSession);
+					return;
+				case ScenarioCommandType.CHECK_CALC_DETAIL:
+					mCalculationDetailOperator.Check(context.GuiSession);
 					return;
 				case ScenarioCommandType.CHECK_CLEARED:
 					mInputOperator.CheckCleared(context.GuiSession);

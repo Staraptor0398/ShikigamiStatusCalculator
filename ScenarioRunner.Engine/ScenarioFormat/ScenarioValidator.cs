@@ -160,6 +160,8 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.OPEN_GUI:
 				case ScenarioCommandType.CLOSE_GUI:
 				case ScenarioCommandType.CLOSE_DIALOG:
+				case ScenarioCommandType.OPEN_CALC_DETAIL:
+				case ScenarioCommandType.CLOSE_CALC_DETAIL:
 				case ScenarioCommandType.SAVE_MITAMA:
 				case ScenarioCommandType.SAVE_BUILD:
 				case ScenarioCommandType.LOAD_SAVED_MITAMA:
@@ -172,6 +174,7 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.BREAK_SHIKIGAMI_HEADER:
 				case ScenarioCommandType.CREATE_SHIKIGAMI_BACKUP:
 				case ScenarioCommandType.CHECK_CALCULATION:
+				case ScenarioCommandType.CHECK_CALC_DETAIL:
 				case ScenarioCommandType.CHECK_CLEARED:
 				case ScenarioCommandType.CHECK_SHIKIGAMI:
 				case ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR:

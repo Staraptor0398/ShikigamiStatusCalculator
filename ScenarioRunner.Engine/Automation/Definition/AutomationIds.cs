@@ -40,6 +40,7 @@ namespace ScenarioRunner.Automation.Definition
 			}
 
 			public const string CALCULATE = "btnCalc";
+			public const string CALC_DETAIL = "btnResultView";
 			public const string MITAMA_ONLY = "txtMitamaOnly";
 			public const string FINAL_STATS = "txtFinalStats";
 
@@ -51,6 +52,15 @@ namespace ScenarioRunner.Automation.Definition
 			public const string EDIT_SHIKIGAMI = "btnEditShikigami";
 			public const string SHIKIGAMI_RECOVERY = "btnRecoveryShikigami";
 			public const string COMPARE_SNAPSHOT = "btnCompareResult";
+		}
+
+		internal static class ResultViewForm
+		{
+			public const string ID = "ResultViewForm";
+
+			public const string MITAMA_STATUS = "txtMitamaStatus";
+			public const string FINAL_STATUS = "txtFinalStatus";
+			public const string CLOSE = "btnClose";
 		}
 
 		internal static class SaveDataSaveDialog
