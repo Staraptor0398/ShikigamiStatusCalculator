@@ -453,5 +453,120 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 				Assert.AreEqual("Too many arguments at line 2: CLOSE CALC DETAIL HOGE", ex.Message);
 			}
 		}
+
+		[TestMethod]
+		public void Validate_CheckSaveDataLevelNone()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_SAVEDATA_LEVEL, new[] { "NONE" }, "CHECK SAVEDATA LEVEL NONE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_CheckSaveDataLevelMitama()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_SAVEDATA_LEVEL, new[] { "MITAMA" }, "CHECK SAVEDATA LEVEL MITAMA")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_CheckSaveDataLevelBuild()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_SAVEDATA_LEVEL, new[] { "BUILD" }, "CHECK SAVEDATA LEVEL BUILD")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_CheckSaveDataLevelSnapshot()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_SAVEDATA_LEVEL, new[] { "SNAPSHOT" }, "CHECK SAVEDATA LEVEL SNAPSHOT")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_CheckSaveDataLevelWithoutLevel()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_SAVEDATA_LEVEL, Array.Empty<string>(), "CHECK SAVEDATA LEVEL")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Argument is missing at line 2: CHECK SAVEDATA LEVEL", ex.Message);
+			}
+		}
+
+		[TestMethod]
+		public void Validate_CheckSaveDataLevelUnknownLevel()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_SAVEDATA_LEVEL, new[] { "HOGE" }, "CHECK SAVEDATA LEVEL HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Unknown CHECK SAVEDATA LEVEL target at line 2: CHECK SAVEDATA LEVEL HOGE", ex.Message);
+			}
+		}
+
+		[TestMethod]
+		public void Validate_CheckSaveDataLevelWithTooManyArguments()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_SAVEDATA_LEVEL, new[] { "BUILD", "HOGE" }, "CHECK SAVEDATA LEVEL BUILD HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Too many arguments at line 2: CHECK SAVEDATA LEVEL BUILD HOGE", ex.Message);
+			}
+		}
 	}
 }

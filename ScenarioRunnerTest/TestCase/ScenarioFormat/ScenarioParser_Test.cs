@@ -230,5 +230,40 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 			Assert.AreEqual(ScenarioCommandType.CLOSE_CALC_DETAIL, actual.Steps[2].CommandType);
 			Assert.AreEqual(0, actual.Steps[2].Arguments.Count);
 		}
+
+		[TestMethod]
+		public void Parse_CheckSaveDataLevel()
+		{
+			var parser = new ScenarioParser();
+			string[] lines =
+			{
+				"START",
+				"CHECK SAVEDATA LEVEL NONE",
+				"CHECK SAVEDATA LEVEL MITAMA",
+				"CHECK SAVEDATA LEVEL BUILD",
+				"CHECK SAVEDATA LEVEL SNAPSHOT",
+				"END"
+			};
+
+			Scenario actual = parser.Parse("Test.scenario", lines);
+
+			Assert.AreEqual(4, actual.Steps.Count);
+
+			Assert.AreEqual(ScenarioCommandType.CHECK_SAVEDATA_LEVEL, actual.Steps[0].CommandType);
+			Assert.AreEqual(1, actual.Steps[0].Arguments.Count);
+			Assert.AreEqual("NONE", actual.Steps[0].Arguments[0]);
+
+			Assert.AreEqual(ScenarioCommandType.CHECK_SAVEDATA_LEVEL, actual.Steps[1].CommandType);
+			Assert.AreEqual(1, actual.Steps[1].Arguments.Count);
+			Assert.AreEqual("MITAMA", actual.Steps[1].Arguments[0]);
+
+			Assert.AreEqual(ScenarioCommandType.CHECK_SAVEDATA_LEVEL, actual.Steps[2].CommandType);
+			Assert.AreEqual(1, actual.Steps[2].Arguments.Count);
+			Assert.AreEqual("BUILD", actual.Steps[2].Arguments[0]);
+
+			Assert.AreEqual(ScenarioCommandType.CHECK_SAVEDATA_LEVEL, actual.Steps[3].CommandType);
+			Assert.AreEqual(1, actual.Steps[3].Arguments.Count);
+			Assert.AreEqual("SNAPSHOT", actual.Steps[3].Arguments[0]);
+		}
 	}
 }
