@@ -80,9 +80,18 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
+			if (session.MainWindow != null)
+			{
+				return session.MainWindow;
+			}
+
 			int processId = session.Application.ProcessId;
 
-			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.MainForm.ID);
+			Window mainWindow = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.MainForm.ID);
+
+			session.MainWindow = mainWindow;
+
+			return mainWindow;
 		}
 	}
 }

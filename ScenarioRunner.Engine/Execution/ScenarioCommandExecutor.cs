@@ -1,11 +1,9 @@
 using FlaUI.Core.AutomationElements;
-using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Operator;
 using ScenarioRunner.Automation.Operator.Feature;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.ScenarioFormat;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScenarioRunner.Execution
@@ -25,7 +23,6 @@ namespace ScenarioRunner.Execution
 		private readonly SnapshotComparisonOperator mSnapshotComparisonOperator;
 
 		private readonly ShikigamiDataWaiter mShikigamiDataWaiter;
-		private readonly WindowWaiter mWindowWaiter;
 
 		public ScenarioCommandExecutor()
 		{
@@ -33,7 +30,7 @@ namespace ScenarioRunner.Execution
 			mGuiOperator = new GuiOperator();
 			mShikigamiOperator = new ShikigamiOperator();
 			mCalculationOperator = new CalculationOperator();
-			mCalculationDetailOperator = new CalculationDetailOperator(); ;
+			mCalculationDetailOperator = new CalculationDetailOperator();
 			mSaveDataOperator = new SaveDataOperator();
 			mDialogOperator = new DialogOperator();
 			mShikigamiDataOperator = new ShikigamiDataOperator();
@@ -42,7 +39,6 @@ namespace ScenarioRunner.Execution
 			mSnapshotComparisonOperator = new SnapshotComparisonOperator();
 
 			mShikigamiDataWaiter = new ShikigamiDataWaiter();
-			mWindowWaiter = new WindowWaiter();
 		}
 
 		public void Execute(ScenarioStep step, ScenarioExecutonContext context)
@@ -172,11 +168,9 @@ namespace ScenarioRunner.Execution
 
 		private void startGuiWindowArrangement(ScenarioExecutonContext context)
 		{
-			int processId = context.GuiSession.Application.ProcessId;
-
 			Task.Run(() =>
 			{
-				Window window = mWindowWaiter.WaitForWindow(context.GuiSession, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.MainForm.ID, CancellationToken.None);
+				Window window = mGuiOperator.GetMainWindow(context.GuiSession);
 
 				mWindowOperator.SetBounds(window, context.GuiBounds);
 			});

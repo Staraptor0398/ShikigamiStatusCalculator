@@ -1,4 +1,5 @@
 using FlaUI.Core;
+using FlaUI.Core.AutomationElements;
 using FlaUI.UIA2;
 using System;
 
@@ -9,6 +10,8 @@ namespace ScenarioRunner.Automation
 		public Application Application { get; }
 		public UIA2Automation Automation { get; }
 
+		public Window MainWindow { get; set; }
+
 		public GuiSession(Application application, UIA2Automation automation)
 		{
 			Application = application;
@@ -17,6 +20,7 @@ namespace ScenarioRunner.Automation
 
 		public void Dispose()
 		{
+			MainWindow = null;
 			Automation?.Dispose();
 		}
 	}
