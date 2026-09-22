@@ -317,5 +317,39 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 				Assert.AreEqual("END is not defined.", ex.Message);
 			}
 		}
+
+		[TestMethod]
+		public void Validate_ClearShikigami()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CLEAR_SHIKIGAMI, Array.Empty<string>(), "CLEAR SHIKIGAMI")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_ClearShikigamiWithArgument()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CLEAR_SHIKIGAMI, new[] { "HOGE" }, "CLEAR SHIKIGAMI HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Too many arguments at line 2: CLEAR SHIKIGAMI HOGE", ex.Message);
+			}
+		}
 	}
 }

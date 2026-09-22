@@ -185,5 +185,23 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 			Assert.AreEqual(string.Empty, step.Arguments[3]);
 			Assert.AreEqual("5", step.Arguments[4]);
 		}
+
+		[TestMethod]
+		public void Parse_ClearShikigami()
+		{
+			var parser = new ScenarioParser();
+			string[] lines =
+			{
+				"START",
+				"CLEAR SHIKIGAMI",
+				"END"
+			};
+
+			Scenario actual = parser.Parse("Test.scenario", lines);
+			ScenarioStep step = actual.Steps[0];
+
+			Assert.AreEqual(ScenarioCommandType.CLEAR_SHIKIGAMI, step.CommandType);
+			Assert.AreEqual(0, step.Arguments.Count);
+		}
 	}
 }
