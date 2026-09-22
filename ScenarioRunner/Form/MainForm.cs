@@ -246,6 +246,13 @@ namespace ScenarioRunner.Form
 			base.OnFormClosing(e);
 		}
 
+		protected override void OnFormClosed(FormClosedEventArgs e)
+		{
+			mScenarioLogger.Dispose();
+
+			base.OnFormClosed(e);
+		}
+
 		private void btnEdit_Click(object sender, EventArgs e)
 		{
 			setEditMode(true);

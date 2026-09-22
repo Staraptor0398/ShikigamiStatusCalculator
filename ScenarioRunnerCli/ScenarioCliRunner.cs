@@ -24,34 +24,36 @@ namespace ScenarioRunnerCli
 			string resolvedGuiExecutablePath = GuiExecutablePathResolver.Resolve(guiExecutablePath);
 			string logDirectoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log");
 
-			var logger = new ScenarioLogger(logDirectoryPath);
-			logger.LogWritten += Console.WriteLine;
-
-			try
+			using (var logger = new ScenarioLogger(logDirectoryPath))
 			{
-				logger.ScenarioValidationStarted(resolvedScenarioPath);
+				logger.LogWritten += Console.WriteLine;
 
-				var loader = new ScenarioLoader();
-				Scenario scenario = loader.Load(resolvedScenarioPath);
+				try
+				{
+					logger.ScenarioValidationStarted(resolvedScenarioPath);
 
-				logger.ScenarioLoaded(scenario);
+					var loader = new ScenarioLoader();
+					Scenario scenario = loader.Load(resolvedScenarioPath);
 
-				WindowBounds guiBounds = createGuiBounds();
-				var executor = new ScenarioExecutor(logger, resolvedGuiExecutablePath, guiBounds);
-				var executionOptions = new ScenarioExecutionOptions(false, cleanupGuiOnExit);
-				ScenarioExecutionResult result = executor.Execute(scenario, executionOptions);
+					logger.ScenarioLoaded(scenario);
 
-				return result.IsSuccess;
-			}
-			catch (ScenarioValidationException ex)
-			{
-				logger.ScenarioValidationFailed(ex.Message);
-				return false;
-			}
-			catch (Exception ex)
-			{
-				logger.Error(ex.Message);
-				return false;
+					WindowBounds guiBounds = createGuiBounds();
+					var executor = new ScenarioExecutor(logger, resolvedGuiExecutablePath, guiBounds);
+					var executionOptions = new ScenarioExecutionOptions(false, cleanupGuiOnExit);
+					ScenarioExecutionResult result = executor.Execute(scenario, executionOptions);
+
+					return result.IsSuccess;
+				}
+				catch (ScenarioValidationException ex)
+				{
+					logger.ScenarioValidationFailed(ex.Message);
+					return false;
+				}
+				catch (Exception ex)
+				{
+					logger.Error(ex.Message);
+					return false;
+				}
 			}
 		}
 

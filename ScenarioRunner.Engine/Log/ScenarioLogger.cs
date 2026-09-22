@@ -5,10 +5,12 @@ using System.IO;
 
 namespace ScenarioRunner.Log
 {
-	public class ScenarioLogger
+	public class ScenarioLogger : IDisposable
 	{
 		private readonly string mLogDirectoryPath;
+
 		private LogFileWriter mFileWriter;
+		private bool mDisposed;
 
 		public event Action<string> LogWritten;
 		public event Action<ScenarioStep> StepStartedEvent;
@@ -30,6 +32,7 @@ namespace ScenarioRunner.Log
 
 		public void ScenarioValidationStarted(string filePath)
 		{
+			mFileWriter?.Dispose();
 			mFileWriter = new LogFileWriter(mLogDirectoryPath);
 
 			Write("========================================");
@@ -112,6 +115,19 @@ namespace ScenarioRunner.Log
 			Write("Scenario Result: FAIL");
 			Write($"Failed line: {result.FailedLineNumber}");
 			Write($"Elapsed: {result.Elapsed.TotalSeconds:F2} sec");
+		}
+
+		public void Dispose()
+		{
+			if (mDisposed)
+			{
+				return;
+			}
+
+			mFileWriter?.Dispose();
+			mFileWriter = null;
+
+			mDisposed = true;
 		}
 	}
 }
