@@ -19,6 +19,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly WindowWaiter mWindowWaiter;
 
 		private Window mLastCheckedDialog;
+		private AutomationElement[] mLastCheckedDialogButtons;
 
 		public string LastDetectedDialogInfo { get; private set; }
 
@@ -110,12 +111,27 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentException("Expected dialog message is empty.", nameof(expectedMessage));
 			}
 
+			mLastCheckedDialog = null;
+			mLastCheckedDialogButtons = null;
+
 			int processId = session.Application.ProcessId;
 
 			mLastCheckedDialog = mWindowWaiter.WaitForWindow(session, element =>
-				element.Properties.ProcessId.ValueOrDefault == processId &&
-				isVisible(element) &&
-				containsMessage(element, expectedMessage));
+			{
+				if (element.Properties.ProcessId.ValueOrDefault != processId || !isVisible(element))
+				{
+					return false;
+				}
+
+				if (!containsMessage(element, expectedMessage, out AutomationElement[] buttons))
+				{
+					return false;
+				}
+
+				mLastCheckedDialogButtons = buttons;
+
+				return true;
+			});
 		}
 
 		public void Close(GuiSession session)
@@ -127,15 +143,18 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window dialog = mLastCheckedDialog ?? GetActiveDialog(session);
 
-			AutomationElement[] buttons;
+			AutomationElement[] buttons = mLastCheckedDialogButtons;
 
-			try
+			if (buttons == null)
 			{
-				buttons = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
-			}
-			catch (COMException ex)
-			{
-				throw new InvalidOperationException("Failed to inspect dialog buttons.", ex);
+				try
+				{
+					buttons = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
+				}
+				catch (COMException ex)
+				{
+					throw new InvalidOperationException("Failed to inspect dialog buttons.", ex);
+				}
 			}
 
 			AutomationElement button = buttons.FirstOrDefault(element => string.Equals(element.Properties.Name.ValueOrDefault, "OK", StringComparison.OrdinalIgnoreCase));
@@ -153,6 +172,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(button);
 
 			mLastCheckedDialog = null;
+			mLastCheckedDialogButtons = null;
 		}
 
 		private bool isVisible(AutomationElement element)
@@ -184,19 +204,30 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		private bool containsMessage(AutomationElement element, string expectedMessage)
+		private bool containsMessage(AutomationElement element, string expectedMessage, out AutomationElement[] buttons)
 		{
+			buttons = null;
+
 			try
 			{
-				AutomationElement[] textElements = element.FindAllDescendants(cf => cf.ByControlType(ControlType.Text));
+				AutomationElement[] descendants = element.FindAllDescendants();
 
-				return textElements.Any(
-					textElement =>
-					{
-						string text = textElement.Properties.Name.ValueOrDefault;
+				bool containsExpectedMessage = descendants.Any(
+					descendant =>
+					descendant.Properties.ControlType.ValueOrDefault == ControlType.Text &&
+					!string.IsNullOrWhiteSpace(descendant.Properties.Name.ValueOrDefault) &&
+					descendant.Properties.Name.ValueOrDefault.Contains(expectedMessage));
 
-						return !string.IsNullOrWhiteSpace(text) && text.Contains(expectedMessage);
-					});
+				if (!containsExpectedMessage)
+				{
+					return false;
+				}
+
+				buttons = descendants
+					.Where(descendant => descendant.Properties.ControlType.ValueOrDefault == ControlType.Button)
+					.ToArray();
+
+				return true;
 			}
 			catch (COMException)
 			{
