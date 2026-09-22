@@ -14,6 +14,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly GuiOperator mGuiOperator;
 		private readonly TextBoxOperator mTextBoxOperator;
 
+		private GuiSession mElementMapSession;
+		private AutomationElementMap mElementMap;
+
 		public InputOperator()
 		{
 			mButtonOperator = new ButtonOperator();
@@ -34,21 +37,21 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(arguments));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			AutomationElementMap elementMap = getElementMap(session);
 
 			switch (arguments[0])
 			{
 				case "MAIN":
-					equipMain(mainWindow, arguments);
+					equipMain(elementMap, arguments);
 					break;
 				case "SUB":
-					equipSub(mainWindow, arguments);
+					equipSub(elementMap, arguments);
 					break;
 				case "SET":
-					equipSet(mainWindow, arguments);
+					equipSet(elementMap, arguments);
 					break;
 				case "UNIQUE":
-					equipUnique(mainWindow, arguments);
+					equipUnique(elementMap, arguments);
 					break;
 				default:
 					throw new InvalidOperationException($"Unknown EQUIP MITAMA target: {arguments[0]}");
@@ -83,8 +86,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			var elementMap = new AutomationElementMap(mainWindow);
+			AutomationElementMap elementMap = getElementMap(session);
 
 			checkComboBoxCleared(elementMap, AutomationIds.MainForm.SHIKIGAMI);
 			checkTextBoxCleared(elementMap, AutomationIds.MainForm.BASE_STATS);
@@ -115,44 +117,55 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			checkTextBoxCleared(elementMap, AutomationIds.MainForm.FINAL_STATS);
 		}
 
-		private void equipMain(Window mainWindow, IReadOnlyList<string> arguments)
+		private void equipMain(AutomationElementMap elementMap, IReadOnlyList<string> arguments)
 		{
 			int mitamaSlot = int.Parse(arguments[1]);
 			string statType = arguments[2];
 
-			mComboBoxOperator.SelectItem(mainWindow, AutomationIds.MainForm.MainStat(mitamaSlot), statType);
+			AutomationElement element = elementMap.Get(AutomationIds.MainForm.MainStat(mitamaSlot), ControlType.ComboBox);
+
+			mComboBoxOperator.SelectItem(element, statType);
 		}
 
-		private void equipSub(Window mainWindow, IReadOnlyList<string> arguments)
+		private void equipSub(AutomationElementMap elementMap, IReadOnlyList<string> arguments)
 		{
 			int mitamaSlot = int.Parse(arguments[1]);
 			int subSlot = int.Parse(arguments[2]);
 
 			if (arguments.Count >= 4 && !string.IsNullOrEmpty(arguments[3]))
 			{
-				mComboBoxOperator.SelectItem(mainWindow, AutomationIds.MainForm.SubStat(mitamaSlot, subSlot), arguments[3]);
+				AutomationElement comboBoxElement = elementMap.Get(AutomationIds.MainForm.SubStat(mitamaSlot, subSlot), ControlType.ComboBox);
+
+				mComboBoxOperator.SelectItem(comboBoxElement, arguments[3]);
 			}
 
 			if (arguments.Count >= 5)
 			{
-				mTextBoxOperator.SetText(mainWindow, AutomationIds.MainForm.SubStatValue(mitamaSlot, subSlot), arguments[4]);
+				AutomationElement textBoxElement =
+					elementMap.Get(AutomationIds.MainForm.SubStatValue(mitamaSlot, subSlot));
+
+				mTextBoxOperator.SetText(textBoxElement, arguments[4]);
 			}
 		}
 
-		private void equipSet(Window mainWindow, IReadOnlyList<string> arguments)
+		private void equipSet(AutomationElementMap elementMap, IReadOnlyList<string> arguments)
 		{
 			int slot = int.Parse(arguments[1]);
 			string statType = arguments[2];
 
-			mComboBoxOperator.SelectItem(mainWindow, AutomationIds.MainForm.SetEffect(slot), statType);
+			AutomationElement element = elementMap.Get(AutomationIds.MainForm.SetEffect(slot), ControlType.ComboBox);
+
+			mComboBoxOperator.SelectItem(element, statType);
 		}
 
-		private void equipUnique(Window mainWindow, IReadOnlyList<string> arguments)
+		private void equipUnique(AutomationElementMap elementMap, IReadOnlyList<string> arguments)
 		{
 			int slot = int.Parse(arguments[1]);
 			string statType = arguments[2];
 
-			mComboBoxOperator.SelectItem(mainWindow, AutomationIds.MainForm.UniqueEffect(slot), statType);
+			AutomationElement element = elementMap.Get(AutomationIds.MainForm.UniqueEffect(slot), ControlType.ComboBox);
+
+			mComboBoxOperator.SelectItem(element, statType);
 		}
 
 		private void checkComboBoxCleared(AutomationElementMap elementMap, string automationId)
@@ -175,6 +188,19 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			{
 				throw new InvalidOperationException($"TextBox was not cleared: {automationId}, value={text}");
 			}
+		}
+
+		private AutomationElementMap getElementMap(GuiSession session)
+		{
+			if (!ReferenceEquals(mElementMapSession, session))
+			{
+				Window mainWindow = mGuiOperator.GetMainWindow(session);
+
+				mElementMap = new AutomationElementMap(mainWindow);
+				mElementMapSession = session;
+			}
+
+			return mElementMap;
 		}
 	}
 }

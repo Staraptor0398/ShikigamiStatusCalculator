@@ -49,6 +49,26 @@ namespace ScenarioRunner.Automation.Operator
 			selectItem(handle, index);
 		}
 
+		public void SelectItem(AutomationElement element, string itemName)
+		{
+			if (element == null)
+			{
+				throw new ArgumentNullException(nameof(element));
+			}
+
+			ComboBox comboBox = element.AsComboBox();
+			IntPtr handle = comboBox.Properties.NativeWindowHandle.Value;
+
+			int index = SendMessage(handle, CB_FINDSTRINGEXACT, new IntPtr(-1), itemName).ToInt32();
+
+			if (index == CB_ERR)
+			{
+				throw new InvalidOperationException($"ComboBox item was not found: {itemName}");
+			}
+
+			selectItem(handle, index);
+		}
+
 		public void SetValue(AutomationElement parent, string automationId, string value)
 		{
 			ComboBox comboBox = getComboBox(parent, automationId);

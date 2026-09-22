@@ -22,6 +22,16 @@ namespace ScenarioRunner.Automation.Operator
 			element.AsTextBox().Text = text;
 		}
 
+		public void SetText(AutomationElement element, string text)
+		{
+			if (element == null)
+			{
+				throw new ArgumentNullException(nameof(element));
+			}
+
+			element.AsTextBox().Text = text;
+		}
+
 		public string GetText(AutomationElement parent, string automationId)
 		{
 			if (parent == null)
