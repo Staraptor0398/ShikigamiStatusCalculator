@@ -597,6 +597,42 @@ Gui.exeが期待したダイアログを表示すること自体を試験結果�
 ## 10. Version 2 コマンド
 Version 2で追加するコマンドを以下に定義する。
 
+### Gui操作
+
+#### OPEN CALC DETAIL
+Gui.exeの計算結果詳細画面を開く操作を実行する。
+
+形式：
+
+    OPEN CALC DETAIL
+
+Gui.exeの通常の「結果表示」操作を使用する。
+
+本コマンドは計算結果詳細画面の表示内容を確認しない。
+詳細画面が正常に表示されたことおよび表示内容を確認する場合は、
+`CHECK CALC DETAIL` を使用する。
+
+計算結果が存在しない状態で実行した場合など、
+Gui.exe側でダイアログが表示された場合は、
+そのGui.exeの動作をそのままScenarioの実行状態として扱う。
+
+表示されたダイアログを確認する場合は `CHECK DIALOG` を使用する。
+
+#### CLOSE CALC DETAIL
+現在表示されている計算結果詳細画面を閉じる。
+
+形式：
+
+    CLOSE CALC DETAIL
+
+Gui.exeの計算結果詳細画面上にある通常の終了操作を使用して画面を閉じる。
+
+計算結果詳細画面が表示されていない場合は、
+コマンドの実行失敗として扱う。
+
+本コマンドは計算結果の内容を確認しない。
+表示内容を確認する場合は `CHECK CALC DETAIL` を使用する。
+
 ### 入力・データ操作
 
 #### CLEAR SHIKIGAMI
@@ -821,6 +857,27 @@ Scenario Runnerが保持している比較元または比較先のファイル�
 
 ### 確認
 
+#### CHECK CALC DETAIL
+計算結果詳細画面が表示され、
+計算結果の詳細が正常に表示されていることを確認する。
+
+形式：
+
+    CHECK CALC DETAIL
+
+少なくとも以下の項目を確認する。
+
+- 計算結果詳細画面が表示されている。
+- 御魂のみのステータス詳細が表示されている。
+- 最終ステータス詳細が表示されている。
+
+計算結果詳細画面が表示されていない場合、
+または確認対象のステータス詳細が空の場合は、
+コマンドの実行失敗として扱う。
+
+本コマンドは計算結果詳細画面を閉じない。
+確認後に画面を閉じる場合は `CLOSE CALC DETAIL` を使用する。
+
 #### CHECK CLEARED
 Gui.exeの入力内容および計算結果がクリアされ、
 起動直後と同等の入力状態になっていることを確認する。
@@ -997,6 +1054,9 @@ Version 2では、Version 1の実装対象に加えて以下のコマンドを�
 
     CHECK CLEARED
     CLEAR SHIKIGAMI
+    OPEN CALC DETAIL
+    CHECK CALC DETAIL
+    CLOSE CALC DETAIL
     SAVE MITAMA
     SAVE BUILD
     SAVE SNAPSHOT BASE
@@ -1247,6 +1307,38 @@ Scenario実行中に生成される保存ファイルの具体的なパスを
 
     END
 
+### 18.8 計算結果詳細表示試験
+
+    # 計算後に計算結果詳細画面を開き、
+    # 詳細ステータスが正常に表示されることを確認する。
+
+    START
+
+    OPEN GUI
+
+    # 対象式神を選択
+    SEL SHIKIGAMI "願紡縁結神"
+
+    # 正常な御魂セットを読み込む
+    LOAD MITAMA "TestData/Valid.mitama.json"
+
+    # 計算結果を作成
+    CALC
+    CHECK CALC
+
+    # 計算結果詳細画面を開く
+    OPEN CALC DETAIL
+
+    # 詳細ステータスが正常に表示されていることを確認する
+    CHECK CALC DETAIL
+
+    # 計算結果詳細画面を閉じる
+    CLOSE CALC DETAIL
+
+    CLOSE GUI
+
+    END
+
 ## 19. 改訂履歴
 | Version | Date | 内容 |
 |---|---|---|
@@ -1263,3 +1355,4 @@ Scenario実行中に生成される保存ファイルの具体的なパスを
 | 2.0 | 2026-09-20 | `CHECK CLEARED` コマンドを追加。実装対象一覧をVersion別に整理し、Version 2実装対象として定義。入力クリア試験の記述例を追加。 |
 | 2.1 | 2026-09-20 | Gui.exeの通常の保存処理を使用する `SAVE MITAMA`、`SAVE BUILD`、`SAVE SNAPSHOT BASE`、`SAVE SNAPSHOT TARGET` と、同一Scenario内で保存したデータを利用する `LOAD SAVED MITAMA`、`LOAD SAVED BUILD`、`COMPARE SAVED SNAPSHOT` をVersion 2実装対象として追加。保存ファイルパスをScenario Runnerが管理する仕様を定義。 |
 | 2.2 | 2026-09-22 | 式神選択のみを解除し、御魂入力を保持する `CLEAR SHIKIGAMI` コマンドをVersion 2実装対象として追加。 |
+| 2.3 | 2026-09-22 | 計算結果詳細画面を操作・確認する `OPEN CALC DETAIL`、`CHECK CALC DETAIL`、`CLOSE CALC DETAIL` コマンドをVersion 2実装対象として追加。計算結果詳細表示試験の記述例を追加。 |
