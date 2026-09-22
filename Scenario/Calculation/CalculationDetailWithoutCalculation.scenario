@@ -1,0 +1,26 @@
+# CalculationDetailWithoutCalculation.scenario
+#
+# 計算を実行していない状態で計算結果詳細画面を開こうとした場合、
+# Gui.exeが計算を先に実行するよう案内するダイアログを
+# 表示することを確認する。
+#
+# 計算結果が存在しない状態では、
+# 計算結果詳細画面そのものを表示しないことを確認する。
+
+START
+
+OPEN GUI
+
+# 計算を実行せずに計算結果詳細表示を要求する
+OPEN CALC DETAIL
+
+# 計算結果が存在しないため、
+# Gui.exeが案内ダイアログを表示することを確認する
+CHECK DIALOG "先に計算を実行してください。"
+
+# 確認ダイアログを閉じる
+CLOSE DIALOG
+
+CLOSE GUI
+
+END

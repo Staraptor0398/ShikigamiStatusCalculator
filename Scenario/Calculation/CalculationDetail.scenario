@@ -1,0 +1,36 @@
+# CalculationDetail.scenario
+#
+# 式神と御魂セットを使用して計算を実行した後、
+# 計算結果詳細画面を開き、
+# 御魂のみのステータス詳細および最終ステータス詳細が
+# 正常に表示されることを確認する。
+#
+# また、確認後に計算結果詳細画面を正常に閉じ、
+# MainFormへ戻れることを確認する。
+
+START
+
+OPEN GUI
+
+# 詳細表示の対象となる計算条件を設定する
+SEL SHIKIGAMI "願紡縁結神"
+LOAD MITAMA "TestData/Valid.mitama.json"
+
+# 計算を実行し、MainForm上に計算結果が表示されることを確認する
+CALC
+CHECK CALC
+
+# 計算結果詳細画面を開く
+OPEN CALC DETAIL
+
+# 御魂のみのステータス詳細と
+# 最終ステータス詳細が正常に表示されていることを確認する
+CHECK CALC DETAIL
+
+# 計算結果詳細画面を閉じる
+CLOSE CALC DETAIL
+
+# 詳細画面を閉じた後、Gui.exeを正常に終了できることを確認する
+CLOSE GUI
+
+END
