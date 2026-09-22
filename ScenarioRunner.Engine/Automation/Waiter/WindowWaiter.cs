@@ -1,6 +1,7 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -196,33 +197,68 @@ namespace ScenarioRunner.Automation.Waiter
 
 			AutomationElement[] candidates = desktop
 				.FindAllDescendants(cf => cf.ByControlType(ControlType.Window))
-				.Where(element => element.Properties.ProcessId.ValueOrDefault == processId && isFileDialog(element))
+				.Where(element => element.Properties.ProcessId.ValueOrDefault == processId)
 				.ToArray();
 
-			if (candidates.Length == 0)
+			AutomationElement fileDialog = null;
+			int minimumDescendantWindowCount = int.MaxValue;
+
+			foreach (AutomationElement candidate in candidates)
 			{
-				return null;
+				if (!tryInspectFileDialog(candidate, out int descendantWindowCount))
+				{
+					continue;
+				}
+
+				if (descendantWindowCount >= minimumDescendantWindowCount)
+				{
+					continue;
+				}
+
+				fileDialog = candidate;
+				minimumDescendantWindowCount = descendantWindowCount;
 			}
 
-			AutomationElement fileDialog = candidates
-				.OrderBy(getDescendantWindowCount)
-				.First();
-
-			return fileDialog.AsWindow();
+			return fileDialog?.AsWindow();
 		}
 
-		private int getDescendantWindowCount(AutomationElement element)
+		private bool tryInspectFileDialog(AutomationElement element, out int descendantWindowCount)
 		{
-			return element.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).Length;
-		}
+			AutomationElement[] descendants = element.FindAllDescendants();
 
-		private bool isFileDialog(AutomationElement element)
-		{
-			AutomationElement[] comboBoxes = element.FindAllDescendants(cf => cf.ByControlType(ControlType.ComboBox));
-			AutomationElement[] buttons = element.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
+			var comboBoxes = new List<AutomationElement>();
+			bool hasOpenButton = false;
+			descendantWindowCount = 0;
+
+			foreach (AutomationElement descendant in descendants)
+			{
+				ControlType controlType = descendant.Properties.ControlType.ValueOrDefault;
+
+				if (controlType == ControlType.ComboBox)
+				{
+					comboBoxes.Add(descendant);
+					continue;
+				}
+
+				if (controlType == ControlType.Button)
+				{
+					string name = descendant.Properties.Name.ValueOrDefault;
+
+					if (name.StartsWith("開く", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Open", StringComparison.OrdinalIgnoreCase))
+					{
+						hasOpenButton = true;
+					}
+
+					continue;
+				}
+
+				if (controlType == ControlType.Window)
+				{
+					descendantWindowCount++;
+				}
+			}
 
 			bool hasFileNameInput = comboBoxes.Any(comboBox => comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)) != null);
-			bool hasOpenButton = buttons.Any(button => button.Name.StartsWith("開く", StringComparison.OrdinalIgnoreCase) || button.Name.StartsWith("Open", StringComparison.OrdinalIgnoreCase));
 
 			return hasFileNameInput && hasOpenButton;
 		}
@@ -239,11 +275,11 @@ namespace ScenarioRunner.Automation.Waiter
 				foreach (Window window in windows)
 				{
 					writer.WriteLine(
-					$"Name={window.Properties.Name.ValueOrDefault}, " +
-					$"AutomationId={window.Properties.AutomationId.ValueOrDefault}, " +
-					$"ControlType={window.Properties.ControlType.ValueOrDefault}, " +
-					$"ClassName={window.Properties.ClassName.ValueOrDefault}, " +
-					$"ProcessId={window.Properties.ProcessId.ValueOrDefault}");
+						$"Name={window.Properties.Name.ValueOrDefault}, " +
+						$"AutomationId={window.Properties.AutomationId.ValueOrDefault}, " +
+						$"ControlType={window.Properties.ControlType.ValueOrDefault}, " +
+						$"ClassName={window.Properties.ClassName.ValueOrDefault}, " +
+						$"ProcessId={window.Properties.ProcessId.ValueOrDefault}");
 				}
 
 				writer.WriteLine();
@@ -262,11 +298,11 @@ namespace ScenarioRunner.Automation.Waiter
 				foreach (AutomationElement element in elements)
 				{
 					writer.WriteLine(
-					$"Name={element.Properties.Name.ValueOrDefault}, " +
-					$"AutomationId={element.Properties.AutomationId.ValueOrDefault}, " +
-					$"ControlType={element.Properties.ControlType.ValueOrDefault}, " +
-					$"ClassName={element.Properties.ClassName.ValueOrDefault}, " +
-					$"ProcessId={element.Properties.ProcessId.ValueOrDefault}");
+						$"Name={element.Properties.Name.ValueOrDefault}, " +
+						$"AutomationId={element.Properties.AutomationId.ValueOrDefault}, " +
+						$"ControlType={element.Properties.ControlType.ValueOrDefault}, " +
+						$"ClassName={element.Properties.ClassName.ValueOrDefault}, " +
+						$"ProcessId={element.Properties.ProcessId.ValueOrDefault}");
 				}
 
 				writer.WriteLine();
