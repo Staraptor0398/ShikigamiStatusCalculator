@@ -1,0 +1,72 @@
+# SaveDataLevel.scenario
+#
+# Gui.exeの入力状態および計算状態に応じて、
+# 利用可能なSaveData保存レベルが
+# NONE、MITAMA、BUILD、SNAPSHOTの順に変化することを確認する。
+#
+# また、計算後に入力内容を変更した場合は
+# 計算結果スナップショットを保存できなくなり、
+# 保存レベルがSNAPSHOTからBUILDへ戻ることを確認する。
+#
+# さらに式神選択の解除および入力内容のクリアによって、
+# MITAMA、NONEへ順に戻ることを確認する。
+#
+# 保存レベルの確認では実際の保存処理は行わず、
+# 現在利用可能な保存形式のみを確認する。
+
+START
+
+OPEN GUI
+
+# 起動直後は御魂が入力されていないため、
+# SaveDataを保存できないことを確認する
+CHECK SAVEDATA LEVEL NONE
+
+# 御魂セットのみを入力する
+LOAD MITAMA "../Calculation/TestData/Valid.mitama.json"
+
+# 式神が未選択のため、
+# 御魂セット保存データのみ保存可能であることを確認する
+CHECK SAVEDATA LEVEL MITAMA
+
+# 式神を選択する
+SEL SHIKIGAMI "願紡縁結神"
+
+# 式神と御魂セットが設定されているため、
+# ビルド保存データまで保存可能であることを確認する
+CHECK SAVEDATA LEVEL BUILD
+
+# 現在の入力内容で計算を実行する
+CALC
+CHECK CALC
+
+# 最新の計算結果が存在するため、
+# 計算結果スナップショットまで保存可能であることを確認する
+CHECK SAVEDATA LEVEL SNAPSHOT
+
+# 計算後に御魂入力を変更し、
+# 現在の入力内容と直前の計算結果を不一致にする
+EQUIP MITAMA SUB 1 4 "会心DMG" "17.59"
+
+# 計算結果が最新の入力状態と一致しなくなったため、
+# スナップショットを保存できずBUILDへ戻ることを確認する
+CHECK SAVEDATA LEVEL BUILD
+
+# 御魂入力を保持したまま式神選択のみを解除する
+CLEAR SHIKIGAMI
+
+# 式神が未選択になったため、
+# 御魂セットのみ保存可能な状態へ戻ることを確認する
+CHECK SAVEDATA LEVEL MITAMA
+
+# すべての入力内容と計算結果をクリアする
+CLEAR
+CHECK CLEARED
+
+# 御魂入力も存在しなくなったため、
+# SaveDataを保存できない状態へ戻ることを確認する
+CHECK SAVEDATA LEVEL NONE
+
+CLOSE GUI
+
+END
