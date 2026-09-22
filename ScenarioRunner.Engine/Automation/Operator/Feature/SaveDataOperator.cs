@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
@@ -178,17 +179,23 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.LOAD);
 
 			Window loadDialog = getLoadDialog(session, processId);
+			var elementMap = new AutomationElementMap(loadDialog);
 
-			selectLoadType(loadDialog, loadType);
+			AutomationElement loadTypeElement = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD_TYPE, ControlType.ComboBox);
+			AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.BROWSE, ControlType.Button);
+			AutomationElement filePathElement = elementMap.Get(AutomationIds.SaveDataLoadDialog.FILE_PATH);
+			AutomationElement loadButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD, ControlType.Button);
 
-			mButtonOperator.Click(loadDialog, AutomationIds.SaveDataLoadDialog.BROWSE);
+			selectLoadType(loadTypeElement, loadType);
+
+			mButtonOperator.Click(browseButton);
 
 			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
 			mFileDialogOperator.SelectLoadFile(fileDialog, filePath);
 
-			waitForFilePath(loadDialog, AutomationIds.SaveDataLoadDialog.FILE_PATH, filePath);
+			waitForFilePath(filePathElement, filePath);
 
-			mButtonOperator.Click(loadDialog, AutomationIds.SaveDataLoadDialog.LOAD);
+			mButtonOperator.Click(loadButton);
 
 			mWindowWaiter.WaitForWindowClosed(session, element => isLoadDialog(element, processId));
 		}
@@ -207,17 +214,23 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.SAVE);
 
 			Window saveDialog = getSaveDialog(session, processId);
+			var elementMap = new AutomationElementMap(saveDialog);
 
-			selectSaveType(saveDialog, saveType);
+			AutomationElement saveTypeElement = elementMap.Get(AutomationIds.SaveDataSaveDialog.SAVE_TYPE, ControlType.ComboBox);
+			AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataSaveDialog.BROWSE, ControlType.Button);
+			AutomationElement filePathElement = elementMap.Get(AutomationIds.SaveDataSaveDialog.FILE_PATH);
+			AutomationElement saveButton = elementMap.Get(AutomationIds.SaveDataSaveDialog.SAVE, ControlType.Button);
 
-			mButtonOperator.Click(saveDialog, AutomationIds.SaveDataSaveDialog.BROWSE);
+			selectSaveType(saveTypeElement, saveType);
+
+			mButtonOperator.Click(browseButton);
 
 			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
 			mFileDialogOperator.SelectSaveFile(fileDialog, filePath);
 
-			waitForFilePath(saveDialog, AutomationIds.SaveDataSaveDialog.FILE_PATH, filePath);
+			waitForFilePath(filePathElement, filePath);
 
-			mButtonOperator.Click(saveDialog, AutomationIds.SaveDataSaveDialog.SAVE);
+			mButtonOperator.Click(saveButton);
 
 			mWindowWaiter.WaitForWindowClosed(session, element => isSaveDialog(element, processId));
 
@@ -226,11 +239,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			return filePath;
 		}
 
-		private void selectLoadType(Window loadDialog, string loadType)
+		private void selectLoadType(AutomationElement loadTypeElement, string loadType)
 		{
-			mComboBoxOperator.SelectItem(loadDialog, AutomationIds.SaveDataLoadDialog.LOAD_TYPE, loadType);
+			mComboBoxOperator.SelectItem(loadTypeElement, loadType);
 
-			string selectedLoadType = mComboBoxOperator.GetValue(loadDialog, AutomationIds.SaveDataLoadDialog.LOAD_TYPE);
+			string selectedLoadType = mComboBoxOperator.GetValue(loadTypeElement);
 
 			if (!string.Equals(selectedLoadType, loadType, StringComparison.Ordinal))
 			{
@@ -238,11 +251,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		private void selectSaveType(Window saveDialog, string saveType)
+		private void selectSaveType(AutomationElement saveTypeElement, string saveType)
 		{
-			mComboBoxOperator.SelectItem(saveDialog, AutomationIds.SaveDataSaveDialog.SAVE_TYPE, saveType);
+			mComboBoxOperator.SelectItem(saveTypeElement, saveType);
 
-			string selectedSaveType = mComboBoxOperator.GetValue(saveDialog, AutomationIds.SaveDataSaveDialog.SAVE_TYPE);
+			string selectedSaveType = mComboBoxOperator.GetValue(saveTypeElement);
 
 			if (!string.Equals(selectedSaveType, saveType, StringComparison.Ordinal))
 			{
@@ -267,14 +280,14 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			return Path.Combine(directoryPath, fileName);
 		}
 
-		private void waitForFilePath(Window dialog, string automationId, string expectedFilePath)
+		private void waitForFilePath(AutomationElement filePathElement, string expectedFilePath)
 		{
 			int elapsed = 0;
 			string actualFilePath = "";
 
 			while (elapsed < WAIT_TIMEOUT_MS)
 			{
-				actualFilePath = mTextBoxOperator.GetText(dialog, automationId);
+				actualFilePath = mTextBoxOperator.GetText(filePathElement);
 
 				if (string.Equals(actualFilePath, expectedFilePath, StringComparison.OrdinalIgnoreCase))
 				{
