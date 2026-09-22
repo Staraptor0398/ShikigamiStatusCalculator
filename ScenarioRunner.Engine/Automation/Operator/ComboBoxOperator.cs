@@ -75,6 +75,16 @@ namespace ScenarioRunner.Automation.Operator
 			return comboBox.Value;
 		}
 
+		public string GetValue(AutomationElement element)
+		{
+			if (element == null)
+			{
+				throw new ArgumentNullException(nameof(element));
+			}
+
+			return element.AsComboBox().Value;
+		}
+
 		public bool CanSelectFirstItem(AutomationElement parent, string automationId)
 		{
 			ComboBox comboBox = getComboBox(parent, automationId);

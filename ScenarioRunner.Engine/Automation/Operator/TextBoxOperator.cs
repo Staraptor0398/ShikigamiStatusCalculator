@@ -38,5 +38,15 @@ namespace ScenarioRunner.Automation.Operator
 
 			return element.AsTextBox().Text;
 		}
+
+		public string GetText(AutomationElement element)
+		{
+			if (element == null)
+			{
+				throw new ArgumentNullException(nameof(element));
+			}
+
+			return element.AsTextBox().Text;
+		}
 	}
 }

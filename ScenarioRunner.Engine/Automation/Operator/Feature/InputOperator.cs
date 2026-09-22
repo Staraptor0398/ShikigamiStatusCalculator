@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using System;
 using System.Collections.Generic;
@@ -83,53 +84,35 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			var elementMap = new AutomationElementMap(mainWindow);
 
-			checkComboBoxCleared(mainWindow, AutomationIds.MainForm.SHIKIGAMI);
-			checkTextBoxCleared(mainWindow, AutomationIds.MainForm.BASE_STATS);
+			checkComboBoxCleared(elementMap, AutomationIds.MainForm.SHIKIGAMI);
+			checkTextBoxCleared(elementMap, AutomationIds.MainForm.BASE_STATS);
 
 			for (int mitamaSlot = 1; mitamaSlot <= 6; mitamaSlot++)
 			{
-				checkComboBoxCleared(
-					mainWindow,
-					AutomationIds.MainForm.MainStat(mitamaSlot));
-
-				checkTextBoxCleared(
-					mainWindow,
-					AutomationIds.MainForm.MainStatValue(mitamaSlot));
+				checkComboBoxCleared(elementMap, AutomationIds.MainForm.MainStat(mitamaSlot));
+				checkTextBoxCleared(elementMap, AutomationIds.MainForm.MainStatValue(mitamaSlot));
 
 				for (int subSlot = 1; subSlot <= 4; subSlot++)
 				{
-					checkComboBoxCleared(
-						mainWindow,
-						AutomationIds.MainForm.SubStat(mitamaSlot, subSlot));
-
-					checkTextBoxCleared(
-						mainWindow,
-						AutomationIds.MainForm.SubStatValue(mitamaSlot, subSlot));
+					checkComboBoxCleared(elementMap, AutomationIds.MainForm.SubStat(mitamaSlot, subSlot));
+					checkTextBoxCleared(elementMap, AutomationIds.MainForm.SubStatValue(mitamaSlot, subSlot));
 				}
 			}
 
 			for (int slot = 1; slot <= 3; slot++)
 			{
-				checkComboBoxCleared(
-					mainWindow,
-					AutomationIds.MainForm.SetEffect(slot));
+				checkComboBoxCleared(elementMap, AutomationIds.MainForm.SetEffect(slot));
 			}
 
 			for (int slot = 1; slot <= 6; slot++)
 			{
-				checkComboBoxCleared(
-					mainWindow,
-					AutomationIds.MainForm.UniqueEffect(slot));
+				checkComboBoxCleared(elementMap, AutomationIds.MainForm.UniqueEffect(slot));
 			}
 
-			checkTextBoxCleared(
-				mainWindow,
-				AutomationIds.MainForm.MITAMA_ONLY);
-
-			checkTextBoxCleared(
-				mainWindow,
-				AutomationIds.MainForm.FINAL_STATS);
+			checkTextBoxCleared(elementMap, AutomationIds.MainForm.MITAMA_ONLY);
+			checkTextBoxCleared(elementMap, AutomationIds.MainForm.FINAL_STATS);
 		}
 
 		private void equipMain(Window mainWindow, IReadOnlyList<string> arguments)
@@ -172,25 +155,25 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mComboBoxOperator.SelectItem(mainWindow, AutomationIds.MainForm.UniqueEffect(slot), statType);
 		}
 
-		private void checkComboBoxCleared(AutomationElement parent, string automationId)
+		private void checkComboBoxCleared(AutomationElementMap elementMap, string automationId)
 		{
-			string value = mComboBoxOperator.GetValue(parent, automationId);
+			AutomationElement element = elementMap.Get(automationId, ControlType.ComboBox);
+			string value = mComboBoxOperator.GetValue(element);
 
 			if (!string.IsNullOrWhiteSpace(value))
 			{
-				throw new InvalidOperationException(
-					$"ComboBox was not cleared: {automationId}, value={value}");
+				throw new InvalidOperationException($"ComboBox was not cleared: {automationId}, value={value}");
 			}
 		}
 
-		private void checkTextBoxCleared(AutomationElement parent, string automationId)
+		private void checkTextBoxCleared(AutomationElementMap elementMap, string automationId)
 		{
-			string text = mTextBoxOperator.GetText(parent, automationId);
+			AutomationElement element = elementMap.Get(automationId);
+			string text = mTextBoxOperator.GetText(element);
 
 			if (!string.IsNullOrWhiteSpace(text))
 			{
-				throw new InvalidOperationException(
-					$"TextBox was not cleared: {automationId}, value={text}");
+				throw new InvalidOperationException($"TextBox was not cleared: {automationId}, value={text}");
 			}
 		}
 	}
