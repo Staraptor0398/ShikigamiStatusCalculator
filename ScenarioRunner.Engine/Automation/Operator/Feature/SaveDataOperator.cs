@@ -162,7 +162,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			{
 				mButtonOperator.Click(saveDialog, AutomationIds.SaveDataSaveDialog.CANCEL);
 
-				mWindowWaiter.WaitForWindowClosed(session, element => isSaveDialog(element, processId));
+				mWindowWaiter.WaitForWindowClosed(saveDialog);
 			}
 		}
 
@@ -197,7 +197,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(loadButton);
 
-			mWindowWaiter.WaitForWindowClosed(session, element => isLoadDialog(element, processId));
+			mWindowWaiter.WaitForWindowClosed(loadDialog);
 		}
 
 		private string save(ScenarioExecutonContext context, string saveType, string fileNameSuffix, string extension)
@@ -232,7 +232,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(saveButton);
 
-			mWindowWaiter.WaitForWindowClosed(session, element => isSaveDialog(element, processId));
+			mWindowWaiter.WaitForWindowClosed(saveDialog);
 
 			waitForFileCreated(filePath);
 

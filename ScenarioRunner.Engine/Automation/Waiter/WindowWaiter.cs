@@ -131,6 +131,45 @@ namespace ScenarioRunner.Automation.Waiter
 			throw new InvalidOperationException($"Window was not closed within {timeoutMs} ms.");
 		}
 
+
+		public void WaitForWindowClosed(Window window)
+		{
+			WaitForWindowClosed(window, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
+		}
+
+		public void WaitForWindowClosed(Window window, int timeoutMs, int intervalMs)
+		{
+			if (window == null)
+			{
+				throw new ArgumentNullException(nameof(window));
+			}
+
+			if (timeoutMs <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(timeoutMs));
+			}
+
+			if (intervalMs <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(intervalMs));
+			}
+
+			int elapsed = 0;
+
+			while (elapsed < timeoutMs)
+			{
+				if (!window.IsAvailable)
+				{
+					return;
+				}
+
+				Thread.Sleep(intervalMs);
+				elapsed += intervalMs;
+			}
+
+			throw new InvalidOperationException($"Window was not closed within {timeoutMs} ms.");
+		}
+
 		public Window WaitForWindow(GuiSession session, Func<Window, bool> predicate, CancellationToken cancellationToken)
 		{
 			if (session == null)
