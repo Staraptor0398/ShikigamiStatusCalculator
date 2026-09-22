@@ -351,5 +351,107 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 				Assert.AreEqual("Too many arguments at line 2: CLEAR SHIKIGAMI HOGE", ex.Message);
 			}
 		}
+
+		[TestMethod]
+		public void Validate_OpenCalcDetail()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.OPEN_CALC_DETAIL, Array.Empty<string>(), "OPEN CALC DETAIL")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_CheckCalcDetail()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_CALC_DETAIL, Array.Empty<string>(), "CHECK CALC DETAIL")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_CloseCalcDetail()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CLOSE_CALC_DETAIL, Array.Empty<string>(), "CLOSE CALC DETAIL")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_OpenCalcDetailWithArgument()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.OPEN_CALC_DETAIL, new[] { "HOGE" }, "OPEN CALC DETAIL HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Too many arguments at line 2: OPEN CALC DETAIL HOGE", ex.Message);
+			}
+		}
+
+		[TestMethod]
+		public void Validate_CheckCalcDetailWithArgument()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CHECK_CALC_DETAIL, new[] { "HOGE" }, "CHECK CALC DETAIL HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Too many arguments at line 2: CHECK CALC DETAIL HOGE", ex.Message);
+			}
+		}
+
+		[TestMethod]
+		public void Validate_CloseCalcDetailWithArgument()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.CLOSE_CALC_DETAIL, new[] { "HOGE" }, "CLOSE CALC DETAIL HOGE")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Too many arguments at line 2: CLOSE CALC DETAIL HOGE", ex.Message);
+			}
+		}
 	}
 }

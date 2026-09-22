@@ -203,5 +203,32 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 			Assert.AreEqual(ScenarioCommandType.CLEAR_SHIKIGAMI, step.CommandType);
 			Assert.AreEqual(0, step.Arguments.Count);
 		}
+
+		[TestMethod]
+		public void Parse_CalculationDetailCommands()
+		{
+			var parser = new ScenarioParser();
+			string[] lines =
+			{
+				"START",
+				"OPEN CALC DETAIL",
+				"CHECK CALC DETAIL",
+				"CLOSE CALC DETAIL",
+				"END"
+			};
+
+			Scenario actual = parser.Parse("Test.scenario", lines);
+
+			Assert.AreEqual(3, actual.Steps.Count);
+
+			Assert.AreEqual(ScenarioCommandType.OPEN_CALC_DETAIL, actual.Steps[0].CommandType);
+			Assert.AreEqual(0, actual.Steps[0].Arguments.Count);
+
+			Assert.AreEqual(ScenarioCommandType.CHECK_CALC_DETAIL, actual.Steps[1].CommandType);
+			Assert.AreEqual(0, actual.Steps[1].Arguments.Count);
+
+			Assert.AreEqual(ScenarioCommandType.CLOSE_CALC_DETAIL, actual.Steps[2].CommandType);
+			Assert.AreEqual(0, actual.Steps[2].Arguments.Count);
+		}
 	}
 }
