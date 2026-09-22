@@ -202,6 +202,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.CHECK_CALCULATION;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "CHECK", "SAVEDATA", "LEVEL"))
+			{
+				commandType = ScenarioCommandType.CHECK_SAVEDATA_LEVEL;
+				argumentStartIndex = 3;
+			}
 			else if (matches(tokens, "CHECK", "CLEARED"))
 			{
 				commandType = ScenarioCommandType.CHECK_CLEARED;

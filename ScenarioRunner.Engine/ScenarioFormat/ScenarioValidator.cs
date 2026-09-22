@@ -71,6 +71,12 @@ namespace ScenarioRunner.ScenarioFormat
 					continue;
 				}
 
+				if (step.CommandType == ScenarioCommandType.CHECK_SAVEDATA_LEVEL)
+				{
+					validateSaveDataLevelArguments(step);
+					continue;
+				}
+
 				int expectedCount = getExpectedArgumentCount(step.CommandType);
 
 				if (step.Arguments.Count < expectedCount)
@@ -136,6 +142,23 @@ namespace ScenarioRunner.ScenarioFormat
 					return;
 				default:
 					throw new ScenarioValidationException($"Unknown SAVE SNAPSHOT target at line {step.LineNumber}: {step.RawText}");
+			}
+		}
+
+		private void validateSaveDataLevelArguments(ScenarioStep step)
+		{
+			validateArgumentCount(step, 1, 1);
+
+			switch (step.Arguments[0])
+			{
+				case "NONE":
+				case "MITAMA":
+				case "BUILD":
+				case "SNAPSHOT":
+					return;
+
+				default:
+					throw new ScenarioValidationException($"Unknown CHECK SAVEDATA LEVEL target at line {step.LineNumber}: {step.RawText}");
 			}
 		}
 

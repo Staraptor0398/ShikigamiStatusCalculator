@@ -3,7 +3,9 @@ using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace ScenarioRunner.Automation.Operator.Feature
@@ -107,6 +109,59 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				default:
 					throw new InvalidOperationException($"Unknown snapshot target: {target}");
+			}
+		}
+
+		public void CheckSaveDataLevel(ScenarioExecutonContext context, string expectedLevel)
+		{
+			validateContext(context);
+
+			GuiSession session = context.GuiSession;
+			int processId = session.Application.ProcessId;
+
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+
+			bool saveEnabled = mButtonOperator.IsEnabled(mainWindow, AutomationIds.MainForm.SAVE);
+
+			if (expectedLevel == "NONE")
+			{
+				if (saveEnabled)
+				{
+					throw new InvalidOperationException("SaveData level mismatch. Expected=NONE, but save operation is enabled.");
+				}
+
+				return;
+			}
+
+			if (!saveEnabled)
+			{
+				throw new InvalidOperationException($"SaveData level mismatch. Expected={expectedLevel}, but save operation is disabled.");
+			}
+
+			IReadOnlyList<string> expectedSaveTypes = getExpectedSaveTypes(expectedLevel);
+
+			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.SAVE);
+
+			Window saveDialog = getSaveDialog(session, processId);
+
+			try
+			{
+				IReadOnlyList<string> actualSaveTypes = mComboBoxOperator.GetItems(saveDialog, AutomationIds.SaveDataSaveDialog.SAVE_TYPE);
+
+				if (!actualSaveTypes.SequenceEqual(expectedSaveTypes))
+				{
+					throw new InvalidOperationException(
+						$"SaveData level mismatch. " +
+						$"Expected={expectedLevel}, " +
+						$"ExpectedSaveTypes=[{string.Join(", ", expectedSaveTypes)}], " +
+						$"ActualSaveTypes=[{string.Join(", ", actualSaveTypes)}]");
+				}
+			}
+			finally
+			{
+				mButtonOperator.Click(saveDialog, AutomationIds.SaveDataSaveDialog.CANCEL);
+
+				mWindowWaiter.WaitForWindowClosed(session, element => isSaveDialog(element, processId));
 			}
 		}
 
@@ -314,6 +369,33 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			if (!File.Exists(filePath))
 			{
 				throw new FileNotFoundException($"Saved {saveDataName} file was not found.", filePath);
+			}
+		}
+
+		private IReadOnlyList<string> getExpectedSaveTypes(string level)
+		{
+			switch (level)
+			{
+				case "MITAMA":
+					return new[]
+					{
+						MITAMA_SAVE_TYPE
+					};
+				case "BUILD":
+					return new[]
+					{
+						MITAMA_SAVE_TYPE,
+						BUILD_SAVE_TYPE
+					};
+				case "SNAPSHOT":
+					return new[]
+					{
+						MITAMA_SAVE_TYPE,
+						BUILD_SAVE_TYPE,
+						SNAPSHOT_SAVE_TYPE
+					};
+				default:
+					throw new InvalidOperationException($"Unknown SaveData level: {level}");
 			}
 		}
 	}

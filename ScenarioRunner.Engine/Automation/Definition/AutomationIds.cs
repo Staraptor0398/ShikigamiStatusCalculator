@@ -71,6 +71,7 @@ namespace ScenarioRunner.Automation.Definition
 			public const string FILE_PATH = "txtFilePath";
 			public const string BROWSE = "btnBrowse";
 			public const string SAVE = "btnSave";
+			public const string CANCEL = "btnCancel";
 		}
 
 		internal static class SaveDataLoadDialog

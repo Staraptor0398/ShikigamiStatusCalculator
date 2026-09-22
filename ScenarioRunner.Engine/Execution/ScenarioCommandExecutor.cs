@@ -147,6 +147,9 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.CHECK_CALC_DETAIL:
 					mCalculationDetailOperator.Check(context.GuiSession);
 					return;
+				case ScenarioCommandType.CHECK_SAVEDATA_LEVEL:
+					mSaveDataOperator.CheckSaveDataLevel(context, step.Arguments[0]);
+					return;
 				case ScenarioCommandType.CHECK_CLEARED:
 					mInputOperator.CheckCleared(context.GuiSession);
 					return;
@@ -154,9 +157,7 @@ namespace ScenarioRunner.Execution
 					mShikigamiOperator.Check(context.GuiSession);
 					return;
 				case ScenarioCommandType.CHECK_DIALOG:
-					mDialogOperator.CheckMessage(
-						context.GuiSession,
-						step.Arguments[0]);
+					mDialogOperator.CheckMessage(context.GuiSession, step.Arguments[0]);
 					return;
 				case ScenarioCommandType.CHECK_SNAPSHOT_COMPARISON:
 					mSnapshotComparisonOperator.Check(context.GuiSession, step.Arguments[0], step.Arguments[1]);

@@ -32,5 +32,22 @@ namespace ScenarioRunner.Automation.Operator
 
 			element.AsButton().Invoke();
 		}
+
+		public bool IsEnabled(AutomationElement parent, string automationId)
+		{
+			if (parent == null)
+			{
+				throw new ArgumentNullException(nameof(parent));
+			}
+
+			var buttonElement = parent.FindFirstDescendant(cf => cf.ByAutomationId(automationId).And(cf.ByControlType(ControlType.Button)));
+
+			if (buttonElement == null)
+			{
+				throw new InvalidOperationException($"Button was not found: {automationId}");
+			}
+
+			return buttonElement.Properties.IsEnabled.ValueOrDefault;
+		}
 	}
 }

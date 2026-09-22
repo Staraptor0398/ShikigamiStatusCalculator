@@ -1,13 +1,17 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace ScenarioRunner.Automation.Operator
 {
 	public class ComboBoxOperator
 	{
 		private const uint CB_GETCOUNT = 0x0146;
+		private const uint CB_GETLBTEXT = 0x0148;
+		private const uint CB_GETLBTEXTLEN = 0x0149;
 		private const uint CB_SETCURSEL = 0x014E;
 		private const uint CB_FINDSTRINGEXACT = 0x0158;
 		private const uint WM_COMMAND = 0x0111;
@@ -17,6 +21,9 @@ namespace ScenarioRunner.Automation.Operator
 
 		[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, string lParam);
+
+		[DllImport("user32.dll", CharSet = CharSet.Auto)]
+		private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, StringBuilder lParam);
 
 		[DllImport("user32.dll")]
 		private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
@@ -98,6 +105,44 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			selectItem(handle, 0);
+		}
+
+		public IReadOnlyList<string> GetItems(AutomationElement parent, string automationId)
+		{
+			ComboBox comboBox = getComboBox(parent, automationId);
+			IntPtr handle = comboBox.Properties.NativeWindowHandle.Value;
+
+			int itemCount = SendMessage(handle, CB_GETCOUNT, IntPtr.Zero, IntPtr.Zero).ToInt32();
+
+			if (itemCount == CB_ERR)
+			{
+				throw new InvalidOperationException($"ComboBox item count could not be obtained: {automationId}");
+			}
+
+			var items = new List<string>();
+
+			for (int i = 0; i < itemCount; i++)
+			{
+				int textLength = SendMessage(handle, CB_GETLBTEXTLEN, new IntPtr(i), IntPtr.Zero).ToInt32();
+
+				if (textLength == CB_ERR)
+				{
+					throw new InvalidOperationException($"ComboBox item text length could not be obtained: {automationId}, index={i}");
+				}
+
+				var text = new StringBuilder(textLength + 1);
+
+				int result = SendMessage(handle, CB_GETLBTEXT, new IntPtr(i), text).ToInt32();
+
+				if (result == CB_ERR)
+				{
+					throw new InvalidOperationException($"ComboBox item text could not be obtained: {automationId}, index={i}");
+				}
+
+				items.Add(text.ToString());
+			}
+
+			return items;
 		}
 
 		private void selectItem(IntPtr handle, int index)
