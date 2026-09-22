@@ -1,6 +1,7 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -42,10 +43,16 @@ namespace ScenarioRunner.Automation.Operator
 
 			LastSelectionInfo = null;
 
-			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(dialog);
-			AutomationElement fileNameComboBox = selectFileNameComboBox(fileNameComboBoxCandidates);
-			AutomationElement fileNameEdit = getFileNameEdit(fileNameComboBox);
-			AutomationElement openButton = getOpenButton(dialog);
+			AutomationElement[] descendants = dialog.FindAllDescendants();
+
+			AutomationElement[] fileNameEdits;
+			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(descendants, out fileNameEdits);
+
+			int selectedIndex = selectFileNameComboBoxIndex(fileNameComboBoxCandidates, fileNameEdits);
+
+			AutomationElement fileNameComboBox = fileNameComboBoxCandidates[selectedIndex];
+			AutomationElement fileNameEdit = fileNameEdits[selectedIndex];
+			AutomationElement openButton = getOpenButton(descendants);
 
 			IntPtr fileNameEditHandle = getNativeWindowHandle(fileNameEdit, "File name input");
 			IntPtr openButtonHandle = getNativeWindowHandle(openButton, "Open button");
@@ -54,7 +61,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			string actualFilePath = getText(fileNameEditHandle);
 
-			LastSelectionInfo = createSelectionInfo(dialog, fileNameComboBoxCandidates, fileNameComboBox, fileNameEdit, openButton, filePath, actualFilePath);
+			LastSelectionInfo = createSelectionInfo(dialog, fileNameComboBoxCandidates, fileNameEdits, fileNameComboBox, fileNameEdit, openButton, filePath, actualFilePath);
 
 			SendMessage(openButtonHandle, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
 		}
@@ -65,10 +72,16 @@ namespace ScenarioRunner.Automation.Operator
 
 			LastSelectionInfo = null;
 
-			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(dialog);
-			AutomationElement fileNameComboBox = selectFileNameComboBox(fileNameComboBoxCandidates);
-			AutomationElement fileNameEdit = getFileNameEdit(fileNameComboBox);
-			AutomationElement saveButton = getSaveButton(dialog);
+			AutomationElement[] descendants = dialog.FindAllDescendants();
+
+			AutomationElement[] fileNameEdits;
+			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(descendants, out fileNameEdits);
+
+			int selectedIndex = selectFileNameComboBoxIndex(fileNameComboBoxCandidates, fileNameEdits);
+
+			AutomationElement fileNameComboBox = fileNameComboBoxCandidates[selectedIndex];
+			AutomationElement fileNameEdit = fileNameEdits[selectedIndex];
+			AutomationElement saveButton = getSaveButton(descendants);
 
 			IntPtr fileNameEditHandle = getNativeWindowHandle(fileNameEdit, "File name input");
 
@@ -77,7 +90,7 @@ namespace ScenarioRunner.Automation.Operator
 
 			string actualFilePath = getText(fileNameEditHandle);
 
-			LastSelectionInfo = createSelectionInfo(dialog, fileNameComboBoxCandidates, fileNameComboBox, fileNameEdit, saveButton, filePath, actualFilePath);
+			LastSelectionInfo = createSelectionInfo(dialog, fileNameComboBoxCandidates, fileNameEdits, fileNameComboBox, fileNameEdit, saveButton, filePath, actualFilePath);
 
 			saveButton.AsButton().Invoke();
 		}
@@ -95,53 +108,65 @@ namespace ScenarioRunner.Automation.Operator
 			}
 		}
 
-		private AutomationElement[] getFileNameComboBoxCandidates(Window dialog)
+		private AutomationElement[] getFileNameComboBoxCandidates(AutomationElement[] descendants, out AutomationElement[] edits)
 		{
-			AutomationElement[] comboBoxes = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.ComboBox));
+			var comboBoxCandidates = new List<AutomationElement>();
+			var editCandidates = new List<AutomationElement>();
 
-			AutomationElement[] candidates = comboBoxes
-				.Where(comboBox => comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)) != null)
-				.ToArray();
+			foreach (AutomationElement element in descendants)
+			{
+				if (element.Properties.ControlType.ValueOrDefault != ControlType.ComboBox)
+				{
+					continue;
+				}
 
-			if (candidates.Length == 0)
+				AutomationElement edit = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
+
+				if (edit == null)
+				{
+					continue;
+				}
+
+				comboBoxCandidates.Add(element);
+				editCandidates.Add(edit);
+			}
+
+			if (comboBoxCandidates.Count == 0)
 			{
 				throw new InvalidOperationException("File name ComboBox was not found.");
 			}
 
-			return candidates;
+			edits = editCandidates.ToArray();
+
+			return comboBoxCandidates.ToArray();
 		}
 
-		private AutomationElement selectFileNameComboBox(AutomationElement[] candidates)
+		private int selectFileNameComboBoxIndex(AutomationElement[] candidates, AutomationElement[] edits)
 		{
-			AutomationElement fileNameComboBox = candidates.FirstOrDefault(comboBox => string.Equals(comboBox.Properties.AutomationId.ValueOrDefault, FILE_NAME_CONTROL_HOST, StringComparison.Ordinal));
-
-			if (fileNameComboBox != null)
+			for (int i = 0; i < candidates.Length; i++)
 			{
-				return fileNameComboBox;
+				if (string.Equals(candidates[i].Properties.AutomationId.ValueOrDefault, FILE_NAME_CONTROL_HOST, StringComparison.Ordinal))
+				{
+					return i;
+				}
 			}
 
-			AutomationElement[] nativeCandidates = candidates.Where(isNativeComboBox).ToArray();
-
-			if (nativeCandidates.Length > 0)
+			for (int i = 0; i < candidates.Length; i++)
 			{
-				return nativeCandidates.First();
+				if (isNativeComboBox(candidates[i], edits[i]))
+				{
+					return i;
+				}
 			}
 
-			return candidates.First();
+			return 0;
 		}
 
-		private bool isNativeComboBox(AutomationElement comboBox)
+		private bool isNativeComboBox(AutomationElement comboBox, AutomationElement edit)
 		{
 			string comboBoxClassName = comboBox.Properties.ClassName.ValueOrDefault;
 
 			if (!string.Equals(comboBoxClassName, "ComboBox", StringComparison.OrdinalIgnoreCase))
-			{
-				return false;
-			}
-
-			AutomationElement edit = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
-
-			if (edit == null)
 			{
 				return false;
 			}
@@ -151,33 +176,19 @@ namespace ScenarioRunner.Automation.Operator
 			return string.Equals(editClassName, "Edit", StringComparison.OrdinalIgnoreCase);
 		}
 
-		private AutomationElement getFileNameEdit(AutomationElement comboBox)
+		private AutomationElement getOpenButton(AutomationElement[] descendants)
 		{
-			AutomationElement edit = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
-
-			if (edit == null)
-			{
-				throw new InvalidOperationException("File name input was not found.");
-			}
-
-			return edit;
+			return getActionButton(descendants, "開く", "Open");
 		}
 
-		private AutomationElement getOpenButton(Window dialog)
+		private AutomationElement getSaveButton(AutomationElement[] descendants)
 		{
-			return getActionButton(dialog, "開く", "Open");
+			return getActionButton(descendants, "保存", "Save");
 		}
 
-		private AutomationElement getSaveButton(Window dialog)
+		private AutomationElement getActionButton(AutomationElement[] descendants, params string[] names)
 		{
-			return getActionButton(dialog, "保存", "Save");
-		}
-
-		private AutomationElement getActionButton(Window dialog, params string[] names)
-		{
-			AutomationElement[] buttons = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
-
-			AutomationElement actionButton = buttons.FirstOrDefault(button => names.Any(name => button.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase)));
+			AutomationElement actionButton = descendants.FirstOrDefault(element => element.Properties.ControlType.ValueOrDefault == ControlType.Button && names.Any(name => element.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase)));
 
 			if (actionButton == null)
 			{
@@ -242,7 +253,7 @@ namespace ScenarioRunner.Automation.Operator
 			return builder.ToString();
 		}
 
-		private string createSelectionInfo(Window dialog, AutomationElement[] comboBoxCandidates, AutomationElement selectedComboBox, AutomationElement selectedEdit, AutomationElement actionButton, string expectedFilePath, string actualFilePath)
+		private string createSelectionInfo(Window dialog, AutomationElement[] comboBoxCandidates, AutomationElement[] editCandidates, AutomationElement selectedComboBox, AutomationElement selectedEdit, AutomationElement actionButton, string expectedFilePath, string actualFilePath)
 		{
 			var builder = new StringBuilder();
 
@@ -255,15 +266,8 @@ namespace ScenarioRunner.Automation.Operator
 
 			for (int i = 0; i < comboBoxCandidates.Length; i++)
 			{
-				AutomationElement comboBox = comboBoxCandidates[i];
-				AutomationElement edit = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
-
-				appendElementInfo(builder, $"ComboBox[{i}]", comboBox);
-
-				if (edit != null)
-				{
-					appendElementInfo(builder, $"ComboBox[{i}].Edit", edit);
-				}
+				appendElementInfo(builder, $"ComboBox[{i}]", comboBoxCandidates[i]);
+				appendElementInfo(builder, $"ComboBox[{i}].Edit", editCandidates[i]);
 			}
 
 			appendElementInfo(builder, "SelectedComboBox", selectedComboBox);
