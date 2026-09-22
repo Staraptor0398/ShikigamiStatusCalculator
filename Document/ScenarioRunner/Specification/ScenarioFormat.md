@@ -878,6 +878,64 @@ Scenario Runnerが保持している比較元または比較先のファイル�
 本コマンドは計算結果詳細画面を閉じない。
 確認後に画面を閉じる場合は `CLOSE CALC DETAIL` を使用する。
 
+#### CHECK SAVEDATA LEVEL
+Gui.exeの現在の入力状態および計算状態に応じて、
+利用可能なSaveData保存レベルが期待値と一致することを確認する。
+
+形式：
+
+    CHECK SAVEDATA LEVEL <保存レベル>
+
+保存レベルには以下のいずれかを指定する。
+
+    NONE
+    MITAMA
+    BUILD
+    SNAPSHOT
+
+各保存レベルの意味は以下とする。
+
+- `NONE`
+  - SaveDataを保存できない状態である。
+  - Gui.exeの保存操作が利用できないことを確認する。
+
+- `MITAMA`
+  - 御魂セット保存データのみ保存可能な状態である。
+  - 御魂セット保存データを選択できることを確認する。
+  - ビルド保存データおよび計算結果スナップショットは選択できないことを確認する。
+
+- `BUILD`
+  - 御魂セット保存データおよびビルド保存データを保存可能な状態である。
+  - 御魂セット保存データおよびビルド保存データを選択できることを確認する。
+  - 計算結果スナップショットは選択できないことを確認する。
+
+- `SNAPSHOT`
+  - 御魂セット保存データ、ビルド保存データおよび
+    計算結果スナップショットを保存可能な状態である。
+  - すべての保存形式を選択できることを確認する。
+
+本コマンドはSaveDataの保存を実行しない。
+
+保存操作が利用可能な状態を確認する場合、
+Scenario RunnerはGui.exeの通常の保存機能を使用して
+現在選択可能な保存形式を確認する。
+
+確認のために保存画面を開いた場合は、
+保存を実行せずに確認後の画面を閉じる。
+
+本コマンドによって、
+Gui.exeの入力内容、計算結果または保存ファイルを変更してはならない。
+
+期待した保存レベルと実際の保存状態が一致しない場合は、
+コマンドの実行失敗として扱う。
+
+計算結果スナップショットを保存可能な状態から、
+式神または御魂入力を変更して計算結果が最新の入力状態と一致しなくなった場合は、
+計算結果スナップショットを保存可能な状態とは扱わない。
+
+例えば、式神が選択され御魂が入力されている場合は、
+計算後に入力内容を変更すると保存レベルは `SNAPSHOT` から `BUILD` へ戻る。
+
 #### CHECK CLEARED
 Gui.exeの入力内容および計算結果がクリアされ、
 起動直後と同等の入力状態になっていることを確認する。
@@ -1057,6 +1115,7 @@ Version 2では、Version 1の実装対象に加えて以下のコマンドを�
     OPEN CALC DETAIL
     CHECK CALC DETAIL
     CLOSE CALC DETAIL
+    CHECK SAVEDATA LEVEL <保存レベル>
     SAVE MITAMA
     SAVE BUILD
     SAVE SNAPSHOT BASE
@@ -1339,6 +1398,39 @@ Scenario実行中に生成される保存ファイルの具体的なパスを
 
     END
 
+### 18.9 SaveData保存レベル確認試験
+
+    # Gui.exeの入力状態および計算状態に応じて、
+    # 利用可能なSaveData保存レベルが
+    # NONE、MITAMA、BUILD、SNAPSHOTの順に変化することを確認する。
+
+    START
+
+    OPEN GUI
+
+    # 起動直後は御魂が入力されていないため保存できない
+    CHECK SAVEDATA LEVEL NONE
+
+    # 御魂セットのみを入力すると、
+    # 御魂セット保存データのみ保存可能になる
+    LOAD MITAMA "TestData/Valid.mitama.json"
+    CHECK SAVEDATA LEVEL MITAMA
+
+    # 式神を選択すると、
+    # ビルド保存データまで保存可能になる
+    SEL SHIKIGAMI "願紡縁結神"
+    CHECK SAVEDATA LEVEL BUILD
+
+    # 計算を実行すると、
+    # 計算結果スナップショットまで保存可能になる
+    CALC
+    CHECK CALC
+    CHECK SAVEDATA LEVEL SNAPSHOT
+
+    CLOSE GUI
+
+    END
+
 ## 19. 改訂履歴
 | Version | Date | 内容 |
 |---|---|---|
@@ -1356,3 +1448,4 @@ Scenario実行中に生成される保存ファイルの具体的なパスを
 | 2.1 | 2026-09-20 | Gui.exeの通常の保存処理を使用する `SAVE MITAMA`、`SAVE BUILD`、`SAVE SNAPSHOT BASE`、`SAVE SNAPSHOT TARGET` と、同一Scenario内で保存したデータを利用する `LOAD SAVED MITAMA`、`LOAD SAVED BUILD`、`COMPARE SAVED SNAPSHOT` をVersion 2実装対象として追加。保存ファイルパスをScenario Runnerが管理する仕様を定義。 |
 | 2.2 | 2026-09-22 | 式神選択のみを解除し、御魂入力を保持する `CLEAR SHIKIGAMI` コマンドをVersion 2実装対象として追加。 |
 | 2.3 | 2026-09-22 | 計算結果詳細画面を操作・確認する `OPEN CALC DETAIL`、`CHECK CALC DETAIL`、`CLOSE CALC DETAIL` コマンドをVersion 2実装対象として追加。計算結果詳細表示試験の記述例を追加。 |
+| 2.4 | 2026-09-22 | Gui.exeの現在のSaveData保存可能状態を `NONE`、`MITAMA`、`BUILD`、`SNAPSHOT` の4段階で確認する `CHECK SAVEDATA LEVEL` コマンドをVersion 2実装対象として追加。SaveData保存レベル確認試験の記述例を追加。 |
