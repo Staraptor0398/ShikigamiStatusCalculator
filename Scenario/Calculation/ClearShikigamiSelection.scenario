@@ -1,0 +1,40 @@
+# ClearShikigamiSelection.scenario
+#
+# Gui.exeで選択中の式神のみを解除できることを確認する。
+#
+# 式神選択のみを設定した状態でCLEAR SHIKIGAMIを実行し、
+# 起動直後と同等の入力状態へ戻ることを確認する。
+#
+# また、御魂入力が存在する状態でもCLEAR SHIKIGAMIを実行し、
+# 御魂入力を保持したまま式神のみを解除した後、
+# 御魂のみのステータス計算を実行できることを確認する。
+
+START
+
+OPEN GUI
+
+# 式神のみを選択する
+SEL SHIKIGAMI "願紡縁結神"
+
+# 選択中の式神のみを解除する
+CLEAR SHIKIGAMI
+
+# 御魂など他の入力は行っていないため、
+# 式神選択解除後は起動直後と同等の状態になることを確認する
+CHECK CLEARED
+
+# 式神と正常な御魂セットを設定する
+SEL SHIKIGAMI "願紡縁結神"
+LOAD MITAMA "TestData/Valid.mitama.json"
+
+# 御魂入力を保持したまま式神のみを解除する
+CLEAR SHIKIGAMI
+
+# 式神未選択の状態でも、
+# 残っている御魂入力を使用して計算できることを確認する
+CALC
+CHECK CALC
+
+CLOSE GUI
+
+END
