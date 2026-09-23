@@ -37,13 +37,14 @@ namespace ScenarioRunner.Automation.Operator
 
 		public string LastSelectionInfo { get; private set; }
 
-		public void SelectLoadFile(Window dialog, string filePath)
+		public void SelectLoadFile(FileDialogElements fileDialogElements, string filePath)
 		{
-			validateArguments(dialog, filePath);
+			validateArguments(fileDialogElements, filePath);
 
 			LastSelectionInfo = null;
 
-			AutomationElement[] descendants = dialog.FindAllDescendants();
+			Window dialog = fileDialogElements.Dialog;
+			AutomationElement[] descendants = fileDialogElements.Descendants;
 
 			AutomationElement[] fileNameEdits;
 			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(descendants, out fileNameEdits);
@@ -66,13 +67,14 @@ namespace ScenarioRunner.Automation.Operator
 			SendMessage(openButtonHandle, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
 		}
 
-		public void SelectSaveFile(Window dialog, string filePath)
+		public void SelectSaveFile(FileDialogElements fileDialogElements, string filePath)
 		{
-			validateArguments(dialog, filePath);
+			validateArguments(fileDialogElements, filePath);
 
 			LastSelectionInfo = null;
 
-			AutomationElement[] descendants = dialog.FindAllDescendants();
+			Window dialog = fileDialogElements.Dialog;
+			AutomationElement[] descendants = fileDialogElements.Descendants;
 
 			AutomationElement[] fileNameEdits;
 			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(descendants, out fileNameEdits);
@@ -95,11 +97,11 @@ namespace ScenarioRunner.Automation.Operator
 			saveButton.AsButton().Invoke();
 		}
 
-		private void validateArguments(Window dialog, string filePath)
+		private void validateArguments(FileDialogElements fileDialogElements, string filePath)
 		{
-			if (dialog == null)
+			if (fileDialogElements == null)
 			{
-				throw new ArgumentNullException(nameof(dialog));
+				throw new ArgumentNullException(nameof(fileDialogElements));
 			}
 
 			if (string.IsNullOrWhiteSpace(filePath))

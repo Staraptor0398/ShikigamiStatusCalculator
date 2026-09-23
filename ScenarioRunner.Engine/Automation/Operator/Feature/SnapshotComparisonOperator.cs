@@ -75,15 +75,15 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(browseBaseSnapshotButton);
 
-			Window baseFileDialog = mWindowWaiter.WaitForFileDialog(session);
+			FileDialogElements baseFileDialogElements = mWindowWaiter.WaitForFileDialog(session);
 
-			mFileDialogOperator.SelectLoadFile(baseFileDialog, context.ResolvePath(baseSnapshotPath));
+			mFileDialogOperator.SelectLoadFile(baseFileDialogElements, context.ResolvePath(baseSnapshotPath));
 
 			mButtonOperator.Click(browseTargetSnapshotButton);
 
-			Window targetFileDialog = mWindowWaiter.WaitForFileDialog(session);
+			FileDialogElements targetFileDialogElements = mWindowWaiter.WaitForFileDialog(session);
 
-			mFileDialogOperator.SelectLoadFile(targetFileDialog, context.ResolvePath(targetSnapshotPath));
+			mFileDialogOperator.SelectLoadFile(targetFileDialogElements, context.ResolvePath(targetSnapshotPath));
 
 			waitForEnabled(compareButton);
 

@@ -278,7 +278,7 @@ namespace ScenarioRunner.Automation.Waiter
 			}
 		}
 
-		public Window WaitForFileDialog(GuiSession session)
+		public FileDialogElements WaitForFileDialog(GuiSession session)
 		{
 			if (session == null)
 			{
@@ -289,11 +289,11 @@ namespace ScenarioRunner.Automation.Waiter
 
 			while (elapsed < DEFAULT_TIMEOUT_MS)
 			{
-				Window fileDialog = findFileDialog(session);
+				FileDialogElements fileDialogElements = findFileDialog(session);
 
-				if (fileDialog != null)
+				if (fileDialogElements != null)
 				{
-					return fileDialog;
+					return fileDialogElements;
 				}
 
 				Thread.Sleep(DEFAULT_INTERVAL_MS);
@@ -308,7 +308,7 @@ namespace ScenarioRunner.Automation.Waiter
 			return session.Application.GetAllTopLevelWindows(session.Automation).FirstOrDefault(predicate);
 		}
 
-		private Window findFileDialog(GuiSession session)
+		private FileDialogElements findFileDialog(GuiSession session)
 		{
 			int processId = session.Application.ProcessId;
 			AutomationElement desktop = session.Automation.GetDesktop();
@@ -316,11 +316,12 @@ namespace ScenarioRunner.Automation.Waiter
 			AutomationElement[] candidates = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).ToArray();
 
 			AutomationElement fileDialog = null;
+			AutomationElement[] fileDialogDescendants = null;
 			int minimumDescendantWindowCount = int.MaxValue;
 
 			foreach (AutomationElement candidate in candidates)
 			{
-				if (!tryInspectFileDialog(candidate, out int descendantWindowCount))
+				if (!tryInspectFileDialog(candidate, out AutomationElement[] descendants, out int descendantWindowCount))
 				{
 					continue;
 				}
@@ -331,15 +332,21 @@ namespace ScenarioRunner.Automation.Waiter
 				}
 
 				fileDialog = candidate;
+				fileDialogDescendants = descendants;
 				minimumDescendantWindowCount = descendantWindowCount;
 			}
 
-			return fileDialog?.AsWindow();
+			if (fileDialog == null)
+			{
+				return null;
+			}
+
+			return new FileDialogElements(fileDialog.AsWindow(), fileDialogDescendants);
 		}
 
-		private bool tryInspectFileDialog(AutomationElement element, out int descendantWindowCount)
+		private bool tryInspectFileDialog(AutomationElement element, out AutomationElement[] descendants, out int descendantWindowCount)
 		{
-			AutomationElement[] descendants = element.FindAllDescendants();
+			descendants = element.FindAllDescendants();
 
 			var comboBoxes = new List<AutomationElement>();
 			bool hasOpenButton = false;
