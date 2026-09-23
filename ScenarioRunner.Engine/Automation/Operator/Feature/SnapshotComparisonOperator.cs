@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
@@ -14,6 +15,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly FileDialogOperator mFileDialogOperator;
 		private readonly WindowWaiter mWindowWaiter;
 		private readonly DataGridViewOperator mDataGridViewOperator;
+
+		private Window mResultForm;
 
 		public SnapshotComparisonOperator()
 		{
@@ -41,26 +44,40 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentException("Target snapshot path is empty.", nameof(targetSnapshotPath));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(context.GuiSession);
+			mResultForm = null;
+
+			GuiSession session = context.GuiSession;
+			int processId = session.Application.ProcessId;
+
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+
 			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.COMPARE_SNAPSHOT);
 
-			int processId = context.GuiSession.Application.ProcessId;
+			Window fileSelectDialog = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
 
-			Window fileSelectDialog = mWindowWaiter.WaitForWindow(context.GuiSession, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
+			var elementMap = new AutomationElementMap(fileSelectDialog);
 
-			mButtonOperator.Click(fileSelectDialog, AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_BASE_SNAPSHOT);
+			AutomationElement browseBaseSnapshotButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_BASE_SNAPSHOT, ControlType.Button);
 
-			Window baseFileDialog = mWindowWaiter.WaitForFileDialog(context.GuiSession);
+			AutomationElement browseTargetSnapshotButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_TARGET_SNAPSHOT, ControlType.Button);
+
+			AutomationElement compareButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.COMPARE, ControlType.Button);
+
+			mButtonOperator.Click(browseBaseSnapshotButton);
+
+			Window baseFileDialog = mWindowWaiter.WaitForFileDialog(session);
+
 			mFileDialogOperator.SelectLoadFile(baseFileDialog, context.ResolvePath(baseSnapshotPath));
 
-			mButtonOperator.Click(fileSelectDialog, AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_TARGET_SNAPSHOT);
+			mButtonOperator.Click(browseTargetSnapshotButton);
 
-			Window targetFileDialog = mWindowWaiter.WaitForFileDialog(context.GuiSession);
+			Window targetFileDialog = mWindowWaiter.WaitForFileDialog(session);
+
 			mFileDialogOperator.SelectLoadFile(targetFileDialog, context.ResolvePath(targetSnapshotPath));
 
-			mButtonOperator.Click(fileSelectDialog, AutomationIds.SnapshotCompareFileSelectDialog.COMPARE);
+			mButtonOperator.Click(compareButton);
 
-			mWindowWaiter.WaitForWindow(context.GuiSession, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
+			mResultForm = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
 		}
 
 		public void CompareSaved(ScenarioExecutonContext context)
@@ -87,7 +104,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			if (!File.Exists(context.SavedSnapshotTargetFilePath))
 			{
-				throw new FileNotFoundException("Saved TARGET snapshot was not found.", context.SavedSnapshotTargetFilePath);
+				throw new FileNotFoundException(
+					"Saved TARGET snapshot was not found.",
+					context.SavedSnapshotTargetFilePath);
 			}
 
 			Compare(context, context.SavedSnapshotBaseFilePath, context.SavedSnapshotTargetFilePath);
@@ -95,13 +114,21 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		public void Check(GuiSession session, string statusName, string expectedDifference)
 		{
-			Window resultForm = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == session.Application.ProcessId && element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
 
-			string actualDifference = mDataGridViewOperator.GetCellValue(resultForm, AutomationIds.StatusComparisonResultForm.COMPARISON_RESULT, statusName, 1);
+			if (mResultForm == null || !mResultForm.IsAvailable)
+			{
+				throw new InvalidOperationException("Snapshot comparison result window is not available.");
+			}
+
+			string actualDifference = mDataGridViewOperator.GetCellValue(mResultForm, AutomationIds.StatusComparisonResultForm.COMPARISON_RESULT, statusName, 1);
 
 			if (actualDifference != expectedDifference)
 			{
-				throw new InvalidOperationException($"Snapshot comparison mismatch. Status: {statusName}, Expected: {expectedDifference}, Actual: {actualDifference}");
+				throw new InvalidOperationException($"Snapshot comparison mismatch. " + $"Status: {statusName}, " + $"Expected: {expectedDifference}, " + $"Actual: {actualDifference}");
 			}
 		}
 	}
