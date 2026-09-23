@@ -64,11 +64,15 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement compareSnapshotButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.COMPARE_SNAPSHOT, ControlType.Button);
 
+			logFileDialogPerf(OPERATION, "Main COMPARE button lookup", sectionStopwatch, totalStopwatch);
+
 			mButtonOperator.Click(compareSnapshotButton);
+
+			logFileDialogPerf(OPERATION, "Main COMPARE click", sectionStopwatch, totalStopwatch);
 
 			Window fileSelectDialog = mWindowWaiter.WaitForProcessWindow(session, element => element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
 
-			logFileDialogPerf(OPERATION, "Main COMPARE click -> File select dialog detected", sectionStopwatch, totalStopwatch);
+			logFileDialogPerf(OPERATION, "Wait for File select dialog", sectionStopwatch, totalStopwatch);
 
 			var elementMap = new AutomationElementMap(fileSelectDialog);
 
@@ -80,33 +84,39 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(browseBaseSnapshotButton);
 
+			logFileDialogPerf(OPERATION, "BASE Browse click", sectionStopwatch, totalStopwatch);
+
 			FileDialogElements baseFileDialogElements = mWindowWaiter.WaitForFileDialog(session);
 
-			logFileDialogPerf(OPERATION, "BASE Browse click -> FileDialog detected", sectionStopwatch, totalStopwatch);
+			logFileDialogPerf(OPERATION, "Wait for BASE FileDialog", sectionStopwatch, totalStopwatch);
 
 			mFileDialogOperator.SelectLoadFile(baseFileDialogElements, context.ResolvePath(baseSnapshotPath));
 
-			logFileDialogPerf(OPERATION, "BASE FileDialog detected -> SelectLoadFile completed", sectionStopwatch, totalStopwatch);
+			logFileDialogPerf(OPERATION, "BASE SelectLoadFile", sectionStopwatch, totalStopwatch);
 
 			mButtonOperator.Click(browseTargetSnapshotButton);
 
+			logFileDialogPerf(OPERATION, "TARGET Browse click", sectionStopwatch, totalStopwatch);
+
 			FileDialogElements targetFileDialogElements = mWindowWaiter.WaitForFileDialog(session);
 
-			logFileDialogPerf(OPERATION, "TARGET Browse click -> FileDialog detected", sectionStopwatch, totalStopwatch);
+			logFileDialogPerf(OPERATION, "Wait for TARGET FileDialog", sectionStopwatch, totalStopwatch);
 
 			mFileDialogOperator.SelectLoadFile(targetFileDialogElements, context.ResolvePath(targetSnapshotPath));
 
-			logFileDialogPerf(OPERATION, "TARGET FileDialog detected -> SelectLoadFile completed", sectionStopwatch, totalStopwatch);
+			logFileDialogPerf(OPERATION, "TARGET SelectLoadFile", sectionStopwatch, totalStopwatch);
 
 			waitForEnabled(compareButton);
 
-			logFileDialogPerf(OPERATION, "TARGET selected -> Compare button enabled", sectionStopwatch, totalStopwatch);
+			logFileDialogPerf(OPERATION, "Wait for Compare button enabled", sectionStopwatch, totalStopwatch);
 
 			mButtonOperator.Click(compareButton);
 
+			logFileDialogPerf(OPERATION, "COMPARE click", sectionStopwatch, totalStopwatch);
+
 			mResultForm = mWindowWaiter.WaitForProcessWindow(session, element => element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
 
-			logFileDialogPerf(OPERATION, "COMPARE click -> Result form detected", sectionStopwatch, totalStopwatch);
+			logFileDialogPerf(OPERATION, "Wait for Result form", sectionStopwatch, totalStopwatch);
 
 			totalStopwatch.Stop();
 
@@ -164,7 +174,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			if (actualDifference != expectedDifference)
 			{
-				throw new InvalidOperationException($"Snapshot comparison mismatch. " + $"Status: {statusName}, " + $"Expected: {expectedDifference}, " + $"Actual: {actualDifference}");
+				throw new InvalidOperationException($"Snapshot comparison mismatch. " + $"Status: {statusName}, " + $"Expected={expectedDifference}, " + $"Actual: {actualDifference}");
 			}
 		}
 
