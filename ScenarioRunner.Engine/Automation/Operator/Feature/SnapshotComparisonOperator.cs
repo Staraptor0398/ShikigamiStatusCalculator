@@ -6,11 +6,15 @@ using ScenarioRunner.Execution;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class SnapshotComparisonOperator
 	{
+		private const int WAIT_TIMEOUT_MS = 5000;
+		private const int WAIT_INTERVAL_MS = 100;
+
 		private readonly GuiOperator mGuiOperator;
 		private readonly ButtonOperator mButtonOperator;
 		private readonly FileDialogOperator mFileDialogOperator;
@@ -79,6 +83,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mFileDialogOperator.SelectLoadFile(targetFileDialog, context.ResolvePath(targetSnapshotPath));
 
+			waitForEnabled(compareButton);
+
 			mButtonOperator.Click(compareButton);
 
 			mResultForm = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
@@ -137,6 +143,24 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			{
 				throw new InvalidOperationException($"Snapshot comparison mismatch. " + $"Status: {statusName}, " + $"Expected: {expectedDifference}, " + $"Actual: {actualDifference}");
 			}
+		}
+
+		private void waitForEnabled(AutomationElement element)
+		{
+			int elapsed = 0;
+
+			while (elapsed < WAIT_TIMEOUT_MS)
+			{
+				if (element.Properties.IsEnabled.ValueOrDefault)
+				{
+					return;
+				}
+
+				Thread.Sleep(WAIT_INTERVAL_MS);
+				elapsed += WAIT_INTERVAL_MS;
+			}
+
+			throw new InvalidOperationException($"Element was not enabled within {WAIT_TIMEOUT_MS} ms.");
 		}
 	}
 }
