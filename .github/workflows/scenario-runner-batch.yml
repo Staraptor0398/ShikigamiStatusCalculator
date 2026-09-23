@@ -64,7 +64,7 @@ jobs:
 
           $startInfo = New-Object System.Diagnostics.ProcessStartInfo
           $startInfo.FileName = "ffmpeg"
-          $startInfo.Arguments = "-y -f gdigrab -framerate 10 -draw_mouse 1 -i desktop -c:v libx264 -preset ultrafast -pix_fmt yuv420p `"$videoPath`""
+          $startInfo.Arguments = "-y -f gdigrab -framerate 5 -draw_mouse 1 -i desktop -c:v libx264 -preset ultrafast -pix_fmt yuv420p `"$videoPath`""
           $startInfo.UseShellExecute = $false
           $startInfo.RedirectStandardInput = $true
           $startInfo.RedirectStandardOutput = $false
