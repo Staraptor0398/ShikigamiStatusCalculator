@@ -48,7 +48,7 @@ namespace ScenarioRunner.Automation.Waiter
 			return FindWindow(session, predicate) != null;
 		}
 
-		public Window FindTopLevelWindow(GuiSession session, Func<Window, bool> predicate)
+		public Window FindProcessWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
 			if (session == null)
 			{
@@ -60,9 +60,17 @@ namespace ScenarioRunner.Automation.Waiter
 				throw new ArgumentNullException(nameof(predicate));
 			}
 
-			return session.Application
-				.GetAllTopLevelWindows(session.Automation)
-				.FirstOrDefault(predicate);
+			int processId = session.Application.ProcessId;
+			AutomationElement desktop = session.Automation.GetDesktop();
+
+			AutomationElement windowElement = desktop.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).FirstOrDefault(predicate);
+
+			if (windowElement == null)
+			{
+				windowElement = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).FirstOrDefault(predicate);
+			}
+
+			return windowElement?.AsWindow();
 		}
 
 		public Window WaitForWindow(GuiSession session, Func<AutomationElement, bool> predicate)
@@ -110,12 +118,12 @@ namespace ScenarioRunner.Automation.Waiter
 			throw new InvalidOperationException($"Window was not found within {timeoutMs} ms.");
 		}
 
-		public Window WaitForTopLevelWindow(GuiSession session, Func<Window, bool> predicate)
+		public Window WaitForProcessWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
-			return WaitForTopLevelWindow(session, predicate, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
+			return WaitForProcessWindow(session, predicate, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
 		}
 
-		public Window WaitForTopLevelWindow(GuiSession session, Func<Window, bool> predicate, int timeoutMs, int intervalMs)
+		public Window WaitForProcessWindow(GuiSession session, Func<AutomationElement, bool> predicate, int timeoutMs, int intervalMs)
 		{
 			if (session == null)
 			{
@@ -141,7 +149,7 @@ namespace ScenarioRunner.Automation.Waiter
 
 			while (elapsed < timeoutMs)
 			{
-				Window window = FindTopLevelWindow(session, predicate);
+				Window window = FindProcessWindow(session, predicate);
 
 				if (window != null)
 				{
@@ -152,7 +160,7 @@ namespace ScenarioRunner.Automation.Waiter
 				elapsed += intervalMs;
 			}
 
-			throw new InvalidOperationException($"Top-level window was not found within {timeoutMs} ms.");
+			throw new InvalidOperationException($"Process window was not found within {timeoutMs} ms.");
 		}
 
 		public void WaitForWindowClosed(GuiSession session, Func<AutomationElement, bool> predicate)
@@ -259,7 +267,7 @@ namespace ScenarioRunner.Automation.Waiter
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				Window window = FindTopLevelWindow(session, predicate);
+				Window window = findWindow(session, predicate);
 
 				if (window != null)
 				{
@@ -295,15 +303,17 @@ namespace ScenarioRunner.Automation.Waiter
 			throw new InvalidOperationException($"File dialog was not found within {DEFAULT_TIMEOUT_MS} ms.");
 		}
 
+		private Window findWindow(GuiSession session, Func<Window, bool> predicate)
+		{
+			return session.Application.GetAllTopLevelWindows(session.Automation).FirstOrDefault(predicate);
+		}
+
 		private Window findFileDialog(GuiSession session)
 		{
 			int processId = session.Application.ProcessId;
 			AutomationElement desktop = session.Automation.GetDesktop();
 
-			AutomationElement[] candidates = desktop
-				.FindAllDescendants(cf => cf.ByControlType(ControlType.Window))
-				.Where(element => element.Properties.ProcessId.ValueOrDefault == processId)
-				.ToArray();
+			AutomationElement[] candidates = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).Where(element => element.Properties.ProcessId.ValueOrDefault == processId).ToArray();
 
 			AutomationElement fileDialog = null;
 			int minimumDescendantWindowCount = int.MaxValue;

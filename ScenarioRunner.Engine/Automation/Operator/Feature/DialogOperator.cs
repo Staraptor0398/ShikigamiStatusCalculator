@@ -41,7 +41,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			return mWindowWaiter.WaitForTopLevelWindow(session, window => window.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isVisible(window) && isDialog(window));
+			return mWindowWaiter.WaitForProcessWindow(session, element => element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isVisible(element) && isDialog(element));
 		}
 
 		public bool Exists(GuiSession session)
@@ -54,7 +54,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			Window dialog = mWindowWaiter.FindTopLevelWindow(session, window => window.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isVisible(window) && isDialog(window));
+			Window dialog = mWindowWaiter.FindProcessWindow(session, element => element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isVisible(element) && isDialog(element));
 
 			if (dialog == null)
 			{
@@ -74,14 +74,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window dialog = mLastCheckedDialog ?? GetActiveDialog(session);
+			Window dialog =
+				mLastCheckedDialog ?? GetActiveDialog(session);
 
 			try
 			{
-				return dialog
-					.FindAllDescendants(cf => cf.ByControlType(ControlType.Text))
-					.Select(element => element.Properties.Name.ValueOrDefault)
-					.FirstOrDefault(text => !string.IsNullOrWhiteSpace(text));
+				return dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Text)).Select(element => element.Properties.Name.ValueOrDefault).FirstOrDefault(text => !string.IsNullOrWhiteSpace(text));
 			}
 			catch (COMException)
 			{
@@ -107,16 +105,16 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			mLastCheckedDialog = mWindowWaiter.WaitForTopLevelWindow(
+			mLastCheckedDialog = mWindowWaiter.WaitForProcessWindow(
 				session,
-				window =>
+				element =>
 				{
-					if (window.Properties.NativeWindowHandle.ValueOrDefault == mainWindowHandle || !isVisible(window))
+					if (element.Properties.NativeWindowHandle.ValueOrDefault == mainWindowHandle || !isVisible(element))
 					{
 						return false;
 					}
 
-					if (!containsMessage(window, expectedMessage, out AutomationElement[] buttons))
+					if (!containsMessage(element, expectedMessage, out AutomationElement[] buttons))
 					{
 						return false;
 					}
@@ -124,7 +122,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					mLastCheckedDialogButtons = buttons;
 
 					return true;
-				});
+				}
+			);
 		}
 
 		public void Close(GuiSession session)
@@ -189,6 +188,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			try
 			{
 				AutomationElement button = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button));
+
 				AutomationElement text = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Text));
 
 				return button != null && text != null;
@@ -207,20 +207,14 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			{
 				AutomationElement[] descendants = element.FindAllDescendants();
 
-				bool containsExpectedMessage = descendants.Any(
-					descendant =>
-						descendant.Properties.ControlType.ValueOrDefault == ControlType.Text &&
-						!string.IsNullOrWhiteSpace(descendant.Properties.Name.ValueOrDefault) &&
-						descendant.Properties.Name.ValueOrDefault.Contains(expectedMessage));
+				bool containsExpectedMessage = descendants.Any(descendant => descendant.Properties.ControlType.ValueOrDefault == ControlType.Text && !string.IsNullOrWhiteSpace(descendant.Properties.Name.ValueOrDefault) && descendant.Properties.Name.ValueOrDefault.Contains(expectedMessage));
 
 				if (!containsExpectedMessage)
 				{
 					return false;
 				}
 
-				buttons = descendants
-					.Where(descendant => descendant.Properties.ControlType.ValueOrDefault == ControlType.Button)
-					.ToArray();
+				buttons = descendants.Where(descendant => descendant.Properties.ControlType.ValueOrDefault == ControlType.Button).ToArray();
 
 				return true;
 			}
