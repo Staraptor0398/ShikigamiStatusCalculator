@@ -252,12 +252,22 @@ namespace ScenarioRunner.Automation.Waiter
 			{
 				totalStopwatch.Stop();
 
-				Console.WriteLine($"[FileDialogPerfDetail] Attempt={attempt} | findFileDialog TOTAL | Result=Direct | {totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
+				Console.WriteLine($"[FileDialogPerfDetail] Attempt={attempt} | findFileDialog TOTAL | " + $"Result=Direct | {totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
 
 				return fileDialogElements;
 			}
 
-			AutomationElement[] candidates = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).ToArray();
+			var directWindowHandles = new HashSet<IntPtr>(directCandidates.Select(candidate => candidate.Properties.NativeWindowHandle.ValueOrDefault).Where(windowHandle => windowHandle != IntPtr.Zero));
+
+			AutomationElement[] candidates = desktop
+				.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)))
+				.Where(candidate =>
+				{
+					IntPtr windowHandle = candidate.Properties.NativeWindowHandle.ValueOrDefault;
+
+					return windowHandle == IntPtr.Zero || !directWindowHandles.Contains(windowHandle);
+				})
+				.ToArray();
 
 			logFileDialogPerfDetail(attempt, "Find fallback window candidates", sectionStopwatch, totalStopwatch, $"Candidates={candidates.Length}");
 
@@ -305,6 +315,11 @@ namespace ScenarioRunner.Automation.Waiter
 				fileNameComboBoxCandidates = comboBoxCandidates;
 				fileNameEdits = editCandidates;
 				minimumDescendantWindowCount = descendantWindowCount;
+
+				if (descendantWindowCount == 0)
+				{
+					break;
+				}
 			}
 
 			if (fileDialog == null)
