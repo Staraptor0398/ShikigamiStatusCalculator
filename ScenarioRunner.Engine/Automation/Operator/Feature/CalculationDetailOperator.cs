@@ -14,6 +14,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private readonly WindowWaiter mWindowWaiter;
 
+		private GuiSession mResultViewSession;
+		private Window mResultViewForm;
+		private AutomationElementMap mResultViewElementMap;
+
 		public CalculationDetailOperator()
 		{
 			mButtonOperator = new ButtonOperator();
@@ -30,6 +34,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
+			resetResultViewCache();
+
 			AutomationElement detailButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CALC_DETAIL, ControlType.Button);
 
 			mButtonOperator.Click(detailButton);
@@ -42,16 +48,20 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window resultViewForm = getResultViewForm(session);
+			AutomationElementMap elementMap = getResultViewElementMap(session);
 
-			string mitamaStatus = mTextBoxOperator.GetText(resultViewForm, AutomationIds.ResultViewForm.MITAMA_STATUS);
+			AutomationElement mitamaStatusElement = elementMap.Get(AutomationIds.ResultViewForm.MITAMA_STATUS);
+
+			string mitamaStatus = mTextBoxOperator.GetText(mitamaStatusElement);
 
 			if (string.IsNullOrWhiteSpace(mitamaStatus))
 			{
 				throw new InvalidOperationException("Calculation detail for Mitama-only status is empty.");
 			}
 
-			string finalStatus = mTextBoxOperator.GetText(resultViewForm, AutomationIds.ResultViewForm.FINAL_STATUS);
+			AutomationElement finalStatusElement = elementMap.Get(AutomationIds.ResultViewForm.FINAL_STATUS);
+
+			string finalStatus = mTextBoxOperator.GetText(finalStatusElement);
 
 			if (string.IsNullOrWhiteSpace(finalStatus))
 			{
@@ -67,19 +77,50 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 
 			Window resultViewForm = getResultViewForm(session);
+			AutomationElementMap elementMap = getResultViewElementMap(session);
 
-			int processId = session.Application.ProcessId;
+			AutomationElement closeButton = elementMap.Get(AutomationIds.ResultViewForm.CLOSE, ControlType.Button);
 
-			mButtonOperator.Click(resultViewForm, AutomationIds.ResultViewForm.CLOSE);
+			mButtonOperator.Click(closeButton);
 
-			mWindowWaiter.WaitForWindowClosed(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.ResultViewForm.ID);
+			mWindowWaiter.WaitForWindowClosed(resultViewForm);
+
+			resetResultViewCache();
 		}
 
 		private Window getResultViewForm(GuiSession session)
 		{
+			if (ReferenceEquals(mResultViewSession, session) && mResultViewForm != null)
+			{
+				return mResultViewForm;
+			}
+
 			int processId = session.Application.ProcessId;
 
-			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.ResultViewForm.ID);
+			mResultViewForm = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.ResultViewForm.ID);
+			mResultViewSession = session;
+			mResultViewElementMap = null;
+
+			return mResultViewForm;
+		}
+
+		private AutomationElementMap getResultViewElementMap(GuiSession session)
+		{
+			Window resultViewForm = getResultViewForm(session);
+
+			if (mResultViewElementMap == null)
+			{
+				mResultViewElementMap = new AutomationElementMap(resultViewForm);
+			}
+
+			return mResultViewElementMap;
+		}
+
+		private void resetResultViewCache()
+		{
+			mResultViewElementMap = null;
+			mResultViewForm = null;
+			mResultViewSession = null;
 		}
 	}
 }
