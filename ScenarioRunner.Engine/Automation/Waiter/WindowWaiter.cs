@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace ScenarioRunner.Automation.Waiter
@@ -13,6 +14,10 @@ namespace ScenarioRunner.Automation.Waiter
 		private const int DEFAULT_TIMEOUT_MS = 5000;
 		private const int DEFAULT_INTERVAL_MS = 100;
 		private const int DEFAULT_WAIT_INTERVAL_MS = 50;
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool IsWindow(IntPtr hWnd);
 
 		public Window FindWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
@@ -215,11 +220,18 @@ namespace ScenarioRunner.Automation.Waiter
 				throw new ArgumentOutOfRangeException(nameof(intervalMs));
 			}
 
+			IntPtr windowHandle = window.Properties.NativeWindowHandle.ValueOrDefault;
+
+			if (windowHandle == IntPtr.Zero)
+			{
+				throw new InvalidOperationException("Window has no native window handle.");
+			}
+
 			int elapsed = 0;
 
 			while (elapsed < timeoutMs)
 			{
-				if (!window.IsAvailable)
+				if (!IsWindow(windowHandle))
 				{
 					return;
 				}
