@@ -2,6 +2,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -209,10 +210,13 @@ namespace ScenarioRunner.Automation.Waiter
 			}
 
 			int elapsed = 0;
+			int attempt = 0;
 
 			while (elapsed < DEFAULT_TIMEOUT_MS)
 			{
-				FileDialogElements fileDialogElements = findFileDialog(session);
+				attempt++;
+
+				FileDialogElements fileDialogElements = findFileDialog(session, attempt);
 
 				if (fileDialogElements != null)
 				{
@@ -226,26 +230,52 @@ namespace ScenarioRunner.Automation.Waiter
 			throw new InvalidOperationException($"File dialog was not found within {DEFAULT_TIMEOUT_MS} ms.");
 		}
 
-		private FileDialogElements findFileDialog(GuiSession session)
+		private FileDialogElements findFileDialog(GuiSession session, int attempt)
 		{
+			Stopwatch totalStopwatch = Stopwatch.StartNew();
+			Stopwatch sectionStopwatch = Stopwatch.StartNew();
+
 			int processId = session.Application.ProcessId;
 			AutomationElement desktop = session.Automation.GetDesktop();
 
+			logFileDialogPerfDetail(attempt, "Get desktop", sectionStopwatch, totalStopwatch);
+
 			AutomationElement[] directCandidates = desktop.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).ToArray();
 
-			FileDialogElements fileDialogElements = findFileDialog(directCandidates, true);
+			logFileDialogPerfDetail(attempt, "Find direct window candidates", sectionStopwatch, totalStopwatch, $"Candidates={directCandidates.Length}");
+
+			FileDialogElements fileDialogElements = findFileDialog(directCandidates, true, "Direct", attempt);
+
+			logFileDialogPerfDetail(attempt, "Inspect direct candidates", sectionStopwatch, totalStopwatch);
 
 			if (fileDialogElements != null)
 			{
+				totalStopwatch.Stop();
+
+				Console.WriteLine($"[FileDialogPerfDetail] Attempt={attempt} | findFileDialog TOTAL | Result=Direct | {totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
+
 				return fileDialogElements;
 			}
 
 			AutomationElement[] candidates = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).ToArray();
 
-			return findFileDialog(candidates, false);
+			logFileDialogPerfDetail(attempt, "Find fallback window candidates", sectionStopwatch, totalStopwatch, $"Candidates={candidates.Length}");
+
+			fileDialogElements = findFileDialog(candidates, false, "Fallback", attempt);
+
+			logFileDialogPerfDetail(attempt, "Inspect fallback candidates", sectionStopwatch, totalStopwatch);
+
+			totalStopwatch.Stop();
+
+			Console.WriteLine(
+				$"[FileDialogPerfDetail] Attempt={attempt} | findFileDialog TOTAL | " +
+				$"Result={(fileDialogElements == null ? "NotFound" : "Fallback")} | " +
+				$"{totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
+
+			return fileDialogElements;
 		}
 
-		private FileDialogElements findFileDialog(AutomationElement[] candidates, bool requireNoDescendantWindow)
+		private FileDialogElements findFileDialog(AutomationElement[] candidates, bool requireNoDescendantWindow, string candidateGroup, int attempt)
 		{
 			AutomationElement fileDialog = null;
 			AutomationElement[] fileDialogDescendants = null;
@@ -253,9 +283,9 @@ namespace ScenarioRunner.Automation.Waiter
 			AutomationElement[] fileNameEdits = null;
 			int minimumDescendantWindowCount = int.MaxValue;
 
-			foreach (AutomationElement candidate in candidates)
+			for (int i = 0; i < candidates.Length; i++)
 			{
-				if (!tryInspectFileDialog(candidate, out AutomationElement[] descendants, out AutomationElement[] comboBoxCandidates, out AutomationElement[] editCandidates, out int descendantWindowCount))
+				if (!tryInspectFileDialog(candidates[i], candidateGroup, i, attempt, out AutomationElement[] descendants, out AutomationElement[] comboBoxCandidates, out AutomationElement[] editCandidates, out int descendantWindowCount))
 				{
 					continue;
 				}
@@ -270,7 +300,7 @@ namespace ScenarioRunner.Automation.Waiter
 					continue;
 				}
 
-				fileDialog = candidate;
+				fileDialog = candidates[i];
 				fileDialogDescendants = descendants;
 				fileNameComboBoxCandidates = comboBoxCandidates;
 				fileNameEdits = editCandidates;
@@ -285,9 +315,16 @@ namespace ScenarioRunner.Automation.Waiter
 			return new FileDialogElements(fileDialog.AsWindow(), fileDialogDescendants, fileNameComboBoxCandidates, fileNameEdits);
 		}
 
-		private bool tryInspectFileDialog(AutomationElement element, out AutomationElement[] descendants, out AutomationElement[] fileNameComboBoxCandidates, out AutomationElement[] fileNameEdits, out int descendantWindowCount)
+		private bool tryInspectFileDialog(AutomationElement element, string candidateGroup, int candidateIndex, int attempt, out AutomationElement[] descendants, out AutomationElement[] fileNameComboBoxCandidates, out AutomationElement[] fileNameEdits, out int descendantWindowCount)
 		{
+			Stopwatch totalStopwatch = Stopwatch.StartNew();
+			Stopwatch sectionStopwatch = Stopwatch.StartNew();
+
+			string candidate = $"{candidateGroup}[{candidateIndex}]";
+
 			descendants = element.FindAllDescendants();
+
+			logFileDialogPerfDetail(attempt, $"{candidate} FindAllDescendants", sectionStopwatch, totalStopwatch, $"Descendants={descendants.Length}");
 
 			var comboBoxes = new List<AutomationElement>();
 			var comboBoxCandidates = new List<AutomationElement>();
@@ -324,6 +361,8 @@ namespace ScenarioRunner.Automation.Waiter
 				}
 			}
 
+			logFileDialogPerfDetail(attempt, $"{candidate} Inspect descendant properties", sectionStopwatch, totalStopwatch, $"ComboBoxes={comboBoxes.Count}, DescendantWindows={descendantWindowCount}, HasOpenButton={hasOpenButton}");
+
 			foreach (AutomationElement comboBox in comboBoxes)
 			{
 				AutomationElement edit = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
@@ -337,10 +376,34 @@ namespace ScenarioRunner.Automation.Waiter
 				editCandidates.Add(edit);
 			}
 
+			logFileDialogPerfDetail(attempt, $"{candidate} Find Edit descendants", sectionStopwatch, totalStopwatch, $"ComboBoxes={comboBoxes.Count}, Matches={comboBoxCandidates.Count}");
+
 			fileNameComboBoxCandidates = comboBoxCandidates.ToArray();
 			fileNameEdits = editCandidates.ToArray();
 
-			return fileNameComboBoxCandidates.Length > 0 && hasOpenButton;
+			bool isFileDialog = fileNameComboBoxCandidates.Length > 0 && hasOpenButton;
+
+			totalStopwatch.Stop();
+
+			Console.WriteLine(
+				$"[FileDialogPerfDetail] Attempt={attempt} | {candidate} TOTAL | " +
+				$"Match={isFileDialog}, DescendantWindows={descendantWindowCount} | " +
+				$"{totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
+
+			return isFileDialog;
+		}
+
+		private static void logFileDialogPerfDetail(int attempt, string phase, Stopwatch sectionStopwatch, Stopwatch totalStopwatch, string detail = null)
+		{
+			string detailText = string.IsNullOrEmpty(detail) ? "" : $" | {detail}";
+
+			Console.WriteLine(
+				$"[FileDialogPerfDetail] Attempt={attempt} | {phase} | " +
+				$"Section={sectionStopwatch.Elapsed.TotalMilliseconds:F1} ms | " +
+				$"Total={totalStopwatch.Elapsed.TotalMilliseconds:F1} ms" +
+				detailText);
+
+			sectionStopwatch.Restart();
 		}
 	}
 }
