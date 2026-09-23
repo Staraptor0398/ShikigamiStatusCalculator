@@ -122,6 +122,28 @@ namespace ScenarioRunner.Automation.Operator
 			return !string.IsNullOrWhiteSpace(comboBox.Value);
 		}
 
+		public bool CanSelectFirstItem(AutomationElement element)
+		{
+			if (element == null)
+			{
+				throw new ArgumentNullException(nameof(element));
+			}
+
+			ComboBox comboBox = element.AsComboBox();
+			IntPtr handle = comboBox.Properties.NativeWindowHandle.Value;
+
+			int itemCount = SendMessage(handle, CB_GETCOUNT, IntPtr.Zero, IntPtr.Zero).ToInt32();
+
+			if (itemCount <= 0)
+			{
+				return false;
+			}
+
+			selectItem(handle, 0);
+
+			return !string.IsNullOrWhiteSpace(comboBox.Value);
+		}
+
 		public void SelectFirstItem(AutomationElement parent, string automationId)
 		{
 			ComboBox comboBox = getComboBox(parent, automationId);
@@ -132,6 +154,26 @@ namespace ScenarioRunner.Automation.Operator
 			if (itemCount <= 0)
 			{
 				throw new InvalidOperationException($"ComboBox has no items: {automationId}");
+			}
+
+			selectItem(handle, 0);
+		}
+
+		public void SelectFirstItem(AutomationElement element)
+		{
+			if (element == null)
+			{
+				throw new ArgumentNullException(nameof(element));
+			}
+
+			ComboBox comboBox = element.AsComboBox();
+			IntPtr handle = comboBox.Properties.NativeWindowHandle.Value;
+
+			int itemCount = SendMessage(handle, CB_GETCOUNT, IntPtr.Zero, IntPtr.Zero).ToInt32();
+
+			if (itemCount <= 0)
+			{
+				throw new InvalidOperationException("ComboBox has no items.");
 			}
 
 			selectItem(handle, 0);

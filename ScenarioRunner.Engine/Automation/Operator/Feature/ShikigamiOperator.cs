@@ -44,8 +44,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mComboBoxOperator.SelectFirstItem(mainWindow, AutomationIds.MainForm.SHIKIGAMI);
+			AutomationElement shikigamiElement = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SHIKIGAMI, ControlType.ComboBox);
+
+			mComboBoxOperator.SelectFirstItem(shikigamiElement);
 		}
 
 		public void ClearSelection(GuiSession session)
@@ -95,9 +96,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new InvalidOperationException("A modal dialog is displayed after reloading shikigami data.");
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			AutomationElement shikigamiElement = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SHIKIGAMI, ControlType.ComboBox);
 
-			if (!mComboBoxOperator.CanSelectFirstItem(mainWindow, AutomationIds.MainForm.SHIKIGAMI))
+			if (!mComboBoxOperator.CanSelectFirstItem(shikigamiElement))
 			{
 				throw new InvalidOperationException("Shikigami ComboBox has no items.");
 			}
