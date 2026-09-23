@@ -48,9 +48,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private Window getRecoveryForm(GuiSession session)
 		{
-			int processId = session.Application.ProcessId;
-
-			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.Value == processId && element.FindFirstDescendant(cf => cf.ByAutomationId(AutomationIds.ShikigamiRecoveryDialog.RECOVERY)) != null);
+			return mWindowWaiter.WaitForProcessWindow(session, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRecoveryDialog.ID);
 		}
 	}
 }
