@@ -231,8 +231,22 @@ namespace ScenarioRunner.Automation.Waiter
 			int processId = session.Application.ProcessId;
 			AutomationElement desktop = session.Automation.GetDesktop();
 
+			AutomationElement[] directCandidates = desktop.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).ToArray();
+
+			FileDialogElements fileDialogElements = findFileDialog(directCandidates, true);
+
+			if (fileDialogElements != null)
+			{
+				return fileDialogElements;
+			}
+
 			AutomationElement[] candidates = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).ToArray();
 
+			return findFileDialog(candidates, false);
+		}
+
+		private FileDialogElements findFileDialog(AutomationElement[] candidates, bool requireNoDescendantWindow)
+		{
 			AutomationElement fileDialog = null;
 			AutomationElement[] fileDialogDescendants = null;
 			AutomationElement[] fileNameComboBoxCandidates = null;
@@ -242,6 +256,11 @@ namespace ScenarioRunner.Automation.Waiter
 			foreach (AutomationElement candidate in candidates)
 			{
 				if (!tryInspectFileDialog(candidate, out AutomationElement[] descendants, out AutomationElement[] comboBoxCandidates, out AutomationElement[] editCandidates, out int descendantWindowCount))
+				{
+					continue;
+				}
+
+				if (requireNoDescendantWindow && descendantWindowCount != 0)
 				{
 					continue;
 				}
