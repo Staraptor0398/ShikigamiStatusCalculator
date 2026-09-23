@@ -14,8 +14,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly GuiOperator mGuiOperator;
 		private readonly TextBoxOperator mTextBoxOperator;
 
-		private GuiSession mElementMapSession;
-		private AutomationElementMap mElementMap;
 
 		public InputOperator()
 		{
@@ -65,18 +63,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			AutomationElement clearButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CLEAR, ControlType.Button);
 
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.CLEAR);
-
-			Window dialog = mDialogOperator.GetActiveDialog(session);
-
-			if (dialog == null)
-			{
-				throw new InvalidOperationException("Clear confirmation dialog was not found.");
-			}
-
-			mButtonOperator.Click(dialog, AutomationIds.MessageBox.YES);
+			mButtonOperator.Click(clearButton);
 		}
 
 		public void CheckCleared(GuiSession session)
@@ -192,15 +181,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private AutomationElementMap getElementMap(GuiSession session)
 		{
-			if (!ReferenceEquals(mElementMapSession, session))
-			{
-				Window mainWindow = mGuiOperator.GetMainWindow(session);
-
-				mElementMap = new AutomationElementMap(mainWindow);
-				mElementMapSession = session;
-			}
-
-			return mElementMap;
+			return mGuiOperator.GetMainElementMap(session);
 		}
 	}
 }

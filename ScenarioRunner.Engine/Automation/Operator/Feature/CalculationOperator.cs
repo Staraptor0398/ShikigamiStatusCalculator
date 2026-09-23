@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using System;
 
@@ -23,8 +24,14 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		public void Calculate(GuiSession session)
 		{
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.CALCULATE);
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			AutomationElement calculateButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CALCULATE, ControlType.Button);
+
+			mButtonOperator.Click(calculateButton);
 		}
 
 		public void Check(GuiSession session)
@@ -34,27 +41,24 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			if (mDialogOperator.Exists(session))
-			{
-				throw new InvalidOperationException(
-					$"A modal dialog is displayed after calculation.{Environment.NewLine}" +
-					$"Detected Window: {mDialogOperator.LastDetectedDialogInfo}");
-			}
+			AutomationElement mitamaOnlyElement = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.MITAMA_ONLY);
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-
-			string mitamaOnly = mTextBoxOperator.GetText(mainWindow, AutomationIds.MainForm.MITAMA_ONLY);
+			string mitamaOnly = mTextBoxOperator.GetText(mitamaOnlyElement);
 
 			if (string.IsNullOrWhiteSpace(mitamaOnly))
 			{
 				throw new InvalidOperationException("Calculation result for Mitama-only status is empty.");
 			}
 
-			string shikigami = mComboBoxOperator.GetValue(mainWindow, AutomationIds.MainForm.SHIKIGAMI);
+			AutomationElement shikigamiElement = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SHIKIGAMI, ControlType.ComboBox);
+
+			string shikigami = mComboBoxOperator.GetValue(shikigamiElement);
 
 			if (!string.IsNullOrWhiteSpace(shikigami))
 			{
-				string finalStats = mTextBoxOperator.GetText(mainWindow, AutomationIds.MainForm.FINAL_STATS);
+				AutomationElement finalStatsElement = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.FINAL_STATS);
+
+				string finalStats = mTextBoxOperator.GetText(finalStatsElement);
 
 				if (string.IsNullOrWhiteSpace(finalStats))
 				{

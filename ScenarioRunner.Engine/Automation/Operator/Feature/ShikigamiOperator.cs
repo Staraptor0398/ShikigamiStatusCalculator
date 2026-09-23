@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using System;
@@ -31,8 +32,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mComboBoxOperator.SelectItem(mainWindow, AutomationIds.MainForm.SHIKIGAMI, shikigamiName);
+			AutomationElement shikigamiElement = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SHIKIGAMI, ControlType.ComboBox);
+
+			mComboBoxOperator.SelectItem(shikigamiElement, shikigamiName);
 		}
 
 		public void SelectFirst(GuiSession session)
@@ -53,8 +55,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.CLEAR_SHIKIGAMI);
+			AutomationElement button = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CLEAR_SHIKIGAMI, ControlType.Button);
+
+			mButtonOperator.Click(button);
 		}
 
 		public void Reload(GuiSession session)
@@ -64,8 +67,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.RELOAD_SHIKIGAMI);
+			AutomationElement button = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.RELOAD_SHIKIGAMI, ControlType.Button);
+
+			mButtonOperator.Click(button);
 		}
 
 		public void SaveSelectedShikigamiWithoutChanges(GuiSession session)
@@ -101,8 +105,14 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private Window openEditForm(GuiSession session)
 		{
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.EDIT_SHIKIGAMI);
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			AutomationElement button = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.EDIT_SHIKIGAMI, ControlType.Button);
+
+			mButtonOperator.Click(button);
 
 			int processId = session.Application.ProcessId;
 

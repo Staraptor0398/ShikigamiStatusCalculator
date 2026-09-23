@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using System;
@@ -29,8 +30,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.CALC_DETAIL);
+			AutomationElement detailButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CALC_DETAIL, ControlType.Button);
+
+			mButtonOperator.Click(detailButton);
 		}
 
 		public void Check(GuiSession session)

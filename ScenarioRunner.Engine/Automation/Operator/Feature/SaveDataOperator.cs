@@ -103,11 +103,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				case "BASE":
 					context.SavedSnapshotBaseFilePath = save(context, SNAPSHOT_SAVE_TYPE, "Snapshot_BASE", SNAPSHOT_EXTENSION);
 					break;
-
 				case "TARGET":
 					context.SavedSnapshotTargetFilePath = save(context, SNAPSHOT_SAVE_TYPE, "Snapshot_TARGET", SNAPSHOT_EXTENSION);
 					break;
-
 				default:
 					throw new InvalidOperationException($"Unknown snapshot target: {target}");
 			}
@@ -120,9 +118,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			GuiSession session = context.GuiSession;
 			int processId = session.Application.ProcessId;
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			AutomationElement saveButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SAVE, ControlType.Button);
 
-			bool saveEnabled = mButtonOperator.IsEnabled(mainWindow, AutomationIds.MainForm.SAVE);
+			bool saveEnabled = saveButton.Properties.IsEnabled.ValueOrDefault;
 
 			if (expectedLevel == "NONE")
 			{
@@ -141,7 +139,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			IReadOnlyList<string> expectedSaveTypes = getExpectedSaveTypes(expectedLevel);
 
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.SAVE);
+			mButtonOperator.Click(saveButton);
 
 			Window saveDialog = getSaveDialog(session, processId);
 
@@ -174,16 +172,20 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			GuiSession session = context.GuiSession;
 			int processId = session.Application.ProcessId;
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			AutomationElement mainLoadButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.LOAD, ControlType.Button);
 
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.LOAD);
+			mButtonOperator.Click(mainLoadButton);
 
 			Window loadDialog = getLoadDialog(session, processId);
+
 			var elementMap = new AutomationElementMap(loadDialog);
 
 			AutomationElement loadTypeElement = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD_TYPE, ControlType.ComboBox);
+
 			AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.BROWSE, ControlType.Button);
+
 			AutomationElement filePathElement = elementMap.Get(AutomationIds.SaveDataLoadDialog.FILE_PATH);
+
 			AutomationElement loadButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD, ControlType.Button);
 
 			selectLoadType(loadTypeElement, loadType);
@@ -191,6 +193,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(browseButton);
 
 			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
+
 			mFileDialogOperator.SelectLoadFile(fileDialog, filePath);
 
 			waitForFilePath(filePathElement, filePath);
@@ -209,16 +212,20 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			GuiSession session = context.GuiSession;
 			int processId = session.Application.ProcessId;
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			AutomationElement mainSaveButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SAVE, ControlType.Button);
 
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.SAVE);
+			mButtonOperator.Click(mainSaveButton);
 
 			Window saveDialog = getSaveDialog(session, processId);
+
 			var elementMap = new AutomationElementMap(saveDialog);
 
 			AutomationElement saveTypeElement = elementMap.Get(AutomationIds.SaveDataSaveDialog.SAVE_TYPE, ControlType.ComboBox);
+
 			AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataSaveDialog.BROWSE, ControlType.Button);
+
 			AutomationElement filePathElement = elementMap.Get(AutomationIds.SaveDataSaveDialog.FILE_PATH);
+
 			AutomationElement saveButton = elementMap.Get(AutomationIds.SaveDataSaveDialog.SAVE, ControlType.Button);
 
 			selectSaveType(saveTypeElement, saveType);
@@ -226,6 +233,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(browseButton);
 
 			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
+
 			mFileDialogOperator.SelectSaveFile(fileDialog, filePath);
 
 			waitForFilePath(filePathElement, filePath);
@@ -247,7 +255,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			if (!string.Equals(selectedLoadType, loadType, StringComparison.Ordinal))
 			{
-				throw new InvalidOperationException($"SaveData load type was not selected correctly. Expected={loadType}, Actual={selectedLoadType}");
+				throw new InvalidOperationException($"SaveData load type was not selected correctly. " + $"Expected={loadType}, Actual={selectedLoadType}");
 			}
 		}
 
@@ -259,7 +267,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			if (!string.Equals(selectedSaveType, saveType, StringComparison.Ordinal))
 			{
-				throw new InvalidOperationException($"SaveData save type was not selected correctly. Expected={saveType}, Actual={selectedSaveType}");
+				throw new InvalidOperationException($"SaveData save type was not selected correctly. " + $"Expected={saveType}, Actual={selectedSaveType}");
 			}
 		}
 
@@ -267,15 +275,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		{
 			string scenarioName = Path.GetFileNameWithoutExtension(context.ScenarioPath);
 
-			string directoryPath = Path.Combine(
-				Path.GetTempPath(),
-				"ShikigamiStatusCalculator",
-				"ScenarioRunner",
-				scenarioName);
+			string directoryPath = Path.Combine(Path.GetTempPath(), "ShikigamiStatusCalculator", "ScenarioRunner", scenarioName);
 
 			Directory.CreateDirectory(directoryPath);
 
-			string fileName = $"{scenarioName}_{fileNameSuffix}_{DateTime.Now:yyyyMMdd_HHmmss_fff}_{Guid.NewGuid():N}{extension}";
+			string fileName = $"{scenarioName}_{fileNameSuffix}_" + $"{DateTime.Now:yyyyMMdd_HHmmss_fff}_" + $"{Guid.NewGuid():N}{extension}";
 
 			return Path.Combine(directoryPath, fileName);
 		}
@@ -334,16 +338,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private bool isSaveDialog(AutomationElement element, int processId)
 		{
-			return
-				element.Properties.ProcessId.ValueOrDefault == processId &&
-				element.Properties.AutomationId.ValueOrDefault == AutomationIds.SaveDataSaveDialog.ID;
+			return element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.SaveDataSaveDialog.ID;
 		}
 
 		private bool isLoadDialog(AutomationElement element, int processId)
 		{
-			return
-				element.Properties.ProcessId.ValueOrDefault == processId &&
-				element.Properties.AutomationId.ValueOrDefault == AutomationIds.SaveDataLoadDialog.ID;
+			return element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.SaveDataLoadDialog.ID;
 		}
 
 		private void validateContext(ScenarioExecutonContext context)

@@ -1,5 +1,6 @@
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
 using FlaUI.UIA2;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
@@ -92,6 +93,83 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			session.MainWindow = mainWindow;
 
 			return mainWindow;
+		}
+
+		public AutomationElementMap GetMainElementMap(GuiSession session)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			if (session.MainElementMap == null)
+			{
+				Window mainWindow = GetMainWindow(session);
+
+				session.MainElementMap = new AutomationElementMap(mainWindow);
+			}
+
+			return session.MainElementMap;
+		}
+
+		public AutomationElement GetMainElement(GuiSession session, string automationId)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			if (string.IsNullOrWhiteSpace(automationId))
+			{
+				throw new ArgumentException(
+					"AutomationId is empty.",
+					nameof(automationId));
+			}
+
+			if (session.MainElementMap != null)
+			{
+				return session.MainElementMap.Get(automationId);
+			}
+
+			Window mainWindow = GetMainWindow(session);
+
+			AutomationElement element = mainWindow.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
+
+			if (element == null)
+			{
+				throw new InvalidOperationException($"Automation element was not found: {automationId}");
+			}
+
+			return element;
+		}
+
+		public AutomationElement GetMainElement(GuiSession session, string automationId, ControlType controlType)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			if (string.IsNullOrWhiteSpace(automationId))
+			{
+				throw new ArgumentException("AutomationId is empty.", nameof(automationId));
+			}
+
+			if (session.MainElementMap != null)
+			{
+				return session.MainElementMap.Get(automationId, controlType);
+			}
+
+			Window mainWindow = GetMainWindow(session);
+
+			AutomationElement element = mainWindow.FindFirstDescendant(cf => cf.ByAutomationId(automationId).And(cf.ByControlType(controlType)));
+
+			if (element == null)
+			{
+				throw new InvalidOperationException($"Automation element was not found: {automationId}, " + $"ControlType={controlType}");
+			}
+
+			return element;
 		}
 	}
 }

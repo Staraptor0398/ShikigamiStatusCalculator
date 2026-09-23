@@ -59,7 +59,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.COMPARE_SNAPSHOT);
+			AutomationElement compareSnapshotButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.COMPARE_SNAPSHOT, ControlType.Button);
+
+			mButtonOperator.Click(compareSnapshotButton);
 
 			Window fileSelectDialog = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
 

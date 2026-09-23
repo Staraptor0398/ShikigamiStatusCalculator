@@ -1,4 +1,5 @@
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using System;
@@ -34,8 +35,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentException("Recovery file path is empty.", nameof(recoveryFilePath));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			mButtonOperator.Click(mainWindow, AutomationIds.MainForm.SHIKIGAMI_RECOVERY);
+			AutomationElement recoveryButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SHIKIGAMI_RECOVERY, ControlType.Button);
+
+			mButtonOperator.Click(recoveryButton);
 
 			Window fileDialog = mWindowWaiter.WaitForFileDialog(session);
 			mFileDialogOperator.SelectLoadFile(fileDialog, recoveryFilePath);

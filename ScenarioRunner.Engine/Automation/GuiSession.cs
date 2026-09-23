@@ -11,6 +11,7 @@ namespace ScenarioRunner.Automation
 		public UIA2Automation Automation { get; }
 
 		public Window MainWindow { get; set; }
+		public AutomationElementMap MainElementMap { get; set; }
 
 		public GuiSession(Application application, UIA2Automation automation)
 		{
@@ -20,7 +21,9 @@ namespace ScenarioRunner.Automation
 
 		public void Dispose()
 		{
+			MainElementMap = null;
 			MainWindow = null;
+
 			Automation?.Dispose();
 		}
 	}
