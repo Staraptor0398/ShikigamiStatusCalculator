@@ -235,11 +235,13 @@ namespace ScenarioRunner.Automation.Waiter
 
 			AutomationElement fileDialog = null;
 			AutomationElement[] fileDialogDescendants = null;
+			AutomationElement[] fileNameComboBoxCandidates = null;
+			AutomationElement[] fileNameEdits = null;
 			int minimumDescendantWindowCount = int.MaxValue;
 
 			foreach (AutomationElement candidate in candidates)
 			{
-				if (!tryInspectFileDialog(candidate, out AutomationElement[] descendants, out int descendantWindowCount))
+				if (!tryInspectFileDialog(candidate, out AutomationElement[] descendants, out AutomationElement[] comboBoxCandidates, out AutomationElement[] editCandidates, out int descendantWindowCount))
 				{
 					continue;
 				}
@@ -251,6 +253,8 @@ namespace ScenarioRunner.Automation.Waiter
 
 				fileDialog = candidate;
 				fileDialogDescendants = descendants;
+				fileNameComboBoxCandidates = comboBoxCandidates;
+				fileNameEdits = editCandidates;
 				minimumDescendantWindowCount = descendantWindowCount;
 			}
 
@@ -259,14 +263,17 @@ namespace ScenarioRunner.Automation.Waiter
 				return null;
 			}
 
-			return new FileDialogElements(fileDialog.AsWindow(), fileDialogDescendants);
+			return new FileDialogElements(fileDialog.AsWindow(), fileDialogDescendants, fileNameComboBoxCandidates, fileNameEdits);
 		}
 
-		private bool tryInspectFileDialog(AutomationElement element, out AutomationElement[] descendants, out int descendantWindowCount)
+		private bool tryInspectFileDialog(AutomationElement element, out AutomationElement[] descendants, out AutomationElement[] fileNameComboBoxCandidates, out AutomationElement[] fileNameEdits, out int descendantWindowCount)
 		{
 			descendants = element.FindAllDescendants();
 
 			var comboBoxes = new List<AutomationElement>();
+			var comboBoxCandidates = new List<AutomationElement>();
+			var editCandidates = new List<AutomationElement>();
+
 			bool hasOpenButton = false;
 			descendantWindowCount = 0;
 
@@ -298,9 +305,23 @@ namespace ScenarioRunner.Automation.Waiter
 				}
 			}
 
-			bool hasFileNameInput = comboBoxes.Any(comboBox => comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)) != null);
+			foreach (AutomationElement comboBox in comboBoxes)
+			{
+				AutomationElement edit = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
 
-			return hasFileNameInput && hasOpenButton;
+				if (edit == null)
+				{
+					continue;
+				}
+
+				comboBoxCandidates.Add(comboBox);
+				editCandidates.Add(edit);
+			}
+
+			fileNameComboBoxCandidates = comboBoxCandidates.ToArray();
+			fileNameEdits = editCandidates.ToArray();
+
+			return fileNameComboBoxCandidates.Length > 0 && hasOpenButton;
 		}
 	}
 }

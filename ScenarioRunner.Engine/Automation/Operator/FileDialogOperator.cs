@@ -1,7 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -45,9 +44,8 @@ namespace ScenarioRunner.Automation.Operator
 
 			Window dialog = fileDialogElements.Dialog;
 			AutomationElement[] descendants = fileDialogElements.Descendants;
-
-			AutomationElement[] fileNameEdits;
-			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(descendants, out fileNameEdits);
+			AutomationElement[] fileNameComboBoxCandidates = fileDialogElements.FileNameComboBoxCandidates;
+			AutomationElement[] fileNameEdits = fileDialogElements.FileNameEdits;
 
 			int selectedIndex = selectFileNameComboBoxIndex(fileNameComboBoxCandidates, fileNameEdits);
 
@@ -75,9 +73,8 @@ namespace ScenarioRunner.Automation.Operator
 
 			Window dialog = fileDialogElements.Dialog;
 			AutomationElement[] descendants = fileDialogElements.Descendants;
-
-			AutomationElement[] fileNameEdits;
-			AutomationElement[] fileNameComboBoxCandidates = getFileNameComboBoxCandidates(descendants, out fileNameEdits);
+			AutomationElement[] fileNameComboBoxCandidates = fileDialogElements.FileNameComboBoxCandidates;
+			AutomationElement[] fileNameEdits = fileDialogElements.FileNameEdits;
 
 			int selectedIndex = selectFileNameComboBoxIndex(fileNameComboBoxCandidates, fileNameEdits);
 
@@ -108,39 +105,6 @@ namespace ScenarioRunner.Automation.Operator
 			{
 				throw new ArgumentException("File path is empty.", nameof(filePath));
 			}
-		}
-
-		private AutomationElement[] getFileNameComboBoxCandidates(AutomationElement[] descendants, out AutomationElement[] edits)
-		{
-			var comboBoxCandidates = new List<AutomationElement>();
-			var editCandidates = new List<AutomationElement>();
-
-			foreach (AutomationElement element in descendants)
-			{
-				if (element.Properties.ControlType.ValueOrDefault != ControlType.ComboBox)
-				{
-					continue;
-				}
-
-				AutomationElement edit = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
-
-				if (edit == null)
-				{
-					continue;
-				}
-
-				comboBoxCandidates.Add(element);
-				editCandidates.Add(edit);
-			}
-
-			if (comboBoxCandidates.Count == 0)
-			{
-				throw new InvalidOperationException("File name ComboBox was not found.");
-			}
-
-			edits = editCandidates.ToArray();
-
-			return comboBoxCandidates.ToArray();
 		}
 
 		private int selectFileNameComboBoxIndex(AutomationElement[] candidates, AutomationElement[] edits)
