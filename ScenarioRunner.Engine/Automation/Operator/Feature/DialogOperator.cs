@@ -39,10 +39,40 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
+			mLastCheckedDialog = null;
+			mLastCheckedDialogButtons = null;
+
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			return mWindowWaiter.WaitForProcessWindow(session, element => element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isVisible(element) && isDialog(element));
+			AutomationElement[] buttons = null;
+
+			Window dialog = mWindowWaiter.WaitForProcessWindow(session, element =>
+			{
+				if (element.Properties.NativeWindowHandle.ValueOrDefault == mainWindowHandle || !isVisible(element))
+				{
+					return false;
+				}
+
+				if (!tryInspectDialog(element, out AutomationElement[] candidateButtons, out AutomationElement[] texts))
+				{
+					return false;
+				}
+
+				if (candidateButtons.Length == 0 || texts.Length == 0)
+				{
+					return false;
+				}
+
+				buttons = candidateButtons;
+
+				return true;
+			});
+
+			mLastCheckedDialog = dialog;
+			mLastCheckedDialogButtons = buttons;
+
+			return dialog;
 		}
 
 		public bool Exists(GuiSession session)
@@ -55,7 +85,20 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			Window dialog = mWindowWaiter.FindProcessWindow(session, element => element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isVisible(element) && isDialog(element));
+			Window dialog = mWindowWaiter.FindProcessWindow(session, element =>
+			{
+				if (element.Properties.NativeWindowHandle.ValueOrDefault == mainWindowHandle || !isVisible(element))
+				{
+					return false;
+				}
+
+				if (!tryInspectDialog(element, out AutomationElement[] buttons, out AutomationElement[] texts))
+				{
+					return false;
+				}
+
+				return buttons.Length > 0 && texts.Length > 0;
+			});
 
 			if (dialog == null)
 			{
@@ -115,7 +158,14 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					return false;
 				}
 
-				if (!containsMessage(element, expectedMessage, out AutomationElement[] buttons))
+				if (!tryInspectDialog(element, out AutomationElement[] buttons, out AutomationElement[] texts))
+				{
+					return false;
+				}
+
+				bool containsExpectedMessage = texts.Any(text => !string.IsNullOrWhiteSpace(text.Properties.Name.ValueOrDefault) && text.Properties.Name.ValueOrDefault.Contains(expectedMessage));
+
+				if (!containsExpectedMessage)
 				{
 					return false;
 				}
@@ -183,38 +233,17 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		private bool isDialog(AutomationElement element)
-		{
-			try
-			{
-				AutomationElement button = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button));
-
-				AutomationElement text = element.FindFirstDescendant(cf => cf.ByControlType(ControlType.Text));
-
-				return button != null && text != null;
-			}
-			catch (COMException)
-			{
-				return false;
-			}
-		}
-
-		private bool containsMessage(AutomationElement element, string expectedMessage, out AutomationElement[] buttons)
+		private bool tryInspectDialog(AutomationElement element, out AutomationElement[] buttons, out AutomationElement[] texts)
 		{
 			buttons = null;
+			texts = null;
 
 			try
 			{
-				AutomationElement[] descendants = element.FindAllDescendants();
+				AutomationElement[] dialogElements = element.FindAllDescendants(cf => cf.ByControlType(ControlType.Button).Or(cf.ByControlType(ControlType.Text)));
 
-				bool containsExpectedMessage = descendants.Any(descendant => descendant.Properties.ControlType.ValueOrDefault == ControlType.Text && !string.IsNullOrWhiteSpace(descendant.Properties.Name.ValueOrDefault) && descendant.Properties.Name.ValueOrDefault.Contains(expectedMessage));
-
-				if (!containsExpectedMessage)
-				{
-					return false;
-				}
-
-				buttons = descendants.Where(descendant => descendant.Properties.ControlType.ValueOrDefault == ControlType.Button).ToArray();
+				buttons = dialogElements.Where(dialogElement => dialogElement.Properties.ControlType.ValueOrDefault == ControlType.Button).ToArray();
+				texts = dialogElements.Where(dialogElement => dialogElement.Properties.ControlType.ValueOrDefault == ControlType.Text).ToArray();
 
 				return true;
 			}
