@@ -43,6 +43,23 @@ namespace ScenarioRunner.Automation.Waiter
 			return FindWindow(session, predicate) != null;
 		}
 
+		public Window FindTopLevelWindow(GuiSession session, Func<Window, bool> predicate)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			if (predicate == null)
+			{
+				throw new ArgumentNullException(nameof(predicate));
+			}
+
+			return session.Application
+				.GetAllTopLevelWindows(session.Automation)
+				.FirstOrDefault(predicate);
+		}
+
 		public Window WaitForWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
 			return WaitForWindow(session, predicate, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
@@ -88,6 +105,51 @@ namespace ScenarioRunner.Automation.Waiter
 			throw new InvalidOperationException($"Window was not found within {timeoutMs} ms.");
 		}
 
+		public Window WaitForTopLevelWindow(GuiSession session, Func<Window, bool> predicate)
+		{
+			return WaitForTopLevelWindow(session, predicate, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
+		}
+
+		public Window WaitForTopLevelWindow(GuiSession session, Func<Window, bool> predicate, int timeoutMs, int intervalMs)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			if (predicate == null)
+			{
+				throw new ArgumentNullException(nameof(predicate));
+			}
+
+			if (timeoutMs <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(timeoutMs));
+			}
+
+			if (intervalMs <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(intervalMs));
+			}
+
+			int elapsed = 0;
+
+			while (elapsed < timeoutMs)
+			{
+				Window window = FindTopLevelWindow(session, predicate);
+
+				if (window != null)
+				{
+					return window;
+				}
+
+				Thread.Sleep(intervalMs);
+				elapsed += intervalMs;
+			}
+
+			throw new InvalidOperationException($"Top-level window was not found within {timeoutMs} ms.");
+		}
+
 		public void WaitForWindowClosed(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
 			WaitForWindowClosed(session, predicate, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
@@ -130,7 +192,6 @@ namespace ScenarioRunner.Automation.Waiter
 
 			throw new InvalidOperationException($"Window was not closed within {timeoutMs} ms.");
 		}
-
 
 		public void WaitForWindowClosed(Window window)
 		{
@@ -186,7 +247,7 @@ namespace ScenarioRunner.Automation.Waiter
 			{
 				cancellationToken.ThrowIfCancellationRequested();
 
-				Window window = findWindow(session, predicate);
+				Window window = FindTopLevelWindow(session, predicate);
 
 				if (window != null)
 				{
@@ -220,13 +281,6 @@ namespace ScenarioRunner.Automation.Waiter
 			}
 
 			throw new InvalidOperationException($"File dialog was not found within {DEFAULT_TIMEOUT_MS} ms.");
-		}
-
-		private Window findWindow(GuiSession session, Func<Window, bool> predicate)
-		{
-			return session.Application
-			.GetAllTopLevelWindows(session.Automation)
-			.FirstOrDefault(predicate);
 		}
 
 		private Window findFileDialog(GuiSession session)

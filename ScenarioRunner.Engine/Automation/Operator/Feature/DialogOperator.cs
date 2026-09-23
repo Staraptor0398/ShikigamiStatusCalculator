@@ -38,15 +38,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			int processId = session.Application.ProcessId;
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			return mWindowWaiter.WaitForWindow(session, element =>
-				element.Properties.ProcessId.ValueOrDefault == processId &&
-				element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle &&
-				isVisible(element) &&
-				isDialog(element));
+			return mWindowWaiter.WaitForTopLevelWindow(session, window => window.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isVisible(window) && isDialog(window));
 		}
 
 		public bool Exists(GuiSession session)
@@ -56,15 +51,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			int processId = session.Application.ProcessId;
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			Window dialog = mWindowWaiter.FindWindow(session, element =>
-				element.Properties.ProcessId.ValueOrDefault == processId &&
-				element.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle &&
-				isVisible(element) &&
-				isDialog(element));
+			Window dialog = mWindowWaiter.FindTopLevelWindow(session, window => window.Properties.NativeWindowHandle.ValueOrDefault != mainWindowHandle && isVisible(window) && isDialog(window));
 
 			if (dialog == null)
 			{
@@ -114,24 +104,27 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mLastCheckedDialog = null;
 			mLastCheckedDialogButtons = null;
 
-			int processId = session.Application.ProcessId;
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			mLastCheckedDialog = mWindowWaiter.WaitForWindow(session, element =>
-			{
-				if (element.Properties.ProcessId.ValueOrDefault != processId || !isVisible(element))
+			mLastCheckedDialog = mWindowWaiter.WaitForTopLevelWindow(
+				session,
+				window =>
 				{
-					return false;
-				}
+					if (window.Properties.NativeWindowHandle.ValueOrDefault == mainWindowHandle || !isVisible(window))
+					{
+						return false;
+					}
 
-				if (!containsMessage(element, expectedMessage, out AutomationElement[] buttons))
-				{
-					return false;
-				}
+					if (!containsMessage(window, expectedMessage, out AutomationElement[] buttons))
+					{
+						return false;
+					}
 
-				mLastCheckedDialogButtons = buttons;
+					mLastCheckedDialogButtons = buttons;
 
-				return true;
-			});
+					return true;
+				});
 		}
 
 		public void Close(GuiSession session)
@@ -216,9 +209,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				bool containsExpectedMessage = descendants.Any(
 					descendant =>
-					descendant.Properties.ControlType.ValueOrDefault == ControlType.Text &&
-					!string.IsNullOrWhiteSpace(descendant.Properties.Name.ValueOrDefault) &&
-					descendant.Properties.Name.ValueOrDefault.Contains(expectedMessage));
+						descendant.Properties.ControlType.ValueOrDefault == ControlType.Text &&
+						!string.IsNullOrWhiteSpace(descendant.Properties.Name.ValueOrDefault) &&
+						descendant.Properties.Name.ValueOrDefault.Contains(expectedMessage));
 
 				if (!containsExpectedMessage)
 				{
