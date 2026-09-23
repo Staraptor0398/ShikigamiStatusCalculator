@@ -313,7 +313,7 @@ namespace ScenarioRunner.Automation.Waiter
 			int processId = session.Application.ProcessId;
 			AutomationElement desktop = session.Automation.GetDesktop();
 
-			AutomationElement[] candidates = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).Where(element => element.Properties.ProcessId.ValueOrDefault == processId).ToArray();
+			AutomationElement[] candidates = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).ToArray();
 
 			AutomationElement fileDialog = null;
 			int minimumDescendantWindowCount = int.MaxValue;
