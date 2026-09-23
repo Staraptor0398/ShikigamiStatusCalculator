@@ -55,13 +55,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mComparisonResultRows = null;
 
 			GuiSession session = context.GuiSession;
-			int processId = session.Application.ProcessId;
 
 			AutomationElement compareSnapshotButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.COMPARE_SNAPSHOT, ControlType.Button);
 
 			mButtonOperator.Click(compareSnapshotButton);
 
-			Window fileSelectDialog = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
+			Window fileSelectDialog = mWindowWaiter.WaitForProcessWindow(session, element => element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
 
 			var elementMap = new AutomationElementMap(fileSelectDialog);
 
@@ -87,7 +86,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(compareButton);
 
-			mResultForm = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
+			mResultForm = mWindowWaiter.WaitForProcessWindow(session, element => element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
 		}
 
 		public void CompareSaved(ScenarioExecutonContext context)

@@ -116,7 +116,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			validateContext(context);
 
 			GuiSession session = context.GuiSession;
-			int processId = session.Application.ProcessId;
 
 			AutomationElement saveButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SAVE, ControlType.Button);
 
@@ -141,7 +140,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(saveButton);
 
-			Window saveDialog = getSaveDialog(session, processId);
+			Window saveDialog = getSaveDialog(session);
 
 			try
 			{
@@ -170,13 +169,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			validateLoadFilePath(filePath);
 
 			GuiSession session = context.GuiSession;
-			int processId = session.Application.ProcessId;
 
 			AutomationElement mainLoadButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.LOAD, ControlType.Button);
 
 			mButtonOperator.Click(mainLoadButton);
 
-			Window loadDialog = getLoadDialog(session, processId);
+			Window loadDialog = getLoadDialog(session);
 
 			var elementMap = new AutomationElementMap(loadDialog);
 
@@ -210,13 +208,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			string filePath = createUniqueSaveFilePath(context, fileNameSuffix, extension);
 
 			GuiSession session = context.GuiSession;
-			int processId = session.Application.ProcessId;
 
 			AutomationElement mainSaveButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SAVE, ControlType.Button);
 
 			mButtonOperator.Click(mainSaveButton);
 
-			Window saveDialog = getSaveDialog(session, processId);
+			Window saveDialog = getSaveDialog(session);
 
 			var elementMap = new AutomationElementMap(saveDialog);
 
@@ -326,24 +323,24 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			throw new InvalidOperationException($"Saved file was not created within {WAIT_TIMEOUT_MS} ms: {filePath}");
 		}
 
-		private Window getSaveDialog(GuiSession session, int processId)
+		private Window getSaveDialog(GuiSession session)
 		{
-			return mWindowWaiter.WaitForWindow(session, element => isSaveDialog(element, processId));
+			return mWindowWaiter.WaitForProcessWindow(session, element => isSaveDialog(element));
 		}
 
-		private Window getLoadDialog(GuiSession session, int processId)
+		private Window getLoadDialog(GuiSession session)
 		{
-			return mWindowWaiter.WaitForWindow(session, element => isLoadDialog(element, processId));
+			return mWindowWaiter.WaitForProcessWindow(session, element => isLoadDialog(element));
 		}
 
-		private bool isSaveDialog(AutomationElement element, int processId)
+		private bool isSaveDialog(AutomationElement element)
 		{
-			return element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.SaveDataSaveDialog.ID;
+			return element.Properties.AutomationId.ValueOrDefault == AutomationIds.SaveDataSaveDialog.ID;
 		}
 
-		private bool isLoadDialog(AutomationElement element, int processId)
+		private bool isLoadDialog(AutomationElement element)
 		{
-			return element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.SaveDataLoadDialog.ID;
+			return element.Properties.AutomationId.ValueOrDefault == AutomationIds.SaveDataLoadDialog.ID;
 		}
 
 		private void validateContext(ScenarioExecutonContext context)

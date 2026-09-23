@@ -95,9 +95,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				return mResultViewForm;
 			}
 
-			int processId = session.Application.ProcessId;
-
-			mResultViewForm = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.ResultViewForm.ID);
+			mResultViewForm = mWindowWaiter.WaitForProcessWindow(session, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ResultViewForm.ID);
 			mResultViewSession = session;
 			mResultViewElementMap = null;
 

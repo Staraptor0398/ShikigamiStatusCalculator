@@ -114,9 +114,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(button);
 
-			int processId = session.Application.ProcessId;
-
-			return mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRegisterForm.ID);
+			return mWindowWaiter.WaitForProcessWindow(session, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRegisterForm.ID);
 		}
 	}
 }

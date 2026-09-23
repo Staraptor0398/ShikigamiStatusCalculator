@@ -86,9 +86,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				return session.MainWindow;
 			}
 
-			int processId = session.Application.ProcessId;
-
-			Window mainWindow = mWindowWaiter.WaitForWindow(session, element => element.Properties.ProcessId.ValueOrDefault == processId && element.Properties.AutomationId.ValueOrDefault == AutomationIds.MainForm.ID);
+			Window mainWindow = mWindowWaiter.WaitForProcessWindow(session, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.MainForm.ID);
 
 			session.MainWindow = mainWindow;
 
