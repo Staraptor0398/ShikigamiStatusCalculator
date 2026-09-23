@@ -171,6 +171,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(button);
 
+			mWindowWaiter.WaitForWindowClosed(dialog);
+
 			mLastCheckedDialog = null;
 			mLastCheckedDialogButtons = null;
 		}
