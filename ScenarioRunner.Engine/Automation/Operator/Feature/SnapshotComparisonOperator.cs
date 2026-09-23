@@ -57,8 +57,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			GuiSession session = context.GuiSession;
 			int processId = session.Application.ProcessId;
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-
 			AutomationElement compareSnapshotButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.COMPARE_SNAPSHOT, ControlType.Button);
 
 			mButtonOperator.Click(compareSnapshotButton);
