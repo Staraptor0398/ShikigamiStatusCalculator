@@ -81,7 +81,15 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 
 			Window registerForm = openEditForm(session);
+
 			mButtonOperator.Click(registerForm, AutomationIds.ShikigamiRegisterForm.REGISTER);
+
+			mWindowWaiter.WaitForWindowClosed(registerForm);
+
+			if (!session.Application.WaitWhileBusy(TimeSpan.FromSeconds(5)))
+			{
+				throw new InvalidOperationException("Shikigami update did not complete within 5 seconds.");
+			}
 		}
 
 		public void Check(GuiSession session)
