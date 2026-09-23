@@ -1,5 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
+using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using System;
 using System.Linq;
@@ -74,8 +75,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window dialog =
-				mLastCheckedDialog ?? GetActiveDialog(session);
+			Window dialog = mLastCheckedDialog ?? GetActiveDialog(session);
 
 			try
 			{
@@ -102,28 +102,28 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mLastCheckedDialog = null;
 			mLastCheckedDialogButtons = null;
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
+			IntPtr mainWindowHandle = session.MainWindow?.Properties.NativeWindowHandle.ValueOrDefault ?? IntPtr.Zero;
 
-			mLastCheckedDialog = mWindowWaiter.WaitForProcessWindow(
-				session,
-				element =>
+			mLastCheckedDialog = mWindowWaiter.WaitForProcessWindow(session, element =>
+			{
+				IntPtr windowHandle = element.Properties.NativeWindowHandle.ValueOrDefault;
+
+				string automationId = element.Properties.AutomationId.ValueOrDefault;
+
+				if ((mainWindowHandle != IntPtr.Zero && windowHandle == mainWindowHandle) || automationId == AutomationIds.MainForm.ID || !isVisible(element))
 				{
-					if (element.Properties.NativeWindowHandle.ValueOrDefault == mainWindowHandle || !isVisible(element))
-					{
-						return false;
-					}
-
-					if (!containsMessage(element, expectedMessage, out AutomationElement[] buttons))
-					{
-						return false;
-					}
-
-					mLastCheckedDialogButtons = buttons;
-
-					return true;
+					return false;
 				}
-			);
+
+				if (!containsMessage(element, expectedMessage, out AutomationElement[] buttons))
+				{
+					return false;
+				}
+
+				mLastCheckedDialogButtons = buttons;
+
+				return true;
+			});
 		}
 
 		public void Close(GuiSession session)
