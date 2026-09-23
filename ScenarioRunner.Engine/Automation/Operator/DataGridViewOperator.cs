@@ -1,12 +1,45 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
+using System.Collections.Generic;
 
 namespace ScenarioRunner.Automation.Operator
 {
 	public class DataGridViewOperator
 	{
 		public string GetCellValue(AutomationElement parent, string automationId, string rowName, int columnIndex)
+		{
+			IReadOnlyDictionary<string, string[]> rowValues = GetRowValues(parent, automationId);
+
+			return GetCellValue(rowValues, rowName, columnIndex);
+		}
+
+		public string GetCellValue(IReadOnlyDictionary<string, string[]> rowValues, string rowName, int columnIndex)
+		{
+			if (rowValues == null)
+			{
+				throw new ArgumentNullException(nameof(rowValues));
+			}
+
+			if (string.IsNullOrWhiteSpace(rowName))
+			{
+				throw new ArgumentException("Row name is empty.", nameof(rowName));
+			}
+
+			if (!rowValues.TryGetValue(rowName, out string[] cells))
+			{
+				throw new InvalidOperationException($"DataGridView row was not found: {rowName}");
+			}
+
+			if (columnIndex < 0 || columnIndex >= cells.Length)
+			{
+				throw new InvalidOperationException($"Column index is out of range: {columnIndex}");
+			}
+
+			return cells[columnIndex];
+		}
+
+		public IReadOnlyDictionary<string, string[]> GetRowValues(AutomationElement parent, string automationId)
 		{
 			if (parent == null)
 			{
@@ -18,11 +51,6 @@ namespace ScenarioRunner.Automation.Operator
 				throw new ArgumentException("AutomationId is empty.", nameof(automationId));
 			}
 
-			if (string.IsNullOrWhiteSpace(rowName))
-			{
-				throw new ArgumentException("Row name is empty.", nameof(rowName));
-			}
-
 			AutomationElement dataGridViewElement = parent.FindFirstDescendant(cf => cf.ByAutomationId(automationId).And(cf.ByControlType(ControlType.Table)));
 
 			if (dataGridViewElement == null)
@@ -31,6 +59,8 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			DataGridView dataGridView = dataGridViewElement.AsDataGridView();
+
+			var rowValues = new Dictionary<string, string[]>(StringComparer.Ordinal);
 
 			foreach (DataGridViewRow row in dataGridView.Rows)
 			{
@@ -41,20 +71,29 @@ namespace ScenarioRunner.Automation.Operator
 					continue;
 				}
 
-				if (cells[0].Value != rowName)
+				string rowName = cells[0].Value;
+
+				if (string.IsNullOrWhiteSpace(rowName))
 				{
 					continue;
 				}
 
-				if (columnIndex < 0 || columnIndex >= cells.Length)
+				if (rowValues.ContainsKey(rowName))
 				{
-					throw new InvalidOperationException($"Column index is out of range: {columnIndex}");
+					throw new InvalidOperationException($"Duplicate DataGridView row was found: {rowName}");
 				}
 
-				return cells[columnIndex].Value;
+				var values = new string[cells.Length];
+
+				for (int i = 0; i < cells.Length; i++)
+				{
+					values[i] = cells[i].Value;
+				}
+
+				rowValues.Add(rowName, values);
 			}
 
-			throw new InvalidOperationException($"DataGridView row was not found: {rowName}");
+			return rowValues;
 		}
 	}
 }

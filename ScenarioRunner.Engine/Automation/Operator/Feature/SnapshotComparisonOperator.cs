@@ -4,6 +4,7 @@ using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace ScenarioRunner.Automation.Operator.Feature
@@ -17,6 +18,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly DataGridViewOperator mDataGridViewOperator;
 
 		private Window mResultForm;
+
+		private IReadOnlyDictionary<string, string[]> mComparisonResultRows;
 
 		public SnapshotComparisonOperator()
 		{
@@ -45,6 +48,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 
 			mResultForm = null;
+			mComparisonResultRows = null;
 
 			GuiSession session = context.GuiSession;
 			int processId = session.Application.ProcessId;
@@ -104,9 +108,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			if (!File.Exists(context.SavedSnapshotTargetFilePath))
 			{
-				throw new FileNotFoundException(
-					"Saved TARGET snapshot was not found.",
-					context.SavedSnapshotTargetFilePath);
+				throw new FileNotFoundException("Saved TARGET snapshot was not found.", context.SavedSnapshotTargetFilePath);
 			}
 
 			Compare(context, context.SavedSnapshotBaseFilePath, context.SavedSnapshotTargetFilePath);
@@ -124,7 +126,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new InvalidOperationException("Snapshot comparison result window is not available.");
 			}
 
-			string actualDifference = mDataGridViewOperator.GetCellValue(mResultForm, AutomationIds.StatusComparisonResultForm.COMPARISON_RESULT, statusName, 1);
+			if (mComparisonResultRows == null)
+			{
+				mComparisonResultRows = mDataGridViewOperator.GetRowValues(mResultForm, AutomationIds.StatusComparisonResultForm.COMPARISON_RESULT);
+			}
+
+			string actualDifference = mDataGridViewOperator.GetCellValue(mComparisonResultRows, statusName, 1);
 
 			if (actualDifference != expectedDifference)
 			{
