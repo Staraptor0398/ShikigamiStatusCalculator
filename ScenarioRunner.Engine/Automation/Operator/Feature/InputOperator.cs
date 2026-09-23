@@ -66,6 +66,20 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			AutomationElement clearButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CLEAR, ControlType.Button);
 
 			mButtonOperator.Click(clearButton);
+
+			Window dialog = mDialogOperator.GetActiveDialog(session);
+
+			if (dialog == null)
+			{
+				throw new InvalidOperationException("Clear confirmation dialog was not found.");
+			}
+
+			mButtonOperator.Click(dialog, AutomationIds.MessageBox.YES);
+
+			if (!session.Application.WaitWhileBusy(TimeSpan.FromSeconds(5)))
+			{
+				throw new InvalidOperationException("Clear operation did not complete within 5 seconds.");
+			}
 		}
 
 		public void CheckCleared(GuiSession session)
