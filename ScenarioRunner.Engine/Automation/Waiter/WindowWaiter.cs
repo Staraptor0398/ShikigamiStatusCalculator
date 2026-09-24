@@ -201,6 +201,54 @@ namespace ScenarioRunner.Automation.Waiter
 			throw new InvalidOperationException($"Window was not closed within {timeoutMs} ms.");
 		}
 
+		public FileDialogElements WaitForFileDialog(GuiSession session, Window owner)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			if (owner == null)
+			{
+				throw new ArgumentNullException(nameof(owner));
+			}
+
+			int elapsed = 0;
+			int attempt = 0;
+
+			while (elapsed < DEFAULT_TIMEOUT_MS)
+			{
+				attempt++;
+
+				FileDialogElements fileDialogElements = findFileDialog(owner, attempt);
+
+				if (fileDialogElements != null)
+				{
+					return fileDialogElements;
+				}
+
+				fileDialogElements = findFileDialog(session, attempt);
+
+				if (fileDialogElements != null)
+				{
+					return fileDialogElements;
+				}
+
+				Thread.Sleep(DEFAULT_INTERVAL_MS);
+				elapsed += DEFAULT_INTERVAL_MS;
+			}
+
+			throw new InvalidOperationException($"File dialog was not found within {DEFAULT_TIMEOUT_MS} ms.");
+		}
+
+		private FileDialogElements findFileDialog(Window owner, int attempt)
+		{
+			AutomationElement[] candidates = owner.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).ToArray();
+
+			return findBestFileDialogCandidate(candidates, false, "OwnerDescendant", attempt);
+		}
+
+
 		public FileDialogElements WaitForFileDialog(GuiSession session)
 		{
 			if (session == null)

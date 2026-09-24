@@ -187,7 +187,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(browseButton);
 
-			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session);
+			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session, loadDialog);
 
 			mFileDialogOperator.SelectLoadFile(fileDialogElements, filePath);
 
@@ -223,7 +223,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(browseButton);
 
-			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session);
+			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session, saveDialog);
 
 			mFileDialogOperator.SelectSaveFile(fileDialogElements, filePath);
 
