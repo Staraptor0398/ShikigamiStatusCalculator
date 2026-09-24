@@ -2,7 +2,6 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -232,46 +231,25 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private FileDialogElements findFileDialog(GuiSession session, int attempt)
 		{
-			Stopwatch totalStopwatch = Stopwatch.StartNew();
-			Stopwatch sectionStopwatch = Stopwatch.StartNew();
-
 			int processId = session.Application.ProcessId;
 			AutomationElement desktop = session.Automation.GetDesktop();
 
-			logFileDialogPerfDetail(attempt, "Get desktop", sectionStopwatch, totalStopwatch);
-
 			AutomationElement[] topLevelCandidates = desktop.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).ToArray();
-
-			logFileDialogPerfDetail(attempt, "Find top-level window candidates", sectionStopwatch, totalStopwatch, $"Candidates={topLevelCandidates.Length}");
 
 			FileDialogElements fileDialogElements = findDescendantFileDialog(desktop, processId, topLevelCandidates, attempt);
 
 			if (fileDialogElements != null)
 			{
-				totalStopwatch.Stop();
-
-				Console.WriteLine($"[FileDialogPerfDetail] Attempt={attempt} | findFileDialog TOTAL | Result=Descendant | {totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
-
 				return fileDialogElements;
 			}
 
 			fileDialogElements = findTopLevelFileDialog(topLevelCandidates, attempt);
-
-			totalStopwatch.Stop();
-
-			Console.WriteLine(
-				$"[FileDialogPerfDetail] Attempt={attempt} | findFileDialog TOTAL | " +
-				$"Result={(fileDialogElements == null ? "NotFound" : "TopLevel")} | " +
-				$"{totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
 
 			return fileDialogElements;
 		}
 
 		private FileDialogElements findDescendantFileDialog(AutomationElement desktop, int processId, AutomationElement[] topLevelCandidates, int attempt)
 		{
-			Stopwatch totalStopwatch = Stopwatch.StartNew();
-			Stopwatch sectionStopwatch = Stopwatch.StartNew();
-
 			var topLevelWindowHandles = new HashSet<IntPtr>(topLevelCandidates.Select(candidate => candidate.Properties.NativeWindowHandle.ValueOrDefault).Where(windowHandle => windowHandle != IntPtr.Zero));
 
 			AutomationElement[] descendantCandidates = desktop
@@ -284,37 +262,14 @@ namespace ScenarioRunner.Automation.Waiter
 				})
 				.ToArray();
 
-			logFileDialogPerfDetail(attempt, "Find descendant window candidates", sectionStopwatch, totalStopwatch, $"Candidates={descendantCandidates.Length}");
-
 			FileDialogElements fileDialogElements = findBestFileDialogCandidate(descendantCandidates, false, "Descendant", attempt);
-
-			logFileDialogPerfDetail(attempt, "Inspect descendant candidates", sectionStopwatch, totalStopwatch);
-
-			totalStopwatch.Stop();
-
-			Console.WriteLine(
-				$"[FileDialogPerfDetail] Attempt={attempt} | findDescendantFileDialog TOTAL | " +
-				$"Result={(fileDialogElements == null ? "NotFound" : "Found")} | " +
-				$"{totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
 
 			return fileDialogElements;
 		}
 
 		private FileDialogElements findTopLevelFileDialog(AutomationElement[] topLevelCandidates, int attempt)
 		{
-			Stopwatch totalStopwatch = Stopwatch.StartNew();
-			Stopwatch sectionStopwatch = Stopwatch.StartNew();
-
 			FileDialogElements fileDialogElements = findBestFileDialogCandidate(topLevelCandidates, true, "TopLevel", attempt);
-
-			logFileDialogPerfDetail(attempt, "Inspect top-level candidates", sectionStopwatch, totalStopwatch);
-
-			totalStopwatch.Stop();
-
-			Console.WriteLine(
-				$"[FileDialogPerfDetail] Attempt={attempt} | findTopLevelFileDialog TOTAL | " +
-				$"Result={(fileDialogElements == null ? "NotFound" : "Found")} | " +
-				$"{totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
 
 			return fileDialogElements;
 		}
@@ -366,14 +321,7 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private bool tryInspectFileDialogCandidate(AutomationElement element, string candidateGroup, int candidateIndex, int attempt, out AutomationElement[] descendants, out AutomationElement[] fileNameComboBoxCandidates, out AutomationElement[] fileNameEdits, out int descendantWindowCount)
 		{
-			Stopwatch totalStopwatch = Stopwatch.StartNew();
-			Stopwatch sectionStopwatch = Stopwatch.StartNew();
-
-			string candidate = $"{candidateGroup}[{candidateIndex}]";
-
 			descendants = element.FindAllDescendants();
-
-			logFileDialogPerfDetail(attempt, $"{candidate} FindAllDescendants", sectionStopwatch, totalStopwatch, $"Descendants={descendants.Length}");
 
 			var comboBoxes = new List<AutomationElement>();
 			var comboBoxCandidates = new List<AutomationElement>();
@@ -410,8 +358,6 @@ namespace ScenarioRunner.Automation.Waiter
 				}
 			}
 
-			logFileDialogPerfDetail(attempt, $"{candidate} Inspect descendant properties", sectionStopwatch, totalStopwatch, $"ComboBoxes={comboBoxes.Count}, DescendantWindows={descendantWindowCount}, HasOpenButton={hasOpenButton}");
-
 			foreach (AutomationElement comboBox in comboBoxes)
 			{
 				AutomationElement edit = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
@@ -425,34 +371,12 @@ namespace ScenarioRunner.Automation.Waiter
 				editCandidates.Add(edit);
 			}
 
-			logFileDialogPerfDetail(attempt, $"{candidate} Find Edit descendants", sectionStopwatch, totalStopwatch, $"ComboBoxes={comboBoxes.Count}, Matches={comboBoxCandidates.Count}");
-
 			fileNameComboBoxCandidates = comboBoxCandidates.ToArray();
 			fileNameEdits = editCandidates.ToArray();
 
 			bool isFileDialog = fileNameComboBoxCandidates.Length > 0 && hasOpenButton;
 
-			totalStopwatch.Stop();
-
-			Console.WriteLine(
-				$"[FileDialogPerfDetail] Attempt={attempt} | {candidate} TOTAL | " +
-				$"Match={isFileDialog}, DescendantWindows={descendantWindowCount} | " +
-				$"{totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
-
 			return isFileDialog;
-		}
-
-		private static void logFileDialogPerfDetail(int attempt, string phase, Stopwatch sectionStopwatch, Stopwatch totalStopwatch, string detail = null)
-		{
-			string detailText = string.IsNullOrEmpty(detail) ? "" : $" | {detail}";
-
-			Console.WriteLine(
-				$"[FileDialogPerfDetail] Attempt={attempt} | {phase} | " +
-				$"Section={sectionStopwatch.Elapsed.TotalMilliseconds:F1} ms | " +
-				$"Total={totalStopwatch.Elapsed.TotalMilliseconds:F1} ms" +
-				detailText);
-
-			sectionStopwatch.Restart();
 		}
 	}
 }

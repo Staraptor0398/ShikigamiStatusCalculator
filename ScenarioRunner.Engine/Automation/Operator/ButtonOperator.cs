@@ -1,7 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
-using System.Diagnostics;
 
 namespace ScenarioRunner.Automation.Operator
 {
@@ -32,14 +31,7 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			Button button = element.AsButton();
-
-			Stopwatch stopwatch = Stopwatch.StartNew();
-
-			logButtonInvokePerf("Invoke START", element, stopwatch);
-
 			button.Invoke();
-
-			logButtonInvokePerf("Invoke END", element, stopwatch);
 		}
 
 		public bool IsEnabled(AutomationElement parent, string automationId)
@@ -57,14 +49,6 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			return buttonElement.Properties.IsEnabled.ValueOrDefault;
-		}
-
-		private static void logButtonInvokePerf(string phase, AutomationElement element, Stopwatch stopwatch)
-		{
-			Console.WriteLine(
-				$"[ButtonInvokePerf] {phase} | " +
-				$"AutomationId={element.Properties.AutomationId.ValueOrDefault} | " +
-				$"Elapsed={stopwatch.Elapsed.TotalMilliseconds:F1} ms");
 		}
 	}
 }

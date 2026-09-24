@@ -5,7 +5,6 @@ using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -171,22 +170,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			GuiSession session = context.GuiSession;
 
-			string operation = $"LOAD [{loadType}]";
-
-			Stopwatch totalStopwatch = Stopwatch.StartNew();
-			Stopwatch sectionStopwatch = Stopwatch.StartNew();
-
 			AutomationElement mainLoadButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.LOAD, ControlType.Button);
-
-			logFileDialogPerf(operation, "Main LOAD button lookup", sectionStopwatch, totalStopwatch);
 
 			mButtonOperator.Click(mainLoadButton);
 
-			logFileDialogPerf(operation, "Main LOAD click", sectionStopwatch, totalStopwatch);
-
 			Window loadDialog = getLoadDialog(session);
-
-			logFileDialogPerf(operation, "Wait for Load dialog", sectionStopwatch, totalStopwatch);
 
 			var elementMap = new AutomationElementMap(loadDialog);
 
@@ -197,35 +185,17 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			selectLoadType(loadTypeElement, loadType);
 
-			logFileDialogPerf(operation, "Load dialog preparation", sectionStopwatch, totalStopwatch);
-
 			mButtonOperator.Click(browseButton);
-
-			logFileDialogPerf(operation, "Browse click", sectionStopwatch, totalStopwatch);
 
 			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session);
 
-			logFileDialogPerf(operation, "Wait for FileDialog", sectionStopwatch, totalStopwatch);
-
 			mFileDialogOperator.SelectLoadFile(fileDialogElements, filePath);
-
-			logFileDialogPerf(operation, "SelectLoadFile", sectionStopwatch, totalStopwatch);
 
 			waitForFilePath(filePathElement, filePath);
 
-			logFileDialogPerf(operation, "Wait for file path reflection", sectionStopwatch, totalStopwatch);
-
 			mButtonOperator.Click(loadButton);
 
-			logFileDialogPerf(operation, "LOAD click", sectionStopwatch, totalStopwatch);
-
 			mWindowWaiter.WaitForWindowClosed(loadDialog);
-
-			logFileDialogPerf(operation, "Wait for Load dialog close", sectionStopwatch, totalStopwatch);
-
-			totalStopwatch.Stop();
-
-			Console.WriteLine($"[FileDialogPerf] {operation} | TOTAL | {totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
 		}
 
 		private string save(ScenarioExecutonContext context, string saveType, string fileNameSuffix, string extension)
@@ -236,22 +206,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			GuiSession session = context.GuiSession;
 
-			string operation = $"SAVE [{saveType}]";
-
-			Stopwatch totalStopwatch = Stopwatch.StartNew();
-			Stopwatch sectionStopwatch = Stopwatch.StartNew();
-
 			AutomationElement mainSaveButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SAVE, ControlType.Button);
-
-			logFileDialogPerf(operation, "Main SAVE button lookup", sectionStopwatch, totalStopwatch);
 
 			mButtonOperator.Click(mainSaveButton);
 
-			logFileDialogPerf(operation, "Main SAVE click", sectionStopwatch, totalStopwatch);
-
 			Window saveDialog = getSaveDialog(session);
-
-			logFileDialogPerf(operation, "Wait for Save dialog", sectionStopwatch, totalStopwatch);
 
 			var elementMap = new AutomationElementMap(saveDialog);
 
@@ -262,51 +221,21 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			selectSaveType(saveTypeElement, saveType);
 
-			logFileDialogPerf(operation, "Save dialog preparation", sectionStopwatch, totalStopwatch);
-
 			mButtonOperator.Click(browseButton);
-
-			logFileDialogPerf(operation, "Browse click", sectionStopwatch, totalStopwatch);
 
 			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session);
 
-			logFileDialogPerf(operation, "Wait for FileDialog", sectionStopwatch, totalStopwatch);
-
 			mFileDialogOperator.SelectSaveFile(fileDialogElements, filePath);
-
-			logFileDialogPerf(operation, "SelectSaveFile", sectionStopwatch, totalStopwatch);
 
 			waitForFilePath(filePathElement, filePath);
 
-			logFileDialogPerf(operation, "Wait for file path reflection", sectionStopwatch, totalStopwatch);
-
 			mButtonOperator.Click(saveButton);
-
-			logFileDialogPerf(operation, "SAVE click", sectionStopwatch, totalStopwatch);
 
 			mWindowWaiter.WaitForWindowClosed(saveDialog);
 
-			logFileDialogPerf(operation, "Wait for Save dialog close", sectionStopwatch, totalStopwatch);
-
 			waitForFileCreated(filePath);
 
-			logFileDialogPerf(operation, "Wait for file creation", sectionStopwatch, totalStopwatch);
-
-			totalStopwatch.Stop();
-
-			Console.WriteLine($"[FileDialogPerf] {operation} | TOTAL | {totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
-
 			return filePath;
-		}
-
-		private static void logFileDialogPerf(string operation, string phase, Stopwatch sectionStopwatch, Stopwatch totalStopwatch)
-		{
-			Console.WriteLine(
-				$"[FileDialogPerf] {operation} | {phase} | " +
-				$"Section={sectionStopwatch.Elapsed.TotalMilliseconds:F1} ms | " +
-				$"Total={totalStopwatch.Elapsed.TotalMilliseconds:F1} ms");
-
-			sectionStopwatch.Restart();
 		}
 
 		private void selectLoadType(AutomationElement loadTypeElement, string loadType)
