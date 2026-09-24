@@ -138,7 +138,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			IReadOnlyList<string> expectedSaveTypes = getExpectedSaveTypes(expectedLevel);
 
-			mButtonOperator.Click(saveButton);
+			mButtonOperator.PostClick(saveButton);
 
 			Window saveDialog = getSaveDialog(session);
 
@@ -172,7 +172,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement mainLoadButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.LOAD, ControlType.Button);
 
-			mButtonOperator.Click(mainLoadButton);
+			mButtonOperator.PostClick(mainLoadButton);
 
 			Window loadDialog = getLoadDialog(session);
 
@@ -185,7 +185,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			selectLoadType(loadTypeElement, loadType);
 
-			mButtonOperator.Click(browseButton);
+			mButtonOperator.PostClick(browseButton);
 
 			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session, loadDialog);
 
@@ -208,7 +208,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement mainSaveButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SAVE, ControlType.Button);
 
-			mButtonOperator.Click(mainSaveButton);
+			mButtonOperator.PostClick(mainSaveButton);
 
 			Window saveDialog = getSaveDialog(session);
 
@@ -221,7 +221,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			selectSaveType(saveTypeElement, saveType);
 
-			mButtonOperator.Click(browseButton);
+			mButtonOperator.PostClick(browseButton);
 
 			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session, saveDialog);
 

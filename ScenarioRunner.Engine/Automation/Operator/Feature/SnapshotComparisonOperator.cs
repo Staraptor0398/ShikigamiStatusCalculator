@@ -58,7 +58,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement compareSnapshotButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.COMPARE_SNAPSHOT, ControlType.Button);
 
-			mButtonOperator.Click(compareSnapshotButton);
+			mButtonOperator.PostClick(compareSnapshotButton);
 
 			Window fileSelectDialog = mWindowWaiter.WaitForProcessWindow(session, element => element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
 
@@ -68,13 +68,13 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			AutomationElement browseTargetSnapshotButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_TARGET_SNAPSHOT, ControlType.Button);
 			AutomationElement compareButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.COMPARE, ControlType.Button);
 
-			mButtonOperator.Click(browseBaseSnapshotButton);
+			mButtonOperator.PostClick(browseBaseSnapshotButton);
 
 			FileDialogElements baseFileDialogElements = mWindowWaiter.WaitForFileDialog(session, fileSelectDialog);
 
 			mFileDialogOperator.SelectLoadFile(baseFileDialogElements, context.ResolvePath(baseSnapshotPath));
 
-			mButtonOperator.Click(browseTargetSnapshotButton);
+			mButtonOperator.PostClick(browseTargetSnapshotButton);
 
 			FileDialogElements targetFileDialogElements = mWindowWaiter.WaitForFileDialog(session, fileSelectDialog);
 
