@@ -319,12 +319,16 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private Window getSaveDialog(GuiSession session)
 		{
-			return mWindowWaiter.WaitForProcessWindow(session, element => isSaveDialog(element));
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+
+			return mWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isSaveDialog(element));
 		}
 
 		private Window getLoadDialog(GuiSession session)
 		{
-			return mWindowWaiter.WaitForProcessWindow(session, element => isLoadDialog(element));
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+
+			return mWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isLoadDialog(element));
 		}
 
 		private bool isSaveDialog(AutomationElement element)

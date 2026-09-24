@@ -48,7 +48,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private Window getRecoveryForm(GuiSession session)
 		{
-			return mWindowWaiter.WaitForProcessWindow(session, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRecoveryDialog.ID);
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+
+			return mWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRecoveryDialog.ID);
 		}
 	}
 }

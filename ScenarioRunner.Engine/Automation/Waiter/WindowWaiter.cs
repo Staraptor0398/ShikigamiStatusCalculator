@@ -111,6 +111,75 @@ namespace ScenarioRunner.Automation.Waiter
 			throw new InvalidOperationException($"Window was not found within {timeoutMs} ms.");
 		}
 
+		public Window WaitForProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate)
+		{
+			return WaitForProcessWindow(session, owner, predicate, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
+		}
+
+		public Window WaitForProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate, int timeoutMs, int intervalMs)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			if (owner == null)
+			{
+				throw new ArgumentNullException(nameof(owner));
+			}
+
+			if (predicate == null)
+			{
+				throw new ArgumentNullException(nameof(predicate));
+			}
+
+			if (timeoutMs <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(timeoutMs));
+			}
+
+			if (intervalMs <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(intervalMs));
+			}
+
+			int elapsed = 0;
+
+			while (elapsed < timeoutMs)
+			{
+				Window window = findProcessWindow(owner, session.Application.ProcessId, predicate);
+
+				if (window != null)
+				{
+					return window;
+				}
+
+				window = FindProcessWindow(session, predicate);
+
+				if (window != null)
+				{
+					return window;
+				}
+
+				Thread.Sleep(intervalMs);
+				elapsed += intervalMs;
+			}
+
+			throw new InvalidOperationException($"Process window was not found within {timeoutMs} ms.");
+		}
+
+		private Window findProcessWindow(Window owner, int processId, Func<AutomationElement, bool> predicate)
+		{
+			AutomationElement windowElement = owner.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).FirstOrDefault(predicate);
+
+			if (windowElement == null)
+			{
+				windowElement = owner.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).FirstOrDefault(predicate);
+			}
+
+			return windowElement?.AsWindow();
+		}
+
 		public Window WaitForProcessWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
 			return WaitForProcessWindow(session, predicate, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
