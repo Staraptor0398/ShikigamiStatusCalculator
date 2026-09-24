@@ -375,7 +375,7 @@ namespace ScenarioRunner.Automation.Waiter
 			var comboBoxCandidates = new List<AutomationElement>();
 			var editCandidates = new List<AutomationElement>();
 
-			bool hasOpenButton = false;
+			bool hasActionButton = false;
 			descendantWindowCount = 0;
 
 			foreach (AutomationElement descendant in descendants)
@@ -392,9 +392,9 @@ namespace ScenarioRunner.Automation.Waiter
 				{
 					string name = descendant.Properties.Name.ValueOrDefault;
 
-					if (name.StartsWith("開く", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Open", StringComparison.OrdinalIgnoreCase))
+					if (name.StartsWith("開く", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Open", StringComparison.OrdinalIgnoreCase) || name.StartsWith("保存", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Save", StringComparison.OrdinalIgnoreCase))
 					{
-						hasOpenButton = true;
+						hasActionButton = true;
 					}
 
 					continue;
@@ -422,7 +422,7 @@ namespace ScenarioRunner.Automation.Waiter
 			fileNameComboBoxCandidates = comboBoxCandidates.ToArray();
 			fileNameEdits = editCandidates.ToArray();
 
-			bool isFileDialog = fileNameComboBoxCandidates.Length > 0 && hasOpenButton;
+			bool isFileDialog = fileNameComboBoxCandidates.Length > 0 && hasActionButton;
 
 			return isFileDialog;
 		}
