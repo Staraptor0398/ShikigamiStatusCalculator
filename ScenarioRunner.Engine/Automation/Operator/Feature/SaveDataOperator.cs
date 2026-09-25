@@ -196,6 +196,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(loadButton);
 
 			mWindowWaiter.WaitForWindowClosed(loadDialog);
+
+			if (!session.Application.WaitWhileBusy(TimeSpan.FromSeconds(5)))
+			{
+				throw new InvalidOperationException("Load operation did not complete within 5 seconds.");
+			}
 		}
 
 		private string save(ScenarioExecutonContext context, string saveType, string fileNameSuffix, string extension)
