@@ -197,10 +197,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mWindowWaiter.WaitForWindowClosed(loadDialog);
 
-			if (!session.Application.WaitWhileBusy(TimeSpan.FromSeconds(5)))
-			{
-				throw new InvalidOperationException("Load operation did not complete within 5 seconds.");
-			}
+			waitForLoadCompleted(mainLoadButton);
 		}
 
 		private string save(ScenarioExecutonContext context, string saveType, string fileNameSuffix, string extension)
@@ -410,6 +407,42 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				default:
 					throw new InvalidOperationException($"Unknown SaveData level: {level}");
 			}
+		}
+
+		private void waitForLoadCompleted(AutomationElement mainLoadButton)
+		{
+			int elapsed = 0;
+			int stableEnabledCount = 0;
+			bool disabledObserved = false;
+
+			while (elapsed < WAIT_TIMEOUT_MS)
+			{
+				bool enabled = mainLoadButton.Properties.IsEnabled.ValueOrDefault;
+
+				if (!enabled)
+				{
+					disabledObserved = true;
+					stableEnabledCount = 0;
+				}
+				else if (disabledObserved)
+				{
+					return;
+				}
+				else
+				{
+					stableEnabledCount++;
+
+					if (stableEnabledCount >= 2)
+					{
+						return;
+					}
+				}
+
+				Thread.Sleep(WAIT_INTERVAL_MS);
+				elapsed += WAIT_INTERVAL_MS;
+			}
+
+			throw new InvalidOperationException($"Load operation did not complete within {WAIT_TIMEOUT_MS} ms.");
 		}
 	}
 }
