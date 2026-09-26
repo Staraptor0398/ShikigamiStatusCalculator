@@ -13,6 +13,7 @@ namespace ScenarioRunner.Automation.Waiter
 	{
 		private const int DEFAULT_TIMEOUT_MS = 5000;
 		private const int DEFAULT_INTERVAL_MS = 100;
+		private const int WINDOW_CLOSED_INTERVAL_MS = 50;
 
 		[DllImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
@@ -300,7 +301,7 @@ namespace ScenarioRunner.Automation.Waiter
 
 		public void WaitForWindowClosed(Window window)
 		{
-			WaitForWindowClosed(window, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
+			WaitForWindowClosed(window, DEFAULT_TIMEOUT_MS, WINDOW_CLOSED_INTERVAL_MS);
 		}
 
 		public void WaitForWindowClosed(Window window, int timeoutMs, int intervalMs)
