@@ -35,11 +35,13 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentException("Recovery file path is empty.", nameof(recoveryFilePath));
 			}
 
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+
 			AutomationElement recoveryButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SHIKIGAMI_RECOVERY, ControlType.Button);
 
 			mButtonOperator.Click(recoveryButton);
 
-			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session);
+			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session, mainWindow);
 			mFileDialogOperator.SelectLoadFile(fileDialogElements, recoveryFilePath);
 
 			Window recoveryForm = getRecoveryForm(session);

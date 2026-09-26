@@ -66,6 +66,33 @@ namespace ScenarioRunner.Automation.Waiter
 			return windowElement?.AsWindow();
 		}
 
+		public Window FindProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			if (owner == null)
+			{
+				throw new ArgumentNullException(nameof(owner));
+			}
+
+			if (predicate == null)
+			{
+				throw new ArgumentNullException(nameof(predicate));
+			}
+
+			Window window = findProcessWindow(owner, session.Application.ProcessId, predicate);
+
+			if (window != null)
+			{
+				return window;
+			}
+
+			return FindProcessWindow(session, predicate);
+		}
+
 		public Window WaitForWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
 			return WaitForWindow(session, predicate, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
@@ -147,14 +174,7 @@ namespace ScenarioRunner.Automation.Waiter
 
 			while (elapsed < timeoutMs)
 			{
-				Window window = findProcessWindow(owner, session.Application.ProcessId, predicate);
-
-				if (window != null)
-				{
-					return window;
-				}
-
-				window = FindProcessWindow(session, predicate);
+				Window window = FindProcessWindow(session, owner, predicate);
 
 				if (window != null)
 				{
@@ -316,7 +336,6 @@ namespace ScenarioRunner.Automation.Waiter
 
 			return findBestFileDialogCandidate(candidates, false, "OwnerDescendant", attempt);
 		}
-
 
 		public FileDialogElements WaitForFileDialog(GuiSession session)
 		{

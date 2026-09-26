@@ -47,7 +47,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement[] buttons = null;
 
-			Window dialog = mWindowWaiter.WaitForProcessWindow(session, element =>
+			Window dialog = mWindowWaiter.WaitForProcessWindow(session, mainWindow, element =>
 			{
 				if (element.Properties.NativeWindowHandle.ValueOrDefault == mainWindowHandle || !isVisible(element))
 				{
@@ -85,7 +85,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			Window dialog = mWindowWaiter.FindProcessWindow(session, element =>
+			Window dialog = mWindowWaiter.FindProcessWindow(session, mainWindow, element =>
 			{
 				if (element.Properties.NativeWindowHandle.ValueOrDefault == mainWindowHandle || !isVisible(element))
 				{
@@ -145,15 +145,16 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mLastCheckedDialog = null;
 			mLastCheckedDialogButtons = null;
 
-			IntPtr mainWindowHandle = session.MainWindow?.Properties.NativeWindowHandle.ValueOrDefault ?? IntPtr.Zero;
+			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.ValueOrDefault;
 
-			mLastCheckedDialog = mWindowWaiter.WaitForProcessWindow(session, element =>
+			mLastCheckedDialog = mWindowWaiter.WaitForProcessWindow(session, mainWindow, element =>
 			{
 				IntPtr windowHandle = element.Properties.NativeWindowHandle.ValueOrDefault;
 
 				string automationId = element.Properties.AutomationId.ValueOrDefault;
 
-				if ((mainWindowHandle != IntPtr.Zero && windowHandle == mainWindowHandle) || automationId == AutomationIds.MainForm.ID || !isVisible(element))
+				if (windowHandle == mainWindowHandle || automationId == AutomationIds.MainForm.ID || !isVisible(element))
 				{
 					return false;
 				}
