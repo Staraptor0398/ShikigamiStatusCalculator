@@ -2,7 +2,6 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -372,20 +371,11 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private FileDialogElements findNativeOwnedFileDialog(GuiSession session, Window owner, int attempt, out bool hasCandidate)
 		{
-			var stopwatch = Stopwatch.StartNew();
-
 			IntPtr ownerHandle = owner.Properties.NativeWindowHandle.ValueOrDefault;
 
 			if (ownerHandle == IntPtr.Zero)
 			{
 				hasCandidate = false;
-
-				stopwatch.Stop();
-
-				Console.WriteLine(
-					$"[FileDialogNativeOwner] Attempt={attempt} | " +
-					$"Candidates=0 | Result=NotFound | " +
-					$"{stopwatch.Elapsed.TotalMilliseconds:F1} ms");
 
 				return null;
 			}
@@ -427,14 +417,6 @@ namespace ScenarioRunner.Automation.Waiter
 			}
 
 			FileDialogElements fileDialogElements = findBestFileDialogCandidate(candidates.ToArray(), false, "NativeOwner", attempt);
-
-			stopwatch.Stop();
-
-			Console.WriteLine(
-				$"[FileDialogNativeOwner] Attempt={attempt} | " +
-				$"Candidates={candidates.Count} | " +
-				$"Result={(fileDialogElements == null ? "NotFound" : "Found")} | " +
-				$"{stopwatch.Elapsed.TotalMilliseconds:F1} ms");
 
 			return fileDialogElements;
 		}
