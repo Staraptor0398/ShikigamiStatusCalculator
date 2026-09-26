@@ -145,16 +145,16 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mLastCheckedDialog = null;
 			mLastCheckedDialogButtons = null;
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.ValueOrDefault;
+			Window mainWindow = session.MainWindow;
+			IntPtr mainWindowHandle = mainWindow?.Properties.NativeWindowHandle.ValueOrDefault ?? IntPtr.Zero;
 
-			mLastCheckedDialog = mWindowWaiter.WaitForProcessWindow(session, mainWindow, element =>
+			Func<AutomationElement, bool> predicate = element =>
 			{
 				IntPtr windowHandle = element.Properties.NativeWindowHandle.ValueOrDefault;
 
 				string automationId = element.Properties.AutomationId.ValueOrDefault;
 
-				if (windowHandle == mainWindowHandle || automationId == AutomationIds.MainForm.ID || !isVisible(element))
+				if ((mainWindowHandle != IntPtr.Zero && windowHandle == mainWindowHandle) || automationId == AutomationIds.MainForm.ID || !isVisible(element))
 				{
 					return false;
 				}
@@ -174,7 +174,16 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				mLastCheckedDialogButtons = buttons;
 
 				return true;
-			});
+			};
+
+			if (mainWindow != null)
+			{
+				mLastCheckedDialog = mWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
+			}
+			else
+			{
+				mLastCheckedDialog = mWindowWaiter.WaitForProcessWindow(session, predicate);
+			}
 		}
 
 		public void Close(GuiSession session)
