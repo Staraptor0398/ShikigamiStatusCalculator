@@ -55,7 +55,7 @@ namespace Gui.Dialog
 				dialog.Filter = SaveDataFileDefinition.SnapshotFilter;
 				dialog.InitialDirectory = AppPath.SnapshotSaveDataDirectoryPath;
 
-				if (dialog.ShowDialog() != DialogResult.OK)
+				if (dialog.ShowDialog(this) != DialogResult.OK)
 				{
 					return "";
 				}

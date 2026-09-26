@@ -216,7 +216,7 @@ namespace Gui.Dialog
 				dialog.InitialDirectory = getSaveTypeDirectoryPath(saveType);
 				dialog.FileName = createDefaultFileName(saveType);
 
-				if (dialog.ShowDialog() != DialogResult.OK)
+				if (dialog.ShowDialog(this) != DialogResult.OK)
 				{
 					return;
 				}

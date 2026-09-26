@@ -112,7 +112,7 @@ namespace Gui.Dialog
 				dialog.Filter = getLoadTypeFilter(loadType);
 				dialog.InitialDirectory = getLoadTypeDirectoryPath(loadType);
 
-				if (dialog.ShowDialog() != DialogResult.OK)
+				if (dialog.ShowDialog(this) != DialogResult.OK)
 				{
 					return;
 				}
