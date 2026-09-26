@@ -326,6 +326,17 @@ namespace ScenarioRunner.Automation.Waiter
 
 				if (fileDialogElements != null)
 				{
+					IntPtr ownerHandle = owner.Properties.NativeWindowHandle.ValueOrDefault;
+					IntPtr dialogHandle = fileDialogElements.Dialog.Properties.NativeWindowHandle.ValueOrDefault;
+					IntPtr nativeOwnerHandle = GetWindow(dialogHandle, GW_OWNER);
+
+					Console.WriteLine(
+						$"[FileDialogNativeOwnerFallback] Attempt={attempt} | " +
+						$"Owner=0x{ownerHandle.ToInt64():X} | " +
+						$"Dialog=0x{dialogHandle.ToInt64():X} | " +
+						$"NativeOwner=0x{nativeOwnerHandle.ToInt64():X} | " +
+						$"Match={nativeOwnerHandle == ownerHandle}");
+
 					return fileDialogElements;
 				}
 
