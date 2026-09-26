@@ -18,6 +18,11 @@ namespace ScenarioRunner.Automation.Waiter
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static extern bool IsWindow(IntPtr hWnd);
 
+		private const uint GW_OWNER = 4;
+
+		[DllImport("user32.dll")]
+		private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
 		public Window FindWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
 			if (session == null)
@@ -335,7 +340,23 @@ namespace ScenarioRunner.Automation.Waiter
 		{
 			AutomationElement[] candidates = owner.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).ToArray();
 
-			return findBestFileDialogCandidate(candidates, false, "OwnerDescendant", attempt);
+			FileDialogElements fileDialogElements = findBestFileDialogCandidate(candidates, false, "OwnerDescendant", attempt);
+
+			if (fileDialogElements != null)
+			{
+				IntPtr ownerHandle = owner.Properties.NativeWindowHandle.ValueOrDefault;
+				IntPtr dialogHandle = fileDialogElements.Dialog.Properties.NativeWindowHandle.ValueOrDefault;
+				IntPtr nativeOwnerHandle = GetWindow(dialogHandle, GW_OWNER);
+
+				Console.WriteLine(
+					$"[FileDialogNativeOwner] Attempt={attempt} | " +
+					$"Owner=0x{ownerHandle.ToInt64():X} | " +
+					$"Dialog=0x{dialogHandle.ToInt64():X} | " +
+					$"NativeOwner=0x{nativeOwnerHandle.ToInt64():X} | " +
+					$"Match={nativeOwnerHandle == ownerHandle}");
+			}
+
+			return fileDialogElements;
 		}
 
 		public FileDialogElements WaitForFileDialog(GuiSession session)
