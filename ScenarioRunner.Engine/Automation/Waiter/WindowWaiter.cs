@@ -2,6 +2,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -171,19 +172,45 @@ namespace ScenarioRunner.Automation.Waiter
 			}
 
 			int elapsed = 0;
+			int attempts = 0;
+			int sleepCount = 0;
+			long searchElapsedMs = 0;
+			long maximumSearchElapsedMs = 0;
+
+			Stopwatch totalStopwatch = Stopwatch.StartNew();
 
 			while (elapsed < timeoutMs)
 			{
+				attempts++;
+
+				Stopwatch searchStopwatch = Stopwatch.StartNew();
+
 				Window window = FindProcessWindow(session, owner, predicate);
+
+				searchStopwatch.Stop();
+
+				searchElapsedMs += searchStopwatch.ElapsedMilliseconds;
+				maximumSearchElapsedMs = Math.Max(maximumSearchElapsedMs, searchStopwatch.ElapsedMilliseconds);
 
 				if (window != null)
 				{
+					Console.WriteLine(
+						$"[WaitPerf] Type=ProcessWindow Scope=Owner " +
+						$"Attempts={attempts} SearchMs={searchElapsedMs} MaxSearchMs={maximumSearchElapsedMs} " +
+						$"SleepMs={sleepCount * intervalMs} TotalMs={totalStopwatch.ElapsedMilliseconds} Found=True");
+
 					return window;
 				}
 
 				Thread.Sleep(intervalMs);
+				sleepCount++;
 				elapsed += intervalMs;
 			}
+
+			Console.WriteLine(
+				$"[WaitPerf] Type=ProcessWindow Scope=Owner " +
+				$"Attempts={attempts} SearchMs={searchElapsedMs} MaxSearchMs={maximumSearchElapsedMs} " +
+				$"SleepMs={sleepCount * intervalMs} TotalMs={totalStopwatch.ElapsedMilliseconds} Found=False");
 
 			throw new InvalidOperationException($"Process window was not found within {timeoutMs} ms.");
 		}
@@ -228,19 +255,45 @@ namespace ScenarioRunner.Automation.Waiter
 			}
 
 			int elapsed = 0;
+			int attempts = 0;
+			int sleepCount = 0;
+			long searchElapsedMs = 0;
+			long maximumSearchElapsedMs = 0;
+
+			Stopwatch totalStopwatch = Stopwatch.StartNew();
 
 			while (elapsed < timeoutMs)
 			{
+				attempts++;
+
+				Stopwatch searchStopwatch = Stopwatch.StartNew();
+
 				Window window = FindProcessWindow(session, predicate);
+
+				searchStopwatch.Stop();
+
+				searchElapsedMs += searchStopwatch.ElapsedMilliseconds;
+				maximumSearchElapsedMs = Math.Max(maximumSearchElapsedMs, searchStopwatch.ElapsedMilliseconds);
 
 				if (window != null)
 				{
+					Console.WriteLine(
+						$"[WaitPerf] Type=ProcessWindow Scope=Process " +
+						$"Attempts={attempts} SearchMs={searchElapsedMs} MaxSearchMs={maximumSearchElapsedMs} " +
+						$"SleepMs={sleepCount * intervalMs} TotalMs={totalStopwatch.ElapsedMilliseconds} Found=True");
+
 					return window;
 				}
 
 				Thread.Sleep(intervalMs);
+				sleepCount++;
 				elapsed += intervalMs;
 			}
+
+			Console.WriteLine(
+				$"[WaitPerf] Type=ProcessWindow Scope=Process " +
+				$"Attempts={attempts} SearchMs={searchElapsedMs} MaxSearchMs={maximumSearchElapsedMs} " +
+				$"SleepMs={sleepCount * intervalMs} TotalMs={totalStopwatch.ElapsedMilliseconds} Found=False");
 
 			throw new InvalidOperationException($"Process window was not found within {timeoutMs} ms.");
 		}
@@ -275,17 +328,43 @@ namespace ScenarioRunner.Automation.Waiter
 			}
 
 			int elapsed = 0;
+			int attempts = 0;
+			int sleepCount = 0;
+			long checkElapsedMs = 0;
+
+			Stopwatch totalStopwatch = Stopwatch.StartNew();
 
 			while (elapsed < timeoutMs)
 			{
-				if (!IsWindow(windowHandle))
+				attempts++;
+
+				Stopwatch checkStopwatch = Stopwatch.StartNew();
+
+				bool exists = IsWindow(windowHandle);
+
+				checkStopwatch.Stop();
+
+				checkElapsedMs += checkStopwatch.ElapsedMilliseconds;
+
+				if (!exists)
 				{
+					Console.WriteLine(
+						$"[WaitPerf] Type=WindowClosed " +
+						$"Attempts={attempts} CheckMs={checkElapsedMs} " +
+						$"SleepMs={sleepCount * intervalMs} TotalMs={totalStopwatch.ElapsedMilliseconds} Closed=True");
+
 					return;
 				}
 
 				Thread.Sleep(intervalMs);
+				sleepCount++;
 				elapsed += intervalMs;
 			}
+
+			Console.WriteLine(
+				$"[WaitPerf] Type=WindowClosed " +
+				$"Attempts={attempts} CheckMs={checkElapsedMs} " +
+				$"SleepMs={sleepCount * intervalMs} TotalMs={totalStopwatch.ElapsedMilliseconds} Closed=False");
 
 			throw new InvalidOperationException($"Window was not closed within {timeoutMs} ms.");
 		}
@@ -304,28 +383,59 @@ namespace ScenarioRunner.Automation.Waiter
 
 			int elapsed = 0;
 			int attempt = 0;
+			int sleepCount = 0;
+			long ownerSearchElapsedMs = 0;
+			long globalSearchElapsedMs = 0;
+
+			Stopwatch totalStopwatch = Stopwatch.StartNew();
 
 			while (elapsed < DEFAULT_TIMEOUT_MS)
 			{
 				attempt++;
 
+				Stopwatch searchStopwatch = Stopwatch.StartNew();
+
 				FileDialogElements fileDialogElements = findFileDialog(owner, attempt);
+
+				searchStopwatch.Stop();
+				ownerSearchElapsedMs += searchStopwatch.ElapsedMilliseconds;
 
 				if (fileDialogElements != null)
 				{
+					Console.WriteLine(
+						$"[WaitPerf] Type=FileDialog Scope=Owner " +
+						$"Attempts={attempt} OwnerSearchMs={ownerSearchElapsedMs} GlobalSearchMs={globalSearchElapsedMs} " +
+						$"SleepMs={sleepCount * DEFAULT_INTERVAL_MS} TotalMs={totalStopwatch.ElapsedMilliseconds} FoundScope=Owner");
+
 					return fileDialogElements;
 				}
 
+				searchStopwatch.Restart();
+
 				fileDialogElements = findFileDialog(session, attempt);
+
+				searchStopwatch.Stop();
+				globalSearchElapsedMs += searchStopwatch.ElapsedMilliseconds;
 
 				if (fileDialogElements != null)
 				{
+					Console.WriteLine(
+						$"[WaitPerf] Type=FileDialog Scope=Owner " +
+						$"Attempts={attempt} OwnerSearchMs={ownerSearchElapsedMs} GlobalSearchMs={globalSearchElapsedMs} " +
+						$"SleepMs={sleepCount * DEFAULT_INTERVAL_MS} TotalMs={totalStopwatch.ElapsedMilliseconds} FoundScope=Global");
+
 					return fileDialogElements;
 				}
 
 				Thread.Sleep(DEFAULT_INTERVAL_MS);
+				sleepCount++;
 				elapsed += DEFAULT_INTERVAL_MS;
 			}
+
+			Console.WriteLine(
+				$"[WaitPerf] Type=FileDialog Scope=Owner " +
+				$"Attempts={attempt} OwnerSearchMs={ownerSearchElapsedMs} GlobalSearchMs={globalSearchElapsedMs} " +
+				$"SleepMs={sleepCount * DEFAULT_INTERVAL_MS} TotalMs={totalStopwatch.ElapsedMilliseconds} FoundScope=None");
 
 			throw new InvalidOperationException($"File dialog was not found within {DEFAULT_TIMEOUT_MS} ms.");
 		}
