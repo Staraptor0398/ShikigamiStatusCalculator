@@ -1,3 +1,4 @@
+
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
@@ -148,11 +149,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				if (!actualSaveTypes.SequenceEqual(expectedSaveTypes))
 				{
-					throw new InvalidOperationException(
-						$"SaveData level mismatch. " +
-						$"Expected={expectedLevel}, " +
-						$"ExpectedSaveTypes=[{string.Join(", ", expectedSaveTypes)}], " +
-						$"ActualSaveTypes=[{string.Join(", ", actualSaveTypes)}]");
+					throw new InvalidOperationException($"SaveData level mismatch. " + $"Expected={expectedLevel}, " + $"ExpectedSaveTypes=[{string.Join(", ", expectedSaveTypes)}], " + $"ActualSaveTypes=[{string.Join(", ", actualSaveTypes)}]");
 				}
 			}
 			finally
@@ -295,10 +292,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				elapsed += WAIT_INTERVAL_MS;
 			}
 
-			throw new InvalidOperationException(
-				$"SaveData file path was not selected correctly within {WAIT_TIMEOUT_MS} ms. " +
-				$"Expected={expectedFilePath}, Actual={actualFilePath}" +
-				$"{Environment.NewLine}{mFileDialogOperator.LastSelectionInfo}");
+			throw new InvalidOperationException($"SaveData file path was not selected correctly within {WAIT_TIMEOUT_MS} ms. " + $"Expected={expectedFilePath}, Actual={actualFilePath}");
 		}
 
 		private void waitForFileCreated(string filePath)
