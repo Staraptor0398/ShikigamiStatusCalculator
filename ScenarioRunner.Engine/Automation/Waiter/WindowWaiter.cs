@@ -2,7 +2,6 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -334,40 +333,9 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private FileDialogElements findFileDialog(Window owner, int attempt)
 		{
-			Stopwatch stopwatch = Stopwatch.StartNew();
+			AutomationElement[] candidates = owner.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).ToArray();
 
-			AutomationElement[] candidates = owner.FindAllChildren(cf => cf.ByControlType(ControlType.Window)).ToArray();
-
-			FileDialogElements fileDialogElements = findBestFileDialogCandidate(candidates, false, "OwnerChild", attempt);
-
-			stopwatch.Stop();
-
-			Console.WriteLine(
-				$"[FileDialogOwnerChild] Attempt={attempt} | " +
-				$"Candidates={candidates.Length} | " +
-				$"Result={(fileDialogElements == null ? "NotFound" : "Found")} | " +
-				$"{stopwatch.Elapsed.TotalMilliseconds:F1} ms");
-
-			if (fileDialogElements != null)
-			{
-				return fileDialogElements;
-			}
-
-			stopwatch.Restart();
-
-			candidates = owner.FindAllDescendants(cf => cf.ByControlType(ControlType.Window)).ToArray();
-
-			fileDialogElements = findBestFileDialogCandidate(candidates, false, "OwnerDescendant", attempt);
-
-			stopwatch.Stop();
-
-			Console.WriteLine(
-				$"[FileDialogOwnerDescendant] Attempt={attempt} | " +
-				$"Candidates={candidates.Length} | " +
-				$"Result={(fileDialogElements == null ? "NotFound" : "Found")} | " +
-				$"{stopwatch.Elapsed.TotalMilliseconds:F1} ms");
-
-			return fileDialogElements;
+			return findBestFileDialogCandidate(candidates, false, "OwnerDescendant", attempt);
 		}
 
 		public FileDialogElements WaitForFileDialog(GuiSession session)
