@@ -3,6 +3,7 @@ using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -21,8 +22,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private Window mLastCheckedDialog;
 		private AutomationElement[] mLastCheckedDialogButtons;
-
-		public string LastDetectedDialogInfo { get; private set; }
 
 		public DialogOperator()
 		{
@@ -49,7 +48,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window dialog = mWindowWaiter.WaitForProcessWindow(session, mainWindow, element =>
 			{
-				if (element.Properties.NativeWindowHandle.ValueOrDefault == mainWindowHandle || !isVisible(element))
+				IntPtr windowHandle = element.Properties.NativeWindowHandle.ValueOrDefault;
+
+				if (windowHandle == mainWindowHandle || !isVisible(windowHandle))
 				{
 					return false;
 				}
@@ -87,7 +88,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window dialog = mWindowWaiter.FindProcessWindow(session, mainWindow, element =>
 			{
-				if (element.Properties.NativeWindowHandle.ValueOrDefault == mainWindowHandle || !isVisible(element))
+				IntPtr windowHandle = element.Properties.NativeWindowHandle.ValueOrDefault;
+
+				if (windowHandle == mainWindowHandle || !isVisible(windowHandle))
 				{
 					return false;
 				}
@@ -100,15 +103,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				return buttons.Length > 0 && texts.Length > 0;
 			});
 
-			if (dialog == null)
-			{
-				LastDetectedDialogInfo = null;
-				return false;
-			}
-
-			LastDetectedDialogInfo = createDialogInfo(dialog);
-
-			return true;
+			return dialog != null;
 		}
 
 		public string GetMessage(GuiSession session)
@@ -154,7 +149,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				string automationId = element.Properties.AutomationId.ValueOrDefault;
 
-				if ((mainWindowHandle != IntPtr.Zero && windowHandle == mainWindowHandle) || automationId == AutomationIds.MainForm.ID || !isVisible(element))
+				if ((mainWindowHandle != IntPtr.Zero && windowHandle == mainWindowHandle) || automationId == AutomationIds.MainForm.ID || !isVisible(windowHandle))
 				{
 					return false;
 				}
@@ -164,7 +159,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					return false;
 				}
 
-				bool containsExpectedMessage = texts.Any(text => !string.IsNullOrWhiteSpace(text.Properties.Name.ValueOrDefault) && text.Properties.Name.ValueOrDefault.Contains(expectedMessage));
+				bool containsExpectedMessage = texts.Any(text =>
+				{
+					string name = text.Properties.Name.ValueOrDefault;
+
+					return !string.IsNullOrWhiteSpace(name) && name.Contains(expectedMessage);
+				});
 
 				if (!containsExpectedMessage)
 				{
@@ -229,18 +229,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mLastCheckedDialogButtons = null;
 		}
 
-		private bool isVisible(AutomationElement element)
+		private bool isVisible(IntPtr windowHandle)
 		{
-			try
-			{
-				IntPtr handle = element.Properties.NativeWindowHandle.ValueOrDefault;
-
-				return handle != IntPtr.Zero && IsWindowVisible(handle);
-			}
-			catch (COMException)
-			{
-				return false;
-			}
+			return windowHandle != IntPtr.Zero && IsWindowVisible(windowHandle);
 		}
 
 		private bool tryInspectDialog(AutomationElement element, out AutomationElement[] buttons, out AutomationElement[] texts)
@@ -252,32 +243,31 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			{
 				AutomationElement[] dialogElements = element.FindAllDescendants(cf => cf.ByControlType(ControlType.Button).Or(cf.ByControlType(ControlType.Text)));
 
-				buttons = dialogElements.Where(dialogElement => dialogElement.Properties.ControlType.ValueOrDefault == ControlType.Button).ToArray();
-				texts = dialogElements.Where(dialogElement => dialogElement.Properties.ControlType.ValueOrDefault == ControlType.Text).ToArray();
+				var buttonElements = new List<AutomationElement>();
+				var textElements = new List<AutomationElement>();
+
+				foreach (AutomationElement dialogElement in dialogElements)
+				{
+					ControlType controlType = dialogElement.Properties.ControlType.ValueOrDefault;
+
+					if (controlType == ControlType.Button)
+					{
+						buttonElements.Add(dialogElement);
+					}
+					else if (controlType == ControlType.Text)
+					{
+						textElements.Add(dialogElement);
+					}
+				}
+
+				buttons = buttonElements.ToArray();
+				texts = textElements.ToArray();
 
 				return true;
 			}
 			catch (COMException)
 			{
 				return false;
-			}
-		}
-
-		private string createDialogInfo(AutomationElement element)
-		{
-			try
-			{
-				return
-					$"Name={element.Properties.Name.ValueOrDefault}, " +
-					$"AutomationId={element.Properties.AutomationId.ValueOrDefault}, " +
-					$"ClassName={element.Properties.ClassName.ValueOrDefault}, " +
-					$"ControlType={element.Properties.ControlType.ValueOrDefault}, " +
-					$"NativeWindowHandle={element.Properties.NativeWindowHandle.ValueOrDefault}, " +
-					$"ProcessId={element.Properties.ProcessId.ValueOrDefault}";
-			}
-			catch (COMException)
-			{
-				return "Detected dialog information could not be read.";
 			}
 		}
 	}
