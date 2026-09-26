@@ -14,6 +14,7 @@ namespace ScenarioRunner.Automation.Waiter
 		private const int DEFAULT_TIMEOUT_MS = 5000;
 		private const int DEFAULT_INTERVAL_MS = 100;
 		private const int WINDOW_CLOSED_INTERVAL_MS = 50;
+		private const int NATIVE_FILE_DIALOG_GRACE_MS = 500;
 
 		[DllImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
@@ -320,16 +321,32 @@ namespace ScenarioRunner.Automation.Waiter
 
 			int elapsed = 0;
 			int attempt = 0;
+			int nativeCandidateWaitElapsed = 0;
 
 			while (elapsed < DEFAULT_TIMEOUT_MS)
 			{
 				attempt++;
 
-				FileDialogElements fileDialogElements = findNativeOwnedFileDialog(session, owner, attempt);
+				FileDialogElements fileDialogElements = findNativeOwnedFileDialog(session, owner, attempt, out bool hasNativeCandidate);
 
 				if (fileDialogElements != null)
 				{
 					return fileDialogElements;
+				}
+
+				if (hasNativeCandidate && nativeCandidateWaitElapsed < NATIVE_FILE_DIALOG_GRACE_MS)
+				{
+					Thread.Sleep(DEFAULT_INTERVAL_MS);
+
+					elapsed += DEFAULT_INTERVAL_MS;
+					nativeCandidateWaitElapsed += DEFAULT_INTERVAL_MS;
+
+					continue;
+				}
+
+				if (!hasNativeCandidate)
+				{
+					nativeCandidateWaitElapsed = 0;
 				}
 
 				fileDialogElements = findFileDialog(owner, attempt);
@@ -353,7 +370,7 @@ namespace ScenarioRunner.Automation.Waiter
 			throw new InvalidOperationException($"File dialog was not found within {DEFAULT_TIMEOUT_MS} ms.");
 		}
 
-		private FileDialogElements findNativeOwnedFileDialog(GuiSession session, Window owner, int attempt)
+		private FileDialogElements findNativeOwnedFileDialog(GuiSession session, Window owner, int attempt, out bool hasCandidate)
 		{
 			var stopwatch = Stopwatch.StartNew();
 
@@ -361,6 +378,8 @@ namespace ScenarioRunner.Automation.Waiter
 
 			if (ownerHandle == IntPtr.Zero)
 			{
+				hasCandidate = false;
+
 				stopwatch.Stop();
 
 				Console.WriteLine(
@@ -392,6 +411,8 @@ namespace ScenarioRunner.Automation.Waiter
 
 				return true;
 			}, IntPtr.Zero);
+
+			hasCandidate = windowHandles.Count > 0;
 
 			var candidates = new List<AutomationElement>();
 
