@@ -228,6 +228,10 @@ namespace ScenarioRunner.Automation.Waiter
 				{
 					continue;
 				}
+				catch (System.Windows.Automation.ElementNotAvailableException)
+				{
+					continue;
+				}
 				catch (COMException)
 				{
 					continue;
@@ -270,6 +274,10 @@ namespace ScenarioRunner.Automation.Waiter
 			{
 				return null;
 			}
+			catch (System.Windows.Automation.ElementNotAvailableException)
+			{
+				return null;
+			}
 			catch (COMException)
 			{
 				return null;
@@ -289,6 +297,10 @@ namespace ScenarioRunner.Automation.Waiter
 				return null;
 			}
 			catch (ElementNotAvailableException)
+			{
+				return null;
+			}
+			catch (System.Windows.Automation.ElementNotAvailableException)
 			{
 				return null;
 			}
@@ -336,6 +348,10 @@ namespace ScenarioRunner.Automation.Waiter
 			{
 				return false;
 			}
+			catch (System.Windows.Automation.ElementNotAvailableException)
+			{
+				return false;
+			}
 			catch (COMException)
 			{
 				return false;
@@ -362,6 +378,10 @@ namespace ScenarioRunner.Automation.Waiter
 				return false;
 			}
 			catch (ElementNotAvailableException)
+			{
+				return false;
+			}
+			catch (System.Windows.Automation.ElementNotAvailableException)
 			{
 				return false;
 			}
