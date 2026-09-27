@@ -50,9 +50,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement shikigamiElement = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SHIKIGAMI, ControlType.ComboBox);
 
-			string shikigami = mComboBoxOperator.GetValue(shikigamiElement);
-
-			if (!string.IsNullOrWhiteSpace(shikigami))
+			if (mComboBoxOperator.HasSelectedItem(shikigamiElement))
 			{
 				AutomationElement finalStatsElement = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.FINAL_STATS);
 

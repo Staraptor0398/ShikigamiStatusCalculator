@@ -10,6 +10,7 @@ namespace ScenarioRunner.Automation.Operator
 	public class ComboBoxOperator
 	{
 		private const uint CB_GETCOUNT = 0x0146;
+		private const uint CB_GETCURSEL = 0x0147;
 		private const uint CB_GETLBTEXT = 0x0148;
 		private const uint CB_GETLBTEXTLEN = 0x0149;
 		private const uint CB_SETCURSEL = 0x014E;
@@ -215,6 +216,20 @@ namespace ScenarioRunner.Automation.Operator
 			}
 
 			return items;
+		}
+
+		public bool HasSelectedItem(AutomationElement element)
+		{
+			if (element == null)
+			{
+				throw new ArgumentNullException(nameof(element));
+			}
+
+			IntPtr handle = element.Properties.NativeWindowHandle.Value;
+
+			int index = SendMessage(handle, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero).ToInt32();
+
+			return index != CB_ERR;
 		}
 
 		private void selectItem(IntPtr handle, int index)
