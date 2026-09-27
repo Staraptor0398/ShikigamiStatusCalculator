@@ -14,13 +14,13 @@ namespace ScenarioRunner.Automation.Operator.Feature
 	{
 		private readonly WindowOperator mWindowOperator;
 
-		private readonly WindowWaiter mWindowWaiter;
+		private readonly ProcessWindowWaiter mProcessWindowWaiter;
 
 		public GuiOperator()
 		{
 			mWindowOperator = new WindowOperator();
 
-			mWindowWaiter = new WindowWaiter();
+			mProcessWindowWaiter = new ProcessWindowWaiter();
 		}
 
 		public void Launch(ScenarioExecutonContext context)
@@ -86,7 +86,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				return session.MainWindow;
 			}
 
-			Window mainWindow = mWindowWaiter.WaitForProcessWindow(session, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.MainForm.ID);
+			Window mainWindow = mProcessWindowWaiter.WaitForProcessWindow(session, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.MainForm.ID);
 
 			session.MainWindow = mainWindow;
 

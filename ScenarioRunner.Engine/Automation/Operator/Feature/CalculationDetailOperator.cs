@@ -13,6 +13,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly GuiOperator mGuiOperator;
 
 		private readonly WindowWaiter mWindowWaiter;
+		private readonly ProcessWindowWaiter mProcessWindowWaiter;
 
 		private GuiSession mResultViewSession;
 		private Window mResultViewForm;
@@ -25,6 +26,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mGuiOperator = new GuiOperator();
 
 			mWindowWaiter = new WindowWaiter();
+			mProcessWindowWaiter = new ProcessWindowWaiter();
 		}
 
 		public void Open(GuiSession session)
@@ -97,7 +99,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			mResultViewForm = mWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ResultViewForm.ID);
+			mResultViewForm = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ResultViewForm.ID);
 			mResultViewSession = session;
 			mResultViewElementMap = null;
 

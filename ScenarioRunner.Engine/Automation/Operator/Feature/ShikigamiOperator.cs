@@ -14,6 +14,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly GuiOperator mGuiOperator;
 
 		private readonly WindowWaiter mWindowWaiter;
+		private readonly ProcessWindowWaiter mProcessWindowWaiter;
 
 		public ShikigamiOperator()
 		{
@@ -23,6 +24,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mGuiOperator = new GuiOperator();
 
 			mWindowWaiter = new WindowWaiter();
+			mProcessWindowWaiter = new ProcessWindowWaiter();
 		}
 
 		public void Select(GuiSession session, string shikigamiName)
@@ -125,7 +127,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			return mWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRegisterForm.ID);
+			return mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRegisterForm.ID);
 		}
 	}
 }

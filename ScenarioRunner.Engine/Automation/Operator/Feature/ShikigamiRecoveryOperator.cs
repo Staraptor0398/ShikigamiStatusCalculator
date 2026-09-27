@@ -12,7 +12,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly FileDialogOperator mFileDialogOperator;
 		private readonly GuiOperator mGuiOperator;
 
-		private readonly WindowWaiter mWindowWaiter;
+		private readonly ProcessWindowWaiter mProcessWindowWaiter;
+		private readonly FileDialogWaiter mFileDialogWaiter;
 
 		public ShikigamiRecoveryOperator()
 		{
@@ -20,7 +21,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mFileDialogOperator = new FileDialogOperator();
 			mGuiOperator = new GuiOperator();
 
-			mWindowWaiter = new WindowWaiter();
+			mProcessWindowWaiter = new ProcessWindowWaiter();
+			mFileDialogWaiter = new FileDialogWaiter();
 		}
 
 		public void Recover(GuiSession session, string recoveryFilePath)
@@ -41,7 +43,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.PostClick(recoveryButton);
 
-			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session, mainWindow);
+			FileDialogElements fileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, mainWindow);
 			mFileDialogOperator.SelectLoadFile(fileDialogElements, recoveryFilePath);
 
 			Window recoveryForm = getRecoveryForm(session);
@@ -52,7 +54,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		{
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			return mWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRecoveryDialog.ID);
+			return mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRecoveryDialog.ID);
 		}
 	}
 }

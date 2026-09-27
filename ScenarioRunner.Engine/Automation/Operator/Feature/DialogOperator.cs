@@ -19,6 +19,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly GuiOperator mGuiOperator;
 
 		private readonly WindowWaiter mWindowWaiter;
+		private readonly ProcessWindowWaiter mProcessWindowWaiter;
 
 		private Window mLastCheckedDialog;
 		private AutomationElement[] mLastCheckedDialogButtons;
@@ -29,6 +30,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mGuiOperator = new GuiOperator();
 
 			mWindowWaiter = new WindowWaiter();
+			mProcessWindowWaiter = new ProcessWindowWaiter();
 		}
 
 		public Window GetActiveDialog(GuiSession session)
@@ -46,7 +48,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement[] buttons = null;
 
-			Window dialog = mWindowWaiter.WaitForProcessWindow(session, mainWindow, element =>
+			Window dialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element =>
 			{
 				IntPtr windowHandle = element.Properties.NativeWindowHandle.ValueOrDefault;
 
@@ -86,7 +88,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
 
-			Window dialog = mWindowWaiter.FindProcessWindow(session, mainWindow, element =>
+			Window dialog = mProcessWindowWaiter.FindProcessWindow(session, mainWindow, element =>
 			{
 				IntPtr windowHandle = element.Properties.NativeWindowHandle.ValueOrDefault;
 
@@ -178,11 +180,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			if (mainWindow != null)
 			{
-				mLastCheckedDialog = mWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
+				mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
 			}
 			else
 			{
-				mLastCheckedDialog = mWindowWaiter.WaitForProcessWindow(session, predicate);
+				mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, predicate);
 			}
 		}
 

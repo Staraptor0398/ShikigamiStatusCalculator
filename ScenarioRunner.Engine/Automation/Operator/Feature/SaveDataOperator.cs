@@ -32,6 +32,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly GuiOperator mGuiOperator;
 
 		private readonly WindowWaiter mWindowWaiter;
+		private readonly ProcessWindowWaiter mProcessWindowWaiter;
+		private readonly FileDialogWaiter mFileDialogWaiter;
 
 		public SaveDataOperator()
 		{
@@ -42,6 +44,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mGuiOperator = new GuiOperator();
 
 			mWindowWaiter = new WindowWaiter();
+			mProcessWindowWaiter = new ProcessWindowWaiter();
+			mFileDialogWaiter = new FileDialogWaiter();
 		}
 
 		public void LoadMitama(ScenarioExecutonContext context, string filePath)
@@ -184,7 +188,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.PostClick(browseButton);
 
-			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session, loadDialog);
+			FileDialogElements fileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, loadDialog);
 
 			mFileDialogOperator.SelectLoadFile(fileDialogElements, filePath);
 
@@ -222,7 +226,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.PostClick(browseButton);
 
-			FileDialogElements fileDialogElements = mWindowWaiter.WaitForFileDialog(session, saveDialog);
+			FileDialogElements fileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, saveDialog);
 
 			mFileDialogOperator.SelectSaveFile(fileDialogElements, filePath);
 
@@ -317,14 +321,14 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		{
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			return mWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isSaveDialog(element));
+			return mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isSaveDialog(element));
 		}
 
 		private Window getLoadDialog(GuiSession session)
 		{
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			return mWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isLoadDialog(element));
+			return mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isLoadDialog(element));
 		}
 
 		private bool isSaveDialog(AutomationElement element)
