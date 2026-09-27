@@ -42,18 +42,14 @@ namespace ScenarioRunner.Automation.Waiter
 			int processId = session.Application.ProcessId;
 			AutomationElement desktop = session.Automation.GetDesktop();
 
-			AutomationElement[] windowElements = desktop.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
-
-			Window window = findWindow(windowElements, predicate);
+			Window window = findChildProcessWindow(desktop, processId, predicate);
 
 			if (window != null)
 			{
 				return window;
 			}
 
-			windowElements = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
-
-			return findWindow(windowElements, predicate);
+			return findDescendantProcessWindow(desktop, processId, predicate);
 		}
 
 		public Window FindProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate)
@@ -224,6 +220,10 @@ namespace ScenarioRunner.Automation.Waiter
 				{
 					candidate = session.Automation.FromHandle(windowHandle);
 				}
+				catch (PropertyNotSupportedException)
+				{
+					continue;
+				}
 				catch (ElementNotAvailableException)
 				{
 					continue;
@@ -233,7 +233,7 @@ namespace ScenarioRunner.Automation.Waiter
 					continue;
 				}
 
-				if (candidate != null && tryGetWindow(candidate, predicate, out Window window))
+				if (candidate != null && tryGetNativeWindow(candidate, predicate, out Window window))
 				{
 					return window;
 				}
@@ -244,18 +244,58 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private Window findProcessWindow(Window owner, int processId, Func<AutomationElement, bool> predicate)
 		{
-			AutomationElement[] windowElements = owner.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
-
-			Window window = findWindow(windowElements, predicate);
+			Window window = findChildProcessWindow(owner, processId, predicate);
 
 			if (window != null)
 			{
 				return window;
 			}
 
-			windowElements = owner.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
+			return findDescendantProcessWindow(owner, processId, predicate);
+		}
 
-			return findWindow(windowElements, predicate);
+		private Window findChildProcessWindow(AutomationElement parent, int processId, Func<AutomationElement, bool> predicate)
+		{
+			try
+			{
+				AutomationElement[] windowElements = parent.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
+
+				return findWindow(windowElements, predicate);
+			}
+			catch (PropertyNotSupportedException)
+			{
+				return null;
+			}
+			catch (ElementNotAvailableException)
+			{
+				return null;
+			}
+			catch (COMException)
+			{
+				return null;
+			}
+		}
+
+		private Window findDescendantProcessWindow(AutomationElement parent, int processId, Func<AutomationElement, bool> predicate)
+		{
+			try
+			{
+				AutomationElement[] windowElements = parent.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
+
+				return findWindow(windowElements, predicate);
+			}
+			catch (PropertyNotSupportedException)
+			{
+				return null;
+			}
+			catch (ElementNotAvailableException)
+			{
+				return null;
+			}
+			catch (COMException)
+			{
+				return null;
+			}
 		}
 
 		private Window findWindow(IEnumerable<AutomationElement> elements, Func<AutomationElement, bool> predicate)
@@ -269,6 +309,37 @@ namespace ScenarioRunner.Automation.Waiter
 			}
 
 			return null;
+		}
+
+		private bool tryGetNativeWindow(AutomationElement element, Func<AutomationElement, bool> predicate, out Window window)
+		{
+			window = null;
+
+			if (!tryGetWindow(element, predicate, out Window candidate))
+			{
+				return false;
+			}
+
+			try
+			{
+				element.FindAllDescendants();
+
+				window = candidate;
+
+				return true;
+			}
+			catch (PropertyNotSupportedException)
+			{
+				return false;
+			}
+			catch (ElementNotAvailableException)
+			{
+				return false;
+			}
+			catch (COMException)
+			{
+				return false;
+			}
 		}
 
 		private bool tryGetWindow(AutomationElement element, Func<AutomationElement, bool> predicate, out Window window)
