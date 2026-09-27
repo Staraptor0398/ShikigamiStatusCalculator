@@ -192,8 +192,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mFileDialogOperator.SelectLoadFile(fileDialogElements, filePath);
 
-			waitForFilePath(filePathElement, filePath);
-
 			mButtonOperator.PostClick(loadButton);
 
 			mWindowWaiter.WaitForWindowClosed(loadDialog);
