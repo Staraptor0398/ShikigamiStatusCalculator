@@ -1,7 +1,9 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace ScenarioRunner.Automation.Waiter
@@ -10,6 +12,20 @@ namespace ScenarioRunner.Automation.Waiter
 	{
 		private const int DEFAULT_TIMEOUT_MS = 5000;
 		private const int DEFAULT_INTERVAL_MS = 100;
+
+		private const uint GW_OWNER = 4;
+
+		private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
+		[DllImport("user32.dll")]
+		private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
 		public Window FindProcessWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
@@ -53,7 +69,14 @@ namespace ScenarioRunner.Automation.Waiter
 				throw new ArgumentNullException(nameof(predicate));
 			}
 
-			Window window = findProcessWindow(owner, session.Application.ProcessId, predicate);
+			Window window = findNativeOwnedProcessWindow(session, owner, predicate);
+
+			if (window != null)
+			{
+				return window;
+			}
+
+			window = findProcessWindow(owner, session.Application.ProcessId, predicate);
 
 			if (window != null)
 			{
@@ -156,6 +179,50 @@ namespace ScenarioRunner.Automation.Waiter
 			}
 
 			throw new InvalidOperationException($"Process window was not found within {timeoutMs} ms.");
+		}
+
+		private Window findNativeOwnedProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate)
+		{
+			IntPtr ownerHandle = owner.Properties.NativeWindowHandle.ValueOrDefault;
+
+			if (ownerHandle == IntPtr.Zero)
+			{
+				return null;
+			}
+
+			int processId = session.Application.ProcessId;
+			var windowHandles = new List<IntPtr>();
+
+			EnumWindows((windowHandle, lParam) =>
+			{
+				GetWindowThreadProcessId(windowHandle, out uint windowProcessId);
+
+				if (windowProcessId != (uint)processId)
+				{
+					return true;
+				}
+
+				if (GetWindow(windowHandle, GW_OWNER) != ownerHandle)
+				{
+					return true;
+				}
+
+				windowHandles.Add(windowHandle);
+
+				return true;
+			}, IntPtr.Zero);
+
+			foreach (IntPtr windowHandle in windowHandles)
+			{
+				AutomationElement candidate = session.Automation.FromHandle(windowHandle);
+
+				if (candidate != null && predicate(candidate))
+				{
+					return candidate.AsWindow();
+				}
+			}
+
+			return null;
 		}
 
 		private Window findProcessWindow(Window owner, int processId, Func<AutomationElement, bool> predicate)
