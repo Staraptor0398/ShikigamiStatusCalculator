@@ -65,7 +65,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement clearButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CLEAR, ControlType.Button);
 
-			mButtonOperator.Click(clearButton);
+			mButtonOperator.PostClick(clearButton);
 
 			Window dialog = mDialogOperator.GetActiveDialog(session);
 
