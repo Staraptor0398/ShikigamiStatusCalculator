@@ -3,7 +3,6 @@ using FlaUI.Core.Definitions;
 using FlaUI.Core.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -43,14 +42,18 @@ namespace ScenarioRunner.Automation.Waiter
 			int processId = session.Application.ProcessId;
 			AutomationElement desktop = session.Automation.GetDesktop();
 
-			AutomationElement windowElement = desktop.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).FirstOrDefault(element => matchesPredicate(element, predicate));
+			AutomationElement[] windowElements = desktop.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
 
-			if (windowElement == null)
+			Window window = findWindow(windowElements, predicate);
+
+			if (window != null)
 			{
-				windowElement = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).FirstOrDefault(element => matchesPredicate(element, predicate));
+				return window;
 			}
 
-			return windowElement?.AsWindow();
+			windowElements = desktop.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
+
+			return findWindow(windowElements, predicate);
 		}
 
 		public Window FindProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate)
@@ -230,9 +233,9 @@ namespace ScenarioRunner.Automation.Waiter
 					continue;
 				}
 
-				if (candidate != null && matchesPredicate(candidate, predicate))
+				if (candidate != null && tryGetWindow(candidate, predicate, out Window window))
 				{
-					return candidate.AsWindow();
+					return window;
 				}
 			}
 
@@ -241,21 +244,47 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private Window findProcessWindow(Window owner, int processId, Func<AutomationElement, bool> predicate)
 		{
-			AutomationElement windowElement = owner.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).FirstOrDefault(element => matchesPredicate(element, predicate));
+			AutomationElement[] windowElements = owner.FindAllChildren(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
 
-			if (windowElement == null)
+			Window window = findWindow(windowElements, predicate);
+
+			if (window != null)
 			{
-				windowElement = owner.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId))).FirstOrDefault(element => matchesPredicate(element, predicate));
+				return window;
 			}
 
-			return windowElement?.AsWindow();
+			windowElements = owner.FindAllDescendants(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)));
+
+			return findWindow(windowElements, predicate);
 		}
 
-		private bool matchesPredicate(AutomationElement element, Func<AutomationElement, bool> predicate)
+		private Window findWindow(IEnumerable<AutomationElement> elements, Func<AutomationElement, bool> predicate)
 		{
+			foreach (AutomationElement element in elements)
+			{
+				if (tryGetWindow(element, predicate, out Window window))
+				{
+					return window;
+				}
+			}
+
+			return null;
+		}
+
+		private bool tryGetWindow(AutomationElement element, Func<AutomationElement, bool> predicate, out Window window)
+		{
+			window = null;
+
 			try
 			{
-				return predicate(element);
+				if (!predicate(element))
+				{
+					return false;
+				}
+
+				window = element.AsWindow();
+
+				return window != null;
 			}
 			catch (PropertyNotSupportedException)
 			{
