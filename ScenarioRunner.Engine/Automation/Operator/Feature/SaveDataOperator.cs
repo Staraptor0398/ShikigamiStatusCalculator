@@ -232,7 +232,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			waitForFilePath(filePathElement, filePath);
 
-			mButtonOperator.Click(saveButton);
+			mButtonOperator.PostClick(saveButton);
 
 			mWindowWaiter.WaitForWindowClosed(saveDialog);
 
