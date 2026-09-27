@@ -1,5 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
+using FlaUI.Core.Exceptions;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using System;
@@ -14,6 +15,15 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		[DllImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static extern bool IsWindowVisible(IntPtr hWnd);
+
+		private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
 		private readonly ButtonOperator mButtonOperator;
 		private readonly GuiOperator mGuiOperator;
@@ -87,25 +97,53 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
+			uint processId = (uint)session.Application.ProcessId;
 
-			Window dialog = mProcessWindowWaiter.FindProcessWindow(session, mainWindow, element =>
+			bool dialogExists = false;
+
+			EnumWindows((windowHandle, lParam) =>
 			{
-				IntPtr windowHandle = element.Properties.NativeWindowHandle.ValueOrDefault;
+				GetWindowThreadProcessId(windowHandle, out uint windowProcessId);
 
-				if (windowHandle == mainWindowHandle || !isVisible(windowHandle))
+				if (windowProcessId != processId || windowHandle == mainWindowHandle || !isVisible(windowHandle))
 				{
-					return false;
+					return true;
 				}
 
-				if (!tryInspectDialog(element, out AutomationElement[] buttons, out AutomationElement[] texts))
+				AutomationElement element;
+
+				try
 				{
-					return false;
+					element = session.Automation.FromHandle(windowHandle);
+				}
+				catch (PropertyNotSupportedException)
+				{
+					return true;
+				}
+				catch (ElementNotAvailableException)
+				{
+					return true;
+				}
+				catch (System.Windows.Automation.ElementNotAvailableException)
+				{
+					return true;
+				}
+				catch (COMException)
+				{
+					return true;
 				}
 
-				return buttons.Length > 0 && texts.Length > 0;
-			});
+				if (element == null || !tryInspectDialog(element, out AutomationElement[] buttons, out AutomationElement[] texts) || buttons.Length == 0 || texts.Length == 0)
+				{
+					return true;
+				}
 
-			return dialog != null;
+				dialogExists = true;
+
+				return false;
+			}, IntPtr.Zero);
+
+			return dialogExists;
 		}
 
 		public string GetMessage(GuiSession session)
