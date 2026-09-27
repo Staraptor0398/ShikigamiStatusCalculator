@@ -121,7 +121,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement button = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.EDIT_SHIKIGAMI, ControlType.Button);
 
-			mButtonOperator.Click(button);
+			mButtonOperator.PostClick(button);
 
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
