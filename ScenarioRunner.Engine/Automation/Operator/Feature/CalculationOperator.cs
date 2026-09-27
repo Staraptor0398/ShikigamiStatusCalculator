@@ -8,7 +8,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 	public class CalculationOperator
 	{
 		private readonly ButtonOperator mButtonOperator;
-		private readonly DialogOperator mDialogOperator;
 		private readonly TextBoxOperator mTextBoxOperator;
 		private readonly ComboBoxOperator mComboBoxOperator;
 		private readonly GuiOperator mGuiOperator;
@@ -16,7 +15,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		public CalculationOperator()
 		{
 			mButtonOperator = new ButtonOperator();
-			mDialogOperator = new DialogOperator();
 			mTextBoxOperator = new TextBoxOperator();
 			mComboBoxOperator = new ComboBoxOperator();
 			mGuiOperator = new GuiOperator();
