@@ -38,7 +38,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement detailButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CALC_DETAIL, ControlType.Button);
 
-			mButtonOperator.Click(detailButton);
+			mButtonOperator.PostClick(detailButton);
 		}
 
 		public void Check(GuiSession session)
