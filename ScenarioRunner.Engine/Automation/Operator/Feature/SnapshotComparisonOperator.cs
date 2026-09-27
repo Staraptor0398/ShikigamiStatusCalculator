@@ -88,7 +88,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			waitForEnabled(compareButton);
 
-			mButtonOperator.Click(compareButton);
+			mButtonOperator.PostClick(compareButton);
 
 			mResultForm = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
 		}
