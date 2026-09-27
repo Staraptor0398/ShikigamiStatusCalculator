@@ -83,7 +83,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement closeButton = elementMap.Get(AutomationIds.ResultViewForm.CLOSE, ControlType.Button);
 
-			mButtonOperator.Click(closeButton);
+			mButtonOperator.PostClick(closeButton);
 
 			mWindowWaiter.WaitForWindowClosed(resultViewForm);
 
