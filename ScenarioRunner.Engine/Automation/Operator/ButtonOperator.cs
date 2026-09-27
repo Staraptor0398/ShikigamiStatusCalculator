@@ -41,6 +41,23 @@ namespace ScenarioRunner.Automation.Operator
 			button.Invoke();
 		}
 
+		public void PostClick(AutomationElement parent, string automationId)
+		{
+			if (parent == null)
+			{
+				throw new ArgumentNullException(nameof(parent));
+			}
+
+			var buttonElement = parent.FindFirstDescendant(cf => cf.ByAutomationId(automationId).And(cf.ByControlType(ControlType.Button)));
+
+			if (buttonElement == null)
+			{
+				throw new InvalidOperationException($"Button was not found: {automationId}");
+			}
+
+			PostClick(buttonElement);
+		}
+
 		public void PostClick(AutomationElement element)
 		{
 			if (element == null)
