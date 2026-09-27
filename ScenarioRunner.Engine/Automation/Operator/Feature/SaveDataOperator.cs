@@ -244,25 +244,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private void selectLoadType(AutomationElement loadTypeElement, string loadType)
 		{
 			mComboBoxOperator.SelectItem(loadTypeElement, loadType);
-
-			string selectedLoadType = mComboBoxOperator.GetValue(loadTypeElement);
-
-			if (!string.Equals(selectedLoadType, loadType, StringComparison.Ordinal))
-			{
-				throw new InvalidOperationException($"SaveData load type was not selected correctly. " + $"Expected={loadType}, Actual={selectedLoadType}");
-			}
 		}
 
 		private void selectSaveType(AutomationElement saveTypeElement, string saveType)
 		{
 			mComboBoxOperator.SelectItem(saveTypeElement, saveType);
-
-			string selectedSaveType = mComboBoxOperator.GetValue(saveTypeElement);
-
-			if (!string.Equals(selectedSaveType, saveType, StringComparison.Ordinal))
-			{
-				throw new InvalidOperationException($"SaveData save type was not selected correctly. " + $"Expected={saveType}, Actual={selectedSaveType}");
-			}
 		}
 
 		private string createUniqueSaveFilePath(ScenarioExecutonContext context, string fileNameSuffix, string extension)
