@@ -119,9 +119,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			if (string.IsNullOrWhiteSpace(automationId))
 			{
-				throw new ArgumentException(
-					"AutomationId is empty.",
-					nameof(automationId));
+				throw new ArgumentException("AutomationId is empty.", nameof(automationId));
 			}
 
 			if (session.MainElementMap != null)
@@ -131,7 +129,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window mainWindow = GetMainWindow(session);
 
-			AutomationElement element = mainWindow.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
+			AutomationElement element = mainWindow.FindFirstChild(cf => cf.ByAutomationId(automationId));
+
+			if (element == null)
+			{
+				element = mainWindow.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
+			}
 
 			if (element == null)
 			{
@@ -160,7 +163,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window mainWindow = GetMainWindow(session);
 
-			AutomationElement element = mainWindow.FindFirstDescendant(cf => cf.ByAutomationId(automationId).And(cf.ByControlType(controlType)));
+			AutomationElement element = mainWindow.FindFirstChild(cf => cf.ByAutomationId(automationId).And(cf.ByControlType(controlType)));
+
+			if (element == null)
+			{
+				element = mainWindow.FindFirstDescendant(cf => cf.ByAutomationId(automationId).And(cf.ByControlType(controlType)));
+			}
 
 			if (element == null)
 			{
