@@ -84,7 +84,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window registerForm = openEditForm(session);
 
-			mButtonOperator.PostClick(registerForm, AutomationIds.ShikigamiRegisterForm.REGISTER);
+			mButtonOperator.Click(registerForm, AutomationIds.ShikigamiRegisterForm.REGISTER);
 
 			mWindowWaiter.WaitForWindowClosed(registerForm);
 
