@@ -10,16 +10,18 @@ namespace ScenarioRunner.Automation
 	{
 		private readonly Dictionary<string, List<AutomationElement>> mElements;
 
-		public AutomationElementMap(AutomationElement parent)
+		public AutomationElementMap(AutomationElement parent) : this(getDescendants(parent))
 		{
-			if (parent == null)
+		}
+
+		public AutomationElementMap(IEnumerable<AutomationElement> elements)
+		{
+			if (elements == null)
 			{
-				throw new ArgumentNullException(nameof(parent));
+				throw new ArgumentNullException(nameof(elements));
 			}
 
 			mElements = new Dictionary<string, List<AutomationElement>>(StringComparer.Ordinal);
-
-			AutomationElement[] elements = parent.FindAllDescendants();
 
 			foreach (AutomationElement element in elements)
 			{
@@ -75,6 +77,16 @@ namespace ScenarioRunner.Automation
 			}
 
 			return matchedElements[0];
+		}
+
+		private static AutomationElement[] getDescendants(AutomationElement parent)
+		{
+			if (parent == null)
+			{
+				throw new ArgumentNullException(nameof(parent));
+			}
+
+			return parent.FindAllDescendants();
 		}
 	}
 }

@@ -104,7 +104,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			{
 				Window mainWindow = GetMainWindow(session);
 
-				session.MainElementMap = new AutomationElementMap(mainWindow);
+				session.MainElementMap = new AutomationElementMap(mainWindow.FindAllChildren());
 			}
 
 			return session.MainElementMap;
