@@ -177,11 +177,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window loadDialog = getLoadDialog(session);
 
-			var elementMap = new AutomationElementMap(loadDialog);
+			var elementMap = new AutomationElementMap(loadDialog.FindAllChildren());
 
 			AutomationElement loadTypeElement = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD_TYPE, ControlType.ComboBox);
 			AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.BROWSE, ControlType.Button);
-			AutomationElement filePathElement = elementMap.Get(AutomationIds.SaveDataLoadDialog.FILE_PATH);
 			AutomationElement loadButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD, ControlType.Button);
 
 			selectLoadType(loadTypeElement, loadType);
@@ -213,7 +212,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window saveDialog = getSaveDialog(session);
 
-			var elementMap = new AutomationElementMap(saveDialog);
+			var elementMap = new AutomationElementMap(saveDialog.FindAllChildren());
 
 			AutomationElement saveTypeElement = elementMap.Get(AutomationIds.SaveDataSaveDialog.SAVE_TYPE, ControlType.ComboBox);
 			AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataSaveDialog.BROWSE, ControlType.Button);

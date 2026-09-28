@@ -68,7 +68,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window fileSelectDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
 
-			var elementMap = new AutomationElementMap(fileSelectDialog);
+			var elementMap = new AutomationElementMap(fileSelectDialog.FindAllChildren());
 
 			AutomationElement browseBaseSnapshotButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_BASE_SNAPSHOT, ControlType.Button);
 			AutomationElement browseTargetSnapshotButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_TARGET_SNAPSHOT, ControlType.Button);
