@@ -1,0 +1,96 @@
+@startuml
+
+title ShikigamiApp Scenario Runner - Window Search Strategy
+
+top to bottom direction
+
+package "ProcessWindowWaiter" {
+	rectangle "Native Owned Window\n\nWin32\nEnumWindows + GW_OWNER" as ProcessNative
+	rectangle "Owner Direct Child\n\nUI Automation\nFindAllChildren" as ProcessOwnerChild
+	rectangle "Owner Descendant\n\nUI Automation\nFindAllDescendants" as ProcessOwnerDescendant
+	rectangle "Process Top-Level Window\n\nDesktop.FindAllChildren\n+ ProcessId" as ProcessTopLevel
+	rectangle "Process Descendant\n\nDesktop.FindAllDescendants\n+ ProcessId" as ProcessDescendant
+	rectangle "Return Window" as ProcessReturn
+
+	ProcessNative -down-> ProcessOwnerChild : not found
+	ProcessOwnerChild -down-> ProcessOwnerDescendant : not found
+	ProcessOwnerDescendant -down-> ProcessTopLevel : not found
+	ProcessTopLevel -down-> ProcessDescendant : not found
+
+	ProcessNative ..> ProcessReturn : found
+	ProcessOwnerChild ..> ProcessReturn : found
+	ProcessOwnerDescendant ..> ProcessReturn : found
+	ProcessTopLevel ..> ProcessReturn : found
+	ProcessDescendant ..> ProcessReturn : found
+}
+
+package "FileDialogWaiter" {
+	rectangle "Native Owned Candidate\n\nWin32\nEnumWindows + GW_OWNER" as FileNative
+	rectangle "Owner Descendant\n\nUI Automation\nFindAllDescendants(Window)" as FileOwnerDescendant
+	rectangle "Collect Process Top-Level Candidates\n\nDesktop.FindAllChildren\n+ ProcessId" as FileTopLevelCandidates
+	rectangle "Inspect Process Descendants\n\nDesktop.FindAllDescendants\n+ ProcessId\n- Top-Level HWNDs" as FileDescendants
+	rectangle "Inspect Top-Level Candidates\n\nRequire no descendant Window" as FileTopLevel
+	rectangle "Return FileDialogElements" as FileReturn
+
+	FileNative -down-> FileOwnerDescendant : not ready / not found
+	FileOwnerDescendant -down-> FileTopLevelCandidates : not found
+	FileTopLevelCandidates -down-> FileDescendants
+	FileDescendants -down-> FileTopLevel : not found
+
+	FileNative ..> FileReturn : ready
+	FileOwnerDescendant ..> FileReturn : found
+	FileDescendants ..> FileReturn : found
+	FileTopLevel ..> FileReturn : found
+}
+
+note right of ProcessNative
+Native owner relationship を Fast path として使用する。
+
+Native HWND が存在していても、
+UI Automation tree の構築が
+完了しているとは限らない。
+
+そのため Native candidate は、
+使用前に UIA readiness も確認する。
+end note
+
+note right of ProcessDescendant
+Process scope の探索は Fallback として維持する。
+
+Owner path から取得できない Window や、
+UI Automation tree の構築タイミングによる
+差異を救済する。
+end note
+
+note right of FileNative
+Native-owned candidate が存在していても
+UI Automation tree が未完成の場合、
+100 ms 間隔で最大 500 ms まで
+Native path を再試行する。
+
+これにより、即座に高コストな
+Fallback 探索へ移行することを避ける。
+end note
+
+note right of FileReturn
+FileDialogElements には以下を保持する。
+
+- Dialog
+- Descendants
+- File name ComboBox candidates
+- File name Edit controls
+
+取得済みの UI tree を
+FileDialogOperator で再利用する。
+end note
+
+note bottom
+ProcessWindowWaiter と FileDialogWaiter は、
+それぞれ独立した探索戦略を持つ。
+
+どちらも狭い Native / Owner scope を優先し、
+より広い Process scope の UI Automation 探索を
+Fallback として維持する。
+end note
+
+@enduml

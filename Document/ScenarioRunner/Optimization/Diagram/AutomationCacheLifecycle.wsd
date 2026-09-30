@@ -1,0 +1,76 @@
+@startuml
+
+title ShikigamiApp Scenario Runner - Automation Cache Lifecycle
+
+start
+
+:GuiOperator.Open(context);
+:Gui.exe を起動;
+:UIA2Automation を生成;
+:GuiSession を生成;
+
+note right
+GuiSession が MainWindow と
+MainElementMap の lifetime 境界となる。
+end note
+
+:GetMainWindow(session);
+
+if (MainWindow は取得済みか？) then (Yes)
+	:session.MainWindow を再利用;
+else (No)
+	:ProcessWindowWaiter で\nMainForm を探索;
+	:session.MainWindow に保持;
+endif
+
+:GetMainElementMap(session)\n（必要時）;
+
+if (MainElementMap は生成済みか？) then (Yes)
+	:session.MainElementMap を再利用;
+else (No)
+	:GetMainWindow(session);
+	:MainWindow.FindAllChildren();
+	:AutomationElementMap を生成;
+	:session.MainElementMap に保持;
+endif
+
+note right
+MainForm の Scenario Runner 操作対象が
+Direct child であることを確認した上で、
+FindAllDescendants ではなく
+FindAllChildren を使用する。
+end note
+
+:Scenario Command から\nMainWindow / MainElementMap を再利用;
+
+note right
+MainElementMap が存在する場合、
+GetMainElement() は Map から取得する。
+
+Map 生成前は Direct child を優先し、
+見つからない場合のみ Descendant を探索する。
+end note
+
+:GuiOperator.Close(context);
+:GuiSession.Application.Close();
+:GuiSession.Dispose();
+
+note right
+Dispose 時に
+MainElementMap = null
+MainWindow = null
+とし、UIA2Automation も破棄する。
+end note
+
+:context.GuiSession = null;
+
+note right
+Gui.exe を再起動した場合は
+新しい GuiSession を生成するため、
+前回の AutomationElement を
+次の Session へ持ち越さない。
+end note
+
+stop
+
+@enduml

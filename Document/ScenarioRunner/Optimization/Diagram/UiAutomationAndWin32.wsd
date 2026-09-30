@@ -1,0 +1,113 @@
+@startuml
+
+title ShikigamiApp Scenario Runner - UI Automation and Win32 Responsibilities
+
+top to bottom direction
+
+package "Scenario Runner" {
+	rectangle "Feature Operator" as FeatureOperator
+	rectangle "Generic Operator" as GenericOperator
+	rectangle "Waiter" as Waiter
+
+	FeatureOperator --> GenericOperator : UI operation
+	FeatureOperator --> Waiter : synchronization /\nwindow search
+}
+
+package "Automation Mechanism" {
+	rectangle "FlaUI / UI Automation" as UIA <<library>>
+	rectangle "Win32 API" as Win32 <<library>>
+}
+
+package "Target" {
+	rectangle "Gui.exe" as Gui
+	rectangle "Windows FileDialog" as FileDialog
+}
+
+GenericOperator --> UIA
+GenericOperator --> Win32
+
+Waiter --> UIA
+Waiter --> Win32
+
+UIA --> Gui
+UIA --> FileDialog
+
+Win32 --> Gui
+Win32 --> FileDialog
+
+note left of UIA
+主な用途：
+
+- AutomationElement の探索
+- Control の状態取得
+- ValuePattern
+- Invoke
+- Window / Grid の操作
+end note
+
+note right of Win32
+主な用途：
+
+- Native owner relationship の取得
+- 標準 Control message の送信
+- non-blocking click
+- FileDialog の状態通知
+end note
+
+note left of GenericOperator
+代表例：
+
+ButtonOperator
+  UIA   : Invoke / properties
+  Win32 : PostMessage(BM_CLICK)
+
+ComboBoxOperator
+  UIA   : Element lookup / ValuePattern
+  Win32 : CB_* / WM_COMMAND
+
+FileDialogOperator
+  UIA   : Element inspection / Save Invoke
+  Win32 : WM_SETTEXT / WM_GETTEXT
+          WM_COMMAND / BM_CLICK
+end note
+
+note right of Waiter
+代表例：
+
+ProcessWindowWaiter
+  UIA   : Owner / Process search
+  Win32 : Native owner lookup
+
+FileDialogWaiter
+  UIA   : Candidate inspection
+          Owner / Process Fallback
+  Win32 : Native owner lookup
+end note
+
+note bottom of GenericOperator
+UI Automation と Win32 は、
+上下関係を持つアーキテクチャ上のレイヤーではなく、
+UI を操作するための手段である。
+
+対象 Control や必要な同期特性に応じて、
+Operator は UIA / Win32 の一方、
+または両方を使用する。
+end note
+
+note bottom of Waiter
+Waiter も UIA と Win32 を組み合わせて使用する。
+
+Win32 によって探索範囲の狭い Fast path を構成し、
+UI Automation によって UI 構造の確認や
+より広い Fallback 探索を行う。
+end note
+
+note bottom
+操作内容に適した手段を選択する。
+
+性能だけを理由に UI Automation を Win32 へ置き換えない。
+また、Win32 による直接操作が適している処理を、
+無理に UI Automation へ統一しない。
+end note
+
+@enduml
