@@ -105,7 +105,7 @@ namespace ScenarioRunner.Execution
 					mShikigamiOperator.ClearSelection(context.GuiSession);
 					return;
 				case ScenarioCommandType.RELOAD_SHIKIGAMI:
-					mShikigamiOperator.Reload(context.GuiSession);
+					mShikigamiDataOperator.Reload(context.GuiSession);
 					return;
 				case ScenarioCommandType.BREAK_SHIKIGAMI_HEADER:
 					mShikigamiDataOperator.BreakHeader(context);

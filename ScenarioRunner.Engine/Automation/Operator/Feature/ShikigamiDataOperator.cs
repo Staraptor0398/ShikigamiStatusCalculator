@@ -1,3 +1,6 @@
+using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
+using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Execution;
 using System;
 using System.Collections.Generic;
@@ -12,11 +15,29 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private readonly ShikigamiDataFileOperator mFileOperator;
 		private readonly ShikigamiOperator mShikigamiOperator;
+		private readonly ShikigamiEditOperator mShikigamiEditOperator;
+		private readonly ButtonOperator mButtonOperator;
+		private readonly GuiOperator mGuiOperator;
 
 		public ShikigamiDataOperator()
 		{
 			mFileOperator = new ShikigamiDataFileOperator();
 			mShikigamiOperator = new ShikigamiOperator();
+			mShikigamiEditOperator = new ShikigamiEditOperator();
+			mButtonOperator = new ButtonOperator();
+			mGuiOperator = new GuiOperator();
+		}
+
+		public void Reload(GuiSession session)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			AutomationElement button = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.RELOAD_SHIKIGAMI, ControlType.Button);
+
+			mButtonOperator.Click(button);
 		}
 
 		public void BreakHeader(ScenarioExecutonContext context)
@@ -92,7 +113,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 
 			mShikigamiOperator.SelectFirst(session);
-			mShikigamiOperator.SaveSelectedShikigamiWithoutChanges(session);
+
+			mShikigamiEditOperator.Open(session);
+			mShikigamiEditOperator.Save(session);
 		}
 
 		private string getShikigamiDataPath(ScenarioExecutonContext context)

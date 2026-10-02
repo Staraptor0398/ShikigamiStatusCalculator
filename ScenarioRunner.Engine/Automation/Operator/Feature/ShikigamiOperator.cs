@@ -1,7 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
-using ScenarioRunner.Automation.Waiter;
 using System;
 
 namespace ScenarioRunner.Automation.Operator.Feature
@@ -13,18 +12,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly DialogOperator mDialogOperator;
 		private readonly GuiOperator mGuiOperator;
 
-		private readonly WindowWaiter mWindowWaiter;
-		private readonly ProcessWindowWaiter mProcessWindowWaiter;
-
 		public ShikigamiOperator()
 		{
 			mComboBoxOperator = new ComboBoxOperator();
 			mButtonOperator = new ButtonOperator();
 			mDialogOperator = new DialogOperator();
 			mGuiOperator = new GuiOperator();
-
-			mWindowWaiter = new WindowWaiter();
-			mProcessWindowWaiter = new ProcessWindowWaiter();
 		}
 
 		public void Select(GuiSession session, string shikigamiName)
@@ -63,37 +56,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(button);
 		}
 
-		public void Reload(GuiSession session)
-		{
-			if (session == null)
-			{
-				throw new ArgumentNullException(nameof(session));
-			}
-
-			AutomationElement button = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.RELOAD_SHIKIGAMI, ControlType.Button);
-
-			mButtonOperator.Click(button);
-		}
-
-		public void SaveSelectedShikigamiWithoutChanges(GuiSession session)
-		{
-			if (session == null)
-			{
-				throw new ArgumentNullException(nameof(session));
-			}
-
-			Window registerForm = openEditForm(session);
-
-			mButtonOperator.Click(registerForm, AutomationIds.ShikigamiRegisterForm.REGISTER);
-
-			mWindowWaiter.WaitForWindowClosed(registerForm);
-
-			if (!session.Application.WaitWhileBusy(TimeSpan.FromSeconds(5)))
-			{
-				throw new InvalidOperationException("Shikigami update did not complete within 5 seconds.");
-			}
-		}
-
 		public void Check(GuiSession session)
 		{
 			if (session == null)
@@ -112,22 +74,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			{
 				throw new InvalidOperationException("Shikigami ComboBox has no items.");
 			}
-		}
-
-		private Window openEditForm(GuiSession session)
-		{
-			if (session == null)
-			{
-				throw new ArgumentNullException(nameof(session));
-			}
-
-			AutomationElement button = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.EDIT_SHIKIGAMI, ControlType.Button);
-
-			mButtonOperator.PostClick(button);
-
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-
-			return mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRegisterForm.ID);
 		}
 	}
 }
