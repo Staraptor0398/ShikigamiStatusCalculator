@@ -155,14 +155,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window dialog = mLastCheckedDialog ?? GetActiveDialog(session);
 
-			try
-			{
-				return dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Text)).Select(element => element.Properties.Name.ValueOrDefault).FirstOrDefault(text => !string.IsNullOrWhiteSpace(text));
-			}
-			catch (COMException)
+			if (!tryInspectDialog(dialog, out AutomationElement[] buttons, out AutomationElement[] texts))
 			{
 				return null;
 			}
+
+			return texts.Select(element => element.Properties.Name.ValueOrDefault).FirstOrDefault(text => !string.IsNullOrWhiteSpace(text));
 		}
 
 		public void CheckMessage(GuiSession session, string expectedMessage)
@@ -239,13 +237,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			if (buttons == null)
 			{
-				try
+				if (!tryInspectDialog(dialog, out buttons, out AutomationElement[] texts))
 				{
-					buttons = dialog.FindAllDescendants(cf => cf.ByControlType(ControlType.Button));
-				}
-				catch (COMException ex)
-				{
-					throw new InvalidOperationException("Failed to inspect dialog buttons.", ex);
+					throw new InvalidOperationException("Failed to inspect dialog buttons.");
 				}
 			}
 
@@ -288,6 +282,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				foreach (AutomationElement dialogElement in dialogElements)
 				{
+					if (!belongsToWindow(element, dialogElement))
+					{
+						continue;
+					}
+
 					ControlType controlType = dialogElement.Properties.ControlType.ValueOrDefault;
 
 					if (controlType == ControlType.Button)
@@ -305,10 +304,46 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				return true;
 			}
+			catch (PropertyNotSupportedException)
+			{
+				return false;
+			}
+			catch (ElementNotAvailableException)
+			{
+				return false;
+			}
+			catch (System.Windows.Automation.ElementNotAvailableException)
+			{
+				return false;
+			}
 			catch (COMException)
 			{
 				return false;
 			}
+		}
+
+		private bool belongsToWindow(AutomationElement windowElement, AutomationElement element)
+		{
+			IntPtr windowHandle = windowElement.Properties.NativeWindowHandle.ValueOrDefault;
+
+			if (windowHandle == IntPtr.Zero)
+			{
+				return false;
+			}
+
+			AutomationElement parent = element.Parent;
+
+			while (parent != null)
+			{
+				if (parent.Properties.ControlType.ValueOrDefault == ControlType.Window)
+				{
+					return parent.Properties.NativeWindowHandle.ValueOrDefault == windowHandle;
+				}
+
+				parent = parent.Parent;
+			}
+
+			return false;
 		}
 	}
 }
