@@ -1,0 +1,12 @@
+{
+  "Rarity": "SSR",
+  "Name": "ScenarioRunner編集式神",
+  "Attack": "4000",
+  "HP": "15000",
+  "Defense": "500",
+  "Speed": "130",
+  "CritRate": "20",
+  "CritDamage": "200",
+  "EffectHit": "30",
+  "EffectResist": "40"
+}

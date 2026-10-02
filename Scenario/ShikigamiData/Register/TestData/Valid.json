@@ -1,0 +1,12 @@
+{
+  "Rarity": "SP",
+  "Name": "ScenarioRunner登録式神",
+  "Attack": "3000",
+  "HP": "12000",
+  "Defense": "400",
+  "Speed": "110",
+  "CritRate": "10",
+  "CritDamage": "150",
+  "EffectHit": "0",
+  "EffectResist": "0"
+}

@@ -1,0 +1,40 @@
+# EditDuplicate.scenario
+#
+# Gui.exeの式神編集機能で既存式神を更新する際、
+# 別の既存式神とレアリティ・式神名が重複する入力を行った場合に、
+# 重複Validationによって更新処理が拒否されることを確認する。
+#
+# 編集対象には「願紡縁結神」を使用し、
+# 別の既存式神である「少羽大天狗」と同じ
+# レアリティ・式神名を編集値として入力する。
+#
+# これにより、新規登録時の重複判定ではなく、
+# 既存データ更新時の重複判定経路を確認する。
+#
+# Validationエラーによって更新処理が成立しないため、
+# このScenarioではShikigamiData.csvの後処理は不要とする。
+
+START
+
+# Gui.exeを起動し、MainFormを操作可能な状態にする
+OPEN GUI
+
+# 重複更新の編集対象として「願紡縁結神」を選択する
+SEL SHIKIGAMI "願紡縁結神"
+
+# 選択中の式神に対する式神編集画面を開く
+OPEN SHIKIGAMI EDIT
+
+# 既存の「少羽大天狗」と同じレアリティ・式神名を入力し、
+# Gui.exeの更新処理を実行する
+EDIT SHIKIGAMI "TestData/Duplicate.json"
+
+# 更新時の重複Validationによって、
+# 式神データの更新が拒否されることを確認する
+CHECK DIALOG "同じレアリティ・同じ式神名のデータが既に存在します。"
+
+CLOSE DIALOG
+
+CLOSE GUI
+
+END

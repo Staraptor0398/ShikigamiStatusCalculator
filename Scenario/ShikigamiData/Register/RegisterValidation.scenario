@@ -1,0 +1,62 @@
+# RegisterValidation.scenario
+#
+# Gui.exeの式神登録画面に対して不正な入力値を設定した場合、
+# 各入力Validationによって登録処理が拒否され、
+# 対応するエラーダイアログが表示されることを確認する。
+#
+# 確認対象は、
+# ・レアリティ未選択
+# ・式神名未入力
+# ・ステータスへの非数値入力
+# ・ステータスへの負数入力
+# ・既存式神と同一のレアリティ・式神名による重複登録
+# とする。
+#
+# Validationエラー発生時は式神登録画面が閉じないため、
+# 同一の登録画面へ次のテストデータを再入力し、
+# 各Validationを順番に確認する。
+#
+# 数値入力Validationは各ステータスで共通の処理を使用するため、
+# ここでは攻撃力を代表項目として非数値入力と負数入力を確認する。
+
+START
+
+# Gui.exeを起動し、MainFormを操作可能な状態にする
+OPEN GUI
+
+# Validation確認に使用する式神登録画面を開く
+OPEN SHIKIGAMI REGISTER
+
+# レアリティを未選択の状態にし、
+# 必須選択Validationによって登録が拒否されることを確認する
+REGISTER SHIKIGAMI "TestData/EmptyRarity.json"
+CHECK DIALOG "レアリティを選択してください。"
+CLOSE DIALOG
+
+# 式神名を空欄の状態にし、
+# 必須入力Validationによって登録が拒否されることを確認する
+REGISTER SHIKIGAMI "TestData/EmptyName.json"
+CHECK DIALOG "式神名を入力してください。"
+CLOSE DIALOG
+
+# 攻撃力へ数値として扱えない文字列を入力し、
+# 数値変換Validationによって登録が拒否されることを確認する
+REGISTER SHIKIGAMI "TestData/InvalidAttack.json"
+CHECK DIALOG "攻撃力には数値を入力してください。"
+CLOSE DIALOG
+
+# 攻撃力へ負数を入力し、
+# 0以上を要求するValidationによって登録が拒否されることを確認する
+REGISTER SHIKIGAMI "TestData/NegativeAttack.json"
+CHECK DIALOG "攻撃力には0以上の値を入力してください。"
+CLOSE DIALOG
+
+# 既存の「少羽大天狗」と同じレアリティ・式神名を入力し、
+# 重複Validationによって登録が拒否されることを確認する
+REGISTER SHIKIGAMI "TestData/Duplicate.json"
+CHECK DIALOG "同じレアリティ・同じ式神名のデータが既に存在します。"
+CLOSE DIALOG
+
+CLOSE GUI
+
+END

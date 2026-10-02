@@ -1,0 +1,39 @@
+# RegisterShikigami.scenario
+#
+# Gui.exeの式神登録機能を使用して新しい式神を登録し、
+# 登録した式神がMainFormの式神選択肢へ反映され、
+# 実際に選択可能になることを確認する。
+#
+# OPEN SHIKIGAMI REGISTERによって式神登録画面を開き、
+# REGISTER SHIKIGAMIによってテストデータを各入力欄へ設定した上で
+# Gui.exeの登録処理を実行する。
+#
+# 登録後は追加した式神をMainFormから選択することで、
+# ShikigamiData.csvへの登録だけでなく、
+# Gui.exeから登録結果を利用できる状態になっていることまで確認する。
+#
+# このScenarioで追加した式神データを後続Scenarioへ残さないよう、
+# 確認後はShikigamiData.csvから登録した式神を削除する。
+
+START
+
+# Gui.exeを起動し、MainFormを操作可能な状態にする
+OPEN GUI
+
+# 式神登録画面を開く
+OPEN SHIKIGAMI REGISTER
+
+# 正常な式神データを入力し、Gui.exeの登録処理を実行する
+REGISTER SHIKIGAMI "TestData/Valid.json"
+
+# 登録後にMainFormへ戻り、
+# 新しく登録した式神が式神選択肢へ反映されていることを確認する
+SEL SHIKIGAMI "ScenarioRunner登録式神"
+
+# 後続Scenarioへ登録データを残さないよう、
+# このScenarioで追加した式神をShikigamiData.csvから削除する
+REMOVE SHIKIGAMI "ScenarioRunner登録式神"
+
+CLOSE GUI
+
+END

@@ -1,0 +1,51 @@
+# EditShikigami.scenario
+#
+# Gui.exeの式神編集機能を使用して既存の式神データを更新し、
+# 更新後の式神がMainFormの式神選択肢へ反映され、
+# 編集後の式神名で実際に選択可能になることを確認する。
+#
+# 編集対象には既存の「少羽大天狗」を使用し、
+# レアリティ、式神名および各ステータスへ編集用テストデータを入力して
+# Gui.exeの更新処理を実行する。
+#
+# 更新後は編集後の式神名をMainFormから選択することで、
+# ShikigamiData.csvの更新結果がGui.exeへ再反映されていることを確認する。
+#
+# このScenarioによる編集結果を後続Scenarioへ残さないよう、
+# 確認後は同じ編集機能を使用して「少羽大天狗」の元データへ戻し、
+# 元の式神名で再び選択可能であることまで確認する。
+
+START
+
+# Gui.exeを起動し、MainFormを操作可能な状態にする
+OPEN GUI
+
+# 編集対象として既存の「少羽大天狗」を選択する
+SEL SHIKIGAMI "少羽大天狗"
+
+# 選択中の式神に対する式神編集画面を開く
+OPEN SHIKIGAMI EDIT
+
+# 編集用データを各入力欄へ設定し、
+# Gui.exeの更新処理を実行する
+EDIT SHIKIGAMI "TestData/Edited.json"
+
+# 更新後にMainFormへ戻り、
+# 編集後の式神名が式神選択肢へ反映されていることを確認する
+SEL SHIKIGAMI "ScenarioRunner編集式神"
+
+# 編集結果を後続Scenarioへ残さないため、
+# 編集後の式神を選択した状態から再度編集画面を開く
+OPEN SHIKIGAMI EDIT
+
+# 「少羽大天狗」の元データを入力し、
+# Gui.exeの更新処理によって編集前の状態へ復元する
+EDIT SHIKIGAMI "TestData/Original.json"
+
+# 元の式神名で再び選択できることを確認し、
+# 復元後のデータがMainFormへ反映されていることを確認する
+SEL SHIKIGAMI "少羽大天狗"
+
+CLOSE GUI
+
+END
