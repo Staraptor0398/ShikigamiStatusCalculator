@@ -31,10 +31,13 @@ namespace ScenarioRunnerCli
 
 			var stopwatch = Stopwatch.StartNew();
 			var runner = new ScenarioCliRunner();
+			var shikigamiDataRestorer = new ShikigamiDataRestorer();
 
 			int executedCount = 0;
 			int passedCount = 0;
 			var failedScenarioPaths = new List<string>();
+
+			bool aborted = false;
 
 			Console.WriteLine("========================================");
 			Console.WriteLine("Scenario Batch");
@@ -60,12 +63,20 @@ namespace ScenarioRunnerCli
 
 				failedScenarioPaths.Add(relativeScenarioPath);
 				Console.WriteLine($"[Batch] FAIL: {relativeScenarioPath}");
+
+				if (!shikigamiDataRestorer.Restore(guiExecutablePath))
+				{
+					Console.WriteLine("[Batch] Aborting remaining scenarios because ShikigamiData.csv could not be restored.");
+
+					aborted = true;
+					break;
+				}
 			}
 
 			stopwatch.Stop();
 
 			int failedCount = failedScenarioPaths.Count;
-			bool isSuccess = failedCount == 0;
+			bool isSuccess = failedCount == 0 && !aborted;
 
 			Console.WriteLine();
 			Console.WriteLine("========================================");
@@ -75,6 +86,11 @@ namespace ScenarioRunnerCli
 			Console.WriteLine($"Executed: {executedCount}");
 			Console.WriteLine($"Passed: {passedCount}");
 			Console.WriteLine($"Failed: {failedCount}");
+
+			if (aborted)
+			{
+				Console.WriteLine($"Skipped: {scenarioPaths.Length - executedCount}");
+			}
 
 			if (failedScenarioPaths.Count > 0)
 			{
