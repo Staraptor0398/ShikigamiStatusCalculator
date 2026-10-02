@@ -612,6 +612,45 @@ Version 2で追加するコマンドを以下に定義する。
 
 ### Gui操作
 
+#### OPEN SHIKIGAMI REGISTER
+Gui.exeの式神登録画面を開く操作を実行する。
+
+形式：
+
+    OPEN SHIKIGAMI REGISTER
+
+Gui.exeの通常の式神追加操作を使用する。
+
+本コマンドは式神登録画面が表示されるまでの待機を行わない。
+また、式神登録画面が正常に表示されたことを確認しない。
+
+式神登録画面へデータを入力し、登録操作を実行する場合は
+`REGISTER SHIKIGAMI` を使用する。
+
+#### OPEN SHIKIGAMI EDIT
+Gui.exeの式神編集画面を開く操作を実行する。
+
+形式：
+
+    OPEN SHIKIGAMI EDIT
+
+Gui.exeの通常の式神編集操作を使用する。
+
+本コマンドは式神編集画面が表示されるまでの待機を行わない。
+また、式神編集画面が正常に表示されたことを確認しない。
+
+編集対象となる式神の選択は本コマンドでは行わない。
+編集対象は事前に `SEL SHIKIGAMI` によって選択する。
+
+式神が選択されていない状態で実行した場合など、
+Gui.exe側でダイアログが表示された場合は、
+そのGui.exeの動作をそのままScenarioの実行状態として扱う。
+
+表示されたダイアログを確認する場合は `CHECK DIALOG` を使用する。
+
+式神編集画面へデータを入力し、更新操作を実行する場合は
+`EDIT SHIKIGAMI` を使用する。
+
 #### OPEN CALC DETAIL
 Gui.exeの計算結果詳細画面を開く操作を実行する。
 
@@ -647,6 +686,137 @@ Gui.exeの計算結果詳細画面上にある通常の終了操作を使用し�
 表示内容を確認する場合は `CHECK CALC DETAIL` を使用する。
 
 ### 入力・データ操作
+
+#### REGISTER SHIKIGAMI
+指定された式神入力データをGui.exeの式神登録画面へ入力し、
+登録操作を実行する。
+
+形式：
+
+    REGISTER SHIKIGAMI "<ファイルパス>"
+
+例：
+
+    REGISTER SHIKIGAMI "TestData/Register.json"
+
+本コマンドを実行する前に、
+`OPEN SHIKIGAMI REGISTER` によって式神登録操作を開始している必要がある。
+
+Scenario Runnerは式神登録画面が操作可能になるまで待機した後、
+指定されたファイルに記述された式神データを画面へ入力し、
+Gui.exeの通常の登録操作を実行する。
+
+入力データにはJSON形式のファイルを使用する。
+
+1つの入力データファイルには1体分の式神データのみを記述する。
+
+入力データは以下の形式とする。
+
+    {
+      "Rarity": "SP",
+      "Name": "テスト式神",
+      "Attack": "2224",
+      "HP": "13557",
+      "Defense": "432",
+      "Speed": "108",
+      "CritRate": "10",
+      "CritDamage": "150",
+      "EffectHit": "0",
+      "EffectResist": "0"
+    }
+
+`Rarity`、`Name` および各ステータス値は、
+Gui.exe上の入力欄へ入力する文字列として扱う。
+
+そのため、ステータス値についてScenario Runnerでは
+数値としての妥当性を判定しない。
+
+例えば、空文字、数値として解釈できない文字列、負数など、
+Gui.exe側のValidation対象となる値についても入力を許可する。
+
+    {
+      "Rarity": "SP",
+      "Name": "",
+      "Attack": "abc",
+      "HP": "-1",
+      "Defense": "432",
+      "Speed": "108",
+      "CritRate": "10",
+      "CritDamage": "150",
+      "EffectHit": "0",
+      "EffectResist": "0"
+    }
+
+入力データには以下の項目をすべて記述する。
+
+- `Rarity`
+- `Name`
+- `Attack`
+- `HP`
+- `Defense`
+- `Speed`
+- `CritRate`
+- `CritDamage`
+- `EffectHit`
+- `EffectResist`
+
+指定されたファイルが存在しない場合、
+JSONとして読み込めない場合、
+または必要な項目が不足している場合は、
+コマンドの実行失敗として扱う。
+
+ファイルパスには相対パスまたは絶対パスを指定できる。
+
+相対パスを指定した場合、
+Scenarioファイル自身が存在するディレクトリを基準として解決する。
+
+本コマンドは登録操作後に式神登録画面が閉じることや、
+式神データの登録が成功したことを確認しない。
+
+Gui.exe側のValidationによってダイアログが表示された場合は、
+そのGui.exeの動作をそのままScenarioの実行状態として扱う。
+
+Validation結果を確認する場合は `CHECK DIALOG` を使用する。
+
+#### EDIT SHIKIGAMI
+指定された式神入力データをGui.exeの式神編集画面へ入力し、
+更新操作を実行する。
+
+形式：
+
+    EDIT SHIKIGAMI "<ファイルパス>"
+
+例：
+
+    EDIT SHIKIGAMI "TestData/Edit.json"
+
+編集対象となる式神は、
+本コマンドを実行する前に `SEL SHIKIGAMI` によって選択する。
+
+本コマンド自身は編集対象となる式神の検索または選択を行わない。
+
+また、本コマンドを実行する前に、
+`OPEN SHIKIGAMI EDIT` によって式神編集操作を開始している必要がある。
+
+Scenario Runnerは式神編集画面が操作可能になるまで待機した後、
+指定されたファイルに記述された式神データを画面へ入力し、
+Gui.exeの通常の更新操作を実行する。
+
+入力データの形式、必須項目、値の扱いおよび
+ファイルパスの解決規則は `REGISTER SHIKIGAMI` と同一とする。
+
+入力データには編集後の式神データを1体分記述する。
+
+本コマンドは入力データに記述された式神名を使用して
+編集対象を検索または選択するものではない。
+
+本コマンドは更新操作後に式神編集画面が閉じることや、
+式神データの更新が成功したことを確認しない。
+
+Gui.exe側のValidationによってダイアログが表示された場合は、
+そのGui.exeの動作をそのままScenarioの実行状態として扱う。
+
+Validation結果を確認する場合は `CHECK DIALOG` を使用する。
 
 #### CLEAR SHIKIGAMI
 Gui.exe上で現在選択されている式神の選択を解除する。
@@ -1136,6 +1306,10 @@ Version 2では、Version 1の実装対象に加えて以下のコマンドを�
     LOAD SAVED MITAMA
     LOAD SAVED BUILD
     COMPARE SAVED SNAPSHOT
+    OPEN SHIKIGAMI REGISTER
+    REGISTER SHIKIGAMI "<ファイルパス>"
+    OPEN SHIKIGAMI EDIT
+    EDIT SHIKIGAMI "<ファイルパス>"
 
 新しいコマンドは、実際のScenarioを作成する上で必要になった時点で追加する。
 
@@ -1463,3 +1637,4 @@ Scenario実行中に生成される保存ファイルの具体的なパスを
 | 2.3 | 2026-09-22 | 計算結果詳細画面を操作・確認する `OPEN CALC DETAIL`、`CHECK CALC DETAIL`、`CLOSE CALC DETAIL` コマンドをVersion 2実装対象として追加。計算結果詳細表示試験の記述例を追加。 |
 | 2.4 | 2026-09-22 | Gui.exeの現在のSaveData保存可能状態を `NONE`、`MITAMA`、`BUILD`、`SNAPSHOT` の4段階で確認する `CHECK SAVEDATA LEVEL` コマンドをVersion 2実装対象として追加。SaveData保存レベル確認試験の記述例を追加。 |
 | 2.5 | 2026-09-27 | `CHECK SHIKIGAMI` について、モーダルダイアログが表示されておらず、式神選択で利用可能な式神データが存在することを確認する仕様を明確化。 |
+| 2.6 | 2026-10-02 | Gui.exeの式神登録・編集機能を操作する `OPEN SHIKIGAMI REGISTER`、`REGISTER SHIKIGAMI`、`OPEN SHIKIGAMI EDIT`、`EDIT SHIKIGAMI` コマンドをVersion 2実装対象として追加。登録・編集に使用する1体分の式神入力データをJSON形式で定義。 |
