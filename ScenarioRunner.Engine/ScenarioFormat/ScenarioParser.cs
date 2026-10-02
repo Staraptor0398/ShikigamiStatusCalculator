@@ -88,6 +88,16 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.CLOSE_DIALOG;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "OPEN", "SHIKIGAMI", "REGISTER"))
+			{
+				commandType = ScenarioCommandType.OPEN_SHIKIGAMI_REGISTER;
+				argumentStartIndex = 3;
+			}
+			else if (matches(tokens, "OPEN", "SHIKIGAMI", "EDIT"))
+			{
+				commandType = ScenarioCommandType.OPEN_SHIKIGAMI_EDIT;
+				argumentStartIndex = 3;
+			}
 			else if (matches(tokens, "OPEN", "CALC", "DETAIL"))
 			{
 				commandType = ScenarioCommandType.OPEN_CALC_DETAIL;
@@ -101,6 +111,16 @@ namespace ScenarioRunner.ScenarioFormat
 			else if (matches(tokens, "SEL", "SHIKIGAMI"))
 			{
 				commandType = ScenarioCommandType.SELECT_SHIKIGAMI;
+				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "REGISTER", "SHIKIGAMI"))
+			{
+				commandType = ScenarioCommandType.REGISTER_SHIKIGAMI;
+				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "EDIT", "SHIKIGAMI"))
+			{
+				commandType = ScenarioCommandType.EDIT_SHIKIGAMI;
 				argumentStartIndex = 2;
 			}
 			else if (matches(tokens, "EQUIP", "MITAMA"))
@@ -325,6 +345,11 @@ namespace ScenarioRunner.ScenarioFormat
 			switch (commandType)
 			{
 				case ScenarioCommandType.SELECT_SHIKIGAMI:
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 2);
+					break;
+
+				case ScenarioCommandType.REGISTER_SHIKIGAMI:
+				case ScenarioCommandType.EDIT_SHIKIGAMI:
 					requireQuotedToken(lineNumber, rawText, quotedTokens, 2);
 					break;
 

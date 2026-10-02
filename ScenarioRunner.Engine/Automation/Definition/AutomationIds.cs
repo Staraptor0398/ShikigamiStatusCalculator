@@ -49,6 +49,7 @@ namespace ScenarioRunner.Automation.Definition
 			public const string CLEAR = "btnClear";
 			public const string CLEAR_SHIKIGAMI = "btnClearShikigami";
 			public const string RELOAD_SHIKIGAMI = "btnReLoad";
+			public const string REGISTER_SHIKIGAMI = "btnAddShikigami";
 			public const string EDIT_SHIKIGAMI = "btnEditShikigami";
 			public const string SHIKIGAMI_RECOVERY = "btnRecoveryShikigami";
 			public const string COMPARE_SNAPSHOT = "btnCompareResult";
@@ -87,6 +88,18 @@ namespace ScenarioRunner.Automation.Definition
 		internal static class ShikigamiRegisterForm
 		{
 			public const string ID = "ShikigamiRegisterForm";
+
+			public const string RARITY = "cmbRarity";
+			public const string NAME = "txtName";
+
+			public const string ATTACK = "txtAttack";
+			public const string HP = "txtHP";
+			public const string DEFENSE = "txtDefense";
+			public const string SPEED = "txtSpeed";
+			public const string CRIT_RATE = "txtCritRate";
+			public const string CRIT_DAMAGE = "txtCritDamage";
+			public const string EFFECT_HIT = "txtEffectHit";
+			public const string EFFECT_RESIST = "txtEffectResist";
 
 			public const string REGISTER = "btnRegister";
 		}

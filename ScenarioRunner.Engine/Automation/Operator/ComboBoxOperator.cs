@@ -70,6 +70,23 @@ namespace ScenarioRunner.Automation.Operator
 			selectItem(handle, index);
 		}
 
+		public void ClearSelection(AutomationElement parent, string automationId)
+		{
+			ComboBox comboBox = getComboBox(parent, automationId);
+
+			clearSelection(comboBox);
+		}
+
+		public void ClearSelection(AutomationElement element)
+		{
+			if (element == null)
+			{
+				throw new ArgumentNullException(nameof(element));
+			}
+
+			clearSelection(element.AsComboBox());
+		}
+
 		public void SetValue(AutomationElement parent, string automationId, string value)
 		{
 			ComboBox comboBox = getComboBox(parent, automationId);
@@ -241,6 +258,20 @@ namespace ScenarioRunner.Automation.Operator
 				throw new InvalidOperationException($"ComboBox item could not be selected: index={index}");
 			}
 
+			notifySelectionChanged(handle);
+		}
+
+		private void clearSelection(ComboBox comboBox)
+		{
+			IntPtr handle = comboBox.Properties.NativeWindowHandle.Value;
+
+			SendMessage(handle, CB_SETCURSEL, new IntPtr(-1), IntPtr.Zero);
+
+			notifySelectionChanged(handle);
+		}
+
+		private void notifySelectionChanged(IntPtr handle)
+		{
 			IntPtr parentHandle = GetParent(handle);
 			int controlId = GetDlgCtrlID(handle);
 

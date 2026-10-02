@@ -185,6 +185,8 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.CLOSE_DIALOG:
 				case ScenarioCommandType.OPEN_CALC_DETAIL:
 				case ScenarioCommandType.CLOSE_CALC_DETAIL:
+				case ScenarioCommandType.OPEN_SHIKIGAMI_REGISTER:
+				case ScenarioCommandType.OPEN_SHIKIGAMI_EDIT:
 				case ScenarioCommandType.SAVE_MITAMA:
 				case ScenarioCommandType.SAVE_BUILD:
 				case ScenarioCommandType.LOAD_SAVED_MITAMA:
@@ -203,6 +205,8 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR:
 					return 0;
 				case ScenarioCommandType.SELECT_SHIKIGAMI:
+				case ScenarioCommandType.REGISTER_SHIKIGAMI:
+				case ScenarioCommandType.EDIT_SHIKIGAMI:
 				case ScenarioCommandType.LOAD_MITAMA:
 				case ScenarioCommandType.CHECK_DIALOG:
 				case ScenarioCommandType.REMOVE_SHIKIGAMI:

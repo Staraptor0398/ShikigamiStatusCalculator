@@ -11,7 +11,7 @@ using System.Text;
 
 namespace ScenarioRunner.Automation.Operator.Feature
 {
-	public class ShikigamiEditOperator
+	public class ShikigamiRegisterOperator
 	{
 		private static readonly string[] mRequiredFields =
 		{
@@ -32,20 +32,15 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly TextBoxOperator mTextBoxOperator;
 		private readonly GuiOperator mGuiOperator;
 
-		private readonly WindowWaiter mWindowWaiter;
 		private readonly ProcessWindowWaiter mProcessWindowWaiter;
 
-		private GuiSession mEditSession;
-		private Window mEditForm;
-
-		public ShikigamiEditOperator()
+		public ShikigamiRegisterOperator()
 		{
 			mButtonOperator = new ButtonOperator();
 			mComboBoxOperator = new ComboBoxOperator();
 			mTextBoxOperator = new TextBoxOperator();
 			mGuiOperator = new GuiOperator();
 
-			mWindowWaiter = new WindowWaiter();
 			mProcessWindowWaiter = new ProcessWindowWaiter();
 		}
 
@@ -56,14 +51,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			resetEditFormCache();
-
-			AutomationElement button = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.EDIT_SHIKIGAMI, ControlType.Button);
+			AutomationElement button = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.REGISTER_SHIKIGAMI, ControlType.Button);
 
 			mButtonOperator.PostClick(button);
 		}
 
-		public void Edit(ScenarioExecutonContext context, string filePath)
+		public void Register(ScenarioExecutonContext context, string filePath)
 		{
 			if (context == null)
 			{
@@ -80,53 +73,21 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			IDictionary<string, string> inputData = loadInputData(resolvedFilePath);
 
-			Window editForm = getEditForm(session);
-			var elementMap = new AutomationElementMap(editForm);
+			Window registerForm = getRegisterForm(session);
+			var elementMap = new AutomationElementMap(registerForm);
 
 			applyInputData(elementMap, inputData);
 
-			AutomationElement updateButton = elementMap.Get(AutomationIds.ShikigamiRegisterForm.REGISTER, ControlType.Button);
+			AutomationElement registerButton = elementMap.Get(AutomationIds.ShikigamiRegisterForm.REGISTER, ControlType.Button);
 
-			mButtonOperator.Click(updateButton);
-
-			resetEditFormCache();
+			mButtonOperator.Click(registerButton);
 		}
 
-		public void Save(GuiSession session)
+		private Window getRegisterForm(GuiSession session)
 		{
-			if (session == null)
-			{
-				throw new ArgumentNullException(nameof(session));
-			}
-
-			Window editForm = getEditForm(session);
-
-			mButtonOperator.Click(editForm, AutomationIds.ShikigamiRegisterForm.REGISTER);
-
-			mWindowWaiter.WaitForWindowClosed(editForm);
-
-			resetEditFormCache();
-
-			if (!session.Application.WaitWhileBusy(TimeSpan.FromSeconds(5)))
-			{
-				throw new InvalidOperationException("Shikigami update did not complete within 5 seconds.");
-			}
-		}
-
-		private Window getEditForm(GuiSession session)
-		{
-			if (ReferenceEquals(mEditSession, session) && mEditForm != null)
-			{
-				return mEditForm;
-			}
-
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			mEditForm = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRegisterForm.ID);
-
-			mEditSession = session;
-
-			return mEditForm;
+			return mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.Properties.AutomationId.ValueOrDefault == AutomationIds.ShikigamiRegisterForm.ID);
 		}
 
 		private IDictionary<string, string> loadInputData(string filePath)
@@ -215,17 +176,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.EFFECT_RESIST), getValue(inputData, "EffectResist"));
 		}
 
-		private string getValue(
-			IDictionary<string, string> inputData,
-			string field)
+		private string getValue(IDictionary<string, string> inputData, string field)
 		{
 			return inputData[field];
-		}
-
-		private void resetEditFormCache()
-		{
-			mEditForm = null;
-			mEditSession = null;
 		}
 	}
 }

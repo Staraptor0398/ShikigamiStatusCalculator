@@ -13,6 +13,8 @@ namespace ScenarioRunner.Execution
 		private readonly WindowOperator mWindowOperator;
 		private readonly GuiOperator mGuiOperator;
 		private readonly ShikigamiOperator mShikigamiOperator;
+		private readonly ShikigamiRegisterOperator mShikigamiRegisterOperator;
+		private readonly ShikigamiEditOperator mShikigamiEditOperator;
 		private readonly CalculationOperator mCalculationOperator;
 		private readonly CalculationDetailOperator mCalculationDetailOperator;
 		private readonly SaveDataOperator mSaveDataOperator;
@@ -29,6 +31,8 @@ namespace ScenarioRunner.Execution
 			mWindowOperator = new WindowOperator();
 			mGuiOperator = new GuiOperator();
 			mShikigamiOperator = new ShikigamiOperator();
+			mShikigamiRegisterOperator = new ShikigamiRegisterOperator();
+			mShikigamiEditOperator = new ShikigamiEditOperator();
 			mCalculationOperator = new CalculationOperator();
 			mCalculationDetailOperator = new CalculationDetailOperator();
 			mSaveDataOperator = new SaveDataOperator();
@@ -59,8 +63,20 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.CLOSE_DIALOG:
 					mDialogOperator.Close(context.GuiSession);
 					return;
+				case ScenarioCommandType.OPEN_SHIKIGAMI_REGISTER:
+					mShikigamiRegisterOperator.Open(context.GuiSession);
+					return;
+				case ScenarioCommandType.OPEN_SHIKIGAMI_EDIT:
+					mShikigamiEditOperator.Open(context.GuiSession);
+					return;
 				case ScenarioCommandType.SELECT_SHIKIGAMI:
 					mShikigamiOperator.Select(context.GuiSession, step.Arguments[0]);
+					return;
+				case ScenarioCommandType.REGISTER_SHIKIGAMI:
+					mShikigamiRegisterOperator.Register(context, step.Arguments[0]);
+					return;
+				case ScenarioCommandType.EDIT_SHIKIGAMI:
+					mShikigamiEditOperator.Edit(context, step.Arguments[0]);
 					return;
 				case ScenarioCommandType.EQUIP_MITAMA:
 					mInputOperator.Equip(context.GuiSession, step.Arguments);
