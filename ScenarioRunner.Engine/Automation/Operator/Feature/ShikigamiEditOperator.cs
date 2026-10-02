@@ -87,7 +87,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement updateButton = elementMap.Get(AutomationIds.ShikigamiRegisterForm.REGISTER, ControlType.Button);
 
-			mButtonOperator.Click(updateButton);
+			mButtonOperator.PostClick(updateButton);
 
 			resetEditFormCache();
 		}

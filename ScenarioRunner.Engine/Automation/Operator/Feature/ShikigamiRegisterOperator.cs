@@ -80,7 +80,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement registerButton = elementMap.Get(AutomationIds.ShikigamiRegisterForm.REGISTER, ControlType.Button);
 
-			mButtonOperator.Click(registerButton);
+			mButtonOperator.PostClick(registerButton);
 		}
 
 		private Window getRegisterForm(GuiSession session)
