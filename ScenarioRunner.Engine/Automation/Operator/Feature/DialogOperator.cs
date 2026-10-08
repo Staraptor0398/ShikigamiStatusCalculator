@@ -9,11 +9,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace ScenarioRunner.Automation.Operator.Feature
 {
 	public class DialogOperator
 	{
+		private const int MESSAGE_BOX_TIMEOUT_MS = 1000;
+		private const int MESSAGE_BOX_INTERVAL_MS = 100;
+
 		[DllImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static extern bool IsWindowVisible(IntPtr hWnd);
@@ -29,11 +33,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		private static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder lpClassName, int nMaxCount);
-
-		private const uint GW_OWNER = 4;
-
-		[DllImport("user32.dll")]
-		private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
 
 		private readonly ButtonOperator mButtonOperator;
 		private readonly GuiOperator mGuiOperator;
@@ -224,37 +223,20 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				return true;
 			};
 
-			Stopwatch stopwatch = Stopwatch.StartNew();
-
-			bool fastPathSucceeded = tryFindMessageBox(session, mainWindowHandle, expectedMessage, out Window messageBox, out AutomationElement[] messageBoxButtons);
-
-			long fastPathElapsedMs = stopwatch.ElapsedMilliseconds;
-
-			if (fastPathSucceeded)
+			if (waitForMessageBox(session, mainWindowHandle, expectedMessage, out Window messageBox, out AutomationElement[] messageBoxButtons))
 			{
 				mLastCheckedDialog = messageBox;
 				mLastCheckedDialogButtons = messageBoxButtons;
-
-				Console.WriteLine($"[DialogPerf] FastPath=SUCCESS FastPathMs={fastPathElapsedMs} TotalMs={stopwatch.ElapsedMilliseconds}");
 				return;
 			}
 
-			stopwatch.Restart();
-
-			try
+			if (mainWindow != null)
 			{
-				if (mainWindow != null)
-				{
-					mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
-				}
-				else
-				{
-					mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, predicate);
-				}
+				mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
 			}
-			finally
+			else
 			{
-				Console.WriteLine($"[DialogPerf] FastPath=MISS FastPathMs={fastPathElapsedMs} FallbackMs={stopwatch.ElapsedMilliseconds}");
+				mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, predicate);
 			}
 		}
 
@@ -297,75 +279,62 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mLastCheckedDialogButtons = null;
 		}
 
+		private bool waitForMessageBox(GuiSession session, IntPtr mainWindowHandle, string expectedMessage, out Window dialog, out AutomationElement[] buttons)
+		{
+			dialog = null;
+			buttons = null;
+
+			Stopwatch stopwatch = Stopwatch.StartNew();
+
+			do
+			{
+				if (tryFindMessageBox(session, mainWindowHandle, expectedMessage, out dialog, out buttons))
+				{
+					return true;
+				}
+
+				int remainingMs = MESSAGE_BOX_TIMEOUT_MS - (int)stopwatch.ElapsedMilliseconds;
+
+				if (remainingMs <= 0)
+				{
+					break;
+				}
+
+				Thread.Sleep(Math.Min(MESSAGE_BOX_INTERVAL_MS, remainingMs));
+			}
+			while (stopwatch.ElapsedMilliseconds < MESSAGE_BOX_TIMEOUT_MS);
+
+			return false;
+		}
+
 		private bool tryFindMessageBox(GuiSession session, IntPtr mainWindowHandle, string expectedMessage, out Window dialog, out AutomationElement[] buttons)
 		{
 			dialog = null;
 			buttons = null;
 
-			int messageBoxCandidates = 0;
-			long fromHandleElapsedMs = 0;
-			long inspectElapsedMs = 0;
-
 			uint processId = (uint)session.Application.ProcessId;
 			Window foundDialog = null;
-			var windowDiagnostics = new List<string>();
 			AutomationElement[] foundButtons = null;
 
 			EnumWindows((windowHandle, lParam) =>
 			{
-
 				GetWindowThreadProcessId(windowHandle, out uint windowProcessId);
 
-				if (windowProcessId != processId)
+				if (windowProcessId != processId || windowHandle == mainWindowHandle || !isVisible(windowHandle))
 				{
 					return true;
 				}
-
-				bool visible = isVisible(windowHandle);
-				bool isMainWindow = windowHandle == mainWindowHandle;
-				IntPtr ownerHandle = GetWindow(windowHandle, GW_OWNER);
-
-				var className = new System.Text.StringBuilder(256);
-				int classNameLength = GetClassName(windowHandle, className, className.Capacity);
-
-				string windowClass = classNameLength > 0 ? className.ToString() : "(unknown)";
-
-				windowDiagnostics.Add(
-					$"HWND=0x{windowHandle.ToInt64():X} " +
-					$"Class={windowClass} " +
-					$"Visible={visible} " +
-					$"MainWindow={isMainWindow} " +
-					$"Owner=0x{ownerHandle.ToInt64():X}");
-
-				if (isMainWindow || !visible)
-				{
-					return true;
-				}
-
 
 				if (!isMessageBox(windowHandle))
 				{
 					return true;
 				}
 
-				messageBoxCandidates++;
-
 				try
 				{
-					Stopwatch fromHandleWatch = Stopwatch.StartNew();
 					AutomationElement element = session.Automation.FromHandle(windowHandle);
-					fromHandleElapsedMs += fromHandleWatch.ElapsedMilliseconds;
 
-					if (element == null)
-					{
-						return true;
-					}
-
-					Stopwatch inspectWatch = Stopwatch.StartNew();
-					bool inspected = tryInspectDialog(element, out AutomationElement[] candidateButtons, out AutomationElement[] texts);
-					inspectElapsedMs += inspectWatch.ElapsedMilliseconds;
-
-					if (!inspected)
+					if (element == null || !tryInspectDialog(element, out AutomationElement[] candidateButtons, out AutomationElement[] texts))
 					{
 						return true;
 					}
@@ -416,17 +385,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					return true;
 				}
 			}, IntPtr.Zero);
-
-
-			Console.WriteLine($"[DialogWindow] ProcessId={processId} Windows={windowDiagnostics.Count}");
-
-			foreach (string windowDiagnostic in windowDiagnostics)
-			{
-				Console.WriteLine($"[DialogWindow] {windowDiagnostic}");
-			}
-
-
-			Console.WriteLine($"[DialogPerf] Candidates={messageBoxCandidates} FromHandleMs={fromHandleElapsedMs} InspectMs={inspectElapsedMs}");
 
 			dialog = foundDialog;
 			buttons = foundButtons;
