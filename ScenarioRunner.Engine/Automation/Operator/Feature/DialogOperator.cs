@@ -30,6 +30,11 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		private static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder lpClassName, int nMaxCount);
 
+		private const uint GW_OWNER = 4;
+
+		[DllImport("user32.dll")]
+		private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
 		private readonly ButtonOperator mButtonOperator;
 		private readonly GuiOperator mGuiOperator;
 
@@ -303,16 +308,40 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			uint processId = (uint)session.Application.ProcessId;
 			Window foundDialog = null;
+			var windowDiagnostics = new List<string>();
 			AutomationElement[] foundButtons = null;
 
 			EnumWindows((windowHandle, lParam) =>
 			{
+
 				GetWindowThreadProcessId(windowHandle, out uint windowProcessId);
 
-				if (windowProcessId != processId || windowHandle == mainWindowHandle || !isVisible(windowHandle))
+				if (windowProcessId != processId)
 				{
 					return true;
 				}
+
+				bool visible = isVisible(windowHandle);
+				bool isMainWindow = windowHandle == mainWindowHandle;
+				IntPtr ownerHandle = GetWindow(windowHandle, GW_OWNER);
+
+				var className = new System.Text.StringBuilder(256);
+				int classNameLength = GetClassName(windowHandle, className, className.Capacity);
+
+				string windowClass = classNameLength > 0 ? className.ToString() : "(unknown)";
+
+				windowDiagnostics.Add(
+					$"HWND=0x{windowHandle.ToInt64():X} " +
+					$"Class={windowClass} " +
+					$"Visible={visible} " +
+					$"MainWindow={isMainWindow} " +
+					$"Owner=0x{ownerHandle.ToInt64():X}");
+
+				if (isMainWindow || !visible)
+				{
+					return true;
+				}
+
 
 				if (!isMessageBox(windowHandle))
 				{
@@ -387,6 +416,15 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					return true;
 				}
 			}, IntPtr.Zero);
+
+
+			Console.WriteLine($"[DialogWindow] ProcessId={processId} Windows={windowDiagnostics.Count}");
+
+			foreach (string windowDiagnostic in windowDiagnostics)
+			{
+				Console.WriteLine($"[DialogWindow] {windowDiagnostic}");
+			}
+
 
 			Console.WriteLine($"[DialogPerf] Candidates={messageBoxCandidates} FromHandleMs={fromHandleElapsedMs} InspectMs={inspectElapsedMs}");
 
