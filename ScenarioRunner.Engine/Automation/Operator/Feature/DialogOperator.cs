@@ -1,3 +1,4 @@
+
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Exceptions;
@@ -5,6 +6,7 @@ using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -24,7 +26,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		[DllImport("user32.dll")]
 		private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
-
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		private static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder lpClassName, int nMaxCount);
@@ -218,20 +219,37 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				return true;
 			};
 
-			if (tryFindMessageBox(session, mainWindowHandle, expectedMessage, out Window messageBox, out AutomationElement[] messageBoxButtons))
+			Stopwatch stopwatch = Stopwatch.StartNew();
+
+			bool fastPathSucceeded = tryFindMessageBox(session, mainWindowHandle, expectedMessage, out Window messageBox, out AutomationElement[] messageBoxButtons);
+
+			long fastPathElapsedMs = stopwatch.ElapsedMilliseconds;
+
+			if (fastPathSucceeded)
 			{
 				mLastCheckedDialog = messageBox;
 				mLastCheckedDialogButtons = messageBoxButtons;
+
+				Console.WriteLine($"[DialogPerf] FastPath=SUCCESS FastPathMs={fastPathElapsedMs} TotalMs={stopwatch.ElapsedMilliseconds}");
 				return;
 			}
 
-			if (mainWindow != null)
+			stopwatch.Restart();
+
+			try
 			{
-				mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
+				if (mainWindow != null)
+				{
+					mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
+				}
+				else
+				{
+					mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, predicate);
+				}
 			}
-			else
+			finally
 			{
-				mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, predicate);
+				Console.WriteLine($"[DialogPerf] FastPath=MISS FastPathMs={fastPathElapsedMs} FallbackMs={stopwatch.ElapsedMilliseconds}");
 			}
 		}
 
@@ -279,6 +297,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			dialog = null;
 			buttons = null;
 
+			int messageBoxCandidates = 0;
+			long fromHandleElapsedMs = 0;
+			long inspectElapsedMs = 0;
+
 			uint processId = (uint)session.Application.ProcessId;
 			Window foundDialog = null;
 			AutomationElement[] foundButtons = null;
@@ -297,11 +319,24 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					return true;
 				}
 
+				messageBoxCandidates++;
+
 				try
 				{
+					Stopwatch fromHandleWatch = Stopwatch.StartNew();
 					AutomationElement element = session.Automation.FromHandle(windowHandle);
+					fromHandleElapsedMs += fromHandleWatch.ElapsedMilliseconds;
 
-					if (element == null || !tryInspectDialog(element, out AutomationElement[] candidateButtons, out AutomationElement[] texts))
+					if (element == null)
+					{
+						return true;
+					}
+
+					Stopwatch inspectWatch = Stopwatch.StartNew();
+					bool inspected = tryInspectDialog(element, out AutomationElement[] candidateButtons, out AutomationElement[] texts);
+					inspectElapsedMs += inspectWatch.ElapsedMilliseconds;
+
+					if (!inspected)
 					{
 						return true;
 					}
@@ -352,6 +387,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					return true;
 				}
 			}, IntPtr.Zero);
+
+			Console.WriteLine($"[DialogPerf] Candidates={messageBoxCandidates} FromHandleMs={fromHandleElapsedMs} InspectMs={inspectElapsedMs}");
 
 			dialog = foundDialog;
 			buttons = foundButtons;
