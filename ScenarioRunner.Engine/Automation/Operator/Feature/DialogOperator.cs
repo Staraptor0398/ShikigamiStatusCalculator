@@ -25,6 +25,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		[DllImport("user32.dll")]
 		private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
+
+		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
+		private static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder lpClassName, int nMaxCount);
+
 		private readonly ButtonOperator mButtonOperator;
 		private readonly GuiOperator mGuiOperator;
 
@@ -214,6 +218,13 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				return true;
 			};
 
+			if (tryFindMessageBox(session, mainWindowHandle, expectedMessage, out Window messageBox, out AutomationElement[] messageBoxButtons))
+			{
+				mLastCheckedDialog = messageBox;
+				mLastCheckedDialogButtons = messageBoxButtons;
+				return;
+			}
+
 			if (mainWindow != null)
 			{
 				mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
@@ -261,6 +272,103 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mLastCheckedDialog = null;
 			mLastCheckedDialogButtons = null;
+		}
+
+		private bool tryFindMessageBox(GuiSession session, IntPtr mainWindowHandle, string expectedMessage, out Window dialog, out AutomationElement[] buttons)
+		{
+			dialog = null;
+			buttons = null;
+
+			uint processId = (uint)session.Application.ProcessId;
+			Window foundDialog = null;
+			AutomationElement[] foundButtons = null;
+
+			EnumWindows((windowHandle, lParam) =>
+			{
+				GetWindowThreadProcessId(windowHandle, out uint windowProcessId);
+
+				if (windowProcessId != processId || windowHandle == mainWindowHandle || !isVisible(windowHandle))
+				{
+					return true;
+				}
+
+				if (!isMessageBox(windowHandle))
+				{
+					return true;
+				}
+
+				try
+				{
+					AutomationElement element = session.Automation.FromHandle(windowHandle);
+
+					if (element == null || !tryInspectDialog(element, out AutomationElement[] candidateButtons, out AutomationElement[] texts))
+					{
+						return true;
+					}
+
+					if (candidateButtons.Length == 0)
+					{
+						return true;
+					}
+
+					bool containsExpectedMessage = texts.Any(text =>
+					{
+						string name = text.Properties.Name.ValueOrDefault;
+
+						return !string.IsNullOrWhiteSpace(name) && name.Contains(expectedMessage);
+					});
+
+					if (!containsExpectedMessage)
+					{
+						return true;
+					}
+
+					Window candidateDialog = element.AsWindow();
+
+					if (candidateDialog == null)
+					{
+						return true;
+					}
+
+					foundDialog = candidateDialog;
+					foundButtons = candidateButtons;
+
+					return false;
+				}
+				catch (PropertyNotSupportedException)
+				{
+					return true;
+				}
+				catch (ElementNotAvailableException)
+				{
+					return true;
+				}
+				catch (System.Windows.Automation.ElementNotAvailableException)
+				{
+					return true;
+				}
+				catch (COMException)
+				{
+					return true;
+				}
+			}, IntPtr.Zero);
+
+			dialog = foundDialog;
+			buttons = foundButtons;
+
+			return dialog != null;
+		}
+
+		private bool isMessageBox(IntPtr windowHandle)
+		{
+			var className = new System.Text.StringBuilder(256);
+
+			if (GetClassName(windowHandle, className, className.Capacity) == 0)
+			{
+				return false;
+			}
+
+			return string.Equals(className.ToString(), "#32770", StringComparison.Ordinal);
 		}
 
 		private bool isVisible(IntPtr windowHandle)
