@@ -1,0 +1,105 @@
+
+@startuml
+
+title Scenario Runner - Scenario Execution Flow
+
+skinparam shadowing false
+skinparam defaultFontName Meiryo
+skinparam activity {
+    BackgroundColor #F4F7FB
+    BorderColor #506580
+    DiamondBackgroundColor #E8EFF8
+    DiamondBorderColor #506580
+    ArrowColor #506580
+}
+
+!pragma useVerticalIf on
+
+start
+
+:Stopwatch.StartNew();
+:CancellationTokenSource生成;
+:ScenarioExecutonContext生成;
+
+:式神データのパスを設定;
+:Broken / Backupディレクトリを作成;
+
+:Broken / Backup Watcherを生成;
+:FileCreatedイベントを登録;
+:両Watcherを開始;
+
+:passedCount = 0;
+:ScenarioStartedログ出力;
+
+while (次のScenarioStepがある?) is (Yes)
+
+    :CancellationToken.ThrowIfCancellationRequested();
+    :StepStartedログ出力;
+    :ScenarioCommandExecutor.Execute(step, context);
+
+    if (OperationCanceledException) then (catch)
+        :Stopwatch.Stop();
+        :停止結果を生成
+        IsSuccess = false
+        IsStopped = true
+        FailedCount = 0;
+        :ScenarioStoppedログ出力;
+
+        :using終了
+        両WatcherをDispose;
+        :finally
+        CleanupGuiOnExitが有効なら
+        cleanupGui(context);
+        :return stoppedResult;
+        stop
+
+    elseif (その他のException) then (catch)
+        :Stopwatch.Stop();
+        :失敗時のスクリーンショット取得を試行;
+        :StepFailed / Screenshotログ出力;
+        :失敗結果を生成
+        IsSuccess = false
+        IsStopped = false
+        FailedCount = 1
+        FailedLineNumber = step.LineNumber
+        ErrorMessage = ex.Message;
+        :ScenarioFailedログ出力;
+
+        :using終了
+        両WatcherをDispose;
+        :finally
+        CleanupGuiOnExitが有効なら
+        cleanupGui(context);
+        :return failedResult;
+        stop
+
+    else (正常終了)
+        :passedCount++;
+        :StepPassedログ出力;
+
+        if (WatchMode?) then (Yes)
+            :Thread.Sleep(500);
+        endif
+    endif
+
+endwhile (No)
+
+:Stopwatch.Stop();
+:正常終了結果を生成
+IsSuccess = true
+IsStopped = false
+FailedCount = 0;
+:ScenarioPassedログ出力;
+
+:using終了
+両WatcherをDispose;
+
+:finally
+CleanupGuiOnExitが有効なら
+cleanupGui(context);
+
+:return result;
+
+stop
+
+@enduml
