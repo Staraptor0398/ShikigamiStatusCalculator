@@ -1,255 +1,160 @@
+
 @startuml
 
 title ShikigamiApp Scenario Runner - Automation Class Diagram
 
 skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
 hide empty members
-left to right direction
 
-package "Execution" {
-class ScenarioExecutor
-class ScenarioCommandExecutor
-class ScenarioExecutonContext
-}
+top to bottom direction
 
 package "Automation" {
-class GuiSession {
-+ Application Application
-+ UIA2Automation Automation
-+ Window MainWindow
-+ AutomationElementMap MainElementMap
-}
 
-class AutomationElementMap
+    class GuiSession {
+        + Application Application
+        + UIA2Automation Automation
+        + Window MainWindow
+        + AutomationElementMap MainElementMap
+    }
 
-class FileDialogElements {
-+ Window Dialog
-+ AutomationElement[] Descendants
-+ AutomationElement[] FileNameComboBoxCandidates
-+ AutomationElement[] FileNameEdits
-}
+    class AutomationElementMap
 
-package "Definition" {
-class AutomationIds <<static>>
-}
+    class FileDialogElements {
+        + Window Dialog
+        + AutomationElement[] Descendants
+        + AutomationElement[] FileNameComboBoxCandidates
+        + AutomationElement[] FileNameEdits
+    }
 
-package "Operator" {
-class WindowOperator
-class ButtonOperator
-class ComboBoxOperator
-class TextBoxOperator
-class DataGridViewOperator
-class FileDialogOperator
+    package "Definition" {
+        class AutomationIds <<static>>
+    }
 
-package "Feature" as Feature {
-class GuiOperator
-class InputOperator
-class DialogOperator
-class ShikigamiOperator
-class CalculationOperator
-class CalculationDetailOperator
-class SaveDataOperator
-class SnapshotComparisonOperator
-class ShikigamiDataOperator
-class ShikigamiDataFileOperator
-class ShikigamiRecoveryOperator
-}
-}
+    package "Operator" {
 
-package "Waiter" {
-class WindowWaiter
-class ProcessWindowWaiter
-class FileDialogWaiter
-class ShikigamiDataWaiter
-}
+        class WindowOperator
+        class ButtonOperator
+        class ComboBoxOperator
+        class TextBoxOperator
+        class DataGridViewOperator
+        class FileDialogOperator
 
-package "Watcher" {
-class ShikigamiDataFileWatcher
-}
+        package "Feature" {
+            class GuiOperator
+            class InputOperator
+            class DialogOperator
 
-package "Capture" {
-class ScreenshotCapturer
-}
+            class ShikigamiOperator
+            class ShikigamiRegisterOperator
+            class ShikigamiEditOperator
+            class ShikigamiDataOperator
+            class ShikigamiDataFileOperator
+            class ShikigamiRecoveryOperator
 
-package "Layout" {
-class ScenarioWindowLayout {
-+ WindowBounds RunnerBounds
-+ WindowBounds MonitorBounds
-+ WindowBounds GuiBounds
-}
-}
+            class CalculationOperator
+            class CalculationDetailOperator
 
-package "Model" {
-class WindowBounds {
-+ int X
-+ int Y
-+ int Width
-+ int Height
-}
+            class SaveDataOperator
+            class SnapshotComparisonOperator
+        }
+    }
 
-class WindowFrameInfo {
-+ WindowBounds WindowBounds
-+ WindowBounds DwmFrameBounds
-+ WindowBounds ClientBounds
-+ WindowFrameInsets InvisibleFrame
-+ int WindowBorderWidth
-+ int WindowBorderHeight
-}
+    package "Waiter" {
+        class WindowWaiter
+        class ProcessWindowWaiter
+        class FileDialogWaiter
+        class ShikigamiDataWaiter
+    }
 
-class WindowFrameInsets {
-+ int Left
-+ int Top
-+ int Right
-+ int Bottom
-}
-}
+    package "Watcher" {
+        class ShikigamiDataFileWatcher
+    }
 
-package "Interop" {
-class WindowFrameHelper <<static>>
-}
+    package "Capture" {
+        class ScreenshotCapturer
+    }
+
+    package "Layout" {
+        class ScenarioWindowLayout
+    }
+
+    package "Model" {
+        class WindowBounds {
+            + int X
+            + int Y
+            + int Width
+            + int Height
+        }
+
+        class WindowFrameInfo {
+            + WindowBounds WindowBounds
+            + WindowBounds DwmFrameBounds
+            + WindowBounds ClientBounds
+            + WindowFrameInsets InvisibleFrame
+            + int WindowBorderWidth
+            + int WindowBorderHeight
+        }
+
+        class WindowFrameInsets {
+            + int Left
+            + int Top
+            + int Right
+            + int Bottom
+        }
+    }
+
+    package "Interop" {
+        class WindowFrameHelper <<static>>
+    }
 }
 
 ' ========================================
-' Execution
+' Session / Cache
 ' ========================================
-ScenarioExecutor --> ScenarioCommandExecutor
-ScenarioExecutor --> ScreenshotCapturer
-ScenarioExecutor --> ShikigamiDataFileWatcher
-
-ScenarioCommandExecutor ..> Feature : dispatch
-ScenarioCommandExecutor --> ShikigamiDataWaiter
+GuiSession o-- AutomationElementMap : caches
 
 ' ========================================
-' Definition
-' ========================================
-Feature ..> AutomationIds : uses
-
-' ========================================
-' Session / automation cache
-' ========================================
-GuiSession o-- AutomationElementMap : MainElementMap
-
-GuiOperator --> WindowOperator
-GuiOperator --> ProcessWindowWaiter
-GuiOperator ..> GuiSession
-GuiOperator ..> AutomationElementMap
-
-' ========================================
-' Generic operators
-' ========================================
-WindowOperator --> WindowFrameHelper
-
-FileDialogOperator --> FileDialogElements
-
-' ========================================
-' Waiters
+' File dialog
 ' ========================================
 FileDialogWaiter --> FileDialogElements : creates
-
-ShikigamiDataWaiter --> ScenarioExecutonContext
-
-' ========================================
-' Feature operators
-' ========================================
-InputOperator --> ButtonOperator
-InputOperator --> ComboBoxOperator
-InputOperator --> TextBoxOperator
-InputOperator --> DialogOperator
-InputOperator --> GuiOperator
-
-DialogOperator --> ButtonOperator
-DialogOperator --> GuiOperator
-DialogOperator --> WindowWaiter
-DialogOperator --> ProcessWindowWaiter
-
-ShikigamiOperator --> ButtonOperator
-ShikigamiOperator --> ComboBoxOperator
-ShikigamiOperator --> DialogOperator
-ShikigamiOperator --> GuiOperator
-ShikigamiOperator --> WindowWaiter
-ShikigamiOperator --> ProcessWindowWaiter
-
-CalculationOperator --> ButtonOperator
-CalculationOperator --> ComboBoxOperator
-CalculationOperator --> TextBoxOperator
-CalculationOperator --> GuiOperator
-
-CalculationDetailOperator --> ButtonOperator
-CalculationDetailOperator --> TextBoxOperator
-CalculationDetailOperator --> GuiOperator
-CalculationDetailOperator --> WindowWaiter
-CalculationDetailOperator --> ProcessWindowWaiter
-CalculationDetailOperator ..> AutomationElementMap
-
-SaveDataOperator --> ButtonOperator
-SaveDataOperator --> ComboBoxOperator
-SaveDataOperator --> TextBoxOperator
-SaveDataOperator --> FileDialogOperator
-SaveDataOperator --> GuiOperator
-SaveDataOperator --> WindowWaiter
-SaveDataOperator --> ProcessWindowWaiter
-SaveDataOperator --> FileDialogWaiter
-SaveDataOperator ..> AutomationElementMap
-
-SnapshotComparisonOperator --> GuiOperator
-SnapshotComparisonOperator --> ButtonOperator
-SnapshotComparisonOperator --> FileDialogOperator
-SnapshotComparisonOperator --> DataGridViewOperator
-SnapshotComparisonOperator --> ProcessWindowWaiter
-SnapshotComparisonOperator --> FileDialogWaiter
-SnapshotComparisonOperator ..> AutomationElementMap
-
-ShikigamiDataOperator --> ShikigamiDataFileOperator
-ShikigamiDataOperator --> ShikigamiOperator
-
-ShikigamiRecoveryOperator --> ButtonOperator
-ShikigamiRecoveryOperator --> FileDialogOperator
-ShikigamiRecoveryOperator --> GuiOperator
-ShikigamiRecoveryOperator --> ProcessWindowWaiter
-ShikigamiRecoveryOperator --> FileDialogWaiter
+FileDialogOperator --> FileDialogElements : uses
 
 ' ========================================
-' Layout / window frame
+' Window frame
 ' ========================================
 ScenarioWindowLayout --> WindowBounds
 
 WindowFrameInfo *-- WindowBounds
 WindowFrameInfo *-- WindowFrameInsets
 
-WindowFrameHelper ..> WindowBounds
 WindowFrameHelper ..> WindowFrameInfo
-WindowFrameHelper ..> WindowFrameInsets
 
 ' ========================================
 ' Notes
 ' ========================================
-note bottom of GuiSession
+note right of GuiSession
 MainWindow と MainElementMap は
 GuiSession 単位で保持する。
 
-ライフサイクルと再利用戦略の詳細は
-AutomationCacheLifecycle を参照。
+詳細は AutomationCacheLifecycle を参照。
 end note
 
-note bottom of FileDialogElements
-FileDialogWaiter が探索時に取得した
-Dialog と UI tree の情報を保持する。
+note right of FileDialogElements
+FileDialogWaiter が取得した探索結果を
+FileDialogOperator が再利用する。
 
-FileDialogOperator はこの結果を再利用し、
-同一 FileDialog の再探索を避ける。
+詳細は WindowSearchStrategy を参照。
 end note
 
-note bottom of ProcessWindowWaiter
-ProcessWindowWaiter / FileDialogWaiter は
-UI Automation と Win32 API を用途に応じて使用する。
+legend bottom
+Operator / Feature : Scenario Runner 固有の操作
+Operator           : 汎用 UI 操作
+Waiter             : ウィンドウ・ダイアログ待機
 
-探索戦略の詳細は
-WindowSearchStrategy を参照。
-end note
-
-note bottom of WindowFrameHelper
-Win32 / DWM からウィンドウフレーム情報を取得し、
-不可視フレームを考慮した座標計算を行う。
-end note
+個別の呼び出し関係は
+Command Interaction Diagram を参照。
+endlegend
 
 @enduml

@@ -1,190 +1,110 @@
+
 @startuml
 
 title ShikigamiApp Scenario Runner - Class Diagram
 
 skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
 hide empty members
-left to right direction
+
+top to bottom direction
 
 package "Form" {
-class MainForm
-class ShikigamiDataMonitorForm
-
-package "Applicator" {
-class FormBoundsApplicator <<static>>
-class RichTextBoxScrollApplicator <<static>>
-}
+    class MainForm
 }
 
 package "ScenarioFormat" {
-class Scenario {
-+ string FilePath
-+ int StartLine
-+ int EndLine
-+ IReadOnlyList<ScenarioStep> Steps
-}
+    class ScenarioLoader
+    class ScenarioCompiler
+    class ScenarioParser
+    class ScenarioValidator
 
-class ScenarioStep {
-+ int LineNumber
-+ ScenarioCommandType CommandType
-+ IReadOnlyList<string> Arguments
-+ string RawText
-}
+    class Scenario {
+        + string FilePath
+        + IReadOnlyList<ScenarioStep> Steps
+    }
 
-enum ScenarioCommandType
+    class ScenarioStep {
+        + int LineNumber
+        + ScenarioCommandType CommandType
+        + IReadOnlyList<string> Arguments
+    }
 
-class ScenarioLoader
-class ScenarioCompiler
-class ScenarioParser
-class ScenarioValidator
-class ScenarioValidationException
+    enum ScenarioCommandType
 }
 
 package "Execution" {
-class ScenarioExecutor
-class ScenarioCommandExecutor
+    class ScenarioExecutor
+    class ScenarioCommandExecutor
 
-class ScenarioExecutonContext {
-+ string ScenarioPath
-+ string GuiExecutablePath
-+ ScenarioExecutionOptions Options
-+ WindowBounds GuiBounds
-+ GuiSession GuiSession
-+ CancellationToken CancellationToken
-+ string ResolvePath(string path)
-}
+    class ScenarioExecutonContext {
+        + string ScenarioPath
+        + string GuiExecutablePath
+        + GuiSession GuiSession
+        + CancellationToken CancellationToken
+    }
 
-class ScenarioExecutionOptions {
-+ bool WatchMode
-}
+    class ScenarioExecutionOptions {
+        + bool WatchMode
+        + bool CleanupGuiOnExit
+    }
 
-class ScenarioExecutionResult {
-+ bool IsSuccess
-+ bool IsStopped
-+ int PassedCount
-+ int FailedCount
-+ TimeSpan Elapsed
-+ int FailedLineNumber
-+ string ErrorMessage
-}
+    class ScenarioExecutionResult {
+        + bool IsSuccess
+        + bool IsStopped
+        + int PassedCount
+        + int FailedCount
+        + TimeSpan Elapsed
+    }
 }
 
 package "Automation" {
-class GuiSession
-
-package "Layout" {
-class ScenarioWindowLayout
-}
-
-package "Operator" {
-class GuiOperator
-class InputOperator
-class ShikigamiOperator
-class MitamaOperator
-class CalculationOperator
-class ShikigamiDataOperator
-class ShikigamiRecoveryOperator
-}
-
-package "Waiter" {
-class WindowWaiter
-class ShikigamiDataWaiter
-}
-
-package "Watcher" {
-class ShikigamiDataFileWatcher
-}
-}
-
-package "Presentation" {
-class ScenarioHighlighter
+    class GuiSession
 }
 
 package "Log" {
-class ScenarioLogger
-class LogFileWriter
+    class ScenarioLogger
+    class LogFileWriter
 }
 
 ' ========================================
-' Form
-' ========================================
-MainForm --> ScenarioLoader : loads
-MainForm --> ScenarioCompiler : validates before save
-MainForm --> ScenarioExecutor : executes
-MainForm --> ScenarioLogger : displays logs
-MainForm --> ScenarioHighlighter : highlights
-MainForm --> ScenarioWindowLayout : arranges windows
-MainForm ..> FormBoundsApplicator
-MainForm ..> RichTextBoxScrollApplicator
-MainForm ..> ShikigamiDataMonitorForm : opens
-
-' ========================================
-' ScenarioFormat
+' Scenario loading
 ' ========================================
 ScenarioLoader --> ScenarioCompiler
 ScenarioCompiler --> ScenarioParser
 ScenarioCompiler --> ScenarioValidator
 
+ScenarioParser ..> Scenario : creates
+
 Scenario "1" *-- "0..*" ScenarioStep
 ScenarioStep --> ScenarioCommandType
 
-ScenarioParser ..> Scenario : creates
-ScenarioValidator ..> Scenario : validates
-ScenarioValidator ..> ScenarioValidationException : throws
-
 ' ========================================
-' Execution
+' Scenario execution
 ' ========================================
 ScenarioExecutor --> ScenarioCommandExecutor
-ScenarioExecutor --> ScenarioLogger
 ScenarioExecutor ..> ScenarioExecutonContext : creates
 ScenarioExecutor ..> ScenarioExecutionResult : creates
-ScenarioExecutor ..> ShikigamiDataFileWatcher : monitors
 
-ScenarioCommandExecutor --> ScenarioStep
-ScenarioCommandExecutor --> ScenarioExecutonContext
-ScenarioCommandExecutor --> GuiOperator
-ScenarioCommandExecutor --> InputOperator
-ScenarioCommandExecutor --> ShikigamiOperator
-ScenarioCommandExecutor --> MitamaOperator
-ScenarioCommandExecutor --> CalculationOperator
-ScenarioCommandExecutor --> ShikigamiDataOperator
-ScenarioCommandExecutor --> ShikigamiRecoveryOperator
-ScenarioCommandExecutor --> WindowWaiter
-ScenarioCommandExecutor --> ShikigamiDataWaiter
-
-ScenarioExecutonContext --> GuiSession
 ScenarioExecutonContext --> ScenarioExecutionOptions
+ScenarioExecutonContext --> GuiSession
 
 ' ========================================
-' Presentation / Log
+' Form / Log
 ' ========================================
-ScenarioHighlighter --> Scenario
-ScenarioHighlighter --> ScenarioStep
+MainForm --> ScenarioLoader
+MainForm --> ScenarioExecutor
+MainForm --> ScenarioLogger
 
+ScenarioExecutor --> ScenarioLogger
 ScenarioLogger --> LogFileWriter
-ScenarioLogger --> ScenarioStep
-ScenarioLogger --> ScenarioExecutionResult
-
-note right of ScenarioCompiler
-ScenarioParser による Parse と
-ScenarioValidator による Validate をまとめる。
-
-ScenarioLoader と Scenario Editor の
-保存前検証から共通利用する。
-end note
-
-note bottom of MainForm
-Scenario の選択・表示・編集・保存、
-実行 / 停止、ログ表示を担当する。
-
-未保存変更がある場合は
-終了時に保存確認を行う。
-end note
 
 note right of ScenarioCommandExecutor
-ScenarioCommandType に応じた実行処理を振り分け、
-実操作は Automation 層へ委譲する。
+ScenarioCommandType に応じて
+Automation 層の Operator に処理を委譲する。
+
+詳細は Automation Class Diagram を参照。
 end note
 
 @enduml
