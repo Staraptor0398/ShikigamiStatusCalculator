@@ -1,0 +1,23 @@
+@startuml
+title CLOSE CALC DETAIL - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/CalculationDetailOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "CalculationDetailOperator" as O
+participant "GuiOperator" as GO
+participant "ProcessWindowWaiter" as PW
+participant "ButtonOperator" as BO
+participant "WindowWaiter" as WW
+
+EX -> O : Close(session)
+activate O
+O -> O : getResultViewForm(session)
+O -> GO : GetMainWindow(session)（必要な場合）
+O -> PW : WaitForProcessWindow(ResultViewForm)（キャッシュがなければ）
+O -> BO : PostClick(CLOSE button)
+O -> WW : WaitForWindowClosed(resultViewForm)
+O -> O : resetResultViewCache()
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

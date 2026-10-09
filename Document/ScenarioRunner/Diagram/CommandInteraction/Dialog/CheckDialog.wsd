@@ -1,0 +1,26 @@
+@startuml
+title CHECK DIALOG - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/DialogOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "DialogOperator" as O
+participant "Win32 EnumWindows" as NATIVE
+participant "ProcessWindowWaiter" as PW
+
+EX -> O : CheckMessage(session, expectedMessage)
+activate O
+O -> O : 確認済みダイアログとボタンのキャッシュをクリア
+O -> O : waitForMessageBox(...)
+loop until native MessageBox timeout
+O -> NATIVE : tryFindMessageBox(...) EnumWindowsとプロセスIDで探索
+end
+alt matching native MessageBox found
+O -> O : ダイアログとボタンをキャッシュ
+else native lookup timed out
+O -> PW : WaitForProcessWindow(session, owner if known, predicate)
+O -> O : 一致したダイアログとボタンをキャッシュ
+end
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

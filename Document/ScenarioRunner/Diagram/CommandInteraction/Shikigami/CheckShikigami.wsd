@@ -1,0 +1,25 @@
+@startuml
+title CHECK SHIKIGAMI - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/ShikigamiOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "ShikigamiOperator" as O
+participant "DialogOperator" as DO
+participant "GuiOperator" as GO
+participant "ComboBoxOperator" as CO
+
+EX -> O : Check(session)
+activate O
+O -> DO : Exists(session)
+alt modal dialog exists
+O -> O : throw InvalidOperationException
+end
+O -> GO : GetMainElement(SHIKIGAMI, ComboBox)
+O -> CO : CanSelectFirstItem(element)
+alt no selectable items
+O -> O : throw InvalidOperationException
+end
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

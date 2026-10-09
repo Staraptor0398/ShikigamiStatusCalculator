@@ -1,0 +1,22 @@
+@startuml
+title BREAK SHIKIGAMI HEADER - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/ShikigamiDataOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "ShikigamiDataOperator" as O
+participant "ShikigamiDataFileOperator" as FO
+participant "ShikigamiDataFileOperator" as FO
+
+EX -> O : BreakHeader(context)
+activate O
+O -> O : getShikigamiDataPath(context)
+O -> FO : ReadAllLines(ShikigamiData.csv)
+alt file empty
+O -> O : throw InvalidOperationException
+end
+O -> O : 先頭行をBROKEN_HEADERに置換
+O -> FO : WriteAllLines(filePath, lines)
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

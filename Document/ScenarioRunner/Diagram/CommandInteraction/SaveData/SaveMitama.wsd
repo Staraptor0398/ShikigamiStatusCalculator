@@ -1,0 +1,37 @@
+@startuml
+title SAVE MITAMA - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/SaveDataOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "SaveDataOperator" as O
+participant "GuiOperator" as GO
+participant "ButtonOperator" as BO
+participant "ProcessWindowWaiter" as PW
+participant "ComboBoxOperator" as CO
+participant "ButtonOperator" as BO
+participant "FileDialogWaiter" as FDW
+participant "FileDialogOperator" as FDO
+participant "ButtonOperator" as BO
+participant "WindowWaiter" as WW
+
+EX -> O : SaveMitama(context)
+activate O
+O -> O : save(context, MITAMA_SAVE_TYPE, suffix, extension)
+O -> O : 実行コンテキストを検証し、重複しない保存先パスを生成
+O -> GO : GetMainElement(SAVE, Button)
+O -> BO : PostClick(mainSaveButton)
+O -> PW : WaitForProcessWindow(SaveDataSaveDialog)
+O -> O : 保存ダイアログの子要素からAutomationElementMapを生成
+O -> CO : SelectItem(SAVE_TYPE, saveType)
+O -> BO : PostClick(BROWSE)
+O -> FDW : WaitForFileDialog(session, saveDialog)
+O -> FDO : SelectSaveFile(fileDialogElements, filePath)
+O -> O : waitForFilePath(FILE_PATH, expectedPath)
+O -> BO : PostClick(SAVE)
+O -> WW : WaitForWindowClosed(saveDialog)
+O -> O : waitForFileCreated(filePath)
+O -> O : context.SavedMitamaFilePath = filePath
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

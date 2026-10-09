@@ -1,0 +1,32 @@
+@startuml
+title RECOVER SHIKIGAMI BACKUP - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/ShikigamiRecoveryOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "ShikigamiRecoveryOperator" as O
+participant "GuiOperator" as GO
+participant "GuiOperator" as GO
+participant "ButtonOperator" as BO
+participant "ShikigamiRecoveryDialog" as GUI
+participant "FileDialogWaiter" as FDW
+participant "FileDialogOperator" as FDO
+participant "ProcessWindowWaiter" as PW
+participant "ButtonOperator" as BO
+participant "ShikigamiRecoveryDialog" as GUI
+
+EX -> O : Recover(session, recoveryFilePath)
+activate O
+O -> EX : context.ShikigamiBackupDataFilePathから復旧元を決定
+O -> GO : GetMainWindow(session)
+O -> GO : GetMainElement(SHIKIGAMI_RECOVERY, Button)
+O -> BO : PostClick(button)
+O -> GUI : ファイル選択ダイアログを開く
+O -> FDW : WaitForFileDialog(session, mainWindow)
+O -> FDO : SelectLoadFile(fileDialogElements, recoveryFilePath)
+O -> PW : WaitForProcessWindow(ShikigamiRecoveryDialog)
+O -> BO : Click(recoveryForm, RECOVERY)
+O -> GUI : 式神データ復旧処理
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

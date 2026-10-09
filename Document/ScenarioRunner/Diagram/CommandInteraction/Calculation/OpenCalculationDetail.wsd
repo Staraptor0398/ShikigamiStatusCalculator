@@ -1,0 +1,20 @@
+@startuml
+title OPEN CALC DETAIL - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/CalculationDetailOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "CalculationDetailOperator" as O
+participant "GuiOperator" as GO
+participant "ButtonOperator" as BO
+participant "ResultViewForm" as GUI
+
+EX -> O : Open(session)
+activate O
+O -> O : resetResultViewCache()
+O -> GO : GetMainElement(CALC_DETAIL, Button)
+O -> BO : PostClick(button)
+O -> GUI : ResultViewFormを表示
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+title CLOSE GUI - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/GuiOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "GuiOperator" as O
+participant "Application / GuiSession" as APP
+
+EX -> O : Close(context)
+activate O
+O -> APP : Application.Close()
+O -> O : GuiSession.Dispose()
+O -> O : context.GuiSession = null
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

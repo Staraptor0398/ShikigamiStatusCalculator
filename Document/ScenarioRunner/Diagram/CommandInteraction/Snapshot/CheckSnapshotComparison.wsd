@@ -1,0 +1,22 @@
+@startuml
+title CHECK SNAPSHOT COMPARISON - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/SnapshotComparisonOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "SnapshotComparisonOperator" as O
+participant "DataGridViewOperator" as DGV
+participant "DataGridViewOperator" as DGV
+
+EX -> O : Check(session, statusName, expectedDifference)
+activate O
+O -> O : 比較結果ウィンドウが存在し利用可能であることを確認
+alt result rows not キャッシュあり
+O -> DGV : GetRowValues(mResultForm, COMPARISON_RESULT)
+O -> O : 比較結果の行データをキャッシュ
+end
+O -> DGV : GetCellValue(rows, statusName, column=1)
+O -> O : 実際の差分が期待差分と一致することを確認
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

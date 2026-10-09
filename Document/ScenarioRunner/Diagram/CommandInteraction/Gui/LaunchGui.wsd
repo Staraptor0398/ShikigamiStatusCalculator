@@ -1,0 +1,48 @@
+@startuml
+title LAUNCH GUI - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+participant "ScenarioCommandExecutor" as EX
+participant "GuiOperator" as GO
+participant "Application / GuiSession" as APP
+participant "非同期タスク (Task.Run)" as TASK
+participant "ProcessWindowWaiter" as PW
+participant "WindowOperator" as WO
+
+EX -> GO : Launch(context)
+activate GO
+GO -> GO : context、GuiSession、実行ファイルの存在を検証
+alt 起動条件を満たさない
+    GO --> EX : 例外を送出
+else 起動可能
+    GO -> APP : Application.Launch(guiExecutablePath)
+    APP --> GO : application
+    GO -> GO : UIA2Automation、GuiSessionを生成
+    GO -> GO : context.GuiSessionへ設定
+    GO --> EX : Launch完了
+end
+deactivate GO
+
+opt Launchが正常終了した場合
+    EX -> EX : startGuiWindowArrangement(context)
+    EX ->> TASK : Task.Run(ウィンドウ配置処理)
+    note over EX,TASK
+      Executorは非同期タスクの完了を待たずに
+      LAUNCH GUIコマンドの処理を終了する
+    end note
+    activate TASK
+    TASK -> GO : GetMainWindow(context.GuiSession)
+    activate GO
+    alt MainWindowがキャッシュ済み
+        GO -> GO : session.MainWindowを返す
+    else 未取得
+        GO -> PW : WaitForProcessWindow(session, MainForm判定)
+        PW --> GO : mainWindow
+        GO -> GO : session.MainWindowへキャッシュ
+    end
+    GO --> TASK : mainWindow
+    deactivate GO
+    TASK -> WO : SetBounds(mainWindow, context.GuiBounds)
+    WO --> TASK : 配置完了
+    deactivate TASK
+end
+@enduml

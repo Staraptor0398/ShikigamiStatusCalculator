@@ -1,0 +1,19 @@
+@startuml
+title SEL SHIKIGAMI - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/ShikigamiOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "ShikigamiOperator" as O
+participant "GuiOperator" as GO
+participant "ComboBoxOperator" as CO
+participant "MainForm" as GUI
+
+EX -> O : Select(session, shikigamiName)
+activate O
+O -> GO : GetMainElement(SHIKIGAMI, ComboBox)
+O -> CO : SelectItem(shikigamiElement, shikigamiName)
+O -> GUI : ComboBoxの選択変更イベント
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

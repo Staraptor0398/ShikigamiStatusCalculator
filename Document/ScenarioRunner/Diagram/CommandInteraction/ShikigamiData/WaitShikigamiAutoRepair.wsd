@@ -1,0 +1,60 @@
+@startuml
+title WAIT SHIKIGAMI AUTO REPAIR - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+participant "ScenarioCommandExecutor" as EX
+participant "ShikigamiDataWaiter" as W
+participant "File (System.IO)" as FS
+participant "Thread" as TH
+
+EX -> W : WaitForAutoRepair(context)
+activate W
+W -> W : contextとShikigamiDataFilePathを検証
+alt 引数が不正
+    W --> EX : ArgumentNullException / ArgumentException
+else 引数が有効
+    W -> W : elapsed=0、stableCount=0、前回サイズ=-1
+    W -> W : 前回更新日時=DateTime.MinValue
+    loop elapsed < 5000ms、100ms間隔
+        W -> W : isAutoRepairCompleted(...)
+        alt Broken側パスが空、またはファイルがない
+            W -> FS : Exists(ShikigamiBrokenDataFilePath)
+            FS --> W : false
+            W -> W : resetFileState(...)
+        else Broken側ファイルが存在
+            W -> FS : Exists(ShikigamiBrokenDataFilePath)
+            FS --> W : true
+            W -> FS : Exists(ShikigamiDataFilePath)
+            alt 対象ファイルがない
+                FS --> W : false
+                W -> W : resetFileState(...)
+            else 対象ファイルがある
+                FS --> W : true
+                W -> FS : File.Open(Read, FileShare.None)
+                alt IOException、またはサイズが0以下
+                    FS --> W : 読み取り失敗
+                    W -> W : resetFileState(...)
+                else 読み取り成功
+                    FS --> W : length
+                    W -> FS : GetLastWriteTimeUtc(filePath)
+                    FS --> W : lastWriteTimeUtc
+                    alt サイズまたは更新日時が変化
+                        W -> W : stableCount=0、前回値を更新
+                    else 前回値と一致
+                        W -> W : stableCount++
+                    end
+                end
+            end
+        end
+        alt 安定判定が成立（stableCount >= 3）
+            W --> EX : 正常終了（return）
+            note right of W : この経路では後続のSleep・例外処理を実行しない
+        else 未完了
+            W -> TH : Sleep(100ms)
+            TH --> W : 待機終了
+            W -> W : elapsed += 100
+        end
+    end
+    W --> EX : 5000ms経過時のみInvalidOperationException
+end
+deactivate W
+@enduml

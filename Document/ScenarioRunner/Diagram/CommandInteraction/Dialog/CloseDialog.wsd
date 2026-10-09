@@ -1,0 +1,25 @@
+@startuml
+title CLOSE DIALOG - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/DialogOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "DialogOperator" as O
+participant "ButtonOperator" as BO
+participant "WindowWaiter" as WW
+
+EX -> O : Close(session)
+activate O
+alt キャッシュあり dialog exists
+O -> O : 直前に確認したダイアログとボタンを再利用
+else no キャッシュあり dialog
+O -> O : GetActiveDialog(session)
+O -> O : tryInspectDialog(dialog)
+end
+O -> O : OKボタンを優先し、なければInvoke可能なボタンを選択
+O -> BO : Click(button)
+O -> WW : WaitForWindowClosed(dialog)
+O -> O : ダイアログのキャッシュをクリア
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

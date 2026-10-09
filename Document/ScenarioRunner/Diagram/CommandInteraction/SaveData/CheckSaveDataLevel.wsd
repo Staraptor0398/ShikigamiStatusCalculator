@@ -1,0 +1,33 @@
+@startuml
+title CHECK SAVEDATA LEVEL - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/SaveDataOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "SaveDataOperator" as O
+participant "GuiOperator" as GO
+participant "ButtonOperator" as BO
+participant "ProcessWindowWaiter" as PW
+participant "ComboBoxOperator" as CO
+participant "ButtonOperator" as BO
+participant "WindowWaiter" as WW
+
+EX -> O : CheckSaveDataLevel(context, expectedLevel)
+activate O
+O -> GO : GetMainElement(SAVE, Button)
+O -> O : IsEnabledを取得
+alt expectedLevel == NONE（保存不可）
+O -> O : 保存ボタンが無効であることを確認して終了
+else expectedLevel != NONE（保存不可）
+O -> O : 保存ボタンが有効であることを確認
+O -> O : getExpectedSaveTypes(expectedLevel)
+O -> BO : PostClick(saveButton)
+O -> PW : WaitForProcessWindow(SaveDataSaveDialog)
+O -> CO : GetItems(SAVE_TYPE)
+O -> O : 保存種別一覧が期待値と一致することを確認
+O -> BO : Click(CANCEL)（finally内）
+O -> WW : WaitForWindowClosed(saveDialog)
+end
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

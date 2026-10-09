@@ -1,0 +1,19 @@
+@startuml
+title RELOAD SHIKIGAMI - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/ShikigamiDataOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "ShikigamiDataOperator" as O
+participant "GuiOperator" as GO
+participant "ButtonOperator" as BO
+participant "MainForm" as GUI
+
+EX -> O : Reload(session)
+activate O
+O -> GO : GetMainElement(RELOAD_SHIKIGAMI, Button)
+O -> BO : Click(button)
+O -> GUI : ShikigamiData.csvを再読込
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

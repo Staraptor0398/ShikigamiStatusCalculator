@@ -1,0 +1,22 @@
+@startuml
+title OPEN GUI - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/GuiOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "GuiOperator" as O
+participant "Application / GuiSession" as APP
+participant "ProcessWindowWaiter" as PW
+participant "WindowOperator" as WO
+
+EX -> O : Open(context)
+activate O
+O -> O : Launch(context)
+O -> APP : Application.Launch(guiExecutablePath)
+O -> O : GuiSessionを生成
+O -> O : GetMainWindow(session)
+O -> PW : WaitForProcessWindow(MainForm)
+O -> WO : SetBounds(mainWindow, context.GuiBounds)
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

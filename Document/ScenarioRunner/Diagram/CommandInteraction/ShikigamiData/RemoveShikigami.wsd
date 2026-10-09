@@ -1,0 +1,24 @@
+@startuml
+title REMOVE SHIKIGAMI - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/ShikigamiDataOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "ShikigamiDataOperator" as O
+participant "ShikigamiDataFileOperator" as FO
+participant "ShikigamiDataFileOperator" as FO
+
+EX -> O : RemoveShikigami(context, name)
+activate O
+O -> O : getShikigamiDataPath(context)
+O -> FO : ReadAllLines(ShikigamiData.csv)
+loop data lines after header
+O -> O : CSVの第2列が式神名と一致する行を除外
+end
+alt no matching row
+O -> O : throw InvalidOperationException
+end
+O -> FO : WriteAllLines(filePath, remainingLines)
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

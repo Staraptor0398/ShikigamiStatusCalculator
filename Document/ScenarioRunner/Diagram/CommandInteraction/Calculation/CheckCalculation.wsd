@@ -1,0 +1,29 @@
+@startuml
+title CHECK CALC - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/CalculationOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "CalculationOperator" as O
+participant "GuiOperator" as GO
+participant "TextBoxOperator" as TO
+participant "GuiOperator" as GO
+participant "ComboBoxOperator" as CO
+participant "GuiOperator" as GO
+participant "TextBoxOperator" as TO
+
+EX -> O : Check(session)
+activate O
+O -> GO : GetMainElement(MITAMA_ONLY)
+O -> TO : GetText(element)
+O -> O : 空文字・空白でないことを確認
+O -> GO : GetMainElement(SHIKIGAMI, ComboBox)
+O -> CO : HasSelectedItem(element)
+alt 式神が選択されている
+O -> GO : GetMainElement(FINAL_STATS)
+O -> TO : GetText(element)
+O -> O : 空文字・空白でないことを確認
+end
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

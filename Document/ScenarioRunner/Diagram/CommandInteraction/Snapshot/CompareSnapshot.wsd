@@ -1,0 +1,39 @@
+@startuml
+title COMPARE SNAPSHOT - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/SnapshotComparisonOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "SnapshotComparisonOperator" as O
+participant "GuiOperator" as GO
+participant "ButtonOperator" as BO
+participant "ProcessWindowWaiter" as PW
+participant "ButtonOperator" as BO
+participant "FileDialogWaiter" as FDW
+participant "FileDialogOperator" as FDO
+participant "ButtonOperator" as BO
+participant "FileDialogWaiter" as FDW
+participant "FileDialogOperator" as FDO
+participant "ButtonOperator" as BO
+participant "ProcessWindowWaiter" as PW
+
+EX -> O : Compare(context, basePath, targetPath)
+activate O
+O -> O : 比較結果のキャッシュをクリア
+O -> GO : GetMainElement(COMPARE_SNAPSHOT, Button)
+O -> BO : PostClick(compareSnapshotButton)
+O -> PW : WaitForProcessWindow(SnapshotCompareFileSelectDialog)
+O -> O : ファイル選択ダイアログの子要素からAutomationElementMapを生成
+O -> BO : PostClick(BROWSE_BASE_SNAPSHOT)
+O -> FDW : WaitForFileDialog(session, fileSelectDialog)
+O -> FDO : SelectLoadFile(basePath)
+O -> BO : PostClick(BROWSE_TARGET_SNAPSHOT)
+O -> FDW : WaitForFileDialog(session, fileSelectDialog)
+O -> FDO : SelectLoadFile(targetPath)
+O -> O : waitForEnabled(COMPARE)（100ms間隔、最大5秒）
+O -> BO : PostClick(COMPARE)
+O -> PW : WaitForProcessWindow(StatusComparisonResultForm)
+O -> O : 比較結果フォームをキャッシュ
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

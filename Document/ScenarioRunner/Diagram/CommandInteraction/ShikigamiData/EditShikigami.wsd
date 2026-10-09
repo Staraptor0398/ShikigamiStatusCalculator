@@ -1,0 +1,36 @@
+@startuml
+title EDIT SHIKIGAMI - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/ShikigamiEditOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "ShikigamiEditOperator" as O
+participant "GuiOperator" as GO
+participant "ProcessWindowWaiter" as PW
+participant "ComboBoxOperator" as CO
+participant "ComboBoxOperator" as CO
+participant "TextBoxOperator" as TO
+participant "ButtonOperator" as BO
+participant "ShikigamiRegisterForm" as GUI
+
+EX -> O : Edit(context, filePath)
+activate O
+O -> O : context.ResolvePath(filePath)
+O -> O : JSONを読み込み、必須項目を検証
+O -> GO : GetMainWindow(session)
+O -> PW : WaitForProcessWindow(ShikigamiRegisterForm)（キャッシュがあれば再利用）
+O -> O : 編集フォームのAutomationElementMapを生成
+alt レアリティが空
+O -> CO : ClearSelection(rarity)
+else レアリティが指定されている
+O -> CO : SelectItem(rarity)
+end
+loop Name and eight numeric/stat fields
+O -> TO : SetText(form field, inputData value)
+end
+O -> BO : PostClick(REGISTER button)
+O -> GUI : 更新イベント処理
+O -> O : resetEditFormCache()
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

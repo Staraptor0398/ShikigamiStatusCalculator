@@ -1,0 +1,24 @@
+@startuml
+title CHECK CALC DETAIL - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/CalculationDetailOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "CalculationDetailOperator" as O
+participant "GuiOperator" as GO
+participant "ProcessWindowWaiter" as PW
+participant "TextBoxOperator" as TO
+participant "TextBoxOperator" as TO
+
+EX -> O : Check(session)
+activate O
+O -> O : getResultViewElementMap(session)
+O -> GO : GetMainWindow(session)
+O -> PW : WaitForProcessWindow(ResultViewForm)（キャッシュがなければ）
+O -> TO : GetText(MITAMA_STATUS)
+O -> O : 空文字・空白でないことを確認
+O -> TO : GetText(FINAL_STATUS)
+O -> O : 空文字・空白でないことを確認
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml

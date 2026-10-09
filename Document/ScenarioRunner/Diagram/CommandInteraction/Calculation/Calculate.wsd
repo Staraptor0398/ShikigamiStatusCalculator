@@ -1,0 +1,19 @@
+@startuml
+title CALC - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/CalculationOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "CalculationOperator" as O
+participant "GuiOperator" as GO
+participant "ButtonOperator" as BO
+participant "MainForm" as GUI
+
+EX -> O : Calculate(session)
+activate O
+O -> GO : GetMainElement(CALCULATE, Button)
+O -> BO : Click(button)
+O -> GUI : 計算ボタンのイベント処理
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml
