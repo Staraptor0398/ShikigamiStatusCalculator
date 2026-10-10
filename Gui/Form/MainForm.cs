@@ -345,11 +345,6 @@ namespace Gui.Form
 		{
 			updateSaveButtonEnabled();
 
-			if (mLastCalculationResult == null)
-			{
-				return;
-			}
-
 			if (mIsCalculationResultDirty)
 			{
 				return;
@@ -357,7 +352,7 @@ namespace Gui.Form
 
 			mIsCalculationResultDirty = true;
 
-			Logger.Info("Operation=ステータス計算結果状態変更 Message=入力内容が変更されたため、前回の計算結果を無効化しました。");
+			Logger.Info("Operation=ステータス計算結果状態変更 Message=入力内容が変更されたため、計算結果をDirty状態に変更しました。");
 		}
 
 		private StatusDto getSelectedShikigamiStatus()
@@ -984,6 +979,8 @@ namespace Gui.Form
 			}
 
 			clearInputs();
+
+			deleteLastCalculationResult();
 			markCalculationResultDirty();
 		}
 
@@ -1039,6 +1036,16 @@ namespace Gui.Form
 		{
 			txtMitamaOnly.Text = "";
 			txtFinalStats.Text = "";
+		}
+
+		private void deleteLastCalculationResult()
+		{
+
+			mLastCalculationResult = null;
+
+#if DEBUG
+			mLastCalculationTestSource = null;
+#endif
 		}
 
 		/****************************************************************************************************
