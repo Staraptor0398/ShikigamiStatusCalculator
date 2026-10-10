@@ -5,3 +5,15 @@
 # 作業ツリーへのチェックアウト時にはCRLFに変換する。
 
 *.scenario text eol=crlf
+
+# PlantUML
+#
+# PlantUMLソースの改行コードをLFに統一する。
+
+*.wsd text eol=lf
+
+# Markdown
+#
+# Markdownファイルの改行コードをLFに統一する。
+
+*.md text eol=lf
