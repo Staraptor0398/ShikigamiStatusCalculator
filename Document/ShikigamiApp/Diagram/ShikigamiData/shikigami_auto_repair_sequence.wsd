@@ -110,7 +110,7 @@ else 読込失敗
    else 修復後も読込失敗
        ShikigamiDataErrorHandler -> ShikigamiDataErrorHandler : エラー表示
        ShikigamiDataErrorHandler --> MainForm : true
-       MainForm -> MainForm : _shikigamiList = 空リスト
+       MainForm -> MainForm : mShikigamiList = 空リスト
    end
 end
 

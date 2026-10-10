@@ -1,8 +1,7 @@
-​@startuml
+@startuml
 title ShikigamiApp SaveData 保存可能対象
 
 hide empty description
-
 skinparam shadowing false
 
 ' ============================================================
@@ -39,38 +38,32 @@ SnapshotAvailable : ・CalculationSnapshot
 ' Save button availability
 ' ============================================================
 Unavailable --> MitamaSetOnly : 御魂を1つ以上装備\n[式神未選択]
-
 Unavailable --> BuildAvailable : 御魂を1つ以上装備\n[式神選択済み]
 
 MitamaSetOnly --> Unavailable : 装備中の御魂が0になる
-
 BuildAvailable --> Unavailable : 装備中の御魂が0になる
-
 SnapshotAvailable --> Unavailable : 装備中の御魂が0になる
 
 ' ============================================================
 ' Shikigami selection
 ' ============================================================
 MitamaSetOnly --> BuildAvailable : 式神を選択
-
 BuildAvailable --> MitamaSetOnly : 式神選択を解除
-
-SnapshotAvailable --> MitamaSetOnly : 式神選択を解除\n/ 計算結果をDirty化
+SnapshotAvailable --> MitamaSetOnly : 式神選択を解除\n/ Dirty化
 
 ' ============================================================
 ' Calculation result
 ' ============================================================
-BuildAvailable --> SnapshotAvailable : ステータス計算成功\n/ 計算結果をClean化
+BuildAvailable --> SnapshotAvailable : 式神ありで計算成功\n/ Clean化
+SnapshotAvailable --> BuildAvailable : 計算入力を変更\n[式神選択を維持] / Dirty化
 
-SnapshotAvailable --> BuildAvailable : 計算入力を変更\n/ 計算結果をDirty化
+MitamaSetOnly --> MitamaSetOnly : 御魂のみで計算成功\n/ Dirty状態は維持
 
 ' ============================================================
-' Additional transitions caused by input changes
+' Save operations
 ' ============================================================
 SnapshotAvailable --> SnapshotAvailable : 保存実行\n[入力内容に変更なし]
-
 BuildAvailable --> BuildAvailable : 保存実行
-
 MitamaSetOnly --> MitamaSetOnly : 保存実行
 
 ' ============================================================
@@ -99,17 +92,18 @@ note right of SnapshotAvailable
 SaveDataSaveLevel:
 SNAPSHOT_AVAILABLE
 
-_lastCalculationResult != null
+mLastCalculationResult != null
 かつ
-_isCalculationResultDirty == false
+mIsCalculationResultDirty == false
 
 の場合に到達する。
 end note
 
 note bottom of SnapshotAvailable
-計算後に式神または御魂入力を変更すると
-markCalculationResultDirty() により
-Snapshot保存不可へ戻る。
+Dirty / Cleanは計算結果の有無とは独立する。
+入力変更時は計算結果を保持したままDirty化する。
+結果詳細表示はDirty状態に関係なく、
+計算結果の有無で判定する。
 end note
 
 @enduml

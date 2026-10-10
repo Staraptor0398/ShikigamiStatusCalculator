@@ -9,6 +9,8 @@ rectangle "ShikigamiApp" {
    usecase "式神を選択する" as UC_SelectShikigami
    usecase "御魂情報を入力する" as UC_InputMitama
    usecase "最終ステータスを計算する" as UC_Calculate
+   usecase "計算結果詳細を表示する" as UC_ShowCalculationDetail
+   usecase "入力と計算結果をクリアする" as UC_Clear
 
    usecase "データを保存する" as UC_Save
    usecase "保存データを読み込む" as UC_Load
@@ -35,6 +37,8 @@ rectangle "ShikigamiApp" {
 User --> UC_SelectShikigami
 User --> UC_InputMitama
 User --> UC_Calculate
+User --> UC_ShowCalculationDetail
+User --> UC_Clear
 User --> UC_Save
 User --> UC_Load
 User --> UC_CompareSnapshot
@@ -43,7 +47,7 @@ User --> UC_ManageShikigami
 ' ============================================================
 ' Calculation
 ' ============================================================
-UC_Calculate .> UC_SelectShikigami : <<include>>
+' 式神選択は任意。式神未選択でも御魂のみの計算が可能。
 UC_Calculate .> UC_InputMitama : <<include>>
 
 ' ============================================================
@@ -58,7 +62,6 @@ UC_Save <|-- UC_SaveSnapshot
 ' ============================================================
 UC_Load <|-- UC_LoadBuild
 UC_Load <|-- UC_LoadMitamaSet
-UC_Load <|-- UC_LoadSnapshot
 
 ' ============================================================
 ' Snapshot comparison
