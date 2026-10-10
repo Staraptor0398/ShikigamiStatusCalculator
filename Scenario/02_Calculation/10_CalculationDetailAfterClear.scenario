@@ -1,0 +1,37 @@
+# CalculationDetailAfterClear.scenario
+#
+# 計算実行後にCLEARした場合、
+# 前回の計算結果が内部状態から破棄されることを確認する。
+#
+# CLEAR後に計算結果詳細画面を開こうとしても、
+# 前回の計算結果が表示されず、
+# 計算実行を促すダイアログが表示されることを確認する。
+
+START
+
+OPEN GUI
+
+# 計算条件を設定する
+SEL SHIKIGAMI "願紡縁結神"
+LOAD MITAMA "TestData/Valid.mitama.json"
+
+# 計算結果を生成する
+CALC
+CHECK CALC
+
+# 入力内容と計算結果をクリアする
+CLEAR
+CHECK CLEARED
+
+# CLEAR後に計算結果詳細表示を要求する
+OPEN CALC DETAIL
+
+# 前回の計算結果が破棄されていることを確認する
+CHECK DIALOG "先に計算を実行してください。"
+
+# 案内ダイアログを閉じる
+CLOSE DIALOG
+
+CLOSE GUI
+
+END
