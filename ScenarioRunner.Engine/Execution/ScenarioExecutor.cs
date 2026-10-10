@@ -55,15 +55,9 @@ namespace ScenarioRunner.Execution
 				Directory.CreateDirectory(brokenDirectoryPath);
 				Directory.CreateDirectory(backupDirectoryPath);
 
-				using (var brokenWatcher = new ShikigamiDataFileWatcher(brokenDirectoryPath))
-				using (var backupWatcher = new ShikigamiDataFileWatcher(backupDirectoryPath))
+				using (var brokenWatcher = requiresBrokenWatcher(scenario) ? createAndStartWatcher(brokenDirectoryPath, path => context.ShikigamiBrokenDataFilePath = path) : null)
+				using (var backupWatcher = requiresBackupWatcher(scenario) ? createAndStartWatcher(backupDirectoryPath, path => context.ShikigamiBackupDataFilePath = path) : null)
 				{
-					brokenWatcher.FileCreated += path => context.ShikigamiBrokenDataFilePath = path;
-					backupWatcher.FileCreated += path => context.ShikigamiBackupDataFilePath = path;
-
-					brokenWatcher.Start();
-					backupWatcher.Start();
-
 					int passedCount = 0;
 
 					mLogger.ScenarioStarted(scenario);
@@ -139,6 +133,55 @@ namespace ScenarioRunner.Execution
 		public void Stop()
 		{
 			mCancellationTokenSource?.Cancel();
+		}
+
+		private static bool requiresBrokenWatcher(Scenario scenario)
+		{
+			foreach (ScenarioStep step in scenario.Steps)
+			{
+				if (step.CommandType == ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR)
+				{
+					return true;
+				}
+
+				if (step.CommandType == ScenarioCommandType.RECOVER_SHIKIGAMI && step.Arguments[0] == "BROKEN")
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private static bool requiresBackupWatcher(Scenario scenario)
+		{
+			foreach (ScenarioStep step in scenario.Steps)
+			{
+				if (step.CommandType == ScenarioCommandType.RECOVER_SHIKIGAMI && step.Arguments[0] == "BACKUP")
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private static ShikigamiDataFileWatcher createAndStartWatcher(string directoryPath, Action<string> onFileCreated)
+		{
+			var watcher = new ShikigamiDataFileWatcher(directoryPath);
+
+			try
+			{
+				watcher.FileCreated += onFileCreated;
+				watcher.Start();
+
+				return watcher;
+			}
+			catch
+			{
+				watcher.Dispose();
+				throw;
+			}
 		}
 
 		private string tryCaptureFailureScreenshot(string scenarioPath, int lineNumber, out string errorMessage)
