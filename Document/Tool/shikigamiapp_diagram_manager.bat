@@ -5,7 +5,7 @@ rem ============================================================
 rem  1. ÉpÉXê›íË
 rem ============================================================
 set "SCRIPT_DIR=%~dp0"
-set "DIAGRAM_DIR=%SCRIPT_DIR%..\Diagram"
+set "DIAGRAM_DIR=%SCRIPT_DIR%..\ShikigamiApp\Diagram"
 set "GENERATOR=%SCRIPT_DIR%generate_pdf.bat"
 
 if not exist "%DIAGRAM_DIR%" (
