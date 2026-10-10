@@ -21,7 +21,7 @@ OPEN GUI
 # 再起動後のGui.exeが正常に操作できることを確認するため、
 # 式神と御魂セットを設定する
 SEL SHIKIGAMI "願紡縁結神"
-LOAD MITAMA "../Calculation/TestData/Valid.mitama.json"
+LOAD MITAMA "../02_Calculation/TestData/Valid.mitama.json"
 
 # 再起動後も正常に計算できることを確認する
 CALC

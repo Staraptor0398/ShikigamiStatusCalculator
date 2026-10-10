@@ -17,7 +17,7 @@ OPEN GUI
 SEL SHIKIGAMI "願紡縁結神"
 
 # 正常な御魂セットを読み込む
-LOAD MITAMA "../Calculation/TestData/Valid.mitama.json"
+LOAD MITAMA "../02_Calculation/TestData/Valid.mitama.json"
 
 # BASE用の計算結果を作成する
 CALC

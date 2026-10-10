@@ -23,7 +23,7 @@ OPEN GUI
 CHECK SAVEDATA LEVEL NONE
 
 # 御魂セットのみを入力する
-LOAD MITAMA "../Calculation/TestData/Valid.mitama.json"
+LOAD MITAMA "../02_Calculation/TestData/Valid.mitama.json"
 
 # 式神が未選択のため、
 # 御魂セット保存データのみ保存可能であることを確認する
