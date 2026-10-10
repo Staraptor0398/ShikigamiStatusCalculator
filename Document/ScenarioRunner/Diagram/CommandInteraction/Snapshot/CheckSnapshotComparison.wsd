@@ -6,7 +6,6 @@ skinparam responseMessageBelowArrow true
 participant "ScenarioCommandExecutor" as EX
 participant "SnapshotComparisonOperator" as O
 participant "DataGridViewOperator" as DGV
-participant "DataGridViewOperator" as DGV
 
 EX -> O : Check(session, statusName, expectedDifference)
 activate O

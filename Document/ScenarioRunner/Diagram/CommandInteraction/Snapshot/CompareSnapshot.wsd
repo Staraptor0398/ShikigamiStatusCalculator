@@ -8,14 +8,8 @@ participant "SnapshotComparisonOperator" as O
 participant "GuiOperator" as GO
 participant "ButtonOperator" as BO
 participant "ProcessWindowWaiter" as PW
-participant "ButtonOperator" as BO
 participant "FileDialogWaiter" as FDW
 participant "FileDialogOperator" as FDO
-participant "ButtonOperator" as BO
-participant "FileDialogWaiter" as FDW
-participant "FileDialogOperator" as FDO
-participant "ButtonOperator" as BO
-participant "ProcessWindowWaiter" as PW
 
 EX -> O : Compare(context, basePath, targetPath)
 activate O

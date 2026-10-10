@@ -9,10 +9,8 @@ participant "GuiOperator" as GO
 participant "ButtonOperator" as BO
 participant "ProcessWindowWaiter" as PW
 participant "ComboBoxOperator" as CO
-participant "ButtonOperator" as BO
 participant "FileDialogWaiter" as FDW
 participant "FileDialogOperator" as FDO
-participant "ButtonOperator" as BO
 participant "WindowWaiter" as WW
 
 EX -> O : SaveSnapshot(context, TARGET)

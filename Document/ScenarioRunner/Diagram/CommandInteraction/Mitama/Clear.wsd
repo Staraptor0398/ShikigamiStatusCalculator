@@ -9,7 +9,6 @@ participant "GuiOperator" as GO
 participant "ButtonOperator" as BO
 participant "MainForm" as GUI
 participant "DialogOperator" as DO
-participant "ButtonOperator" as BO
 participant "Application / GuiSession" as APP
 
 EX -> O : Clear(session)

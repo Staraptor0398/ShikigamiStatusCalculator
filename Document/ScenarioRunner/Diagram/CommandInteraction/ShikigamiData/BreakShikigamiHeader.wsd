@@ -6,7 +6,6 @@ skinparam responseMessageBelowArrow true
 participant "ScenarioCommandExecutor" as EX
 participant "ShikigamiDataOperator" as O
 participant "ShikigamiDataFileOperator" as FO
-participant "ShikigamiDataFileOperator" as FO
 
 EX -> O : BreakHeader(context)
 activate O

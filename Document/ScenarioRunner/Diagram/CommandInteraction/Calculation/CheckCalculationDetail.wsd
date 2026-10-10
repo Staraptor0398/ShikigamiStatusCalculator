@@ -8,7 +8,6 @@ participant "CalculationDetailOperator" as O
 participant "GuiOperator" as GO
 participant "ProcessWindowWaiter" as PW
 participant "TextBoxOperator" as TO
-participant "TextBoxOperator" as TO
 
 EX -> O : Check(session)
 activate O

@@ -6,14 +6,11 @@ skinparam responseMessageBelowArrow true
 participant "ScenarioCommandExecutor" as EX
 participant "ShikigamiRecoveryOperator" as O
 participant "GuiOperator" as GO
-participant "GuiOperator" as GO
 participant "ButtonOperator" as BO
 participant "ShikigamiRecoveryDialog" as GUI
 participant "FileDialogWaiter" as FDW
 participant "FileDialogOperator" as FDO
 participant "ProcessWindowWaiter" as PW
-participant "ButtonOperator" as BO
-participant "ShikigamiRecoveryDialog" as GUI
 
 EX -> O : Recover(session, recoveryFilePath)
 activate O

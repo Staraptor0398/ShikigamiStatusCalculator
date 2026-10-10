@@ -9,11 +9,8 @@ participant "ShikigamiOperator" as SO
 participant "GuiOperator" as GO
 participant "ComboBoxOperator" as CO
 participant "ShikigamiEditOperator" as EO
-participant "GuiOperator" as GO
 participant "ButtonOperator" as BO
-participant "ShikigamiEditOperator" as EO
 participant "ProcessWindowWaiter" as PW
-participant "ButtonOperator" as BO
 participant "WindowWaiter" as WW
 participant "Application / GuiSession" as APP
 

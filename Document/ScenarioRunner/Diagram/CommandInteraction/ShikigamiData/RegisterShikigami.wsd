@@ -8,7 +8,6 @@ participant "ShikigamiRegisterOperator" as O
 participant "GuiOperator" as GO
 participant "ProcessWindowWaiter" as PW
 participant "ComboBoxOperator" as CO
-participant "ComboBoxOperator" as CO
 participant "TextBoxOperator" as TO
 participant "ButtonOperator" as BO
 participant "ShikigamiRegisterForm" as GUI

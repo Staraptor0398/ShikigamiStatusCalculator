@@ -7,10 +7,7 @@ participant "ScenarioCommandExecutor" as EX
 participant "CalculationOperator" as O
 participant "GuiOperator" as GO
 participant "TextBoxOperator" as TO
-participant "GuiOperator" as GO
 participant "ComboBoxOperator" as CO
-participant "GuiOperator" as GO
-participant "TextBoxOperator" as TO
 
 EX -> O : Check(session)
 activate O
