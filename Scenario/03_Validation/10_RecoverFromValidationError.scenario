@@ -1,0 +1,49 @@
+# RecoverFromValidationError.scenario
+#
+# サブステータスに不正な数値が入力された状態で計算を実行し、
+# Validationエラーが表示されることを確認する。
+#
+# エラーダイアログを閉じた後、不正な数値を正常な値に修正し、
+# 同じGuiセッションで再計算できることを確認する。
+#
+# Validationエラー発生後も入力状態が維持され、
+# Guiの再起動や入力内容のクリアを行わずに
+# 正常な計算へ復帰できることを検証する。
+
+START
+
+OPEN GUI
+
+# 計算対象の式神を選択する
+SEL SHIKIGAMI "願紡縁結神"
+
+# 1番御魂にメインステータスを設定する
+EQUIP MITAMA MAIN 1 "攻撃力"
+
+# サブステータスを3個設定する
+# 1個目のみ不正な数値を設定する
+EQUIP MITAMA SUB 1 1 "追加攻撃力" "abc"
+EQUIP MITAMA SUB 1 2 "会心率" "3"
+EQUIP MITAMA SUB 1 3 "会心DMG" "8"
+
+# 不正な入力状態で計算を実行する
+CALC
+
+# 数値のValidationエラーが表示されることを確認する
+CHECK DIALOG "数値欄に数値として扱えない文字が入力されています。"
+
+# エラーダイアログを閉じる
+CLOSE DIALOG
+
+# 不正なサブステータス値を正常な数値に修正する
+EQUIP MITAMA SUB 1 1 "追加攻撃力" "5"
+
+# Guiを再起動せず、修正後の入力状態で再計算する
+CALC
+
+# Validationエラーから復帰し、計算結果が表示されることを確認する
+CHECK CALC
+
+CLOSE GUI
+
+END
