@@ -1,0 +1,7 @@
+# Scenario Runner
+#
+# シナリオファイルの改行コードをCRLFに統一する。
+# Gitリポジトリ内部ではLFに正規化し、
+# 作業ツリーへのチェックアウト時にはCRLFに変換する。
+
+*.scenario text eol=crlf
