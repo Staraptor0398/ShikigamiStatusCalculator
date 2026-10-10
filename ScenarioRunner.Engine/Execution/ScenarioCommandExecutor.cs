@@ -52,7 +52,10 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.LAUNCH_GUI:
 					mGuiOperator.Launch(context);
 
-					startGuiWindowArrangement(context);
+					if (context.Options.ArrangeGuiWindow)
+					{
+						startGuiWindowArrangement(context);
+					}
 					return;
 				case ScenarioCommandType.OPEN_GUI:
 					mGuiOperator.Open(context);

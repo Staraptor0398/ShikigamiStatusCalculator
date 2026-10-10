@@ -54,7 +54,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window mainWindow = GetMainWindow(context.GuiSession);
 
-			mWindowOperator.SetBounds(mainWindow, context.GuiBounds);
+			if (context.Options.ArrangeGuiWindow)
+			{
+				mWindowOperator.SetBounds(mainWindow, context.GuiBounds);
+			}
 		}
 
 		public void Close(ScenarioExecutonContext context)

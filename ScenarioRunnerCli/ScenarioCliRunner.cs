@@ -39,7 +39,7 @@ namespace ScenarioRunnerCli
 
 					WindowBounds guiBounds = createGuiBounds();
 					var executor = new ScenarioExecutor(logger, resolvedGuiExecutablePath, guiBounds);
-					var executionOptions = new ScenarioExecutionOptions(false, cleanupGuiOnExit);
+					var executionOptions = new ScenarioExecutionOptions(false, cleanupGuiOnExit, false);
 					ScenarioExecutionResult result = executor.Execute(scenario, executionOptions);
 
 					return result.IsSuccess;
