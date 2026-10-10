@@ -1,7 +1,7 @@
 @echo off
 
 call "%~dp0diagram_manager_core.bat" ^
-    "ShikigamiApp" ^
-    "%~dp0..\ShikigamiApp\Diagram"
+    "ShikigamiDataAuditor" ^
+    "%~dp0..\ShikigamiDataAuditor\Diagram"
 
 exit /b %errorlevel%
