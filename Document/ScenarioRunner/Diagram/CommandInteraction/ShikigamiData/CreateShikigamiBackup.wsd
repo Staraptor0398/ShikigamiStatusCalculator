@@ -3,6 +3,8 @@ title CREATE SHIKIGAMI BACKUP - コマンド相互作用図
 skinparam responseMessageBelowArrow true
 ' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
 ' Source: ScenarioRunner.Engine/Automation/Operator/Feature/ShikigamiDataOperator.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/ShikigamiOperator.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/ShikigamiEditOperator.cs
 participant "ScenarioCommandExecutor" as EX
 participant "ShikigamiDataOperator" as O
 participant "ShikigamiOperator" as SO
@@ -16,17 +18,33 @@ participant "Application / GuiSession" as APP
 
 EX -> O : CreateBackup(session)
 activate O
+
 O -> SO : SelectFirst(session)
-O -> GO : GetMainElement(SHIKIGAMI, ComboBox)
-O -> CO : SelectFirstItem(element)
+activate SO
+SO -> GO : GetMainElement(SHIKIGAMI, ComboBox)
+SO -> CO : SelectFirstItem(element)
+SO --> O : 処理完了
+deactivate SO
+
 O -> EO : Open(session)
-O -> GO : GetMainElement(EDIT_SHIKIGAMI, Button)
-O -> BO : PostClick(button)
+activate EO
+EO -> EO : resetEditFormCache()
+EO -> GO : GetMainElement(EDIT_SHIKIGAMI, Button)
+EO -> BO : PostClick(button)
+EO --> O : 処理完了
+deactivate EO
+
 O -> EO : Save(session)
-O -> PW : WaitForProcessWindow(ShikigamiRegisterForm)
-O -> BO : Click(REGISTER button)
-O -> WW : WaitForWindowClosed(editForm)
-O -> APP : WaitWhileBusy(5s)
+activate EO
+EO -> GO : GetMainWindow(session)
+EO -> PW : WaitForProcessWindow(ShikigamiRegisterForm)
+EO -> BO : Click(editForm, REGISTER)
+EO -> WW : WaitForWindowClosed(editForm)
+EO -> EO : resetEditFormCache()
+EO -> APP : WaitWhileBusy(5s)
+EO --> O : 処理完了
+deactivate EO
+
 O --> EX : 処理完了（失敗時は例外）
 deactivate O
 @enduml

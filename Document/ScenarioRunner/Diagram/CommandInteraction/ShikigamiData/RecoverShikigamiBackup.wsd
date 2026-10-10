@@ -12,9 +12,9 @@ participant "FileDialogWaiter" as FDW
 participant "FileDialogOperator" as FDO
 participant "ProcessWindowWaiter" as PW
 
+EX -> EX : context.ShikigamiBackupDataFilePathから復旧元を決定
 EX -> O : Recover(session, recoveryFilePath)
 activate O
-O -> EX : context.ShikigamiBackupDataFilePathから復旧元を決定
 O -> GO : GetMainWindow(session)
 O -> GO : GetMainElement(SHIKIGAMI_RECOVERY, Button)
 O -> BO : PostClick(button)

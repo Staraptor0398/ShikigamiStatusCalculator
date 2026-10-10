@@ -17,7 +17,7 @@ O -> GO : GetMainElement(SAVE, Button)
 O -> O : IsEnabledを取得
 alt expectedLevel == NONE（保存不可）
 O -> O : 保存ボタンが無効であることを確認して終了
-else expectedLevel != NONE（保存不可）
+else expectedLevel != NONE（保存可能）
 O -> O : 保存ボタンが有効であることを確認
 O -> O : getExpectedSaveTypes(expectedLevel)
 O -> BO : PostClick(saveButton)
