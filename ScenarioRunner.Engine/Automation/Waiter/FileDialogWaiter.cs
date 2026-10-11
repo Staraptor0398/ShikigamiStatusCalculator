@@ -1,5 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
+using FlaUI.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -130,7 +131,28 @@ namespace ScenarioRunner.Automation.Waiter
 
 			foreach (IntPtr windowHandle in windowHandles)
 			{
-				AutomationElement candidate = session.Automation.FromHandle(windowHandle);
+				AutomationElement candidate;
+
+				try
+				{
+					candidate = session.Automation.FromHandle(windowHandle);
+				}
+				catch (PropertyNotSupportedException)
+				{
+					continue;
+				}
+				catch (ElementNotAvailableException)
+				{
+					continue;
+				}
+				catch (System.Windows.Automation.ElementNotAvailableException)
+				{
+					continue;
+				}
+				catch (COMException)
+				{
+					continue;
+				}
 
 				if (candidate != null)
 				{
