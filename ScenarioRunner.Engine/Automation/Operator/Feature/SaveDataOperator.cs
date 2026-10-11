@@ -171,31 +171,52 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			GuiSession session = context.GuiSession;
 
-			AutomationElement mainLoadButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.LOAD, ControlType.Button);
+			string stage = "OpenLoadDialog";
 
-			mButtonOperator.PostClick(mainLoadButton);
+			try
+			{
+				AutomationElement mainLoadButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.LOAD, ControlType.Button);
 
-			Window loadDialog = getLoadDialog(session);
+				mButtonOperator.PostClick(mainLoadButton);
 
-			var elementMap = new AutomationElementMap(loadDialog.FindAllChildren());
+				Window loadDialog = getLoadDialog(session);
 
-			AutomationElement loadTypeElement = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD_TYPE, ControlType.ComboBox);
-			AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.BROWSE, ControlType.Button);
-			AutomationElement loadButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD, ControlType.Button);
+				stage = "GetLoadControls";
 
-			selectLoadType(loadTypeElement, loadType);
+				var elementMap = new AutomationElementMap(loadDialog.FindAllChildren());
 
-			mButtonOperator.PostClick(browseButton);
+				AutomationElement loadTypeElement = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD_TYPE, ControlType.ComboBox);
+				AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.BROWSE, ControlType.Button);
+				AutomationElement loadButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD, ControlType.Button);
 
-			FileDialogElements fileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, loadDialog);
+				stage = "SelectLoadType";
 
-			mFileDialogOperator.SelectLoadFile(fileDialogElements, filePath);
+				selectLoadType(loadTypeElement, loadType);
 
-			mButtonOperator.PostClick(loadButton);
+				stage = "SelectLoadFile";
 
-			mWindowWaiter.WaitForWindowClosed(loadDialog);
+				mButtonOperator.PostClick(browseButton);
 
-			waitForLoadCompleted(mainLoadButton);
+				FileDialogElements fileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, loadDialog);
+
+				mFileDialogOperator.SelectLoadFile(fileDialogElements, filePath);
+
+				stage = "ExecuteLoad";
+
+				mButtonOperator.PostClick(loadButton);
+
+				stage = "WaitForLoadDialogClosed";
+
+				mWindowWaiter.WaitForWindowClosed(loadDialog);
+
+				stage = "WaitForLoadCompleted";
+
+				waitForLoadCompleted(mainLoadButton);
+			}
+			catch (Exception ex)
+			{
+				throw new InvalidOperationException($"SaveDataOperator.load failed at stage '{stage}': " + $"LoadType={loadType}, " + $"FilePath={filePath}. " + $"{ex.Message}", ex);
+			}
 		}
 
 		private string save(ScenarioExecutonContext context, string saveType, string fileNameSuffix, string extension)
@@ -206,36 +227,59 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			GuiSession session = context.GuiSession;
 
-			AutomationElement mainSaveButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SAVE, ControlType.Button);
+			string stage = "OpenSaveDialog";
 
-			mButtonOperator.PostClick(mainSaveButton);
+			try
+			{
+				AutomationElement mainSaveButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SAVE, ControlType.Button);
 
-			Window saveDialog = getSaveDialog(session);
+				mButtonOperator.PostClick(mainSaveButton);
 
-			var elementMap = new AutomationElementMap(saveDialog.FindAllChildren());
+				Window saveDialog = getSaveDialog(session);
 
-			AutomationElement saveTypeElement = elementMap.Get(AutomationIds.SaveDataSaveDialog.SAVE_TYPE, ControlType.ComboBox);
-			AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataSaveDialog.BROWSE, ControlType.Button);
-			AutomationElement filePathElement = elementMap.Get(AutomationIds.SaveDataSaveDialog.FILE_PATH);
-			AutomationElement saveButton = elementMap.Get(AutomationIds.SaveDataSaveDialog.SAVE, ControlType.Button);
+				stage = "GetSaveControls";
 
-			selectSaveType(saveTypeElement, saveType);
+				var elementMap = new AutomationElementMap(saveDialog.FindAllChildren());
 
-			mButtonOperator.PostClick(browseButton);
+				AutomationElement saveTypeElement = elementMap.Get(AutomationIds.SaveDataSaveDialog.SAVE_TYPE, ControlType.ComboBox);
+				AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataSaveDialog.BROWSE, ControlType.Button);
+				AutomationElement filePathElement = elementMap.Get(AutomationIds.SaveDataSaveDialog.FILE_PATH);
+				AutomationElement saveButton = elementMap.Get(AutomationIds.SaveDataSaveDialog.SAVE, ControlType.Button);
 
-			FileDialogElements fileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, saveDialog);
+				stage = "SelectSaveType";
 
-			mFileDialogOperator.SelectSaveFile(fileDialogElements, filePath);
+				selectSaveType(saveTypeElement, saveType);
 
-			waitForFilePath(filePathElement, filePath);
+				stage = "SelectSaveFile";
 
-			mButtonOperator.PostClick(saveButton);
+				mButtonOperator.PostClick(browseButton);
 
-			mWindowWaiter.WaitForWindowClosed(saveDialog);
+				FileDialogElements fileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, saveDialog);
 
-			waitForFileCreated(filePath);
+				mFileDialogOperator.SelectSaveFile(fileDialogElements, filePath);
 
-			return filePath;
+				stage = "WaitForFilePath";
+
+				waitForFilePath(filePathElement, filePath);
+
+				stage = "ExecuteSave";
+
+				mButtonOperator.PostClick(saveButton);
+
+				stage = "WaitForSaveDialogClosed";
+
+				mWindowWaiter.WaitForWindowClosed(saveDialog);
+
+				stage = "WaitForFileCreated";
+
+				waitForFileCreated(filePath);
+
+				return filePath;
+			}
+			catch (Exception ex)
+			{
+				throw new InvalidOperationException($"SaveDataOperator.save failed at stage '{stage}': " + $"SaveType={saveType}, " + $"FilePath={filePath}. " + $"{ex.Message}", ex);
+			}
 		}
 
 		private void selectLoadType(AutomationElement loadTypeElement, string loadType)
