@@ -259,10 +259,16 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 
 			string stage = "Initialize";
+			string cacheSource = "Unknown";
+			int buttonCount = -1;
+			int buttonIndex = -1;
 
 			try
 			{
 				stage = "GetActiveDialog";
+
+				bool hasCachedDialog = session.LastCheckedDialog != null;
+				cacheSource = hasCachedDialog ? "Cached" : "Discovered";
 
 				Window dialog = session.LastCheckedDialog ?? GetActiveDialog(session);
 
@@ -278,15 +284,39 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					}
 				}
 
+				buttonCount = buttons.Length;
+
 				stage = "FindOkButton";
 
-				AutomationElement button = buttons.FirstOrDefault(element => string.Equals(element.Properties.Name.ValueOrDefault, "OK", StringComparison.OrdinalIgnoreCase));
+				AutomationElement button = null;
+
+				for (int i = 0; i < buttons.Length; i++)
+				{
+					buttonIndex = i;
+
+					string name = buttons[i].Properties.Name.ValueOrDefault;
+
+					if (string.Equals(name, "OK", StringComparison.OrdinalIgnoreCase))
+					{
+						button = buttons[i];
+						break;
+					}
+				}
 
 				if (button == null)
 				{
 					stage = "FindInvokableButton";
 
-					button = buttons.FirstOrDefault(element => element.Patterns.Invoke.IsSupported);
+					for (int i = 0; i < buttons.Length; i++)
+					{
+						buttonIndex = i;
+
+						if (buttons[i].Patterns.Invoke.IsSupported)
+						{
+							button = buttons[i];
+							break;
+						}
+					}
 				}
 
 				if (button == null)
@@ -313,7 +343,13 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 			catch (Exception ex)
 			{
-				throw new InvalidOperationException($"DialogOperator.Close failed at stage '{stage}': {ex.Message}", ex);
+				throw new InvalidOperationException(
+					$"DialogOperator.Close failed at stage '{stage}': " +
+					$"CacheSource={cacheSource}, " +
+					$"ButtonCount={buttonCount}, " +
+					$"ButtonIndex={buttonIndex}. " +
+					$"{ex.Message}",
+					ex);
 			}
 		}
 
