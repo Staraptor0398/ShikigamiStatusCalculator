@@ -257,6 +257,7 @@ namespace ScenarioRunner.ScenarioFormat
 				throw new FormatException($"Unknown command at line {lineNumber}: {line}");
 			}
 
+			validateCommandTokens(lineNumber, rawText, quotedTokens, argumentStartIndex);
 			validateQuotedArguments(lineNumber, rawText, commandType, tokens, quotedTokens);
 
 			return new ScenarioStep(lineNumber, commandType, getArguments(tokens, argumentStartIndex), rawText);
@@ -337,6 +338,17 @@ namespace ScenarioRunner.ScenarioFormat
 			{
 				tokens.Add(token.ToString());
 				quotedTokens.Add(tokenIsQuoted);
+			}
+		}
+
+		private void validateCommandTokens(int lineNumber, string rawText, IReadOnlyList<bool> quotedTokens, int commandTokenCount)
+		{
+			for (int i = 0; i < commandTokenCount; i++)
+			{
+				if (quotedTokens[i])
+				{
+					throw new FormatException($"Command keyword must not be enclosed in double quotes at line {lineNumber}: {rawText}");
+				}
 			}
 		}
 
