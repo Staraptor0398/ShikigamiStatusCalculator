@@ -40,9 +40,6 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly WindowWaiter mWindowWaiter;
 		private readonly ProcessWindowWaiter mProcessWindowWaiter;
 
-		private Window mLastCheckedDialog;
-		private AutomationElement[] mLastCheckedDialogButtons;
-
 		public DialogOperator()
 		{
 			mButtonOperator = new ButtonOperator();
@@ -59,19 +56,22 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			mLastCheckedDialog = null;
-			mLastCheckedDialogButtons = null;
+			session.LastCheckedDialog = null;
+			session.LastCheckedDialogButtons = null;
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
-			IntPtr mainWindowHandle = mainWindow.Properties.NativeWindowHandle.Value;
+			Window mainWindow = session.MainWindow;
+			IntPtr mainWindowHandle = mainWindow?.Properties.NativeWindowHandle.ValueOrDefault ?? IntPtr.Zero;
 
 			AutomationElement[] buttons = null;
 
-			Window dialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element =>
+			Func<AutomationElement, bool> predicate = element =>
 			{
 				IntPtr windowHandle = element.Properties.NativeWindowHandle.ValueOrDefault;
+				string automationId = element.Properties.AutomationId.ValueOrDefault;
 
-				if (windowHandle == mainWindowHandle || !isVisible(windowHandle))
+				if ((mainWindowHandle != IntPtr.Zero && windowHandle == mainWindowHandle)
+					|| automationId == AutomationIds.MainForm.ID
+					|| !isVisible(windowHandle))
 				{
 					return false;
 				}
@@ -89,10 +89,21 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				buttons = candidateButtons;
 
 				return true;
-			});
+			};
 
-			mLastCheckedDialog = dialog;
-			mLastCheckedDialogButtons = buttons;
+			Window dialog;
+
+			if (mainWindow != null)
+			{
+				dialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
+			}
+			else
+			{
+				dialog = mProcessWindowWaiter.WaitForProcessWindow(session, predicate);
+			}
+
+			session.LastCheckedDialog = dialog;
+			session.LastCheckedDialogButtons = buttons;
 
 			return dialog;
 		}
@@ -162,7 +173,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window dialog = mLastCheckedDialog ?? GetActiveDialog(session);
+			Window dialog = session.LastCheckedDialog ?? GetActiveDialog(session);
 
 			if (!tryInspectDialog(dialog, out AutomationElement[] buttons, out AutomationElement[] texts))
 			{
@@ -184,8 +195,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentException("Expected dialog message is empty.", nameof(expectedMessage));
 			}
 
-			mLastCheckedDialog = null;
-			mLastCheckedDialogButtons = null;
+			session.LastCheckedDialog = null;
+			session.LastCheckedDialogButtons = null;
 
 			Window mainWindow = session.MainWindow;
 			IntPtr mainWindowHandle = mainWindow?.Properties.NativeWindowHandle.ValueOrDefault ?? IntPtr.Zero;
@@ -218,25 +229,25 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					return false;
 				}
 
-				mLastCheckedDialogButtons = buttons;
+				session.LastCheckedDialogButtons = buttons;
 
 				return true;
 			};
 
 			if (waitForMessageBox(session, mainWindowHandle, expectedMessage, out Window messageBox, out AutomationElement[] messageBoxButtons))
 			{
-				mLastCheckedDialog = messageBox;
-				mLastCheckedDialogButtons = messageBoxButtons;
+				session.LastCheckedDialog = messageBox;
+				session.LastCheckedDialogButtons = messageBoxButtons;
 				return;
 			}
 
 			if (mainWindow != null)
 			{
-				mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
+				session.LastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate);
 			}
 			else
 			{
-				mLastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, predicate);
+				session.LastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, predicate);
 			}
 		}
 
@@ -247,9 +258,9 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window dialog = mLastCheckedDialog ?? GetActiveDialog(session);
+			Window dialog = session.LastCheckedDialog ?? GetActiveDialog(session);
 
-			AutomationElement[] buttons = mLastCheckedDialogButtons;
+			AutomationElement[] buttons = session.LastCheckedDialogButtons;
 
 			if (buttons == null)
 			{
@@ -275,8 +286,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mWindowWaiter.WaitForWindowClosed(dialog);
 
-			mLastCheckedDialog = null;
-			mLastCheckedDialogButtons = null;
+			session.LastCheckedDialog = null;
+			session.LastCheckedDialogButtons = null;
 		}
 
 		private bool waitForMessageBox(GuiSession session, IntPtr mainWindowHandle, string expectedMessage, out Window dialog, out AutomationElement[] buttons)
