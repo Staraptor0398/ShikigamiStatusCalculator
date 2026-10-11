@@ -98,6 +98,23 @@ namespace ScenarioRunner.Automation.Waiter
 				throw new ArgumentNullException(nameof(window));
 			}
 
+			IntPtr windowHandle = window.Properties.NativeWindowHandle.ValueOrDefault;
+
+			WaitForWindowClosed(windowHandle, timeoutMs, intervalMs);
+		}
+
+		public void WaitForWindowClosed(IntPtr windowHandle)
+		{
+			WaitForWindowClosed(windowHandle, DEFAULT_TIMEOUT_MS, WINDOW_CLOSED_INTERVAL_MS);
+		}
+
+		public void WaitForWindowClosed(IntPtr windowHandle, int timeoutMs, int intervalMs)
+		{
+			if (windowHandle == IntPtr.Zero)
+			{
+				throw new InvalidOperationException("Window has no native window handle.");
+			}
+
 			if (timeoutMs <= 0)
 			{
 				throw new ArgumentOutOfRangeException(nameof(timeoutMs));
@@ -106,13 +123,6 @@ namespace ScenarioRunner.Automation.Waiter
 			if (intervalMs <= 0)
 			{
 				throw new ArgumentOutOfRangeException(nameof(intervalMs));
-			}
-
-			IntPtr windowHandle = window.Properties.NativeWindowHandle.ValueOrDefault;
-
-			if (windowHandle == IntPtr.Zero)
-			{
-				throw new InvalidOperationException("Window has no native window handle.");
 			}
 
 			int elapsed = 0;

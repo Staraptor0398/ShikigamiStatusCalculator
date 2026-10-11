@@ -282,9 +282,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new InvalidOperationException("Dialog button was not found.");
 			}
 
+			// ダイアログが破棄される前にウィンドウハンドルを取得する。
+			IntPtr windowHandle = dialog.Properties.NativeWindowHandle.ValueOrDefault;
+
 			mButtonOperator.Click(button);
 
-			mWindowWaiter.WaitForWindowClosed(dialog);
+			mWindowWaiter.WaitForWindowClosed(windowHandle);
 
 			session.LastCheckedDialog = null;
 			session.LastCheckedDialogButtons = null;
