@@ -95,7 +95,7 @@ namespace ScenarioRunner.Execution
 
 							string screenshotPath = tryCaptureFailureScreenshot(scenario.FilePath, step.LineNumber, out string screenshotError);
 
-							mLogger.StepFailed(step, ex.Message);
+							mLogger.StepFailed(step, ex.ToString());
 
 							if (!string.IsNullOrWhiteSpace(screenshotPath))
 							{
