@@ -60,37 +60,56 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			GuiSession session = context.GuiSession;
 
-			AutomationElement compareSnapshotButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.COMPARE_SNAPSHOT, ControlType.Button);
+			string stage = "OpenCompareDialog";
 
-			mButtonOperator.PostClick(compareSnapshotButton);
+			try
+			{
+				AutomationElement compareSnapshotButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.COMPARE_SNAPSHOT, ControlType.Button);
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
+				mButtonOperator.PostClick(compareSnapshotButton);
 
-			Window fileSelectDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
+				Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			var elementMap = new AutomationElementMap(fileSelectDialog.FindAllChildren());
+				Window fileSelectDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
 
-			AutomationElement browseBaseSnapshotButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_BASE_SNAPSHOT, ControlType.Button);
-			AutomationElement browseTargetSnapshotButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_TARGET_SNAPSHOT, ControlType.Button);
-			AutomationElement compareButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.COMPARE, ControlType.Button);
+				stage = "GetCompareControls";
 
-			mButtonOperator.PostClick(browseBaseSnapshotButton);
+				var elementMap = new AutomationElementMap(fileSelectDialog.FindAllChildren());
 
-			FileDialogElements baseFileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, fileSelectDialog);
+				AutomationElement browseBaseSnapshotButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_BASE_SNAPSHOT, ControlType.Button);
+				AutomationElement browseTargetSnapshotButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.BROWSE_TARGET_SNAPSHOT, ControlType.Button);
+				AutomationElement compareButton = elementMap.Get(AutomationIds.SnapshotCompareFileSelectDialog.COMPARE, ControlType.Button);
 
-			mFileDialogOperator.SelectLoadFile(baseFileDialogElements, context.ResolvePath(baseSnapshotPath));
+				stage = "SelectBaseSnapshot";
 
-			mButtonOperator.PostClick(browseTargetSnapshotButton);
+				mButtonOperator.PostClick(browseBaseSnapshotButton);
 
-			FileDialogElements targetFileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, fileSelectDialog);
+				FileDialogElements baseFileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, fileSelectDialog);
 
-			mFileDialogOperator.SelectLoadFile(targetFileDialogElements, context.ResolvePath(targetSnapshotPath));
+				mFileDialogOperator.SelectLoadFile(baseFileDialogElements, context.ResolvePath(baseSnapshotPath));
 
-			waitForEnabled(compareButton);
+				stage = "SelectTargetSnapshot";
 
-			mButtonOperator.PostClick(compareButton);
+				mButtonOperator.PostClick(browseTargetSnapshotButton);
 
-			mResultForm = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
+				FileDialogElements targetFileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, fileSelectDialog);
+
+				mFileDialogOperator.SelectLoadFile(targetFileDialogElements, context.ResolvePath(targetSnapshotPath));
+
+				stage = "ExecuteComparison";
+
+				waitForEnabled(compareButton);
+
+				mButtonOperator.PostClick(compareButton);
+
+				stage = "WaitForResult";
+
+				mResultForm = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
+			}
+			catch (Exception ex)
+			{
+				throw new InvalidOperationException($"SnapshotComparisonOperator.Compare failed at stage '{stage}': " + $"{ex.Message}", ex);
+			}
 		}
 
 		public void CompareSaved(ScenarioExecutonContext context)
