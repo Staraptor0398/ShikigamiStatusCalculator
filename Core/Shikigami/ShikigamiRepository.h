@@ -10,7 +10,7 @@ public:
 	static ShikigamiDataOutcome getShikigamiList(const std::string& filePath, std::vector<Shikigami>& outShikigamis);
 	static ShikigamiDataOutcome addShikigami(const std::string& filePath, const Shikigami& shikigami);
 	static ShikigamiDataOutcome updateShikigami(const std::string& filePath, const Shikigami& oldData, const Shikigami& newData);
-	static ShikigamiDataOutcome getRecoveryCandinateShikigamiList(const std::string& currentFilePath, const std::string& sourceFilePath, std::vector<Shikigami>& outRecoveryCandinateShikigamis);
+	static ShikigamiDataOutcome getRecoveryCandidateShikigamiList(const std::string& currentFilePath, const std::string& sourceFilePath, std::vector<Shikigami>& outRecoveryCandidateShikigamis);
 	static ShikigamiDataOutcome recoverShikigamiList(const std::string& currentFilePath, const std::vector<Shikigami>& selectedShikigamis);
 private:
 	static bool isSameShikigami(const Shikigami& left, const Shikigami& right);

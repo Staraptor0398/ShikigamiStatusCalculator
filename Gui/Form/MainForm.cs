@@ -1127,7 +1127,7 @@ namespace Gui.Form
 				}
 
 				List<ShikigamiDto> recoveryShikigamiList = new List<ShikigamiDto>();
-				ShikigamiDataOutcomeDto outcome = ShikigamiGateway.GetRecoveryCandinateShikigamiList(AppPath.ShikigamiDataCsvPath, dialog.FileName, out recoveryShikigamiList);
+				ShikigamiDataOutcomeDto outcome = ShikigamiGateway.GetRecoveryCandidateShikigamiList(AppPath.ShikigamiDataCsvPath, dialog.FileName, out recoveryShikigamiList);
 
 				if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧候補読み込み"))
 				{

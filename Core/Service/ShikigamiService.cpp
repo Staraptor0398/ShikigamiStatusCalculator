@@ -18,9 +18,9 @@ ShikigamiDataOutcome ShikigamiService::updateShikigami(const std::string& filePa
 	return ShikigamiRepository::updateShikigami(filePath, oldData, newData);
 }
 
-ShikigamiDataOutcome ShikigamiService::getRecoveryCandinateShikigamiList(const std::string& currentFilePath, const std::string& sourceFilePath, std::vector<Shikigami>& recoveryCandinateShikigamiList)
+ShikigamiDataOutcome ShikigamiService::getRecoveryCandidateShikigamiList(const std::string& currentFilePath, const std::string& sourceFilePath, std::vector<Shikigami>& recoveryCandidateShikigamiList)
 {
-	return ShikigamiRepository::getRecoveryCandinateShikigamiList(currentFilePath, sourceFilePath, recoveryCandinateShikigamiList);
+	return ShikigamiRepository::getRecoveryCandidateShikigamiList(currentFilePath, sourceFilePath, recoveryCandidateShikigamiList);
 }
 
 ShikigamiDataOutcome ShikigamiService::recoverShikigamiList(const std::string& currentFilePath, const std::vector<Shikigami>& selectedShikigamiList)

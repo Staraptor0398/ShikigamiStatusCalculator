@@ -66,7 +66,7 @@ ShikigamiDataOutcome ShikigamiRepository::updateShikigami(const std::string& fil
 	return FileAccessOutcomeMapper::toShikigamiDataOutcome(saveOutcome);
 }
 
-ShikigamiDataOutcome ShikigamiRepository::getRecoveryCandinateShikigamiList(const std::string& currentFilePath, const std::string& sourceFilePath, std::vector<Shikigami>& outRecoveryCandinateShikigamis)
+ShikigamiDataOutcome ShikigamiRepository::getRecoveryCandidateShikigamiList(const std::string& currentFilePath, const std::string& sourceFilePath, std::vector<Shikigami>& outRecoveryCandidateShikigamis)
 {
 	std::vector<Shikigami> currentShikigamis;
 
@@ -86,7 +86,7 @@ ShikigamiDataOutcome ShikigamiRepository::getRecoveryCandinateShikigamiList(cons
 
 	mRecoverySourceFilePath = sourceFilePath;
 
-	outRecoveryCandinateShikigamis = extractUnknownShikigamiList(currentShikigamis, sourceShikigamis);
+	outRecoveryCandidateShikigamis = extractUnknownShikigamiList(currentShikigamis, sourceShikigamis);
 
 	return ShikigamiDataOutcome::SUCCESS;
 }

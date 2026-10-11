@@ -22,7 +22,7 @@ public:
 	static ShikigamiDataOutcomeDto UpdateShikigami(String^ filePath, ShikigamiDto^ oldDto, ShikigamiDto^ newDto);
 
 	// 復旧候補となる式神一覧を取得する
-	static ShikigamiDataOutcomeDto GetRecoveryCandinateShikigamiList(String^ currentFilePath, String^ sourceFilePath, [OutAttribute] List<ShikigamiDto^>^% outRecoveryCandinateShikigamiList);
+	static ShikigamiDataOutcomeDto GetRecoveryCandidateShikigamiList(String^ currentFilePath, String^ sourceFilePath, [OutAttribute] List<ShikigamiDto^>^% outRecoveryCandidateShikigamiList);
 
 	// 選択された式神を復旧する
 	static ShikigamiDataOutcomeDto RecoveryShikigami(String^ currentFilePath, List<ShikigamiDto^>^ selectedShikigamiList);

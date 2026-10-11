@@ -15,7 +15,7 @@ public:
 
 	static ShikigamiDataOutcome updateShikigami(const std::string& filePath, const Shikigami& oldData, const Shikigami& newData);
 
-	static ShikigamiDataOutcome getRecoveryCandinateShikigamiList(const std::string& currentFilePath, const std::string& sourceFilePath, std::vector<Shikigami>& recoveryCandinateShikigamiList);
+	static ShikigamiDataOutcome getRecoveryCandidateShikigamiList(const std::string& currentFilePath, const std::string& sourceFilePath, std::vector<Shikigami>& recoveryCandidateShikigamiList);
 
 	static ShikigamiDataOutcome recoverShikigamiList(const std::string& currentFilePath, const std::vector<Shikigami>& selectedShikigamiList);
 };
