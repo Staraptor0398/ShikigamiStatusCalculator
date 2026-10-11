@@ -78,18 +78,40 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			GuiSession session = context.GuiSession;
 			string resolvedFilePath = context.ResolvePath(filePath);
 
-			IDictionary<string, string> inputData = loadInputData(resolvedFilePath);
+			string stage = "LoadInputData";
+			string field = null;
 
-			Window editForm = getEditForm(session);
-			var elementMap = new AutomationElementMap(editForm);
+			try
+			{
+				IDictionary<string, string> inputData = loadInputData(resolvedFilePath);
 
-			applyInputData(elementMap, inputData);
+				stage = "GetEditForm";
 
-			AutomationElement updateButton = elementMap.Get(AutomationIds.ShikigamiRegisterForm.REGISTER, ControlType.Button);
+				Window editForm = getEditForm(session);
 
-			mButtonOperator.PostClick(updateButton);
+				stage = "GetEditControls";
 
-			resetEditFormCache();
+				var elementMap = new AutomationElementMap(editForm);
+
+				stage = "ApplyInputData";
+
+				applyInputData(elementMap, inputData, ref field);
+
+				stage = "SubmitUpdate";
+				field = null;
+
+				AutomationElement updateButton = elementMap.Get(AutomationIds.ShikigamiRegisterForm.REGISTER, ControlType.Button);
+
+				mButtonOperator.PostClick(updateButton);
+
+				resetEditFormCache();
+			}
+			catch (Exception ex)
+			{
+				string fieldInfo = field == null ? "" : $"Field={field}, ";
+
+				throw new InvalidOperationException($"ShikigamiEditOperator.Edit failed at stage '{stage}': " + $"{fieldInfo}FilePath={resolvedFilePath}. " + $"{ex.Message}", ex);
+			}
 		}
 
 		public void Save(GuiSession session)
@@ -181,8 +203,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		private void applyInputData(AutomationElementMap elementMap, IDictionary<string, string> inputData)
+		private void applyInputData(AutomationElementMap elementMap, IDictionary<string, string> inputData, ref string field)
 		{
+			field = "Rarity";
+
 			AutomationElement rarityElement = elementMap.Get(AutomationIds.ShikigamiRegisterForm.RARITY, ControlType.ComboBox);
 
 			string rarity = getValue(inputData, "Rarity");
@@ -196,28 +220,35 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				mComboBoxOperator.SelectItem(rarityElement, rarity);
 			}
 
+			field = "Name";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.NAME), getValue(inputData, "Name"));
 
+			field = "Attack";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.ATTACK), getValue(inputData, "Attack"));
 
+			field = "HP";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.HP), getValue(inputData, "HP"));
 
+			field = "Defense";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.DEFENSE), getValue(inputData, "Defense"));
 
+			field = "Speed";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.SPEED), getValue(inputData, "Speed"));
 
+			field = "CritRate";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.CRIT_RATE), getValue(inputData, "CritRate"));
 
+			field = "CritDamage";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.CRIT_DAMAGE), getValue(inputData, "CritDamage"));
 
+			field = "EffectHit";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.EFFECT_HIT), getValue(inputData, "EffectHit"));
 
+			field = "EffectResist";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.EFFECT_RESIST), getValue(inputData, "EffectResist"));
 		}
 
-		private string getValue(
-			IDictionary<string, string> inputData,
-			string field)
+		private string getValue(IDictionary<string, string> inputData, string field)
 		{
 			return inputData[field];
 		}

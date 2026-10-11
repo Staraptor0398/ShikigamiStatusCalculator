@@ -71,16 +71,38 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			GuiSession session = context.GuiSession;
 			string resolvedFilePath = context.ResolvePath(filePath);
 
-			IDictionary<string, string> inputData = loadInputData(resolvedFilePath);
+			string stage = "LoadInputData";
+			string field = null;
 
-			Window registerForm = getRegisterForm(session);
-			var elementMap = new AutomationElementMap(registerForm);
+			try
+			{
+				IDictionary<string, string> inputData = loadInputData(resolvedFilePath);
 
-			applyInputData(elementMap, inputData);
+				stage = "GetRegisterForm";
 
-			AutomationElement registerButton = elementMap.Get(AutomationIds.ShikigamiRegisterForm.REGISTER, ControlType.Button);
+				Window registerForm = getRegisterForm(session);
 
-			mButtonOperator.PostClick(registerButton);
+				stage = "GetRegisterControls";
+
+				var elementMap = new AutomationElementMap(registerForm);
+
+				stage = "ApplyInputData";
+
+				applyInputData(elementMap, inputData, ref field);
+
+				stage = "SubmitRegistration";
+				field = null;
+
+				AutomationElement registerButton = elementMap.Get(AutomationIds.ShikigamiRegisterForm.REGISTER, ControlType.Button);
+
+				mButtonOperator.PostClick(registerButton);
+			}
+			catch (Exception ex)
+			{
+				string fieldInfo = field == null ? "" : $"Field={field}, ";
+
+				throw new InvalidOperationException($"ShikigamiRegisterOperator.Register failed at stage '{stage}': " + $"{fieldInfo}FilePath={resolvedFilePath}. " + $"{ex.Message}", ex);
+			}
 		}
 
 		private Window getRegisterForm(GuiSession session)
@@ -142,8 +164,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		private void applyInputData(AutomationElementMap elementMap, IDictionary<string, string> inputData)
+		private void applyInputData(AutomationElementMap elementMap, IDictionary<string, string> inputData, ref string field)
 		{
+			field = "Rarity";
+
 			AutomationElement rarityElement = elementMap.Get(AutomationIds.ShikigamiRegisterForm.RARITY, ControlType.ComboBox);
 
 			string rarity = getValue(inputData, "Rarity");
@@ -157,22 +181,31 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				mComboBoxOperator.SelectItem(rarityElement, rarity);
 			}
 
+			field = "Name";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.NAME), getValue(inputData, "Name"));
 
+			field = "Attack";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.ATTACK), getValue(inputData, "Attack"));
 
+			field = "HP";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.HP), getValue(inputData, "HP"));
 
+			field = "Defense";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.DEFENSE), getValue(inputData, "Defense"));
 
+			field = "Speed";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.SPEED), getValue(inputData, "Speed"));
 
+			field = "CritRate";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.CRIT_RATE), getValue(inputData, "CritRate"));
 
+			field = "CritDamage";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.CRIT_DAMAGE), getValue(inputData, "CritDamage"));
 
+			field = "EffectHit";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.EFFECT_HIT), getValue(inputData, "EffectHit"));
 
+			field = "EffectResist";
 			mTextBoxOperator.SetText(elementMap.Get(AutomationIds.ShikigamiRegisterForm.EFFECT_RESIST), getValue(inputData, "EffectResist"));
 		}
 
