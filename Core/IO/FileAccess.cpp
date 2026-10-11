@@ -2,6 +2,8 @@
 #include "FileAccess.h"
 
 #include "../Converter/Format/ShikigamiCsvConverter.h"
+#include <Windows.h>
+#include <filesystem>
 #include <fstream>
 
 namespace {
@@ -101,22 +103,66 @@ FileAccessOutcome FileAccess::loadValidShikigami(const std::string& filePath, st
 	return FileAccessOutcome::SUCCESS;
 }
 
-FileAccessOutcome FileAccess::saveShikigami(const std::string& filePath, const std::vector<Shikigami> shikigamis)
+FileAccessOutcome FileAccess::saveShikigami(const std::string& filePath, const std::vector<Shikigami>& shikigamis)
 {
-	std::ofstream file(filePath, std::ios::trunc);
+	std::filesystem::path destinationPath(filePath);
+	std::filesystem::path directoryPath = destinationPath.parent_path();
 
-	if (!file.is_open()) {
+	if (directoryPath.empty()) {
+		directoryPath = L".";
+	}
+
+	wchar_t temporaryFileName[MAX_PATH];
+
+	if (GetTempFileNameW(directoryPath.c_str(), L"SHK", 0, temporaryFileName) == 0) {
 		return FileAccessOutcome::FILE_OPEN_FAILED;
 	}
 
-	// ヘッダー行を書き戻す
-	file << SHIKIGAMI_CSV_HEADER << std::endl;
+	std::filesystem::path temporaryPath(temporaryFileName);
 
-	for (const auto& s : shikigamis) {
-		file << ShikigamiCsvConverter::toCsvLine(s) << std::endl;
+	try {
+		std::ofstream file(temporaryPath, std::ios::trunc);
+
+		if (!file.is_open()) {
+			DeleteFileW(temporaryPath.c_str());
+			return FileAccessOutcome::FILE_OPEN_FAILED;
+		}
+
+		// 既存CSVは変更せず、一時ファイルへ全データを書き込む。
+		file << SHIKIGAMI_CSV_HEADER << std::endl;
+
+		for (const auto& shikigami : shikigamis) {
+			file << ShikigamiCsvConverter::toCsvLine(shikigami) << std::endl;
+		}
+
+		file.flush();
+
+		if (!file) {
+			file.close();
+			DeleteFileW(temporaryPath.c_str());
+			return FileAccessOutcome::FILE_WRITE_FAILED;
+		}
+
+		file.close();
+
+		if (!file) {
+			DeleteFileW(temporaryPath.c_str());
+			return FileAccessOutcome::FILE_WRITE_FAILED;
+		}
+	}
+	catch (...) {
+		DeleteFileW(temporaryPath.c_str());
+		return FileAccessOutcome::UNKNOWN_ERROR;
 	}
 
-	if (!file) {
+	// 一時ファイルの書き込みが完了してから既存CSVを置換する。
+	if (!ReplaceFileW(destinationPath.c_str(), temporaryPath.c_str(), nullptr, 0, nullptr, nullptr)) {
+		// 置換失敗時に元CSVが存在しなければ、
+		// 復旧に使用できるよう一時ファイルを残す。
+		if (GetFileAttributesW(destinationPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
+			DeleteFileW(temporaryPath.c_str());
+		}
+
 		return FileAccessOutcome::FILE_WRITE_FAILED;
 	}
 

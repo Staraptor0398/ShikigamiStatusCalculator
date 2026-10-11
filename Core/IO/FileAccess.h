@@ -10,5 +10,5 @@ class FileAccess
 public:
 	static FileAccessOutcome loadShikigami(const std::string& filePath, std::vector<Shikigami>& outShikigamis);
 	static FileAccessOutcome loadValidShikigami(const std::string& filePath, std::vector<Shikigami>& outShikigamis);
-	static FileAccessOutcome saveShikigami(const std::string& filePath, const std::vector<Shikigami> shikigamis);
+	static FileAccessOutcome saveShikigami(const std::string& filePath, const std::vector<Shikigami>& shikigamis);
 };
