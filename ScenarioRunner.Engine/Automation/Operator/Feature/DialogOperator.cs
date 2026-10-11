@@ -105,12 +105,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			session.LastCheckedDialog = dialog;
 			session.LastCheckedDialogButtons = buttons;
 
-			string dialogAutomationId = dialog.Properties.AutomationId.ValueOrDefault;
-
-			throw new InvalidOperationException(
-				$"Dialog discovery diagnostics: " +
-				$"AutomationId={dialogAutomationId}, " +
-				$"ButtonCount={buttons?.Length ?? 0}");
+			return dialog;
 		}
 
 		public bool Exists(GuiSession session)
