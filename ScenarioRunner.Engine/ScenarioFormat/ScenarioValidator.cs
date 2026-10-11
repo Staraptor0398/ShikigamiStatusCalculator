@@ -102,18 +102,33 @@ namespace ScenarioRunner.ScenarioFormat
 			{
 				case "MAIN":
 					validateArgumentCount(step, 3, 3);
+					validateIntegerRange(step, 1, 1, 6);
 					break;
 				case "SUB":
 					validateArgumentCount(step, 3, 5);
+					validateIntegerRange(step, 1, 1, 6);
+					validateIntegerRange(step, 2, 1, 4);
 					break;
 				case "SET":
 					validateArgumentCount(step, 3, 3);
+					validateIntegerRange(step, 1, 1, 3);
 					break;
 				case "UNIQUE":
 					validateArgumentCount(step, 3, 3);
+					validateIntegerRange(step, 1, 1, 6);
 					break;
 				default:
 					throw new ScenarioValidationException($"Unknown EQUIP MITAMA target at line {step.LineNumber}: {step.RawText}");
+			}
+		}
+
+		private void validateIntegerRange(ScenarioStep step, int argumentIndex, int minimum, int maximum)
+		{
+			string argument = step.Arguments[argumentIndex];
+
+			if (!int.TryParse(argument, out int value) || value < minimum || value > maximum)
+			{
+				throw new ScenarioValidationException($"Argument must be an integer between {minimum} and {maximum} at line {step.LineNumber}: {step.RawText}");
 			}
 		}
 
