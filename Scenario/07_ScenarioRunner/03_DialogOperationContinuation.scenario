@@ -1,0 +1,41 @@
+# DialogOperationContinuation.scenario
+#
+# 同一Guiセッション内で異なるダイアログを開閉し、
+# ダイアログ情報のキャッシュが後続の操作に
+# 悪影響を与えないことを確認する。
+#
+# Validationエラー、計算結果詳細の案内、
+# スナップショット比較結果の順番に操作し、
+# 最後に通常の計算を実行する。
+
+START
+
+OPEN GUI
+
+# 御魂未装備によるValidationエラー
+CALC
+CHECK DIALOG "御魂が1つも装備されていません。"
+CLOSE DIALOG
+
+# 計算結果がない状態で詳細表示を要求する
+OPEN CALC DETAIL
+CHECK DIALOG "先に計算を実行してください。"
+CLOSE DIALOG
+
+# 別種類の画面であるスナップショット比較結果を表示する
+COMPARE SNAPSHOT "../05_Comparison/TestData/SnapshotComparisonSameA.snapshot.json" "../05_Comparison/TestData/SnapshotComparisonSameB.snapshot.json"
+
+CHECK SNAPSHOT COMPARISON "攻撃力" "0"
+CLOSE DIALOG
+
+# 複数のダイアログを閉じた後も
+# 通常の計算処理を実行できることを確認する
+SEL SHIKIGAMI "願紡縁結神"
+LOAD MITAMA "../02_Calculation/TestData/Valid.mitama.json"
+
+CALC
+CHECK CALC
+
+CLOSE GUI
+
+END

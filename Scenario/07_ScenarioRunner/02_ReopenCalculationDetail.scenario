@@ -1,0 +1,37 @@
+# ReopenCalculationDetail.scenario
+#
+# 同一Guiセッション内で計算結果詳細画面を
+# 連続して開閉できることを確認する。
+#
+# 1回目の画面を閉じた後、2回目の画面を開き、
+# 前回のフォームおよびAutomationElementMapを
+# 再利用せずに正常に操作できることを検証する。
+
+START
+
+OPEN GUI
+
+# 計算条件を設定する
+SEL SHIKIGAMI "願紡縁結神"
+LOAD MITAMA "../02_Calculation/TestData/Valid.mitama.json"
+
+CALC
+CHECK CALC
+
+# 1回目の詳細表示
+OPEN CALC DETAIL
+CHECK CALC DETAIL
+CLOSE CALC DETAIL
+
+# 2回目の詳細表示
+OPEN CALC DETAIL
+CHECK CALC DETAIL
+CLOSE CALC DETAIL
+
+# 詳細画面を閉じた後もGuiを正常に操作できることを確認する
+CALC
+CHECK CALC
+
+CLOSE GUI
+
+END
