@@ -78,16 +78,30 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window resultViewForm = getResultViewForm(session);
-			AutomationElementMap elementMap = getResultViewElementMap(session);
+			string stage = "GetResultViewForm";
 
-			AutomationElement closeButton = elementMap.Get(AutomationIds.ResultViewForm.CLOSE, ControlType.Button);
+			try
+			{
+				Window resultViewForm = getResultViewForm(session);
 
-			mButtonOperator.PostClick(closeButton);
+				AutomationElementMap elementMap = getResultViewElementMap(session);
 
-			mWindowWaiter.WaitForWindowClosed(resultViewForm);
+				stage = "CloseResultView";
 
-			resetResultViewCache();
+				AutomationElement closeButton = elementMap.Get(AutomationIds.ResultViewForm.CLOSE, ControlType.Button);
+
+				mButtonOperator.PostClick(closeButton);
+
+				stage = "WaitForWindowClosed";
+
+				mWindowWaiter.WaitForWindowClosed(resultViewForm);
+
+				resetResultViewCache();
+			}
+			catch (Exception ex)
+			{
+				throw new InvalidOperationException($"CalculationDetailOperator.Close failed at stage '{stage}': " + $"{ex.Message}", ex);
+			}
 		}
 
 		private Window getResultViewForm(GuiSession session)

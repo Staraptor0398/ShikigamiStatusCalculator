@@ -63,26 +63,39 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			AutomationElement clearButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CLEAR, ControlType.Button);
+			string stage = "OpenClearDialog";
 
-			mButtonOperator.PostClick(clearButton);
-
-			Window dialog = mDialogOperator.GetActiveDialog(session);
-
-			if (dialog == null)
+			try
 			{
-				throw new InvalidOperationException("Clear confirmation dialog was not found.");
+				AutomationElement clearButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CLEAR, ControlType.Button);
+
+				mButtonOperator.PostClick(clearButton);
+
+				stage = "ConfirmClear";
+
+				Window dialog = mDialogOperator.GetActiveDialog(session);
+
+				if (dialog == null)
+				{
+					throw new InvalidOperationException("Clear confirmation dialog was not found.");
+				}
+
+				mButtonOperator.Click(dialog, AutomationIds.MessageBox.YES);
+
+				// 確認ダイアログは閉じられるため、後続の操作で古いUI要素を参照しないようキャッシュを破棄する。
+				session.LastCheckedDialog = null;
+				session.LastCheckedDialogButtons = null;
+
+				stage = "WaitForClearCompleted";
+
+				if (!session.Application.WaitWhileBusy(TimeSpan.FromSeconds(5)))
+				{
+					throw new InvalidOperationException("Clear operation did not complete within 5 seconds.");
+				}
 			}
-
-			mButtonOperator.Click(dialog, AutomationIds.MessageBox.YES);
-
-			// 確認ダイアログは閉じられるため、後続の操作で古いUI要素を参照しないようキャッシュを破棄する。
-			session.LastCheckedDialog = null;
-			session.LastCheckedDialogButtons = null;
-
-			if (!session.Application.WaitWhileBusy(TimeSpan.FromSeconds(5)))
+			catch (Exception ex)
 			{
-				throw new InvalidOperationException("Clear operation did not complete within 5 seconds.");
+				throw new InvalidOperationException($"InputOperator.Clear failed at stage '{stage}': " + $"{ex.Message}", ex);
 			}
 		}
 
@@ -148,8 +161,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			if (arguments.Count >= 5)
 			{
-				AutomationElement textBoxElement =
-					elementMap.Get(AutomationIds.MainForm.SubStatValue(mitamaSlot, subSlot));
+				AutomationElement textBoxElement = elementMap.Get(AutomationIds.MainForm.SubStatValue(mitamaSlot, subSlot));
 
 				mTextBoxOperator.SetText(textBoxElement, arguments[4]);
 			}
