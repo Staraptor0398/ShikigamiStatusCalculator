@@ -1,0 +1,33 @@
+#include "pch.h"
+
+#include <gtest/gtest.h>
+
+#include "ShikigamiRepository_Test.h"
+
+#define SHIKIGAMI_REPOSITORY_TEST_LIST \
+	X(T001_getShikigamiList_readsExistingData, getShikigamiList_readsExistingData) \
+	X(T002_getShikigamiList_failsWhenFileIsMissing, getShikigamiList_failsWhenFileIsMissing) \
+	X(T003_addShikigami_insertsInRarityOrder, addShikigami_insertsInRarityOrder) \
+	X(T004_addShikigami_rejectsDuplicateRarityAndName, addShikigami_rejectsDuplicateRarityAndName) \
+	X(T005_addShikigami_allowsSameNameWithDifferentRarity, addShikigami_allowsSameNameWithDifferentRarity) \
+	X(T006_addShikigami_preservesInvalidCsv, addShikigami_preservesInvalidCsv) \
+	X(T007_updateShikigami_updatesExistingData, updateShikigami_updatesExistingData) \
+	X(T008_updateShikigami_rejectsMissingTarget, updateShikigami_rejectsMissingTarget) \
+	X(T009_updateShikigami_rejectsDuplicateOtherThanSelf, updateShikigami_rejectsDuplicateOtherThanSelf) \
+	X(T010_updateShikigami_allowsUpdatingSameIdentity, updateShikigami_allowsUpdatingSameIdentity) \
+	X(T011_getRecoveryCandidateShikigamiList_excludesExistingAndInvalidRecords, getRecoveryCandidateShikigamiList_excludesExistingAndInvalidRecords) \
+	X(T012_getRecoveryCandidateShikigamiList_failsWhenSourceIsMissing, getRecoveryCandidateShikigamiList_failsWhenSourceIsMissing) \
+	X(T013_recoverShikigamiList_insertsSelectedCandidateInSourceOrder, recoverShikigamiList_insertsSelectedCandidateInSourceOrder) \
+	X(T014_recoverShikigamiList_doesNotRestoreUnselectedCandidates, recoverShikigamiList_doesNotRestoreUnselectedCandidates) \
+	X(T015_recoverShikigamiList_doesNotChangeCsvWhenNothingIsSelected, recoverShikigamiList_doesNotChangeCsvWhenNothingIsSelected)
+
+#define X(testName, functionName) \
+	TEST(ShikigamiRepository_Test, testName) \
+	{ \
+		ShikigamiRepository_Test::functionName(); \
+	}
+
+SHIKIGAMI_REPOSITORY_TEST_LIST
+
+#undef X
+#undef SHIKIGAMI_REPOSITORY_TEST_LIST

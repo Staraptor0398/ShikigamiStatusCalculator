@@ -54,6 +54,12 @@
     <ClCompile Include="TestUtil\TestFileUtil.cpp">
       <Filter>TestUtil</Filter>
     </ClCompile>
+    <ClCompile Include="TestCase\ShikigamiRepository\ShikigamiRepository_Test.cpp">
+      <Filter>TestCase\ShikigamiRepository</Filter>
+    </ClCompile>
+    <ClCompile Include="TestCase\ShikigamiRepository\ShikigamiRepository_TestEntry.cpp">
+      <Filter>TestCase\ShikigamiRepository</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -117,6 +123,9 @@
     <ClInclude Include="TestUtil\TestFileUtil.h">
       <Filter>TestUtil</Filter>
     </ClInclude>
+    <ClInclude Include="TestCase\ShikigamiRepository\ShikigamiRepository_Test.h">
+      <Filter>TestCase\ShikigamiRepository</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TestCommon">
@@ -160,6 +169,9 @@
     </Filter>
     <Filter Include="TestUtil">
       <UniqueIdentifier>{ed17cbbc-1cde-4941-b4ef-60988441ebc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestCase\ShikigamiRepository">
+      <UniqueIdentifier>{a6d10cb6-1fda-4244-a64d-1e1ae195909d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

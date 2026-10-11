@@ -106,6 +106,7 @@
     <ClInclude Include="TestCase\FileAccess\FileAccess_Test.h" />
     <ClInclude Include="TestCase\MitamaCalculator\MitamaCalculator_Test.h" />
     <ClInclude Include="TestCase\MitamaCalculator\_data\MitamaCalculatorTestData.h" />
+    <ClInclude Include="TestCase\ShikigamiRepository\ShikigamiRepository_Test.h" />
     <ClInclude Include="TestCase\StatusCalculator\StatusCalculator_Test.h" />
     <ClInclude Include="TestCase\StatusComparator\StatusComparator_Test.h" />
     <ClInclude Include="TestCommon\TestAssert.h" />
@@ -136,6 +137,8 @@
     <ClCompile Include="TestCase\MitamaCalculator\MitamaCalculator_Test.cpp" />
     <ClCompile Include="TestCase\MitamaCalculator\MitamaCalculator_TestEntry.cpp" />
     <ClCompile Include="TestCase\MitamaCalculator\_data\MitamaCalculatorTestData.cpp" />
+    <ClCompile Include="TestCase\ShikigamiRepository\ShikigamiRepository_Test.cpp" />
+    <ClCompile Include="TestCase\ShikigamiRepository\ShikigamiRepository_TestEntry.cpp" />
     <ClCompile Include="TestCase\StatusCalculator\StatusCalculator_Test.cpp" />
     <ClCompile Include="TestCase\StatusCalculator\StatusCalculator_TestEntry.cpp" />
     <ClCompile Include="TestCase\StatusComparator\StatusComparator_Test.cpp" />
