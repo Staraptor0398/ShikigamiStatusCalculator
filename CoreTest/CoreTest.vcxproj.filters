@@ -42,6 +42,18 @@
     <ClCompile Include="TestData\TestDataDirectory.cpp">
       <Filter>TestData</Filter>
     </ClCompile>
+    <ClCompile Include="TestCase\FileAccess\FileAccess_Test.cpp">
+      <Filter>TestCase\FileAccess</Filter>
+    </ClCompile>
+    <ClCompile Include="TestCase\FileAccess\FileAccess_TestEntry.cpp">
+      <Filter>TestCase\FileAccess</Filter>
+    </ClCompile>
+    <ClCompile Include="TestUtil\TemporaryDirectory.cpp">
+      <Filter>TestUtil</Filter>
+    </ClCompile>
+    <ClCompile Include="TestUtil\TestFileUtil.cpp">
+      <Filter>TestUtil</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -96,6 +108,15 @@
     <ClInclude Include="TestData\TestDataDirectory.h">
       <Filter>TestData</Filter>
     </ClInclude>
+    <ClInclude Include="TestCase\FileAccess\FileAccess_Test.h">
+      <Filter>TestCase\FileAccess</Filter>
+    </ClInclude>
+    <ClInclude Include="TestUtil\TemporaryDirectory.h">
+      <Filter>TestUtil</Filter>
+    </ClInclude>
+    <ClInclude Include="TestUtil\TestFileUtil.h">
+      <Filter>TestUtil</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TestCommon">
@@ -133,6 +154,12 @@
     </Filter>
     <Filter Include="TestData\Converter\StatusCalculator">
       <UniqueIdentifier>{faaff33e-a1ed-447a-8f3a-31b91ab64783}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestCase\FileAccess">
+      <UniqueIdentifier>{9a4ede1a-e9df-45c2-a689-0c112a4477fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestUtil">
+      <UniqueIdentifier>{ed17cbbc-1cde-4941-b4ef-60988441ebc8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

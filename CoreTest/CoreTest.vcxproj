@@ -103,6 +103,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TestCase\FileAccess\FileAccess_Test.h" />
     <ClInclude Include="TestCase\MitamaCalculator\MitamaCalculator_Test.h" />
     <ClInclude Include="TestCase\MitamaCalculator\_data\MitamaCalculatorTestData.h" />
     <ClInclude Include="TestCase\StatusCalculator\StatusCalculator_Test.h" />
@@ -120,6 +121,8 @@
     <ClInclude Include="TestData\Model\StatusTestData.h" />
     <ClInclude Include="TestData\Model\TestData.h" />
     <ClInclude Include="TestData\TestDataDirectory.h" />
+    <ClInclude Include="TestUtil\TemporaryDirectory.h" />
+    <ClInclude Include="TestUtil\TestFileUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -128,6 +131,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TestCase\FileAccess\FileAccess_Test.cpp" />
+    <ClCompile Include="TestCase\FileAccess\FileAccess_TestEntry.cpp" />
     <ClCompile Include="TestCase\MitamaCalculator\MitamaCalculator_Test.cpp" />
     <ClCompile Include="TestCase\MitamaCalculator\MitamaCalculator_TestEntry.cpp" />
     <ClCompile Include="TestCase\MitamaCalculator\_data\MitamaCalculatorTestData.cpp" />
@@ -142,6 +147,8 @@
     <ClCompile Include="TestData\Converter\StatusConverter.cpp" />
     <ClCompile Include="TestData\TestDataDirectory.cpp" />
     <ClCompile Include="TestMain.cpp" />
+    <ClCompile Include="TestUtil\TemporaryDirectory.cpp" />
+    <ClCompile Include="TestUtil\TestFileUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
