@@ -1,0 +1,203 @@
+{
+  "Input": {
+    "Mitamas": [
+      {
+        "MainStat": {
+          "Type": 1,
+          "Value": 486
+        },
+        "SubStats": [
+          {
+            "Type": 9,
+            "Value": 10
+          },
+          {
+            "Type": 5,
+            "Value": 5
+          },
+          {
+            "Type": 4,
+            "Value": 6
+          },
+          {
+            "Type": 8,
+            "Value": 8
+          }
+        ]
+      },
+      {
+        "MainStat": {
+          "Type": 4,
+          "Value": 57
+        },
+        "SubStats": [
+          {
+            "Type": 10,
+            "Value": 12
+          },
+          {
+            "Type": 6,
+            "Value": 7
+          },
+          {
+            "Type": 1,
+            "Value": 20
+          },
+          {
+            "Type": 7,
+            "Value": 9
+          }
+        ]
+      },
+      {
+        "MainStat": {
+          "Type": 3,
+          "Value": 104
+        },
+        "SubStats": [
+          {
+            "Type": 11,
+            "Value": 15
+          },
+          {
+            "Type": 3,
+            "Value": 18
+          },
+          {
+            "Type": 2,
+            "Value": 120
+          },
+          {
+            "Type": 5,
+            "Value": 4
+          }
+        ]
+      },
+      {
+        "MainStat": {
+          "Type": 7,
+          "Value": 55
+        },
+        "SubStats": [
+          {
+            "Type": 1,
+            "Value": 25
+          },
+          {
+            "Type": 2,
+            "Value": 150
+          },
+          {
+            "Type": 3,
+            "Value": 12
+          },
+          {
+            "Type": 4,
+            "Value": 5
+          }
+        ]
+      },
+      {
+        "MainStat": {
+          "Type": 2,
+          "Value": 2052
+        },
+        "SubStats": [
+          {
+            "Type": 6,
+            "Value": 11
+          },
+          {
+            "Type": 7,
+            "Value": 6
+          },
+          {
+            "Type": 8,
+            "Value": 7
+          },
+          {
+            "Type": 1,
+            "Value": 22
+          }
+        ]
+      },
+      {
+        "MainStat": {
+          "Type": 6,
+          "Value": 89
+        },
+        "SubStats": [
+          {
+            "Type": 2,
+            "Value": 180
+          },
+          {
+            "Type": 3,
+            "Value": 16
+          },
+          {
+            "Type": 5,
+            "Value": 3
+          },
+          {
+            "Type": 4,
+            "Value": 4
+          }
+        ]
+      }
+    ],
+    "SetEffects": [
+      {
+        "Type": 9,
+        "Value": 15
+      },
+      {
+        "Type": 10,
+        "Value": 15
+      },
+      {
+        "Type": 0,
+        "Value": 0.0
+      }
+    ],
+    "UniqueEffects": [
+      {
+        "Type": 5,
+        "Value": 8
+      },
+      {
+        "Type": 7,
+        "Value": 8
+      },
+      {
+        "Type": 0,
+        "Value": 0.0
+      },
+      {
+        "Type": 0,
+        "Value": 0.0
+      },
+      {
+        "Type": 0,
+        "Value": 0.0
+      },
+      {
+        "Type": 0,
+        "Value": 0.0
+      }
+    ]
+  },
+  "Expected": {
+    "Attack": 553.0,
+    "HP": 2502.0,
+    "Defense": 150.0,
+    "Speed": 72.0,
+    "CritRate": 20.0,
+    "CritDamage": 107.0,
+    "EffectHit": 78.0,
+    "EffectResist": 15.0,
+    "AdditionalAttackRate": 25.0,
+    "AdditionalHpRate": 27.0,
+    "AdditionalDefenseRate": 15.0
+  }
+}

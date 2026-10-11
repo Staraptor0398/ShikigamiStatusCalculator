@@ -3,23 +3,46 @@
 
 #include "../../../Core/Mitama/MitamaCalculator.h"
 #include "../../TestCommon/TestAssert.h"
-#include "_data/MitamaCalculatorTestData.h"
+#include "../../TestData/Access/JsonDataAccess.h"
+#include "../../TestData/Converter/FullStatusConverter.h"
+#include "../../TestData/Converter/MitamaCalculator/MitamaCalculatorTestDataConverter.h"
+#include "../../TestData/TestDataDirectory.h"
 
-void MitamaCalculator_Test::calculate_addsMitamaStats()
+#include <algorithm>
+#include <filesystem>
+#include <vector>
+
+void MitamaCalculator_Test::calculate_matchesJsonTestData()
 {
-	MitamaSet mitamaSet = MitamaCalculatorTestData::createValidMitamaSetTestData();
+	const std::filesystem::path dataDirectory = TestDataDirectory::getPath("T001.json").parent_path();
+	std::vector<std::filesystem::path> testFiles;
 
-	Status result = MitamaCalculator::calculate(mitamaSet);
+	for (const auto& entry : std::filesystem::directory_iterator(dataDirectory)) {
+		if (entry.is_regular_file() && entry.path().extension() == ".json") {
+			testFiles.push_back(entry.path());
+		}
+	}
 
-	TEST_ASSERT_DOUBLE_EQUAL(553.0, result.Attack);
-	TEST_ASSERT_DOUBLE_EQUAL(2502.0, result.Hp);
-	TEST_ASSERT_DOUBLE_EQUAL(150.0, result.Defense);
-	TEST_ASSERT_DOUBLE_EQUAL(72.0, result.Speed);
-	TEST_ASSERT_DOUBLE_EQUAL(20.0, result.CriticalRate);
-	TEST_ASSERT_DOUBLE_EQUAL(107.0, result.CriticalDamage);
-	TEST_ASSERT_DOUBLE_EQUAL(78.0, result.EffectHit);
-	TEST_ASSERT_DOUBLE_EQUAL(15.0, result.EffectResist);
-	TEST_ASSERT_DOUBLE_EQUAL(25.0, result.AdditionalAttackRate);
-	TEST_ASSERT_DOUBLE_EQUAL(27.0, result.AdditionalHpRate);
-	TEST_ASSERT_DOUBLE_EQUAL(15.0, result.AdditionalDefenseRate);
+	std::sort(testFiles.begin(), testFiles.end());
+	ASSERT_FALSE(testFiles.empty()) << "No JSON files found in " << dataDirectory.string();
+
+	for (const auto& filePath : testFiles) {
+		SCOPED_TRACE(filePath.filename().string());
+
+		const auto testData = JsonDataAccess::load<TestData<MitamaSet, FullStatusTestData>, MitamaCalculatorTestDataConverter>(filePath);
+		const Status expected = FullStatusConverter::toNative(testData.Expected);
+		const Status actual = MitamaCalculator::calculate(testData.Input);
+
+		TEST_ASSERT_DOUBLE_EQUAL(expected.Attack, actual.Attack);
+		TEST_ASSERT_DOUBLE_EQUAL(expected.Hp, actual.Hp);
+		TEST_ASSERT_DOUBLE_EQUAL(expected.Defense, actual.Defense);
+		TEST_ASSERT_DOUBLE_EQUAL(expected.Speed, actual.Speed);
+		TEST_ASSERT_DOUBLE_EQUAL(expected.CriticalRate, actual.CriticalRate);
+		TEST_ASSERT_DOUBLE_EQUAL(expected.CriticalDamage, actual.CriticalDamage);
+		TEST_ASSERT_DOUBLE_EQUAL(expected.EffectHit, actual.EffectHit);
+		TEST_ASSERT_DOUBLE_EQUAL(expected.EffectResist, actual.EffectResist);
+		TEST_ASSERT_DOUBLE_EQUAL(expected.AdditionalAttackRate, actual.AdditionalAttackRate);
+		TEST_ASSERT_DOUBLE_EQUAL(expected.AdditionalHpRate, actual.AdditionalHpRate);
+		TEST_ASSERT_DOUBLE_EQUAL(expected.AdditionalDefenseRate, actual.AdditionalDefenseRate);
+	}
 }

@@ -3,5 +3,5 @@
 class StatusCalculator_Test
 {
 public:
-	static void calculateFinalStatus_addsBaseAndMitamaStatus();
+	static void calculateFinalStatus_matchesJsonTestData();
 };

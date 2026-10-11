@@ -18,9 +18,6 @@
     <ClCompile Include="TestCase\StatusCalculator\StatusCalculator_TestEntry.cpp">
       <Filter>TestCase\StatusCalculator</Filter>
     </ClCompile>
-    <ClCompile Include="TestCase\MitamaCalculator\_data\MitamaCalculatorTestData.cpp">
-      <Filter>TestCase\MitamaCalculator\_data</Filter>
-    </ClCompile>
     <ClCompile Include="TestCase\MitamaCalculator\MitamaCalculator_Test.cpp">
       <Filter>TestCase\MitamaCalculator</Filter>
     </ClCompile>
@@ -66,6 +63,9 @@
     <ClCompile Include="TestCase\ShikigamiCsvConverter\ShikigamiCsvConverter_TestEntry.cpp">
       <Filter>TestCase\ShikigamiCsvConverter</Filter>
     </ClCompile>
+    <ClCompile Include="TestData\Converter\MitamaCalculator\MitamaCalculatorTestDataConverter.cpp">
+      <Filter>TestData\Converter\MitamaCalculator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -80,9 +80,6 @@
     </ClInclude>
     <ClInclude Include="TestCase\StatusCalculator\StatusCalculator_Test.h">
       <Filter>TestCase\StatusCalculator</Filter>
-    </ClInclude>
-    <ClInclude Include="TestCase\MitamaCalculator\_data\MitamaCalculatorTestData.h">
-      <Filter>TestCase\MitamaCalculator\_data</Filter>
     </ClInclude>
     <ClInclude Include="TestCase\MitamaCalculator\MitamaCalculator_Test.h">
       <Filter>TestCase\MitamaCalculator</Filter>
@@ -135,6 +132,9 @@
     <ClInclude Include="TestCase\ShikigamiCsvConverter\ShikigamiCsvConverter_Test.h">
       <Filter>TestCase\ShikigamiCsvConverter</Filter>
     </ClInclude>
+    <ClInclude Include="TestData\Converter\MitamaCalculator\MitamaCalculatorTestDataConverter.h">
+      <Filter>TestData\Converter\MitamaCalculator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TestCommon">
@@ -151,9 +151,6 @@
     </Filter>
     <Filter Include="TestCase\MitamaCalculator">
       <UniqueIdentifier>{ab602fe7-161e-467e-a6ea-498f11a2133d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="TestCase\MitamaCalculator\_data">
-      <UniqueIdentifier>{dafb945a-c9ab-4a1c-b2d8-f0c938c58f23}</UniqueIdentifier>
     </Filter>
     <Filter Include="TestData">
       <UniqueIdentifier>{7628e04e-b99b-48a5-8311-e0286e9f4ef2}</UniqueIdentifier>
@@ -185,6 +182,7 @@
     <Filter Include="TestCase\ShikigamiCsvConverter">
       <UniqueIdentifier>{b25b55b2-5057-4931-a56f-e88427c80e5f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TestData\Converter\MitamaCalculator" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

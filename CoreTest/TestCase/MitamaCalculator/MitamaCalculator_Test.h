@@ -3,5 +3,5 @@
 class MitamaCalculator_Test
 {
 public:
-	static void calculate_addsMitamaStats();
+	static void calculate_matchesJsonTestData();
 };

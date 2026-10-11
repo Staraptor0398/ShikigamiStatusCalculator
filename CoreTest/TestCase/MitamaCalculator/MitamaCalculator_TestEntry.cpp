@@ -5,7 +5,7 @@
 #include "MitamaCalculator_Test.h"
 
 #define MITAMA_CALCULATOR_TEST_LIST \
-	X(T001_calculate_addsMitamaStats, calculate_addsMitamaStats)
+	X(T001_calculate_matchesJsonTestData, calculate_matchesJsonTestData)
 
 #define X(testName, functionName) \
 	TEST(MitamaCalculator_Test, testName) \
@@ -16,3 +16,4 @@
 MITAMA_CALCULATOR_TEST_LIST
 
 #undef X
+#undef MITAMA_CALCULATOR_TEST_LIST
