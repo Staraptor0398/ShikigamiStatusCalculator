@@ -37,17 +37,34 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentException("Recovery file path is empty.", nameof(recoveryFilePath));
 			}
 
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			string stage = "OpenRecoveryFileDialog";
 
-			AutomationElement recoveryButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SHIKIGAMI_RECOVERY, ControlType.Button);
+			try
+			{
+				Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			mButtonOperator.PostClick(recoveryButton);
+				AutomationElement recoveryButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SHIKIGAMI_RECOVERY, ControlType.Button);
 
-			FileDialogElements fileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, mainWindow);
-			mFileDialogOperator.SelectLoadFile(fileDialogElements, recoveryFilePath);
+				mButtonOperator.PostClick(recoveryButton);
 
-			Window recoveryForm = getRecoveryForm(session);
-			mButtonOperator.Click(recoveryForm, AutomationIds.ShikigamiRecoveryDialog.RECOVERY);
+				stage = "SelectRecoveryFile";
+
+				FileDialogElements fileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, mainWindow);
+
+				mFileDialogOperator.SelectLoadFile(fileDialogElements, recoveryFilePath);
+
+				stage = "WaitForRecoveryForm";
+
+				Window recoveryForm = getRecoveryForm(session);
+
+				stage = "ExecuteRecovery";
+
+				mButtonOperator.Click(recoveryForm, AutomationIds.ShikigamiRecoveryDialog.RECOVERY);
+			}
+			catch (Exception ex)
+			{
+				throw new InvalidOperationException($"ShikigamiRecoveryOperator.Recover failed at stage '{stage}': " + $"RecoveryFilePath={recoveryFilePath}. " + $"{ex.Message}", ex);
+			}
 		}
 
 		private Window getRecoveryForm(GuiSession session)
