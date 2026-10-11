@@ -147,6 +147,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			Window saveDialog = getSaveDialog(session);
 
+			Exception validationError = null;
+
 			try
 			{
 				IReadOnlyList<string> actualSaveTypes = mComboBoxOperator.GetItems(saveDialog, AutomationIds.SaveDataSaveDialog.SAVE_TYPE);
@@ -156,11 +158,30 @@ namespace ScenarioRunner.Automation.Operator.Feature
 					throw new InvalidOperationException($"SaveData level mismatch. " + $"Expected={expectedLevel}, " + $"ExpectedSaveTypes=[{string.Join(", ", expectedSaveTypes)}], " + $"ActualSaveTypes=[{string.Join(", ", actualSaveTypes)}]");
 				}
 			}
-			finally
+			catch (Exception ex)
+			{
+				validationError = ex;
+			}
+
+			try
 			{
 				mButtonOperator.Click(saveDialog, AutomationIds.SaveDataSaveDialog.CANCEL);
 
 				mWindowWaiter.WaitForWindowClosed(saveDialog);
+			}
+			catch (Exception ex)
+			{
+				if (validationError != null)
+				{
+					throw new AggregateException($"SaveDataOperator.CheckSaveDataLevel failed during validation and dialog cleanup. ExpectedLevel={expectedLevel}.", validationError, ex);
+				}
+
+				throw new InvalidOperationException($"SaveDataOperator.CheckSaveDataLevel failed during dialog cleanup. ExpectedLevel={expectedLevel}. {ex.Message}", ex);
+			}
+
+			if (validationError != null)
+			{
+				System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(validationError).Throw();
 			}
 		}
 
