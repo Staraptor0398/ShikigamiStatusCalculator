@@ -258,39 +258,63 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new ArgumentNullException(nameof(session));
 			}
 
-			Window dialog = session.LastCheckedDialog ?? GetActiveDialog(session);
+			string stage = "Initialize";
 
-			AutomationElement[] buttons = session.LastCheckedDialogButtons;
-
-			if (buttons == null)
+			try
 			{
-				if (!tryInspectDialog(dialog, out buttons, out AutomationElement[] texts))
+				stage = "GetActiveDialog";
+
+				Window dialog = session.LastCheckedDialog ?? GetActiveDialog(session);
+
+				stage = "GetDialogButtons";
+
+				AutomationElement[] buttons = session.LastCheckedDialogButtons;
+
+				if (buttons == null)
 				{
-					throw new InvalidOperationException("Failed to inspect dialog buttons.");
+					if (!tryInspectDialog(dialog, out buttons, out AutomationElement[] texts))
+					{
+						throw new InvalidOperationException("Failed to inspect dialog buttons.");
+					}
 				}
+
+				stage = "FindOkButton";
+
+				AutomationElement button = buttons.FirstOrDefault(element => string.Equals(element.Properties.Name.ValueOrDefault, "OK", StringComparison.OrdinalIgnoreCase));
+
+				if (button == null)
+				{
+					stage = "FindInvokableButton";
+
+					button = buttons.FirstOrDefault(element => element.Patterns.Invoke.IsSupported);
+				}
+
+				if (button == null)
+				{
+					throw new InvalidOperationException("Dialog button was not found.");
+				}
+
+				stage = "GetWindowHandle";
+
+				IntPtr windowHandle = dialog.Properties.NativeWindowHandle.ValueOrDefault;
+
+				stage = "ClickButton";
+
+				mButtonOperator.Click(button);
+
+				stage = "WaitForWindowClosed";
+
+				mWindowWaiter.WaitForWindowClosed(windowHandle);
+
+				stage = "ClearDialogCache";
+
+				session.LastCheckedDialog = null;
+				session.LastCheckedDialogButtons = null;
 			}
-
-			AutomationElement button = buttons.FirstOrDefault(element => string.Equals(element.Properties.Name.ValueOrDefault, "OK", StringComparison.OrdinalIgnoreCase));
-
-			if (button == null)
+			catch (Exception ex)
 			{
-				button = buttons.FirstOrDefault(element => element.Patterns.Invoke.IsSupported);
+				throw new InvalidOperationException($"DialogOperator.Close failed at stage '{stage}': {ex.Message}", ex);
 			}
-
-			if (button == null)
-			{
-				throw new InvalidOperationException("Dialog button was not found.");
-			}
-
-			// ダイアログが破棄される前にウィンドウハンドルを取得する。
-			IntPtr windowHandle = dialog.Properties.NativeWindowHandle.ValueOrDefault;
-
-			mButtonOperator.Click(button);
-
-			mWindowWaiter.WaitForWindowClosed(windowHandle);
-
-			session.LastCheckedDialog = null;
-			session.LastCheckedDialogButtons = null;
 		}
 
 		private bool waitForMessageBox(GuiSession session, IntPtr mainWindowHandle, string expectedMessage, out Window dialog, out AutomationElement[] buttons)
