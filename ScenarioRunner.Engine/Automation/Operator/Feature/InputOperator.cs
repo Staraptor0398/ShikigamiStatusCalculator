@@ -76,6 +76,10 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mButtonOperator.Click(dialog, AutomationIds.MessageBox.YES);
 
+			// 確認ダイアログは閉じられるため、後続の操作で古いUI要素を参照しないようキャッシュを破棄する。
+			session.LastCheckedDialog = null;
+			session.LastCheckedDialogButtons = null;
+
 			if (!session.Application.WaitWhileBusy(TimeSpan.FromSeconds(5)))
 			{
 				throw new InvalidOperationException("Clear operation did not complete within 5 seconds.");
