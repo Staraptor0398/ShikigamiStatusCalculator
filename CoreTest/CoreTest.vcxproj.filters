@@ -60,6 +60,12 @@
     <ClCompile Include="TestCase\ShikigamiRepository\ShikigamiRepository_TestEntry.cpp">
       <Filter>TestCase\ShikigamiRepository</Filter>
     </ClCompile>
+    <ClCompile Include="TestCase\ShikigamiCsvConverter\ShikigamiCsvConverter_Test.cpp">
+      <Filter>TestCase\ShikigamiCsvConverter</Filter>
+    </ClCompile>
+    <ClCompile Include="TestCase\ShikigamiCsvConverter\ShikigamiCsvConverter_TestEntry.cpp">
+      <Filter>TestCase\ShikigamiCsvConverter</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -126,6 +132,9 @@
     <ClInclude Include="TestCase\ShikigamiRepository\ShikigamiRepository_Test.h">
       <Filter>TestCase\ShikigamiRepository</Filter>
     </ClInclude>
+    <ClInclude Include="TestCase\ShikigamiCsvConverter\ShikigamiCsvConverter_Test.h">
+      <Filter>TestCase\ShikigamiCsvConverter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TestCommon">
@@ -172,6 +181,9 @@
     </Filter>
     <Filter Include="TestCase\ShikigamiRepository">
       <UniqueIdentifier>{a6d10cb6-1fda-4244-a64d-1e1ae195909d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestCase\ShikigamiCsvConverter">
+      <UniqueIdentifier>{b25b55b2-5057-4931-a56f-e88427c80e5f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
