@@ -13,6 +13,9 @@ namespace ScenarioRunner.Automation
 		public Window MainWindow { get; set; }
 		public AutomationElementMap MainElementMap { get; set; }
 
+		public Window LastCheckedDialog { get; set; }
+		public AutomationElement[] LastCheckedDialogButtons { get; set; }
+
 		public GuiSession(Application application, UIA2Automation automation)
 		{
 			Application = application;
@@ -21,6 +24,9 @@ namespace ScenarioRunner.Automation
 
 		public void Dispose()
 		{
+			LastCheckedDialogButtons = null;
+			LastCheckedDialog = null;
+
 			MainElementMap = null;
 			MainWindow = null;
 
