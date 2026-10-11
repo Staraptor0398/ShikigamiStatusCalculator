@@ -35,7 +35,7 @@ MainForm -> RecoveryForm : ShowDialog()
 == 復旧候補取得 ==
 RecoveryForm -> ShikigamiGateway : 復旧候補取得
 ShikigamiGateway -> ShikigamiService : 復旧候補取得
-ShikigamiService -> ShikigamiRepository : getRecoveryCandinateShikigamiList()
+ShikigamiService -> ShikigamiRepository : getRecoveryCandidateShikigamiList()
 
 activate ShikigamiRepository
 
