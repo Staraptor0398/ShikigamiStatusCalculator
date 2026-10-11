@@ -1,3 +1,4 @@
+
 using ScenarioRunner.ScenarioFormat;
 
 namespace ScenarioRunnerTest.TestCase.ScenarioFormat
@@ -566,6 +567,127 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 			catch (ScenarioValidationException ex)
 			{
 				Assert.AreEqual("Too many arguments at line 2: CHECK SAVEDATA LEVEL BUILD HOGE", ex.Message);
+			}
+		}
+
+		[TestMethod]
+		[DataRow("MAIN", "1", null, true)]
+		[DataRow("MAIN", "6", null, true)]
+		[DataRow("MAIN", "0", null, false)]
+		[DataRow("MAIN", "7", null, false)]
+		[DataRow("MAIN", "ABC", null, false)]
+		[DataRow("MAIN", "2147483648", null, false)]
+		[DataRow("SUB", "1", "1", true)]
+		[DataRow("SUB", "6", "4", true)]
+		[DataRow("SUB", "0", "1", false)]
+		[DataRow("SUB", "7", "1", false)]
+		[DataRow("SUB", "1", "0", false)]
+		[DataRow("SUB", "1", "5", false)]
+		[DataRow("SUB", "1", "ABC", false)]
+		[DataRow("SET", "1", null, true)]
+		[DataRow("SET", "3", null, true)]
+		[DataRow("SET", "0", null, false)]
+		[DataRow("SET", "4", null, false)]
+		[DataRow("SET", "ABC", null, false)]
+		[DataRow("UNIQUE", "1", null, true)]
+		[DataRow("UNIQUE", "6", null, true)]
+		[DataRow("UNIQUE", "0", null, false)]
+		[DataRow("UNIQUE", "7", null, false)]
+		[DataRow("UNIQUE", "ABC", null, false)]
+		public void Validate_EquipMitamaSlotRange(string target, string slot, string subSlot, bool expectedValid)
+		{
+			string[] arguments;
+			string rawText;
+
+			if (target == "SUB")
+			{
+				arguments = new[] { target, slot, subSlot, "追加攻撃力", "5" };
+				rawText = $"EQUIP MITAMA SUB {slot} {subSlot} \"追加攻撃力\" \"5\"";
+			}
+			else
+			{
+				arguments = new[] { target, slot, "追加攻撃力" };
+				rawText = $"EQUIP MITAMA {target} {slot} \"追加攻撃力\"";
+			}
+
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.EQUIP_MITAMA, arguments, rawText)
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			if (expectedValid)
+			{
+				validator.Validate(scenario);
+				return;
+			}
+
+			int minimum = 1;
+			int maximum = target == "SET" ? 3 : 6;
+
+			if (target == "SUB" && int.TryParse(slot, out int mitamaSlot) && mitamaSlot >= 1 && mitamaSlot <= 6)
+			{
+				maximum = 4;
+			}
+
+			string expectedMessage = $"Argument must be an integer between {minimum} and {maximum} at line 2: {rawText}";
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual(expectedMessage, ex.Message);
+			}
+		}
+
+		[TestMethod]
+		public void Validate_EquipMitamaSubWithoutOptionalArguments()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.EQUIP_MITAMA, new[] { "SUB", "2", "1" }, "EQUIP MITAMA SUB 2 1")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_EquipMitamaSubInvalidStatValue()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.EQUIP_MITAMA, new[] { "SUB", "2", "1", "追加攻撃力", "INVALID" }, "EQUIP MITAMA SUB 2 1 \"追加攻撃力\" \"INVALID\"")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			validator.Validate(scenario);
+		}
+
+		[TestMethod]
+		public void Validate_EquipMitamaMissingArgument()
+		{
+			var validator = new ScenarioValidator();
+			var steps = new List<ScenarioStep>
+			{
+				new ScenarioStep(2, ScenarioCommandType.EQUIP_MITAMA, new[] { "MAIN", "2" }, "EQUIP MITAMA MAIN 2")
+			};
+			var scenario = new Scenario("Test.scenario", 1, 3, steps);
+
+			try
+			{
+				validator.Validate(scenario);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Argument is missing at line 2: EQUIP MITAMA MAIN 2", ex.Message);
 			}
 		}
 	}
