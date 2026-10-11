@@ -265,5 +265,32 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 			Assert.AreEqual(1, actual.Steps[3].Arguments.Count);
 			Assert.AreEqual("SNAPSHOT", actual.Steps[3].Arguments[0]);
 		}
+
+		[TestMethod]
+		[DataRow("\"CALC\"")]
+		[DataRow("\"SEL\" SHIKIGAMI \"願紡縁結神\"")]
+		[DataRow("SEL \"SHIKIGAMI\" \"願紡縁結神\"")]
+		[DataRow("\"CHECK\" \"CALC\"")]
+		[DataRow("EQUIP \"MITAMA\" MAIN 2 \"追加攻撃力\"")]
+		public void Parse_QuotedCommandKeyword(string command)
+		{
+			var parser = new ScenarioParser();
+			string[] lines =
+			{
+				"START",
+				command,
+				"END"
+			};
+
+			try
+			{
+				parser.Parse("Test.scenario", lines);
+				Assert.Fail("FormatException was not thrown.");
+			}
+			catch (FormatException ex)
+			{
+				Assert.AreEqual($"Command keyword must not be enclosed in double quotes at line 2: {command}", ex.Message);
+			}
+		}
 	}
 }
