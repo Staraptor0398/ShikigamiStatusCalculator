@@ -1,0 +1,47 @@
+# DialogCacheAfterGuiRestart.scenario
+#
+# 同一Scenario内でGui.exeを再起動した際、
+# DialogOperatorが以前のGuiSessionで取得した
+# ダイアログ情報を再利用しないことを確認する。
+#
+# 1回目のGui.exeでValidationエラーダイアログを取得し、
+# CLOSE DIALOGを実行せずにGui.exeを終了する。
+#
+# その後、式神データを破損させてGui.exeを再起動し、
+# 新しいGuiSessionで表示されたダイアログを
+# CLOSE DIALOGによって正常に閉じられることを確認する。
+#
+# また、LAUNCH GUI直後のMainWindow未取得状態でも、
+# ダイアログを探索・操作できることを確認する。
+
+START
+
+# 1回目のGui.exeを起動する
+OPEN GUI
+
+# 御魂未装備によるValidationエラーを発生させる
+CALC
+
+# ダイアログを確認し、GuiSessionにダイアログ情報を保持する
+CHECK DIALOG "御魂が1つも装備されていません。"
+
+# ダイアログを閉じずに1回目のGui.exeを終了する
+CLOSE GUI
+
+# 2回目の起動時にエラーダイアログが表示されるよう、
+# ShikigamiData.csvのヘッダーを意図的に破損させる
+BREAK SHIKIGAMI HEADER
+
+# 新しいGuiSessionでGui.exeを起動する
+# MainWindowの表示完了は待機しない
+LAUNCH GUI
+
+# CHECK DIALOGを実行せずにダイアログを閉じる
+# 以前のGuiSessionのキャッシュを使用せず、
+# 新しいGuiSessionのダイアログを探索できることを確認する
+CLOSE DIALOG
+
+# 2回目のGui.exeを終了する
+CLOSE GUI
+
+END
