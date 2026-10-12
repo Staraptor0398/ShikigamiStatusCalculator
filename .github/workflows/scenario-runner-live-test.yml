@@ -1,4 +1,3 @@
-
 name: Scenario Runner Live Test
 
 on:
@@ -8,9 +7,9 @@ permissions:
   contents: read
 
 jobs:
-  live-test:
+  scenario-live-test:
     runs-on: windows-2025-vs2026
-    timeout-minutes: 15
+    timeout-minutes: 45
 
     env:
       YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
@@ -26,55 +25,136 @@ jobs:
 
           Write-Host "YouTube stream configuration is available."
 
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v3
+        with:
+          nuget-version: latest
+
       - name: Install FFmpeg
         shell: pwsh
         run: choco install ffmpeg -y
 
-      - name: Verify FFmpeg
+      - name: Restore SaveData packages
+        shell: pwsh
+        run: nuget restore SaveData\packages.config -PackagesDirectory packages
+
+      - name: Build ShikigamiApp
+        shell: pwsh
+        run: msbuild ShikigamiApp.slnx /m /p:Configuration=Release /p:Platform=x64
+
+      - name: Build ScenarioRunner CLI
+        shell: pwsh
+        run: msbuild ScenarioRunner.slnx /restore /m /p:Configuration=ReleaseCli /p:Platform=x64
+
+      - name: Verify binaries
         shell: pwsh
         run: |
-          ffmpeg -version
-
-          if ($LASTEXITCODE -ne 0) {
-              throw "FFmpeg is not available."
+          if (-not (Test-Path "Gui\bin\x64\Release\Gui.exe")) {
+              throw "Gui.exe was not built."
           }
 
-      - name: Stream desktop to YouTube for 60 seconds
+          if (-not (Test-Path "ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe")) {
+              throw "ScenarioRunnerCli.exe was not built."
+          }
+
+      - name: Run Scenario Batch with live streaming
         shell: pwsh
         run: |
           $streamUrl = "$env:YOUTUBE_RTMPS_URL/$env:YOUTUBE_STREAM_KEY"
 
-          Write-Host "Starting a 60-second private live stream test."
+          # Do not print FFmpeg arguments: they contain the stream key.
+          $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+          $startInfo.FileName = "ffmpeg"
+          $startInfo.Arguments = "-hide_banner -loglevel quiet -nostats -y -f gdigrab -framerate 5 -draw_mouse 1 -i desktop -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -b:v 1800k -maxrate 1800k -bufsize 3600k -g 10 -c:a aac -b:a 128k -ar 44100 -f flv `"$streamUrl`""
+          $startInfo.UseShellExecute = $false
+          $startInfo.RedirectStandardInput = $true
+          $startInfo.RedirectStandardOutput = $false
+          $startInfo.RedirectStandardError = $false
 
-          & ffmpeg `
-            -hide_banner `
-            -loglevel quiet `
-            -nostats `
-            -nostdin `
-            -f gdigrab `
-            -framerate 5 `
-            -draw_mouse 1 `
-            -i desktop `
-            -f lavfi `
-            -i "anullsrc=channel_layout=stereo:sample_rate=44100" `
-            -t 60 `
-            -map 0:v:0 `
-            -map 1:a:0 `
-            -c:v libx264 `
-            -preset ultrafast `
-            -pix_fmt yuv420p `
-            -b:v 1800k `
-            -maxrate 1800k `
-            -bufsize 3600k `
-            -g 10 `
-            -c:a aac `
-            -b:a 128k `
-            -ar 44100 `
-            -f flv `
-            $streamUrl
+          $ffmpeg = New-Object System.Diagnostics.Process
+          $ffmpeg.StartInfo = $startInfo
+          $scenarioExitCode = 1
+          $streamFailed = $false
 
-          if ($LASTEXITCODE -ne 0) {
-              throw "FFmpeg live stream failed with exit code $LASTEXITCODE."
+          try {
+              Write-Host "Starting YouTube live stream."
+
+              if (-not $ffmpeg.Start()) {
+                  throw "Failed to start FFmpeg."
+              }
+
+              Start-Sleep -Seconds 5
+
+              if ($ffmpeg.HasExited) {
+                  throw "FFmpeg exited before Scenario Runner started."
+              }
+
+              Write-Host "Starting Scenario Runner Batch."
+
+              & ".\ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe" `
+                --run-directory ".\Scenario"
+
+              $scenarioExitCode = $LASTEXITCODE
+              $streamFailed = $ffmpeg.HasExited
+          }
+          finally {
+              if (-not $ffmpeg.HasExited) {
+                  try {
+                      $ffmpeg.StandardInput.WriteLine("q")
+                      $ffmpeg.StandardInput.Flush()
+
+                      if (-not $ffmpeg.WaitForExit(10000)) {
+                          $ffmpeg.Kill()
+                          $ffmpeg.WaitForExit()
+                      }
+                  }
+                  catch {
+                      if (-not $ffmpeg.HasExited) {
+                          $ffmpeg.Kill()
+                          $ffmpeg.WaitForExit()
+                      }
+
+                      throw
+                  }
+              }
+
+              $ffmpeg.Dispose()
           }
 
-          Write-Host "60-second streaming test completed."
+          if ($scenarioExitCode -ne 0) {
+              throw "Scenario Runner Batch failed with exit code $scenarioExitCode."
+          }
+
+          if ($streamFailed) {
+              throw "YouTube live streaming stopped before Scenario Runner finished."
+          }
+
+          Write-Host "Scenario Runner Batch and streaming completed."
+
+      - name: Upload failure captures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-live-test-captures
+          path: ScenarioRunnerCli\bin\x64\Release\Capture
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-live-test-logs
+          path: |
+            ScenarioRunnerCli\bin\x64\Release\Log
+            Gui\bin\x64\Release\Log
+          if-no-files-found: ignore
+          retention-days: 3
