@@ -1,0 +1,106 @@
+name: SaveDataTest
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  save-data-test:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v3
+        with:
+          nuget-version: latest
+
+      - name: Restore SaveData packages
+        shell: pwsh
+        run: nuget restore SaveData\packages.config -PackagesDirectory packages
+
+      - name: Restore SaveDataTest packages
+        shell: pwsh
+        run: |
+          msbuild SaveDataTest\SaveDataTest.csproj /t:Restore /p:Configuration=Debug /p:Platform=x64
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "SaveDataTest package restore failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Build SaveDataTest
+        shell: pwsh
+        run: |
+          msbuild SaveData_Test.slnx /m /p:Configuration=Debug /p:Platform=x64
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "SaveDataTest build failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Verify binary
+        shell: pwsh
+        run: |
+          $assemblies = @(
+              Get-ChildItem "SaveDataTest\bin" -Recurse -Filter "SaveDataTest.dll" -File
+          )
+
+          if ($assemblies.Count -ne 1) {
+              throw "Expected one SaveDataTest.dll, found $($assemblies.Count)."
+          }
+
+      - name: Run SaveDataTest
+        shell: pwsh
+        run: |
+          $testAssembly = @(
+              Get-ChildItem "SaveDataTest\bin" -Recurse -Filter "SaveDataTest.dll" -File
+          )[0].FullName
+
+          $vsTest = vswhere -latest -products * -find "**\vstest.console.exe" |
+              Select-Object -First 1
+
+          if ([string]::IsNullOrWhiteSpace($vsTest)) {
+              throw "vstest.console.exe was not found."
+          }
+
+          & $vsTest `
+              $testAssembly `
+              "/Platform:x64" `
+              "/Logger:trx;LogFileName=SaveDataTest.trx" `
+              "/ResultsDirectory:TestResults"
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "SaveDataTest failed with exit code $LASTEXITCODE."
+          }
+
+          $resultPath = "TestResults\SaveDataTest.trx"
+
+          if (-not (Test-Path $resultPath)) {
+              throw "SaveDataTest TRX result was not created."
+          }
+
+          [xml]$result = Get-Content $resultPath -Raw
+          $counters = $result.TestRun.ResultSummary.Counters
+
+          if ([int]$counters.total -eq 0) {
+              throw "No SaveDataTest cases were executed."
+          }
+
+          Write-Host "SaveDataTest completed successfully. Tests: $($counters.total)"
+
+      - name: Upload SaveDataTest results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: save-data-test-results
+          path: TestResults\SaveDataTest.trx
+          if-no-files-found: warn
