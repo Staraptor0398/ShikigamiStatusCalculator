@@ -1,3 +1,4 @@
+
 name: Scenario Runner Batch
 
 on:
@@ -7,12 +8,41 @@ on:
         description: "Branch, tag, or commit SHA to test"
         required: true
         default: "master"
+        type: string
+      enable_live_stream:
+        description: "Stream to YouTube Live (do not start consecutive live runs)"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scenario-runner-batch
+  cancel-in-progress: false
 
 jobs:
   scenario-batch:
     runs-on: windows-2025-vs2026
+    timeout-minutes: 45
+
+    env:
+      ENABLE_LIVE_STREAM: ${{ inputs.enable_live_stream }}
+      YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+      YOUTUBE_RTMPS_URL: rtmps://a.rtmps.youtube.com/live2
 
     steps:
+      - name: Verify live stream configuration
+        if: inputs.enable_live_stream
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:YOUTUBE_STREAM_KEY)) {
+              throw "Repository secret YOUTUBE_STREAM_KEY is not configured."
+          }
+
+          Write-Host "YouTube live streaming is enabled."
+
       - name: Checkout
         uses: actions/checkout@v7
         with:
@@ -58,50 +88,208 @@ jobs:
       - name: Run Scenario Batch with recording
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path "ScenarioVideo" | Out-Null
+          $enableLiveStream = $env:ENABLE_LIVE_STREAM -eq "true"
 
-          $videoPath = Join-Path $PWD "ScenarioVideo\ScenarioBatch.mp4"
+          $videoDirectory = Join-Path $PWD "ScenarioVideo"
+          $videoPath = "ScenarioVideo/ScenarioBatch.mp4"
+          $overlayPath = Join-Path $videoDirectory "current_scenario.txt"
+          $tempOverlayPath = Join-Path $videoDirectory "current_scenario.tmp"
+          $fontPath = Join-Path $videoDirectory "overlay.ttf"
 
-          $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-          $startInfo.FileName = "ffmpeg"
-          $startInfo.Arguments = "-y -f gdigrab -framerate 5 -draw_mouse 1 -i desktop -c:v libx264 -preset ultrafast -pix_fmt yuv420p `"$videoPath`""
-          $startInfo.UseShellExecute = $false
-          $startInfo.RedirectStandardInput = $true
-          $startInfo.RedirectStandardOutput = $false
-          $startInfo.RedirectStandardError = $false
+          New-Item -ItemType Directory -Force -Path $videoDirectory | Out-Null
+          Copy-Item "C:\Windows\Fonts\arial.ttf" $fontPath
+
+          $utf8 = [System.Text.UTF8Encoding]::new($false)
+
+          [System.IO.File]::WriteAllText(
+              $overlayPath,
+              "Waiting for Scenario Runner...",
+              $utf8
+          )
+
+          # Use relative paths to avoid Windows drive-letter escaping.
+          $drawText = "drawtext=fontfile=ScenarioVideo/overlay.ttf:textfile=ScenarioVideo/current_scenario.txt:reload=1:fontcolor=white:fontsize=26:box=1:boxcolor=black@0.75:boxborderw=12:x=20:y=20"
+
+          # The capture and encoding settings are shared by both modes.
+          $ffmpegArguments = "-hide_banner -loglevel quiet -nostats -y -f gdigrab -framerate 5 -draw_mouse 1 -i desktop -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -map 0:v:0 -map 1:a:0 -vf `"$drawText`" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -b:v 1800k -maxrate 1800k -bufsize 3600k -g 10 -flags +global_header -c:a aac -b:a 128k -ar 44100"
+
+          if ($enableLiveStream) {
+              $streamUrl = "$env:YOUTUBE_RTMPS_URL/$env:YOUTUBE_STREAM_KEY"
+
+              # Record locally even if the RTMPS output fails.
+              # The tee muxer shares one encoded stream.
+              $teeOutput = "[f=mp4]$videoPath|[f=flv:onfail=ignore]$streamUrl"
+
+              $ffmpegArguments += " -f tee `"$teeOutput`""
+
+              Write-Host "Recording and YouTube live streaming are enabled."
+          }
+          else {
+              $ffmpegArguments += " -f mp4 `"$videoPath`""
+
+              Write-Host "Recording is enabled. YouTube live streaming is disabled."
+          }
+
+          # Never print FFmpeg arguments because live mode includes the stream key.
+          $ffmpegInfo = New-Object System.Diagnostics.ProcessStartInfo
+          $ffmpegInfo.FileName = "ffmpeg"
+          $ffmpegInfo.Arguments = $ffmpegArguments
+          $ffmpegInfo.UseShellExecute = $false
+          $ffmpegInfo.RedirectStandardInput = $true
+          $ffmpegInfo.RedirectStandardOutput = $false
+          $ffmpegInfo.RedirectStandardError = $false
 
           $ffmpeg = New-Object System.Diagnostics.Process
-          $ffmpeg.StartInfo = $startInfo
+          $ffmpeg.StartInfo = $ffmpegInfo
 
+          $scenarioProcess = $null
           $scenarioExitCode = 1
+          $streamFailed = $false
+          $lastScenarioName = $null
+          $lastScenarioResult = $null
+          $batchResult = $null
 
           try {
+              Write-Host "Starting FFmpeg."
+
               if (-not $ffmpeg.Start()) {
                   throw "Failed to start FFmpeg."
               }
 
-              Start-Sleep -Seconds 1
+              # Live mode needs time to establish the RTMPS connection.
+              $startupWaitSeconds = if ($enableLiveStream) { 5 } else { 1 }
 
-              & ".\ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe" `
-                --run-directory ".\Scenario"
+              Start-Sleep -Seconds $startupWaitSeconds
 
-              $scenarioExitCode = $LASTEXITCODE
+              if ($ffmpeg.HasExited) {
+                  throw "FFmpeg exited before Scenario Runner started."
+              }
+
+              Write-Host "Starting Scenario Runner Batch."
+
+              $scenarioInfo = New-Object System.Diagnostics.ProcessStartInfo
+              $scenarioInfo.FileName = (Resolve-Path ".\ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe").Path
+              $scenarioInfo.Arguments = '--run-directory ".\Scenario"'
+              $scenarioInfo.UseShellExecute = $false
+              $scenarioInfo.RedirectStandardOutput = $true
+              $scenarioInfo.RedirectStandardError = $false
+
+              $scenarioProcess = New-Object System.Diagnostics.Process
+              $scenarioProcess.StartInfo = $scenarioInfo
+
+              if (-not $scenarioProcess.Start()) {
+                  throw "Failed to start Scenario Runner."
+              }
+
+              # Observe existing console output without modifying Scenario Runner.
+              while ($null -ne ($line = $scenarioProcess.StandardOutput.ReadLine())) {
+                  Write-Host $line
+
+                  if ($line.StartsWith("[Batch] Running: ", [System.StringComparison]::Ordinal)) {
+                      $lastScenarioName = $line.Substring("[Batch] Running: ".Length).Replace("\", "/")
+                      $lastScenarioResult = "RUNNING"
+
+                      [System.IO.File]::WriteAllText(
+                          $tempOverlayPath,
+                          $lastScenarioName,
+                          $utf8
+                      )
+
+                      [System.IO.File]::Move($tempOverlayPath, $overlayPath, $true)
+                  }
+                  elseif ($line.StartsWith("[Batch] PASS: ", [System.StringComparison]::Ordinal)) {
+                      $lastScenarioResult = "PASS"
+                  }
+                  elseif ($line.StartsWith("[Batch] FAIL: ", [System.StringComparison]::Ordinal)) {
+                      $lastScenarioResult = "FAIL"
+                  }
+                  elseif ($line.StartsWith("Batch Result: ", [System.StringComparison]::Ordinal)) {
+                      $batchResult = $line.Substring("Batch Result: ".Length).Trim()
+                  }
+
+                  if ($ffmpeg.HasExited) {
+                      $streamFailed = $true
+                  }
+              }
+
+              $scenarioProcess.WaitForExit()
+              $scenarioExitCode = $scenarioProcess.ExitCode
+              $streamFailed = $streamFailed -or $ffmpeg.HasExited
+
+              if (-not $ffmpeg.HasExited) {
+                  if ([string]::IsNullOrWhiteSpace($batchResult)) {
+                      $batchResult = if ($scenarioExitCode -eq 0) { "PASS" } else { "FAIL" }
+                  }
+
+                  if ([string]::IsNullOrWhiteSpace($lastScenarioResult)) {
+                      $lastScenarioResult = "UNKNOWN"
+                  }
+
+                  $finalOverlay = "Batch: $batchResult"
+
+                  if (-not [string]::IsNullOrWhiteSpace($lastScenarioName)) {
+                      $finalOverlay += "`nLast: $lastScenarioName [$lastScenarioResult]"
+                  }
+
+                  [System.IO.File]::WriteAllText(
+                      $tempOverlayPath,
+                      $finalOverlay,
+                      $utf8
+                  )
+
+                  [System.IO.File]::Move($tempOverlayPath, $overlayPath, $true)
+
+                  # Hold the final result after Scenario Runner has finished.
+                  Write-Host "Holding the final result for 3 seconds."
+                  Start-Sleep -Seconds 3
+              }
           }
           finally {
-              if (-not $ffmpeg.HasExited) {
-                  $ffmpeg.StandardInput.WriteLine("q")
-                  $ffmpeg.StandardInput.Flush()
+              if ($null -ne $scenarioProcess) {
+                  if (-not $scenarioProcess.HasExited) {
+                      $scenarioProcess.Kill()
+                      $scenarioProcess.WaitForExit()
+                  }
 
-                  if (-not $ffmpeg.WaitForExit(10000)) {
-                      $ffmpeg.Kill()
-                      $ffmpeg.WaitForExit()
+                  $scenarioProcess.Dispose()
+              }
+
+              if (-not $ffmpeg.HasExited) {
+                  try {
+                      $ffmpeg.StandardInput.WriteLine("q")
+                      $ffmpeg.StandardInput.Flush()
+
+                      if (-not $ffmpeg.WaitForExit(10000)) {
+                          $ffmpeg.Kill()
+                          $ffmpeg.WaitForExit()
+                      }
+                  }
+                  catch {
+                      if (-not $ffmpeg.HasExited) {
+                          $ffmpeg.Kill()
+                          $ffmpeg.WaitForExit()
+                      }
+
+                      throw
                   }
               }
 
               $ffmpeg.Dispose()
           }
 
-          exit $scenarioExitCode
+          if ($scenarioExitCode -ne 0) {
+              throw "Scenario Runner Batch failed with exit code $scenarioExitCode."
+          }
+
+          if ($streamFailed) {
+              throw "FFmpeg stopped before Scenario Runner finished."
+          }
+
+          if (-not (Test-Path $videoPath)) {
+              throw "MP4 recording was not created."
+          }
+
+          Write-Host "Scenario Runner Batch and recording completed."
 
       - name: Upload Scenario Batch video
         if: always()
