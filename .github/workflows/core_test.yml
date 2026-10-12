@@ -1,0 +1,80 @@
+name: CoreTest
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-test:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v3
+        with:
+          nuget-version: latest
+
+      - name: Restore CoreTest packages
+        shell: pwsh
+        run: nuget restore CoreTest\packages.config -PackagesDirectory packages
+
+      - name: Build CoreTest
+        shell: pwsh
+        run: msbuild Core_Test.slnx /m /p:Configuration=Debug /p:Platform=x64
+
+      - name: Verify binary
+        shell: pwsh
+        run: |
+          if (-not (Test-Path ".\x64\Debug\CoreTest.exe")) {
+              throw "CoreTest.exe was not built."
+          }
+
+      - name: Run CoreTest
+        shell: pwsh
+        run: |
+          & ".\x64\Debug\CoreTest.exe" ".\CoreTest"
+
+          $testExitCode = $LASTEXITCODE
+
+          if ($testExitCode -ne 0) {
+              throw "CoreTest failed with exit code $testExitCode."
+          }
+
+          $logPath = ".\TestLog\CoreTestResult.txt"
+
+          if (-not (Test-Path $logPath)) {
+              throw "CoreTest result log was not created."
+          }
+
+          $log = Get-Content $logPath -Raw
+
+          if ($log -notmatch "Test count: (\d+)") {
+              throw "CoreTest result log does not contain the test count."
+          }
+
+          $testCount = [int]$Matches[1]
+
+          if ($testCount -eq 0) {
+              throw "No CoreTest cases were executed."
+          }
+
+          Write-Host "CoreTest completed successfully. Tests: $testCount"
+
+      - name: Upload CoreTest logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-test-logs
+          path: TestLog\CoreTestResult.txt
+          if-no-files-found: warn
