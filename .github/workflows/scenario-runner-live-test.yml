@@ -1,0 +1,80 @@
+
+name: Scenario Runner Live Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-test:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 15
+
+    env:
+      YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+      YOUTUBE_RTMPS_URL: rtmps://a.rtmps.youtube.com/live2
+
+    steps:
+      - name: Verify stream configuration
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:YOUTUBE_STREAM_KEY)) {
+              throw "Repository secret YOUTUBE_STREAM_KEY is not configured."
+          }
+
+          Write-Host "YouTube stream configuration is available."
+
+      - name: Install FFmpeg
+        shell: pwsh
+        run: choco install ffmpeg -y
+
+      - name: Verify FFmpeg
+        shell: pwsh
+        run: |
+          ffmpeg -version
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "FFmpeg is not available."
+          }
+
+      - name: Stream desktop to YouTube for 60 seconds
+        shell: pwsh
+        run: |
+          $streamUrl = "$env:YOUTUBE_RTMPS_URL/$env:YOUTUBE_STREAM_KEY"
+
+          Write-Host "Starting a 60-second private live stream test."
+
+          & ffmpeg `
+            -hide_banner `
+            -loglevel quiet `
+            -nostats `
+            -nostdin `
+            -f gdigrab `
+            -framerate 5 `
+            -draw_mouse 1 `
+            -i desktop `
+            -f lavfi `
+            -i "anullsrc=channel_layout=stereo:sample_rate=44100" `
+            -t 60 `
+            -map 0:v:0 `
+            -map 1:a:0 `
+            -c:v libx264 `
+            -preset ultrafast `
+            -pix_fmt yuv420p `
+            -b:v 1800k `
+            -maxrate 1800k `
+            -bufsize 3600k `
+            -g 10 `
+            -c:a aac `
+            -b:a 128k `
+            -ar 44100 `
+            -f flv `
+            $streamUrl
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "FFmpeg live stream failed with exit code $LASTEXITCODE."
+          }
+
+          Write-Host "60-second streaming test completed."
