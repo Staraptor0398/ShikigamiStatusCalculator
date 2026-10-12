@@ -10,16 +10,38 @@ namespace ScenarioRunner.Log
 
 		private bool mDisposed;
 
-		public LogFileWriter(string logDirectoryPath)
+		public LogFileWriter(string logDirectoryPath, string scenarioFilePath)
 		{
 			Directory.CreateDirectory(logDirectoryPath);
 
-			string logFilePath = Path.Combine(logDirectoryPath, $"ScenarioRunner_{DateTime.Now:yyyyMMdd_HHmmss}.log");
+			string scenarioName = Path.GetFileNameWithoutExtension(scenarioFilePath);
+			string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+			string logFileName = $"ScenarioRunner_{timestamp}_{scenarioName}";
 
-			mWriter = new StreamWriter(logFilePath, true, Encoding.UTF8)
+			int suffix = 1;
+
+			while (true)
 			{
-				AutoFlush = true
-			};
+				string fileName = suffix == 1 ? $"{logFileName}.log" : $"{logFileName}_{suffix}.log";
+
+				string logFilePath = Path.Combine(logDirectoryPath, fileName);
+
+				try
+				{
+					var stream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
+
+					mWriter = new StreamWriter(stream, Encoding.UTF8)
+					{
+						AutoFlush = true
+					};
+
+					break;
+				}
+				catch (IOException) when (File.Exists(logFilePath))
+				{
+					suffix++;
+				}
+			}
 		}
 
 		public void Write(string message)

@@ -33,7 +33,7 @@ namespace ScenarioRunner.Log
 		public void ScenarioValidationStarted(string filePath)
 		{
 			mFileWriter?.Dispose();
-			mFileWriter = new LogFileWriter(mLogDirectoryPath);
+			mFileWriter = new LogFileWriter(mLogDirectoryPath, filePath);
 
 			Write("========================================");
 			Write($"Scenario: {Path.GetFileName(filePath)}");
