@@ -69,23 +69,35 @@ jobs:
         shell: pwsh
         run: |
           $streamUrl = "$env:YOUTUBE_RTMPS_URL/$env:YOUTUBE_STREAM_KEY"
+          $overlayDirectory = Join-Path $PWD "ScenarioVideo"
+          $overlayPath = Join-Path $overlayDirectory "current_scenario.txt"
+          $tempOverlayPath = Join-Path $overlayDirectory "current_scenario.tmp"
+          $fontPath = Join-Path $overlayDirectory "overlay.ttf"
 
-          # Do not print FFmpeg arguments: they contain the stream key.
-          $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-          $startInfo.FileName = "ffmpeg"
-          $startInfo.Arguments = "-hide_banner -loglevel quiet -nostats -y -f gdigrab -framerate 5 -draw_mouse 1 -i desktop -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -b:v 1800k -maxrate 1800k -bufsize 3600k -g 10 -c:a aac -b:a 128k -ar 44100 -f flv `"$streamUrl`""
-          $startInfo.UseShellExecute = $false
-          $startInfo.RedirectStandardInput = $true
-          $startInfo.RedirectStandardOutput = $false
-          $startInfo.RedirectStandardError = $false
+          New-Item -ItemType Directory -Force -Path $overlayDirectory | Out-Null
+          Copy-Item "C:\Windows\Fonts\arial.ttf" $fontPath
+          [System.IO.File]::WriteAllText($overlayPath, "Waiting for Scenario Runner...", [System.Text.UTF8Encoding]::new($false))
+
+          # Relative paths avoid Windows drive-letter escaping in the FFmpeg filter.
+          $drawText = "drawtext=fontfile=ScenarioVideo/overlay.ttf:textfile=ScenarioVideo/current_scenario.txt:reload=1:fontcolor=white:fontsize=26:box=1:boxcolor=black@0.75:boxborderw=12:x=20:y=20"
+
+          # Stream key is contained in the process arguments: never print them.
+          $ffmpegInfo = New-Object System.Diagnostics.ProcessStartInfo
+          $ffmpegInfo.FileName = "ffmpeg"
+          $ffmpegInfo.Arguments = "-hide_banner -loglevel quiet -nostats -y -f gdigrab -framerate 5 -draw_mouse 1 -i desktop -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -map 0:v:0 -map 1:a:0 -vf `"$drawText`" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -b:v 1800k -maxrate 1800k -bufsize 3600k -g 10 -c:a aac -b:a 128k -ar 44100 -f flv `"$streamUrl`""
+          $ffmpegInfo.UseShellExecute = $false
+          $ffmpegInfo.RedirectStandardInput = $true
+          $ffmpegInfo.RedirectStandardOutput = $false
+          $ffmpegInfo.RedirectStandardError = $false
 
           $ffmpeg = New-Object System.Diagnostics.Process
-          $ffmpeg.StartInfo = $startInfo
+          $ffmpeg.StartInfo = $ffmpegInfo
+          $scenarioProcess = $null
           $scenarioExitCode = 1
           $streamFailed = $false
 
           try {
-              Write-Host "Starting YouTube live stream."
+              Write-Host "Starting YouTube live stream with scenario overlay."
 
               if (-not $ffmpeg.Start()) {
                   throw "Failed to start FFmpeg."
@@ -97,15 +109,49 @@ jobs:
                   throw "FFmpeg exited before Scenario Runner started."
               }
 
-              Write-Host "Starting Scenario Runner Batch."
+              $scenarioInfo = New-Object System.Diagnostics.ProcessStartInfo
+              $scenarioInfo.FileName = (Resolve-Path ".\ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe").Path
+              $scenarioInfo.Arguments = '--run-directory ".\Scenario"'
+              $scenarioInfo.UseShellExecute = $false
+              $scenarioInfo.RedirectStandardOutput = $true
+              $scenarioInfo.RedirectStandardError = $false
 
-              & ".\ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe" `
-                --run-directory ".\Scenario"
+              $scenarioProcess = New-Object System.Diagnostics.Process
+              $scenarioProcess.StartInfo = $scenarioInfo
 
-              $scenarioExitCode = $LASTEXITCODE
-              $streamFailed = $ffmpeg.HasExited
+              if (-not $scenarioProcess.Start()) {
+                  throw "Failed to start Scenario Runner."
+              }
+
+              # Read the existing console output without adding hooks to Scenario Runner.
+              while ($null -ne ($line = $scenarioProcess.StandardOutput.ReadLine())) {
+                  Write-Host $line
+
+                  if ($line.StartsWith("[Batch] Running: ", [System.StringComparison]::Ordinal)) {
+                      $scenarioName = $line.Substring("[Batch] Running: ".Length)
+                      [System.IO.File]::WriteAllText($tempOverlayPath, $scenarioName, [System.Text.UTF8Encoding]::new($false))
+                      [System.IO.File]::Replace($tempOverlayPath, $overlayPath, $null)
+                  }
+
+                  if ($ffmpeg.HasExited) {
+                      $streamFailed = $true
+                  }
+              }
+
+              $scenarioProcess.WaitForExit()
+              $scenarioExitCode = $scenarioProcess.ExitCode
+              $streamFailed = $streamFailed -or $ffmpeg.HasExited
           }
           finally {
+              if ($null -ne $scenarioProcess) {
+                  if (-not $scenarioProcess.HasExited) {
+                      $scenarioProcess.Kill()
+                      $scenarioProcess.WaitForExit()
+                  }
+
+                  $scenarioProcess.Dispose()
+              }
+
               if (-not $ffmpeg.HasExited) {
                   try {
                       $ffmpeg.StandardInput.WriteLine("q")
@@ -137,7 +183,7 @@ jobs:
               throw "YouTube live streaming stopped before Scenario Runner finished."
           }
 
-          Write-Host "Scenario Runner Batch and streaming completed."
+          Write-Host "Scenario Runner Batch and live streaming completed."
 
       - name: Upload failure captures
         if: failure()
