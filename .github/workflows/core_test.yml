@@ -29,9 +29,26 @@ jobs:
         shell: pwsh
         run: nuget restore CoreTest\packages.config -PackagesDirectory packages
 
+      - name: Install nlohmann/json
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "ThirdParty\nlohmann" | Out-Null
+
+          Invoke-WebRequest `
+            -Uri "https://raw.githubusercontent.com/nlohmann/json/v3.11.3/single_include/nlohmann/json.hpp" `
+            -OutFile "ThirdParty\nlohmann\json.hpp"
+
       - name: Build CoreTest
         shell: pwsh
-        run: msbuild Core_Test.slnx /m /p:Configuration=Debug /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0
+        run: |
+          $includeDirectory = (Resolve-Path "ThirdParty").Path
+          $env:CL = "/I`"$includeDirectory`""
+
+          msbuild Core_Test.slnx /m /p:Configuration=Debug /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "CoreTest build failed with exit code $LASTEXITCODE."
+          }
 
       - name: Verify binary
         shell: pwsh
