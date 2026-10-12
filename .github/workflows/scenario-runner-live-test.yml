@@ -1,3 +1,4 @@
+
 name: Scenario Runner Live Test
 
 on:
@@ -65,26 +66,39 @@ jobs:
               throw "ScenarioRunnerCli.exe was not built."
           }
 
-      - name: Run Scenario Batch with live streaming
+      - name: Run Scenario Batch with live streaming and recording
         shell: pwsh
         run: |
           $streamUrl = "$env:YOUTUBE_RTMPS_URL/$env:YOUTUBE_STREAM_KEY"
-          $overlayDirectory = Join-Path $PWD "ScenarioVideo"
-          $overlayPath = Join-Path $overlayDirectory "current_scenario.txt"
-          $tempOverlayPath = Join-Path $overlayDirectory "current_scenario.tmp"
-          $fontPath = Join-Path $overlayDirectory "overlay.ttf"
 
-          New-Item -ItemType Directory -Force -Path $overlayDirectory | Out-Null
+          $videoDirectory = Join-Path $PWD "ScenarioVideo"
+          $videoPath = "ScenarioVideo/ScenarioBatchLiveTest.mp4"
+          $overlayPath = Join-Path $videoDirectory "current_scenario.txt"
+          $tempOverlayPath = Join-Path $videoDirectory "current_scenario.tmp"
+          $fontPath = Join-Path $videoDirectory "overlay.ttf"
+
+          New-Item -ItemType Directory -Force -Path $videoDirectory | Out-Null
           Copy-Item "C:\Windows\Fonts\arial.ttf" $fontPath
-          [System.IO.File]::WriteAllText($overlayPath, "Waiting for Scenario Runner...", [System.Text.UTF8Encoding]::new($false))
 
-          # Relative paths avoid Windows drive-letter escaping in the FFmpeg filter.
+          $utf8 = [System.Text.UTF8Encoding]::new($false)
+
+          [System.IO.File]::WriteAllText(
+              $overlayPath,
+              "Waiting for Scenario Runner...",
+              $utf8
+          )
+
+          # Relative paths avoid Windows drive-letter escaping.
           $drawText = "drawtext=fontfile=ScenarioVideo/overlay.ttf:textfile=ScenarioVideo/current_scenario.txt:reload=1:fontcolor=white:fontsize=26:box=1:boxcolor=black@0.75:boxborderw=12:x=20:y=20"
 
-          # Stream key is contained in the process arguments: never print them.
+          # Encode once and send the same overlay to MP4 and RTMPS.
+          # YouTube connection failure must not interrupt MP4 recording.
+          $teeOutput = "[f=mp4]$videoPath|[f=flv:onfail=ignore]$streamUrl"
+
+          # Do not print FFmpeg arguments: they contain the stream key.
           $ffmpegInfo = New-Object System.Diagnostics.ProcessStartInfo
           $ffmpegInfo.FileName = "ffmpeg"
-          $ffmpegInfo.Arguments = "-hide_banner -loglevel quiet -nostats -y -f gdigrab -framerate 5 -draw_mouse 1 -i desktop -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -map 0:v:0 -map 1:a:0 -vf `"$drawText`" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -b:v 1800k -maxrate 1800k -bufsize 3600k -g 10 -c:a aac -b:a 128k -ar 44100 -f flv `"$streamUrl`""
+          $ffmpegInfo.Arguments = "-hide_banner -loglevel quiet -nostats -y -f gdigrab -framerate 5 -draw_mouse 1 -i desktop -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -map 0:v:0 -map 1:a:0 -vf `"$drawText`" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -b:v 1800k -maxrate 1800k -bufsize 3600k -g 10 -flags +global_header -c:a aac -b:a 128k -ar 44100 -f tee `"$teeOutput`""
           $ffmpegInfo.UseShellExecute = $false
           $ffmpegInfo.RedirectStandardInput = $true
           $ffmpegInfo.RedirectStandardOutput = $false
@@ -92,12 +106,16 @@ jobs:
 
           $ffmpeg = New-Object System.Diagnostics.Process
           $ffmpeg.StartInfo = $ffmpegInfo
+
           $scenarioProcess = $null
           $scenarioExitCode = 1
           $streamFailed = $false
+          $lastScenarioName = $null
+          $lastScenarioResult = $null
+          $batchResult = $null
 
           try {
-              Write-Host "Starting YouTube live stream with scenario overlay."
+              Write-Host "Starting YouTube live stream and MP4 recording."
 
               if (-not $ffmpeg.Start()) {
                   throw "Failed to start FFmpeg."
@@ -108,6 +126,8 @@ jobs:
               if ($ffmpeg.HasExited) {
                   throw "FFmpeg exited before Scenario Runner started."
               }
+
+              Write-Host "Starting Scenario Runner Batch."
 
               $scenarioInfo = New-Object System.Diagnostics.ProcessStartInfo
               $scenarioInfo.FileName = (Resolve-Path ".\ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe").Path
@@ -123,14 +143,30 @@ jobs:
                   throw "Failed to start Scenario Runner."
               }
 
-              # Read the existing console output without adding hooks to Scenario Runner.
+              # Read existing console output without modifying Scenario Runner.
               while ($null -ne ($line = $scenarioProcess.StandardOutput.ReadLine())) {
                   Write-Host $line
 
                   if ($line.StartsWith("[Batch] Running: ", [System.StringComparison]::Ordinal)) {
-                      $scenarioName = $line.Substring("[Batch] Running: ".Length)
-                      [System.IO.File]::WriteAllText($tempOverlayPath, $scenarioName, [System.Text.UTF8Encoding]::new($false))
+                      $lastScenarioName = $line.Substring("[Batch] Running: ".Length).Replace("\", "/")
+                      $lastScenarioResult = "RUNNING"
+
+                      [System.IO.File]::WriteAllText(
+                          $tempOverlayPath,
+                          $lastScenarioName,
+                          $utf8
+                      )
+
                       [System.IO.File]::Move($tempOverlayPath, $overlayPath, $true)
+                  }
+                  elseif ($line.StartsWith("[Batch] PASS: ", [System.StringComparison]::Ordinal)) {
+                      $lastScenarioResult = "PASS"
+                  }
+                  elseif ($line.StartsWith("[Batch] FAIL: ", [System.StringComparison]::Ordinal)) {
+                      $lastScenarioResult = "FAIL"
+                  }
+                  elseif ($line.StartsWith("Batch Result: ", [System.StringComparison]::Ordinal)) {
+                      $batchResult = $line.Substring("Batch Result: ".Length).Trim()
                   }
 
                   if ($ffmpeg.HasExited) {
@@ -141,6 +177,35 @@ jobs:
               $scenarioProcess.WaitForExit()
               $scenarioExitCode = $scenarioProcess.ExitCode
               $streamFailed = $streamFailed -or $ffmpeg.HasExited
+
+              # Update the overlay after the Batch completes.
+              if (-not $ffmpeg.HasExited) {
+                  if ([string]::IsNullOrWhiteSpace($batchResult)) {
+                      $batchResult = if ($scenarioExitCode -eq 0) { "PASS" } else { "FAIL" }
+                  }
+
+                  if ([string]::IsNullOrWhiteSpace($lastScenarioResult)) {
+                      $lastScenarioResult = "UNKNOWN"
+                  }
+
+                  $finalOverlay = "Batch: $batchResult"
+
+                  if (-not [string]::IsNullOrWhiteSpace($lastScenarioName)) {
+                      $finalOverlay += "`nLast: $lastScenarioName [$lastScenarioResult]"
+                  }
+
+                  [System.IO.File]::WriteAllText(
+                      $tempOverlayPath,
+                      $finalOverlay,
+                      $utf8
+                  )
+
+                  [System.IO.File]::Move($tempOverlayPath, $overlayPath, $true)
+
+                  # Keep the final frame visible without delaying Scenario Runner.
+                  Write-Host "Holding the final stream frame for 3 seconds."
+                  Start-Sleep -Seconds 3
+              }
           }
           finally {
               if ($null -ne $scenarioProcess) {
@@ -180,10 +245,23 @@ jobs:
           }
 
           if ($streamFailed) {
-              throw "YouTube live streaming stopped before Scenario Runner finished."
+              throw "FFmpeg stopped before Scenario Runner finished."
           }
 
-          Write-Host "Scenario Runner Batch and live streaming completed."
+          if (-not (Test-Path $videoPath)) {
+              throw "MP4 recording was not created."
+          }
+
+          Write-Host "Scenario Runner Batch, live streaming, and MP4 recording completed."
+
+      - name: Upload experiment video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-live-test-video
+          path: ScenarioVideo\ScenarioBatchLiveTest.mp4
+          if-no-files-found: warn
+          retention-days: 3
 
       - name: Upload failure captures
         if: failure()
