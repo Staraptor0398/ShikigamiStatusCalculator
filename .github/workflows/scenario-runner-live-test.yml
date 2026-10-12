@@ -130,7 +130,7 @@ jobs:
                   if ($line.StartsWith("[Batch] Running: ", [System.StringComparison]::Ordinal)) {
                       $scenarioName = $line.Substring("[Batch] Running: ".Length)
                       [System.IO.File]::WriteAllText($tempOverlayPath, $scenarioName, [System.Text.UTF8Encoding]::new($false))
-                      [System.IO.File]::Replace($tempOverlayPath, $overlayPath, $null)
+                      [System.IO.File]::Move($tempOverlayPath, $overlayPath, $true)
                   }
 
                   if ($ffmpeg.HasExited) {
