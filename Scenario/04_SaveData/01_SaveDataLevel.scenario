@@ -83,6 +83,13 @@ CHECK CALC
 # 再計算後はスナップショット保存が可能になることを確認する
 CHECK SAVEDATA LEVEL SNAPSHOT
 
+# CLEARをキャンセルしても保存可能状態が変わらないことを確認する
+OPEN CLEAR DIALOG
+CHECK DIALOG "入力内容と計算結果をクリアします。よろしいですか？"
+CANCEL DIALOG
+CHECK CALC
+CHECK SAVEDATA LEVEL SNAPSHOT
+
 # 御魂入力を保持したまま式神選択のみを解除する
 CLEAR SHIKIGAMI
 

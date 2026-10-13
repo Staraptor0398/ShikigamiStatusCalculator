@@ -18,8 +18,10 @@ LOAD MITAMA "TestData/Valid.mitama.json"
 CALC
 CHECK CALC
 
-# 入力内容と計算結果をクリア
-CLEAR
+# クリア確認ダイアログを開いて確定する
+OPEN CLEAR DIALOG
+CHECK DIALOG "入力内容と計算結果をクリアします。よろしいですか？"
+CONFIRM DIALOG
 
 # クリア後の状態確認
 CHECK CLEARED
