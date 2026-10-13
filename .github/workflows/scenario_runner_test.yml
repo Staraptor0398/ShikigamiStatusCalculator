@@ -1,0 +1,97 @@
+name: ScenarioRunnerTest
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scenario-runner-test:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Restore ScenarioRunnerTest packages
+        shell: pwsh
+        run: |
+          msbuild ScenarioRunner_Test.slnx /t:Restore /p:Configuration=Debug /p:Platform=x64
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "ScenarioRunnerTest package restore failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Build ScenarioRunnerTest
+        shell: pwsh
+        run: |
+          msbuild ScenarioRunner_Test.slnx /m /p:Configuration=Debug /p:Platform=x64
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "ScenarioRunnerTest build failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Verify binary
+        shell: pwsh
+        run: |
+          $assemblies = @(
+              Get-ChildItem "ScenarioRunnerTest\bin" -Recurse -Filter "ScenarioRunnerTest.dll" -File
+          )
+
+          if ($assemblies.Count -ne 1) {
+              throw "Expected one ScenarioRunnerTest.dll, found $($assemblies.Count)."
+          }
+
+      - name: Run ScenarioRunnerTest
+        shell: pwsh
+        run: |
+          $testAssembly = @(
+              Get-ChildItem "ScenarioRunnerTest\bin" -Recurse -Filter "ScenarioRunnerTest.dll" -File
+          )[0].FullName
+
+          $vsTest = vswhere -latest -products * -find "**\vstest.console.exe" |
+              Select-Object -First 1
+
+          if ([string]::IsNullOrWhiteSpace($vsTest)) {
+              throw "vstest.console.exe was not found."
+          }
+
+          & $vsTest `
+              $testAssembly `
+              "/Platform:x64" `
+              "/Logger:trx;LogFileName=ScenarioRunnerTest.trx" `
+              "/ResultsDirectory:TestResults"
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "ScenarioRunnerTest failed with exit code $LASTEXITCODE."
+          }
+
+          $resultPath = "TestResults\ScenarioRunnerTest.trx"
+
+          if (-not (Test-Path $resultPath)) {
+              throw "ScenarioRunnerTest TRX result was not created."
+          }
+
+          [xml]$result = Get-Content $resultPath -Raw
+          $counters = $result.TestRun.ResultSummary.Counters
+
+          if ([int]$counters.total -eq 0) {
+              throw "No ScenarioRunnerTest cases were executed."
+          }
+
+          Write-Host "ScenarioRunnerTest completed successfully. Tests: $($counters.total)"
+
+      - name: Upload ScenarioRunnerTest results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-test-results
+          path: TestResults\ScenarioRunnerTest.trx
+          if-no-files-found: warn
