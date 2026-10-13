@@ -198,6 +198,9 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.OPEN_GUI:
 				case ScenarioCommandType.CLOSE_GUI:
 				case ScenarioCommandType.CLOSE_DIALOG:
+				case ScenarioCommandType.OPEN_CLEAR_DIALOG:
+				case ScenarioCommandType.CONFIRM_DIALOG:
+				case ScenarioCommandType.CANCEL_DIALOG:
 				case ScenarioCommandType.OPEN_CALC_DETAIL:
 				case ScenarioCommandType.CLOSE_CALC_DETAIL:
 				case ScenarioCommandType.OPEN_SHIKIGAMI_REGISTER:

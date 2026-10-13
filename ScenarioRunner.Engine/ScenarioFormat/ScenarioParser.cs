@@ -88,6 +88,21 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.CLOSE_DIALOG;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "OPEN", "CLEAR", "DIALOG"))
+			{
+				commandType = ScenarioCommandType.OPEN_CLEAR_DIALOG;
+				argumentStartIndex = 3;
+			}
+			else if (matches(tokens, "CONFIRM", "DIALOG"))
+			{
+				commandType = ScenarioCommandType.CONFIRM_DIALOG;
+				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "CANCEL", "DIALOG"))
+			{
+				commandType = ScenarioCommandType.CANCEL_DIALOG;
+				argumentStartIndex = 2;
+			}
 			else if (matches(tokens, "OPEN", "SHIKIGAMI", "REGISTER"))
 			{
 				commandType = ScenarioCommandType.OPEN_SHIKIGAMI_REGISTER;

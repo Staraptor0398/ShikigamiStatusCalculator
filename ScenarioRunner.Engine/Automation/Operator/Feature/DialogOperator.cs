@@ -22,6 +22,14 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		[return: MarshalAs(UnmanagedType.Bool)]
 		private static extern bool IsWindowVisible(IntPtr hWnd);
 
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool IsWindowEnabled(IntPtr hWnd);
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool IsWindow(IntPtr hWnd);
+
 		private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
 		[DllImport("user32.dll")]
@@ -249,6 +257,151 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			{
 				session.LastCheckedDialog = mProcessWindowWaiter.WaitForProcessWindow(session, predicate);
 			}
+		}
+
+		public void Confirm(GuiSession session)
+		{
+			executeDecision(session, true);
+		}
+
+		public void Cancel(GuiSession session)
+		{
+			executeDecision(session, false);
+		}
+
+		private void executeDecision(GuiSession session, bool confirm)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			string operation = confirm ? "Confirm" : "Cancel";
+
+			try
+			{
+				Window dialog = getDecisionDialog(session);
+				string automationId = getDecisionButtonId(dialog, confirm);
+
+				if (automationId == null)
+				{
+					throw new InvalidOperationException($"{operation} operation is not defined for this dialog.");
+				}
+
+				IntPtr handle = dialog.Properties.NativeWindowHandle.ValueOrDefault;
+				mButtonOperator.PostClick(dialog, automationId);
+				mWindowWaiter.WaitForWindowClosed(handle);
+			}
+			catch (Exception ex)
+			{
+				throw new InvalidOperationException($"DialogOperator.{operation} failed: {ex.Message}", ex);
+			}
+			finally
+			{
+				// 操作の成功・失敗にかかわらず、古いAutomationElementをキャッシュに残さない。
+				session.LastCheckedDialog = null;
+				session.LastCheckedDialogButtons = null;
+			}
+		}
+
+		private Window getDecisionDialog(GuiSession session)
+		{
+			Window cached = session.LastCheckedDialog;
+
+			if (cached != null)
+			{
+				try
+				{
+					IntPtr handle = cached.Properties.NativeWindowHandle.ValueOrDefault;
+
+					if (IsWindow(handle) && isVisible(handle) && IsWindowEnabled(handle))
+					{
+						return cached;
+					}
+				}
+				catch (ElementNotAvailableException)
+				{
+				}
+				catch (System.Windows.Automation.ElementNotAvailableException)
+				{
+				}
+				catch (COMException)
+				{
+				}
+			}
+
+			Window mainWindow = session.MainWindow;
+
+			Func<AutomationElement, bool> predicate = element =>
+			{
+				IntPtr handle = element.Properties.NativeWindowHandle.ValueOrDefault;
+
+				if (handle == IntPtr.Zero || !isVisible(handle) || !IsWindowEnabled(handle))
+				{
+					return false;
+				}
+
+				string id = element.Properties.AutomationId.ValueOrDefault;
+
+				if (id == AutomationIds.MainForm.ID)
+				{
+					return false;
+				}
+
+				return isMessageBox(handle) || isKnownDecisionDialog(id);
+			};
+
+			return mainWindow != null
+				? mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, predicate)
+				: mProcessWindowWaiter.WaitForProcessWindow(session, predicate);
+		}
+
+		private bool isKnownDecisionDialog(string id)
+		{
+			return id == AutomationIds.SaveDataSaveDialog.ID
+				|| id == AutomationIds.SaveDataLoadDialog.ID
+				|| id == AutomationIds.ShikigamiRegisterForm.ID
+				|| id == AutomationIds.ShikigamiRecoveryDialog.ID
+				|| id == AutomationIds.SnapshotCompareFileSelectDialog.ID;
+		}
+
+		private string getDecisionButtonId(Window dialog, bool confirm)
+		{
+			IntPtr handle = dialog.Properties.NativeWindowHandle.ValueOrDefault;
+			if (isMessageBox(handle))
+			{
+				if (confirm)
+				{
+					return hasButton(dialog, AutomationIds.MessageBox.YES) ? AutomationIds.MessageBox.YES
+						: hasButton(dialog, AutomationIds.MessageBox.OK) ? AutomationIds.MessageBox.OK : null;
+				}
+
+				return hasButton(dialog, AutomationIds.MessageBox.CANCEL) ? AutomationIds.MessageBox.CANCEL
+					: hasButton(dialog, AutomationIds.MessageBox.YES) && hasButton(dialog, AutomationIds.MessageBox.NO) ? AutomationIds.MessageBox.NO : null;
+			}
+
+			string id = dialog.Properties.AutomationId.ValueOrDefault;
+
+			switch (id)
+			{
+				case AutomationIds.SaveDataSaveDialog.ID:
+					return confirm ? AutomationIds.SaveDataSaveDialog.SAVE : AutomationIds.SaveDataSaveDialog.CANCEL;
+				case AutomationIds.SaveDataLoadDialog.ID:
+					return confirm ? AutomationIds.SaveDataLoadDialog.LOAD : "btnCancel";
+				case AutomationIds.ShikigamiRegisterForm.ID:
+					return confirm ? AutomationIds.ShikigamiRegisterForm.REGISTER : "btnCancel";
+				case AutomationIds.ShikigamiRecoveryDialog.ID:
+					return confirm ? AutomationIds.ShikigamiRecoveryDialog.RECOVERY : "btnCancel";
+				case AutomationIds.SnapshotCompareFileSelectDialog.ID:
+					return confirm ? AutomationIds.SnapshotCompareFileSelectDialog.COMPARE : "btnCancel";
+				default:
+					return null;
+			}
+		}
+
+		private bool hasButton(Window dialog, string automationId)
+		{
+			return dialog.FindFirstDescendant(cf => cf.ByAutomationId(automationId).And(cf.ByControlType(ControlType.Button))) != null;
 		}
 
 		public void Close(GuiSession session)

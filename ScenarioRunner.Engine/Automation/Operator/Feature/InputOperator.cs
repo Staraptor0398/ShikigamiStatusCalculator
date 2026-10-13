@@ -56,6 +56,17 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
+		public void OpenClearDialog(GuiSession session)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			AutomationElement clearButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CLEAR, ControlType.Button);
+			mButtonOperator.PostClick(clearButton);
+		}
+
 		public void Clear(GuiSession session)
 		{
 			if (session == null)
@@ -67,9 +78,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			try
 			{
-				AutomationElement clearButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.CLEAR, ControlType.Button);
-
-				mButtonOperator.PostClick(clearButton);
+				OpenClearDialog(session);
 
 				stage = "ConfirmClear";
 

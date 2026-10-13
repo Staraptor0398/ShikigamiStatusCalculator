@@ -66,6 +66,15 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.CLOSE_DIALOG:
 					mDialogOperator.Close(context.GuiSession);
 					return;
+				case ScenarioCommandType.OPEN_CLEAR_DIALOG:
+					mInputOperator.OpenClearDialog(context.GuiSession);
+					return;
+				case ScenarioCommandType.CONFIRM_DIALOG:
+					mDialogOperator.Confirm(context.GuiSession);
+					return;
+				case ScenarioCommandType.CANCEL_DIALOG:
+					mDialogOperator.Cancel(context.GuiSession);
+					return;
 				case ScenarioCommandType.OPEN_SHIKIGAMI_REGISTER:
 					mShikigamiRegisterOperator.Open(context.GuiSession);
 					return;

@@ -129,7 +129,10 @@ namespace ScenarioRunner.Automation.Definition
 
 		internal static class MessageBox
 		{
+			public const string OK = "1";
+			public const string CANCEL = "2";
 			public const string YES = "6";
+			public const string NO = "7";
 		}
 	}
 }
