@@ -1,8 +1,14 @@
 # SaveDataLevel.scenario
 #
 # Gui.exeの入力状態および計算状態に応じて、
-# 利用可能なSaveData保存レベルが
-# NONE、MITAMA、BUILD、SNAPSHOTの順に変化することを確認する。
+# 利用可能なSaveData保存レベルが変化することを確認する。
+#
+# 起動直後はNONE、御魂セットのみの場合はMITAMA、
+# 式神を選択するとBUILD、
+# 式神ありの計算成功後はSNAPSHOTとなることを確認する。
+#
+# 式神未選択で御魂のみの計算を実行しても、
+# 保存レベルがMITAMAのままであることを確認する。
 #
 # 計算後に入力内容を変更した場合は、
 # 計算結果スナップショットを保存できなくなり、
@@ -30,6 +36,14 @@ LOAD MITAMA "../02_Calculation/TestData/Valid.mitama.json"
 
 # 式神が未選択のため、
 # 御魂セット保存データのみ保存可能であることを確認する
+CHECK SAVEDATA LEVEL MITAMA
+
+# 式神未選択の状態で御魂のみの計算を実行する
+CALC
+CHECK CALC
+
+# 計算結果が存在していても、
+# 式神未選択ではスナップショットを保存できないことを確認する
 CHECK SAVEDATA LEVEL MITAMA
 
 # 式神を選択する
