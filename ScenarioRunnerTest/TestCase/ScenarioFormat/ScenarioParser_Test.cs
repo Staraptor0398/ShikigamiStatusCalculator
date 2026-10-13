@@ -6,6 +6,29 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 	public class ScenarioParser_Test
 	{
 		[TestMethod]
+		public void Parse_DialogDecisionCommands()
+		{
+			var parser = new ScenarioParser();
+			Scenario scenario = parser.Parse("Test.scenario", new[]
+			{
+				"START",
+				"OPEN CLEAR DIALOG",
+				"CONFIRM DIALOG",
+				"CANCEL DIALOG",
+				"END"
+			});
+
+			Assert.AreEqual(3, scenario.Steps.Count);
+			Assert.AreEqual(ScenarioCommandType.OPEN_CLEAR_DIALOG, scenario.Steps[0].CommandType);
+			Assert.AreEqual(ScenarioCommandType.CONFIRM_DIALOG, scenario.Steps[1].CommandType);
+			Assert.AreEqual(ScenarioCommandType.CANCEL_DIALOG, scenario.Steps[2].CommandType);
+			foreach (ScenarioStep step in scenario.Steps)
+			{
+				Assert.AreEqual(0, step.Arguments.Count);
+			}
+		}
+
+		[TestMethod]
 		public void Parse_ValidScenario()
 		{
 			var parser = new ScenarioParser();

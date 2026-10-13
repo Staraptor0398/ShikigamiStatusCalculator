@@ -7,6 +7,32 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 	public class ScenarioValidator_Test
 	{
 		[TestMethod]
+		[DataRow(ScenarioCommandType.OPEN_CLEAR_DIALOG, "OPEN CLEAR DIALOG")]
+		[DataRow(ScenarioCommandType.CONFIRM_DIALOG, "CONFIRM DIALOG")]
+		[DataRow(ScenarioCommandType.CANCEL_DIALOG, "CANCEL DIALOG")]
+		public void Validate_DialogDecisionCommands(ScenarioCommandType type, string command)
+		{
+			var validator = new ScenarioValidator();
+			validator.Validate(new Scenario("Test.scenario", 1, 3, new[]
+			{
+				new ScenarioStep(2, type, Array.Empty<string>(), command)
+			}));
+
+			try
+			{
+				validator.Validate(new Scenario("Test.scenario", 1, 3, new[]
+				{
+					new ScenarioStep(2, type, new[] { "EXTRA" }, command + " EXTRA")
+				}));
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual($"Too many arguments at line 2: {command} EXTRA", ex.Message);
+			}
+		}
+
+		[TestMethod]
 		public void Validate_ValidScenario()
 		{
 			var validator = new ScenarioValidator();
