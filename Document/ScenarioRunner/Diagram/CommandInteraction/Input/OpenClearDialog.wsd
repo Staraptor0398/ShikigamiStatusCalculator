@@ -1,5 +1,5 @@
 @startuml
-title CLEAR - コマンド相互作用図
+title OPEN CLEAR DIALOG - コマンド相互作用図
 skinparam responseMessageBelowArrow true
 ' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
 ' Source: ScenarioRunner.Engine/Automation/Operator/Feature/InputOperator.cs
@@ -7,18 +7,17 @@ participant "ScenarioCommandExecutor" as EX
 participant "InputOperator" as O
 participant "GuiOperator" as GO
 participant "ButtonOperator" as BO
-participant "MainForm" as GUI
-participant "DialogOperator" as DO
-participant "Application / GuiSession" as APP
 
-EX -> O : Clear(session)
+EX -> O : OpenClearDialog(session)
 activate O
 O -> GO : GetMainElement(CLEAR, Button)
+GO --> O : clearButton
 O -> BO : PostClick(clearButton)
-O -> GUI : クリア確認MessageBoxを表示
-O -> DO : GetActiveDialog(session)
-O -> BO : Click(dialog, YES)
-O -> APP : WaitWhileBusy(5s)
-O --> EX : 処理完了（失敗時は例外）
+O --> EX : 操作開始完了（ダイアログ表示待機なし）
 deactivate O
+note over EX,BO
+  確認ダイアログの表示待機・確定／取消は、
+  後続のCHECK DIALOG / CONFIRM DIALOG /
+  CANCEL DIALOGが担当する。
+end note
 @enduml

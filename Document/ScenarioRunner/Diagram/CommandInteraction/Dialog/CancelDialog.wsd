@@ -1,0 +1,37 @@
+@startuml
+title CANCEL DIALOG - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/DialogOperator.cs
+participant "ScenarioCommandExecutor" as EX
+participant "DialogOperator" as O
+participant "ProcessWindowWaiter" as PW
+participant "ButtonOperator" as BO
+participant "WindowWaiter" as WW
+participant "GuiSession" as S
+
+EX -> O : Cancel(session)
+activate O
+O -> O : executeDecision(session, false)
+O -> O : getDecisionDialog(session)
+alt キャッシュが有効・表示中・操作可能
+O -> S : LastCheckedDialog を参照
+else キャッシュなし／無効
+O -> PW : WaitForProcessWindow(session, owner if known, predicate)
+note right of PW
+  表示中かつ有効な標準MessageBox、
+  または既知のダイアログIDを検出
+end note
+PW --> O : dialog
+end
+O -> O : getDecisionButtonId(dialog, false)
+alt 対応する操作が定義されている
+O -> BO : PostClick(dialog, automationId)
+O -> WW : WaitForWindowClosed(handle)
+else 操作を特定できない
+O -> O : InvalidOperationException
+end
+O -> S : LastCheckedDialog / Buttons を破棄（finally）
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml
