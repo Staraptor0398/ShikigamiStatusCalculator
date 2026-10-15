@@ -255,6 +255,31 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 		}
 
 		[TestMethod]
+		public void Parse_CalculationDetailCaptureCommands()
+		{
+			var parser = new ScenarioParser();
+			Scenario scenario = parser.Parse("Test.scenario", new[]
+			{
+				"START",
+				"CHECK CALC",
+				"CHECK CALC DETAIL",
+				"CAPTURE CALC DETAIL",
+				"CHECK CALC DETAIL UNCHANGED",
+				"END"
+			});
+
+			Assert.AreEqual(4, scenario.Steps.Count);
+			Assert.AreEqual(ScenarioCommandType.CHECK_CALCULATION, scenario.Steps[0].CommandType);
+			Assert.AreEqual(ScenarioCommandType.CHECK_CALC_DETAIL, scenario.Steps[1].CommandType);
+			Assert.AreEqual(ScenarioCommandType.CAPTURE_CALC_DETAIL, scenario.Steps[2].CommandType);
+			Assert.AreEqual(ScenarioCommandType.CHECK_CALC_DETAIL_UNCHANGED, scenario.Steps[3].CommandType);
+			foreach (ScenarioStep step in scenario.Steps)
+			{
+				Assert.AreEqual(0, step.Arguments.Count);
+			}
+		}
+
+		[TestMethod]
 		public void Parse_CheckSaveDataLevel()
 		{
 			var parser = new ScenarioParser();
