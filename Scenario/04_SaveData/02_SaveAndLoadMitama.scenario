@@ -22,6 +22,11 @@ LOAD MITAMA "../02_Calculation/TestData/Valid.mitama.json"
 CALC
 CHECK CALC
 
+# 保存前の計算結果詳細を保持する
+OPEN CALC DETAIL
+CAPTURE CALC DETAIL
+CLOSE CALC DETAIL
+
 # 保存前の状態を比較元Snapshotとして保存する
 SAVE SNAPSHOT BASE
 
@@ -42,6 +47,11 @@ SEL SHIKIGAMI "願紡縁結神"
 # 再読み込み後の状態で計算する
 CALC
 CHECK CALC
+
+# 保存前と再読み込み後の計算結果詳細が一致することを確認する
+OPEN CALC DETAIL
+CHECK CALC DETAIL UNCHANGED
+CLOSE CALC DETAIL
 
 # 再読み込み後の状態を比較先Snapshotとして保存する
 SAVE SNAPSHOT TARGET

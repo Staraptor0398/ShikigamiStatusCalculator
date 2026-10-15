@@ -30,15 +30,19 @@ OPEN CALC DETAIL
 # 最終ステータス詳細が正常に表示されていることを確認する
 CHECK CALC DETAIL
 
+# 入力変更前の計算結果詳細を保持する
+CAPTURE CALC DETAIL
+
 # 計算結果詳細画面を閉じる
 CLOSE CALC DETAIL
 
 # 計算後に御魂入力を変更する
 EQUIP MITAMA SUB 1 4 "会心DMG" "17.59"
 
-# 再計算しなくても前回の結果を表示できることを確認する
+# 再計算しなくても前回の結果を表示でき、
+# 入力変更前の計算結果詳細と一致することを確認する
 OPEN CALC DETAIL
-CHECK CALC DETAIL
+CHECK CALC DETAIL UNCHANGED
 CLOSE CALC DETAIL
 
 # 詳細画面を閉じた後、Gui.exeを正常に終了できることを確認する
