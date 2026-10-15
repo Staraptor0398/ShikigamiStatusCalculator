@@ -218,6 +218,8 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.CREATE_SHIKIGAMI_BACKUP:
 				case ScenarioCommandType.CHECK_CALCULATION:
 				case ScenarioCommandType.CHECK_CALC_DETAIL:
+				case ScenarioCommandType.CAPTURE_CALC_DETAIL:
+				case ScenarioCommandType.CHECK_CALC_DETAIL_UNCHANGED:
 				case ScenarioCommandType.CHECK_CLEARED:
 				case ScenarioCommandType.CHECK_SHIKIGAMI:
 				case ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR:

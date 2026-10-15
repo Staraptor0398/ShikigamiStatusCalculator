@@ -118,6 +118,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.OPEN_CALC_DETAIL;
 				argumentStartIndex = 3;
 			}
+			else if (matches(tokens, "CAPTURE", "CALC", "DETAIL"))
+			{
+				commandType = ScenarioCommandType.CAPTURE_CALC_DETAIL;
+				argumentStartIndex = 3;
+			}
 			else if (matches(tokens, "CLOSE", "CALC", "DETAIL"))
 			{
 				commandType = ScenarioCommandType.CLOSE_CALC_DETAIL;
@@ -225,8 +230,13 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.RECOVER_SHIKIGAMI;
 				argumentStartIndex = 2;
 			}
-			// CHECK CALC DETAIL は CHECK CALC より先に判定する。
-			// 順序を逆にすると CHECK CALC DETAIL が CHECK CALC + 引数として解釈される。
+			// CHECK CALC DETAIL UNCHANGED、CHECK CALC DETAIL、CHECK CALC の順に判定する。
+			// 短いコマンドを先に判定すると、残りのキーワードが引数として解釈される。
+			else if (matches(tokens, "CHECK", "CALC", "DETAIL", "UNCHANGED"))
+			{
+				commandType = ScenarioCommandType.CHECK_CALC_DETAIL_UNCHANGED;
+				argumentStartIndex = 4;
+			}
 			else if (matches(tokens, "CHECK", "CALC", "DETAIL"))
 			{
 				commandType = ScenarioCommandType.CHECK_CALC_DETAIL;

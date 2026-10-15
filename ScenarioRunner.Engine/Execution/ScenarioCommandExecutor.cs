@@ -123,6 +123,9 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.OPEN_CALC_DETAIL:
 					mCalculationDetailOperator.Open(context.GuiSession);
 					return;
+				case ScenarioCommandType.CAPTURE_CALC_DETAIL:
+					mCalculationDetailOperator.Capture(context);
+					return;
 				case ScenarioCommandType.CLOSE_CALC_DETAIL:
 					mCalculationDetailOperator.Close(context.GuiSession);
 					return;
@@ -170,6 +173,9 @@ namespace ScenarioRunner.Execution
 					return;
 				case ScenarioCommandType.CHECK_CALC_DETAIL:
 					mCalculationDetailOperator.Check(context.GuiSession);
+					return;
+				case ScenarioCommandType.CHECK_CALC_DETAIL_UNCHANGED:
+					mCalculationDetailOperator.CheckUnchanged(context);
 					return;
 				case ScenarioCommandType.CHECK_SAVEDATA_LEVEL:
 					mSaveDataOperator.CheckSaveDataLevel(context, step.Arguments[0]);

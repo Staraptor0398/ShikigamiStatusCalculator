@@ -26,6 +26,9 @@ namespace ScenarioRunner.Execution
 		public string SavedSnapshotBaseFilePath { get; set; }
 		public string SavedSnapshotTargetFilePath { get; set; }
 
+		public string CapturedMitamaStatus { get; set; }
+		public string CapturedFinalStatus { get; set; }
+
 		public CancellationToken CancellationToken { get; }
 
 		public ScenarioExecutonContext(string scenarioPath, string guiExecutablePath, ScenarioExecutionOptions options, WindowBounds guiBounds, CancellationToken cancellationToken)

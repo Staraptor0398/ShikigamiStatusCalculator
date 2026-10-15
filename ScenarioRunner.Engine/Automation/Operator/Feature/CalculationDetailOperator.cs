@@ -2,6 +2,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
+using ScenarioRunner.Execution;
 using System;
 
 namespace ScenarioRunner.Automation.Operator.Feature
@@ -45,6 +46,42 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		public void Check(GuiSession session)
 		{
+			getDetails(session, out _, out _);
+		}
+
+		public void Capture(ScenarioExecutonContext context)
+		{
+			if (context == null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
+
+			getDetails(context.GuiSession, out string mitamaStatus, out string finalStatus);
+
+			context.CapturedMitamaStatus = mitamaStatus;
+			context.CapturedFinalStatus = finalStatus;
+		}
+
+		public void CheckUnchanged(ScenarioExecutonContext context)
+		{
+			if (context == null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
+
+			if (context.CapturedMitamaStatus == null || context.CapturedFinalStatus == null)
+			{
+				throw new InvalidOperationException("Calculation detail has not been captured.");
+			}
+
+			getDetails(context.GuiSession, out string mitamaStatus, out string finalStatus);
+
+			checkUnchanged("MitamaStatus", context.CapturedMitamaStatus, mitamaStatus);
+			checkUnchanged("FinalStatus", context.CapturedFinalStatus, finalStatus);
+		}
+
+		private void getDetails(GuiSession session, out string mitamaStatus, out string finalStatus)
+		{
 			if (session == null)
 			{
 				throw new ArgumentNullException(nameof(session));
@@ -54,7 +91,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement mitamaStatusElement = elementMap.Get(AutomationIds.ResultViewForm.MITAMA_STATUS);
 
-			string mitamaStatus = mTextBoxOperator.GetText(mitamaStatusElement);
+			mitamaStatus = mTextBoxOperator.GetText(mitamaStatusElement);
 
 			if (string.IsNullOrWhiteSpace(mitamaStatus))
 			{
@@ -63,12 +100,37 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			AutomationElement finalStatusElement = elementMap.Get(AutomationIds.ResultViewForm.FINAL_STATUS);
 
-			string finalStatus = mTextBoxOperator.GetText(finalStatusElement);
+			finalStatus = mTextBoxOperator.GetText(finalStatusElement);
 
 			if (string.IsNullOrWhiteSpace(finalStatus))
 			{
 				throw new InvalidOperationException("Calculation detail for final status is empty.");
 			}
+		}
+
+		private static void checkUnchanged(string target, string expected, string actual)
+		{
+			if (string.Equals(expected, actual, StringComparison.Ordinal))
+			{
+				return;
+			}
+
+			int index = 0;
+			int length = Math.Min(expected.Length, actual.Length);
+
+			while (index < length && expected[index] == actual[index])
+			{
+				index++;
+			}
+
+			int start = Math.Max(0, index - 16);
+			int expectedCount = Math.Min(expected.Length - start, 48);
+			int actualCount = Math.Min(actual.Length - start, 48);
+
+			string expectedPart = expected.Substring(start, expectedCount).Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t");
+			string actualPart = actual.Substring(start, actualCount).Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t");
+
+			throw new InvalidOperationException($"Calculation detail has changed: {target}, FirstDifferenceIndex={index}, " + $"ExpectedLength={expected.Length}, ActualLength={actual.Length}, Expected=\"{expectedPart}\", Actual=\"{actualPart}\"");
 		}
 
 		public void Close(GuiSession session)
