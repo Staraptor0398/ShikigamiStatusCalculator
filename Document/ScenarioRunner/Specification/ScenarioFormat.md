@@ -761,6 +761,44 @@ Gui.exe側でダイアログが表示された場合は、
 
 表示されたダイアログを確認する場合は `CHECK DIALOG` を使用する。
 
+#### CAPTURE INPUT
+現在のMainFormの入力状態を取得し、後続の比較に使用する基準値として保持する。
+
+形式：
+
+    CAPTURE INPUT
+
+引数は指定しない。
+本コマンドはGui.exeの入力内容を変更せず、ファイルへの保存も行わない。
+MainFormが操作可能な状態で実行し、入力状態の読み取りに既存のUI取得機構を利用する。
+
+取得対象は次の70項目とする。
+
+- 式神選択：1項目
+- 御魂6スロットのメインステータス種類と値：12項目
+- 御魂6スロットそれぞれのサブステータス4枠の種類と値：48項目
+- 2セット効果3枠：3項目
+- 固有効果6枠：6項目
+
+すべての項目について、UI上の現在値を文字列として取得する。
+未選択または未入力を表す空文字列は有効な入力状態として保持し、空であることのみを理由に失敗とはしない。
+UI上の文字列を数値として解釈したり、空白除去や書式変換を行ったりしない。
+
+70項目すべての取得に成功した場合に限り、基準値を一括して更新する。
+同一Scenarioで複数回実行した場合は、直近の正常な取得結果で全項目を上書きする。
+途中で取得に失敗した場合は、以前に正常取得した基準値を一切変更しない。
+
+基準値は同一Scenarioの実行状態として保持する。
+入力変更、CLEAR、Gui.exeの終了・再起動によっては破棄せず、Scenario終了時に破棄する。
+異なるScenario間では共有しない。
+本コマンドは計算結果表示欄を取得対象に含めず、計算結果詳細の比較には `CAPTURE CALC DETAIL` と `CHECK CALC DETAIL UNCHANGED` を使用する。
+
+以下の場合はコマンドの実行失敗として扱う。
+
+- Gui.exeが起動していない、またはMainFormを操作可能な状態で取得できない。
+- 対象のComboBoxまたはTextBoxを取得できない。
+- いずれかの対象項目の値を読み取れない。
+
 #### CAPTURE CALC DETAIL
 現在表示されている計算結果詳細画面から、御魂のみのステータス詳細と最終ステータス詳細の文字列を取得し、後続の比較に使用する基準値として保持する。
 
@@ -1183,6 +1221,32 @@ Scenario Runnerが保持している比較元または比較先のファイル�
 本コマンドは計算結果詳細画面を閉じない。
 確認後に画面を閉じる場合は `CLOSE CALC DETAIL` を使用する。
 
+#### CHECK INPUT UNCHANGED
+現在のMainFormの入力状態が、同一Scenario内で直近に正常終了した `CAPTURE INPUT` の基準値と一致することを確認する。
+
+形式：
+
+    CHECK INPUT UNCHANGED
+
+引数は指定しない。
+`CAPTURE INPUT` と同じ70項目を同じ順序・対応関係で読み取り、すべての項目を一対一で比較する。
+いずれか一項目でも一致しない場合は、コマンドの実行失敗として扱う。
+
+各項目は文字列の完全一致で比較する。
+大小文字、全角・半角、空白、数値の表記などを区別し、トリミング、数値変換、正規化は行わない。
+空文字列同士は一致として扱う。
+
+以下の場合はコマンドの実行失敗として扱う。
+
+- 同一Scenario内で `CAPTURE INPUT` が正常終了していない。
+- Gui.exeが起動していない、またはMainFormを操作可能な状態で取得できない。
+- 比較対象のUI要素または値を取得できない。
+- 現在値が保持値と一致しない項目が存在する。
+
+比較に失敗した場合は、対象項目を特定できる名称（例：御魂スロット番号・サブスロット番号・ステータス種類/値）と、期待値・現在値を判別できる診断情報を実行ログに出力する。
+本コマンドは基準値を変更せず、Gui.exeの入力内容や計算結果を変更しない。
+既存の `CHECK CLEARED` は入力がクリアされていることを確認するコマンドとして維持する。
+
 #### CHECK CALC DETAIL UNCHANGED
 現在表示されている計算結果詳細の内容が、同一Scenario内で直近に正常終了した `CAPTURE CALC DETAIL` の取得結果から変化していないことを確認する。
 
@@ -1450,7 +1514,9 @@ Version 2では、Version 1の実装対象に加えて以下のコマンドを�
     OPEN CALC DETAIL
     CHECK CALC DETAIL
     CAPTURE CALC DETAIL
+    CAPTURE INPUT
     CHECK CALC DETAIL UNCHANGED
+    CHECK INPUT UNCHANGED
     CLOSE CALC DETAIL
     CHECK SAVEDATA LEVEL <保存レベル>
     SAVE MITAMA
@@ -1797,3 +1863,4 @@ Scenario実行中に生成される保存ファイルの具体的なパスを
 | 2.6 | 2026-10-02 | Gui.exeの式神登録・編集機能を操作する `OPEN SHIKIGAMI REGISTER`、`REGISTER SHIKIGAMI`、`OPEN SHIKIGAMI EDIT`、`EDIT SHIKIGAMI` コマンドをVersion 2実装対象として追加。登録・編集に使用する1体分の式神入力データをJSON形式で定義。 |
 | 2.7 | 2026-10-14 | `OPEN CLEAR DIALOG`、`CONFIRM DIALOG`、`CANCEL DIALOG` をVersion 2実装対象として追加。ダイアログの確定・取消の意味、操作対象の選択、単独実行時の失敗条件、終了待機、既存 `CLEAR` / `CLOSE DIALOG` との互換性を定義。 |
 | 2.8 | 2026-10-15 | `CAPTURE CALC DETAIL`、`CHECK CALC DETAIL UNCHANGED` をVersion 2実装対象として追加。表示文字列の取得・完全一致比較、取得値のScenario単位の寿命、再取得時の上書き、失敗条件、既存 `CHECK CALC DETAIL` との責務分離を定義。 |
+| 2.9 | 2026-10-17 | `CAPTURE INPUT`、`CHECK INPUT UNCHANGED` をVersion 2実装対象として追加。MainFormの入力70項目の取得・完全一致比較、Scenario単位の保持、再取得時の一括更新、失敗条件、既存の計算結果・クリア確認コマンドとの責務分離を定義。 |
