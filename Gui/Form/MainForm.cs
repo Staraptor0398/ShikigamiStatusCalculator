@@ -747,6 +747,16 @@ namespace Gui.Form
 						MitamaSetInputModelApplicator.Apply(inputModel, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 					}
 				}
+				catch (Exception ex)
+				{
+					Logger.Error($"Operation=SaveData読み込み Message={ex}");
+
+					MessageBox.Show(
+						"SaveDataの読み込み中にエラーが発生しました。",
+						"SaveData読み込み",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error);
+				}
 				finally
 				{
 					setSaveDataOperationButtonsEnabled(true);
