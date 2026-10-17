@@ -1,0 +1,20 @@
+{
+  "Version": 2,
+  "Data": {
+    "ShikigamiName": "__ScenarioRunner_InvalidShikigami__",
+    "MitamaSet": {
+      "Mitamas": [
+        {
+          "Slot": 1,
+          "MainStat": {
+            "Type": "攻撃力",
+            "Value": 486.0
+          },
+          "SubStats": []
+        }
+      ],
+      "SetEffects": [],
+      "UniqueEffects": []
+    }
+  }
+}
