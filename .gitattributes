@@ -6,6 +6,12 @@
 
 *.scenario text eol=crlf
 
+# JSON
+#
+# JSONファイルの改行コードをCRLFに統一する。
+
+*.json text eol=crlf
+
 # PlantUML
 #
 # PlantUMLソースの改行コードをLFに統一する。

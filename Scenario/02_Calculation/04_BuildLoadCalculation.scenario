@@ -1,0 +1,25 @@
+# BuildLoadCalculation.scenario
+#
+# Build SaveDataを読み込み、式神と御魂セットを復元した状態で
+# 計算が正常に実行できることを確認する。
+#
+# Build SaveDataに式神情報が含まれるため、
+# SEL SHIKIGAMIやLOAD MITAMAは実行しない。
+
+START
+
+OPEN GUI
+
+# 式神と御魂セットをまとめて読み込む
+LOAD BUILD "TestData/Valid.build.json"
+
+# 読み込んだBuildを使用して計算する
+CALC
+CHECK CALC
+
+# 計算結果のSnapshot保存が可能な状態であることを確認する
+CHECK SAVEDATA LEVEL SNAPSHOT
+
+CLOSE GUI
+
+END

@@ -1,0 +1,24 @@
+# MitamaLoadCalculation.scenario
+#
+# 式神を手動で選択し、御魂セットSaveDataを読み込んだ後、
+# 計算が正常に実行できることを確認する。
+#
+# 式神の選択と御魂セットの読み込みを個別に行う利用方法を検証する。
+
+START
+
+OPEN GUI
+
+# 計算対象の式神を選択する
+SEL SHIKIGAMI "願紡縁結神"
+
+# 保存済みの御魂セットを読み込む
+LOAD MITAMA "TestData/Valid.mitama.json"
+
+# 読み込んだ御魂セットを使用して計算する
+CALC
+CHECK CALC
+
+CLOSE GUI
+
+END
