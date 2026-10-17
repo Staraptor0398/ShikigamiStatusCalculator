@@ -98,6 +98,15 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.LOAD_MITAMA:
 					mSaveDataOperator.LoadMitama(context, step.Arguments[0]);
 					return;
+				case ScenarioCommandType.LOAD_BUILD:
+					mSaveDataOperator.LoadBuild(context, step.Arguments[0]);
+					return;
+				case ScenarioCommandType.TRY_LOAD_MITAMA:
+					mSaveDataOperator.TryLoadMitama(context, step.Arguments[0]);
+					return;
+				case ScenarioCommandType.TRY_LOAD_BUILD:
+					mSaveDataOperator.TryLoadBuild(context, step.Arguments[0]);
+					return;
 				case ScenarioCommandType.SAVE_MITAMA:
 					mSaveDataOperator.SaveMitama(context);
 					return;

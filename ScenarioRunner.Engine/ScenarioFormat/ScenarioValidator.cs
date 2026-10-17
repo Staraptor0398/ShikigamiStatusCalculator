@@ -230,6 +230,9 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.REGISTER_SHIKIGAMI:
 				case ScenarioCommandType.EDIT_SHIKIGAMI:
 				case ScenarioCommandType.LOAD_MITAMA:
+				case ScenarioCommandType.LOAD_BUILD:
+				case ScenarioCommandType.TRY_LOAD_MITAMA:
+				case ScenarioCommandType.TRY_LOAD_BUILD:
 				case ScenarioCommandType.CHECK_DIALOG:
 				case ScenarioCommandType.REMOVE_SHIKIGAMI:
 					return 1;

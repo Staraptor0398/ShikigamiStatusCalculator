@@ -168,6 +168,21 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.LOAD_MITAMA;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "LOAD", "BUILD"))
+			{
+				commandType = ScenarioCommandType.LOAD_BUILD;
+				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "TRY", "LOAD", "MITAMA"))
+			{
+				commandType = ScenarioCommandType.TRY_LOAD_MITAMA;
+				argumentStartIndex = 3;
+			}
+			else if (matches(tokens, "TRY", "LOAD", "BUILD"))
+			{
+				commandType = ScenarioCommandType.TRY_LOAD_BUILD;
+				argumentStartIndex = 3;
+			}
 			else if (matches(tokens, "SAVE", "MITAMA"))
 			{
 				commandType = ScenarioCommandType.SAVE_MITAMA;
@@ -405,7 +420,13 @@ namespace ScenarioRunner.ScenarioFormat
 					break;
 
 				case ScenarioCommandType.LOAD_MITAMA:
+				case ScenarioCommandType.LOAD_BUILD:
 					requireQuotedToken(lineNumber, rawText, quotedTokens, 2);
+					break;
+
+				case ScenarioCommandType.TRY_LOAD_MITAMA:
+				case ScenarioCommandType.TRY_LOAD_BUILD:
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 3);
 					break;
 
 				case ScenarioCommandType.COMPARE_SNAPSHOT:

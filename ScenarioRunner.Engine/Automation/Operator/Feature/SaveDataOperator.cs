@@ -58,6 +58,36 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			load(context, MITAMA_SAVE_TYPE, context.ResolvePath(filePath));
 		}
 
+		public void LoadBuild(ScenarioExecutonContext context, string filePath)
+		{
+			if (context == null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
+
+			load(context, BUILD_SAVE_TYPE, context.ResolvePath(filePath));
+		}
+
+		public void TryLoadMitama(ScenarioExecutonContext context, string filePath)
+		{
+			if (context == null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
+
+			load(context, MITAMA_SAVE_TYPE, context.ResolvePath(filePath), false);
+		}
+
+		public void TryLoadBuild(ScenarioExecutonContext context, string filePath)
+		{
+			if (context == null)
+			{
+				throw new ArgumentNullException(nameof(context));
+			}
+
+			load(context, BUILD_SAVE_TYPE, context.ResolvePath(filePath), false);
+		}
+
 		public void LoadSavedMitama(ScenarioExecutonContext context)
 		{
 			if (context == null)
@@ -185,7 +215,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		private void load(ScenarioExecutonContext context, string loadType, string filePath)
+		private void load(ScenarioExecutonContext context, string loadType, string filePath, bool waitForCompletion = true)
 		{
 			validateContext(context);
 			validateLoadFilePath(filePath);
@@ -230,9 +260,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				mWindowWaiter.WaitForWindowClosed(loadDialog);
 
-				stage = "WaitForLoadCompleted";
+				if (waitForCompletion)
+				{
+					stage = "WaitForLoadCompleted";
 
-				waitForLoadCompleted(mainLoadButton);
+					waitForLoadCompleted(mainLoadButton);
+				}
 			}
 			catch (Exception ex)
 			{
