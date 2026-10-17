@@ -1,0 +1,52 @@
+# LoadInvalidMitama.scenario
+#
+# 不正な御魂セットSaveDataの読み込みに失敗した場合、
+# MainFormの入力・計算結果・保存可能レベルが
+# 読込前から変更されないことを確認する。
+#
+# 1番御魂に設定できないメインステータスを持つ
+# Invalid.mitama.jsonを使用する。
+
+START
+
+OPEN GUI
+
+# 正常な入力状態を構築する
+SEL SHIKIGAMI "願紡縁結神"
+LOAD MITAMA "../02_Calculation/TestData/Valid.mitama.json"
+
+# 計算結果を作成する
+CALC
+CHECK CALC
+CHECK SAVEDATA LEVEL SNAPSHOT
+
+# 読込前の入力・計算結果を保持する
+CAPTURE INPUT
+
+OPEN CALC DETAIL
+CAPTURE CALC DETAIL
+CLOSE CALC DETAIL
+
+# 不正な御魂セットを読み込む
+TRY LOAD MITAMA "TestData/Invalid.mitama.json"
+
+# 読込失敗ダイアログを確認する
+CHECK DIALOG "SaveDataの読み込み中にエラーが発生しました。"
+CLOSE DIALOG
+
+# 読込失敗後も入力状態が維持されることを確認する
+CHECK INPUT UNCHANGED
+
+# 計算結果が維持されることを確認する
+CHECK CALC
+
+OPEN CALC DETAIL
+CHECK CALC DETAIL UNCHANGED
+CLOSE CALC DETAIL
+
+# Clean状態が維持され、Snapshot保存が可能なことを確認する
+CHECK SAVEDATA LEVEL SNAPSHOT
+
+CLOSE GUI
+
+END

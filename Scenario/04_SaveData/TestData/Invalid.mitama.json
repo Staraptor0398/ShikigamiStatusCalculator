@@ -1,0 +1,17 @@
+{
+  "Version": 2,
+  "Data": {
+    "Mitamas": [
+      {
+        "Slot": 1,
+        "MainStat": {
+          "Type": "素早さ",
+          "Value": 57.0
+        },
+        "SubStats": []
+      }
+    ],
+    "SetEffects": [],
+    "UniqueEffects": []
+  }
+}
