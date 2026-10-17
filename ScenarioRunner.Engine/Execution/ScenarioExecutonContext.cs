@@ -1,5 +1,6 @@
 using ScenarioRunner.Automation;
 using ScenarioRunner.Automation.Model;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
@@ -28,6 +29,7 @@ namespace ScenarioRunner.Execution
 
 		public string CapturedMitamaStatus { get; set; }
 		public string CapturedFinalStatus { get; set; }
+		public Dictionary<string, string> CapturedInputState { get; set; }
 
 		public CancellationToken CancellationToken { get; }
 

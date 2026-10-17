@@ -118,6 +118,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.OPEN_CALC_DETAIL;
 				argumentStartIndex = 3;
 			}
+			else if (matches(tokens, "CAPTURE", "INPUT"))
+			{
+				commandType = ScenarioCommandType.CAPTURE_INPUT;
+				argumentStartIndex = 2;
+			}
 			else if (matches(tokens, "CAPTURE", "CALC", "DETAIL"))
 			{
 				commandType = ScenarioCommandType.CAPTURE_CALC_DETAIL;
@@ -246,6 +251,11 @@ namespace ScenarioRunner.ScenarioFormat
 			{
 				commandType = ScenarioCommandType.CHECK_CALCULATION;
 				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "CHECK", "INPUT", "UNCHANGED"))
+			{
+				commandType = ScenarioCommandType.CHECK_INPUT_UNCHANGED;
+				argumentStartIndex = 3;
 			}
 			else if (matches(tokens, "CHECK", "SAVEDATA", "LEVEL"))
 			{

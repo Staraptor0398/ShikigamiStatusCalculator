@@ -21,6 +21,7 @@ namespace ScenarioRunner.Execution
 		private readonly DialogOperator mDialogOperator;
 		private readonly ShikigamiDataOperator mShikigamiDataOperator;
 		private readonly InputOperator mInputOperator;
+		private readonly InputStateOperator mInputStateOperator;
 		private readonly ShikigamiRecoveryOperator mShikigamiRecoveryOperator;
 		private readonly SnapshotComparisonOperator mSnapshotComparisonOperator;
 
@@ -39,6 +40,7 @@ namespace ScenarioRunner.Execution
 			mDialogOperator = new DialogOperator();
 			mShikigamiDataOperator = new ShikigamiDataOperator();
 			mInputOperator = new InputOperator();
+			mInputStateOperator = new InputStateOperator();
 			mShikigamiRecoveryOperator = new ShikigamiRecoveryOperator();
 			mSnapshotComparisonOperator = new SnapshotComparisonOperator();
 
@@ -123,6 +125,9 @@ namespace ScenarioRunner.Execution
 				case ScenarioCommandType.OPEN_CALC_DETAIL:
 					mCalculationDetailOperator.Open(context.GuiSession);
 					return;
+				case ScenarioCommandType.CAPTURE_INPUT:
+					mInputStateOperator.Capture(context);
+					return;
 				case ScenarioCommandType.CAPTURE_CALC_DETAIL:
 					mCalculationDetailOperator.Capture(context);
 					return;
@@ -173,6 +178,9 @@ namespace ScenarioRunner.Execution
 					return;
 				case ScenarioCommandType.CHECK_CALC_DETAIL:
 					mCalculationDetailOperator.Check(context.GuiSession);
+					return;
+				case ScenarioCommandType.CHECK_INPUT_UNCHANGED:
+					mInputStateOperator.CheckUnchanged(context);
 					return;
 				case ScenarioCommandType.CHECK_CALC_DETAIL_UNCHANGED:
 					mCalculationDetailOperator.CheckUnchanged(context);

@@ -220,6 +220,8 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.CHECK_CALC_DETAIL:
 				case ScenarioCommandType.CAPTURE_CALC_DETAIL:
 				case ScenarioCommandType.CHECK_CALC_DETAIL_UNCHANGED:
+				case ScenarioCommandType.CAPTURE_INPUT:
+				case ScenarioCommandType.CHECK_INPUT_UNCHANGED:
 				case ScenarioCommandType.CHECK_CLEARED:
 				case ScenarioCommandType.CHECK_SHIKIGAMI:
 				case ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR:
