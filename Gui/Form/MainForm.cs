@@ -366,6 +366,11 @@ namespace Gui.Form
 
 		private void markCalculationResultDirty()
 		{
+			if (mOperationState == MainFormOperationState.LOADING)
+			{
+				return;
+			}
+
 			updateSaveButtonEnabled();
 
 			if (mIsCalculationResultDirty)
@@ -772,6 +777,8 @@ namespace Gui.Form
 
 				setOperationState(MainFormOperationState.LOADING);
 
+				bool loadSucceeded = false;
+
 				try
 				{
 					if (dialog.SelectedLoadType == SaveDataLoadType.Build)
@@ -813,7 +820,7 @@ namespace Gui.Form
 						throw new InvalidOperationException($"Unsupported SaveData load type: {dialog.SelectedLoadType}");
 					}
 
-					markCalculationResultDirty();
+					loadSucceeded = true;
 				}
 				catch (Exception ex)
 				{
@@ -828,6 +835,11 @@ namespace Gui.Form
 				finally
 				{
 					setOperationState(MainFormOperationState.IDLE);
+				}
+
+				if (loadSucceeded)
+				{
+					markCalculationResultDirty();
 				}
 			}
 		}
