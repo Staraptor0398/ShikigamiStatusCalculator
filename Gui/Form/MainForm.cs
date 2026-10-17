@@ -5,6 +5,7 @@ using Gui.Factory;
 using Gui.Form.Applicator;
 using Gui.Form.Control;
 using Gui.Formatter;
+using Gui.Model;
 using Gui.Resolver;
 using Gui.Validation;
 using SaveData.Access;
@@ -737,15 +738,44 @@ namespace Gui.Form
 				{
 					if (dialog.SelectedLoadType == SaveDataLoadType.Build)
 					{
-						var data = SaveDataAccess.LoadBuild(dialog.FilePath);
-						applyBuildSaveDataToUI(data);
+						BuildSaveData data = SaveDataAccess.LoadBuild(dialog.FilePath);
+
+						if (data == null)
+						{
+							throw new InvalidOperationException("Build save data is null.");
+						}
+
+						MitamaSetInputModel inputModel = MitamaSetConverter.ToInputModel(data.MitamaSet);
+
+						if (inputModel == null)
+						{
+							throw new InvalidOperationException("MitamaSet input model is null.");
+						}
+
+						applyBuildSaveDataToUI(data.ShikigamiName, inputModel);
 					}
 					else if (dialog.SelectedLoadType == SaveDataLoadType.MitamaSet)
 					{
-						var saveData = SaveDataAccess.LoadMitamaSet(dialog.FilePath);
-						var inputModel = MitamaSetConverter.ToInputModel(saveData);
-						MitamaSetInputModelApplicator.Apply(inputModel, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+						MitamaSetSaveData data = SaveDataAccess.LoadMitamaSet(dialog.FilePath);
+						MitamaSetInputModel inputModel = MitamaSetConverter.ToInputModel(data);
+
+						if (inputModel == null)
+						{
+							throw new InvalidOperationException("MitamaSet input model is null.");
+						}
+
+						MitamaSetInputModelApplicator.Apply(
+							inputModel,
+							mMitamaSlotInputControls,
+							mSetEffectComboBoxes,
+							mUniqueEffectComboBoxes);
 					}
+					else
+					{
+						throw new InvalidOperationException($"Unsupported SaveData load type: {dialog.SelectedLoadType}");
+					}
+
+					markCalculationResultDirty();
 				}
 				catch (Exception ex)
 				{
@@ -760,22 +790,19 @@ namespace Gui.Form
 				finally
 				{
 					setSaveDataOperationButtonsEnabled(true);
-					markCalculationResultDirty();
 				}
 			}
 		}
 
-		private void applyBuildSaveDataToUI(BuildSaveData data)
+		private void applyBuildSaveDataToUI(string shikigamiName, MitamaSetInputModel inputModel)
 		{
-			if (data == null)
-			{
-				return;
-			}
+			applyShikigami(shikigamiName);
 
-			applyShikigami(data.ShikigamiName);
-
-			var inputModel = MitamaSetConverter.ToInputModel(data.MitamaSet);
-			MitamaSetInputModelApplicator.Apply(inputModel, mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+			MitamaSetInputModelApplicator.Apply(
+				inputModel,
+				mMitamaSlotInputControls,
+				mSetEffectComboBoxes,
+				mUniqueEffectComboBoxes);
 		}
 
 		private void applyShikigami(string name)
