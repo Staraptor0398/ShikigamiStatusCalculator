@@ -33,6 +33,31 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 		}
 
 		[TestMethod]
+		[DataRow(ScenarioCommandType.CAPTURE_INPUT, "CAPTURE INPUT")]
+		[DataRow(ScenarioCommandType.CHECK_INPUT_UNCHANGED, "CHECK INPUT UNCHANGED")]
+		public void Validate_InputStateCommands(ScenarioCommandType type, string command)
+		{
+			var validator = new ScenarioValidator();
+			validator.Validate(new Scenario("Test.scenario", 1, 3, new[]
+			{
+				new ScenarioStep(2, type, Array.Empty<string>(), command)
+			}));
+
+			try
+			{
+				validator.Validate(new Scenario("Test.scenario", 1, 3, new[]
+				{
+					new ScenarioStep(2, type, new[] { "EXTRA" }, command + " EXTRA")
+				}));
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual($"Too many arguments at line 2: {command} EXTRA", ex.Message);
+			}
+		}
+
+		[TestMethod]
 		[DataRow(ScenarioCommandType.CAPTURE_CALC_DETAIL, "CAPTURE CALC DETAIL")]
 		[DataRow(ScenarioCommandType.CHECK_CALC_DETAIL_UNCHANGED, "CHECK CALC DETAIL UNCHANGED")]
 		public void Validate_CalculationDetailCaptureCommands(ScenarioCommandType type, string command)

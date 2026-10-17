@@ -255,6 +255,28 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 		}
 
 		[TestMethod]
+		public void Parse_InputStateCommands()
+		{
+			var parser = new ScenarioParser();
+			Scenario scenario = parser.Parse("Test.scenario", new[]
+			{
+				"START",
+				"CAPTURE INPUT",
+				"CHECK INPUT UNCHANGED",
+				"END"
+			});
+
+			Assert.AreEqual(2, scenario.Steps.Count);
+			Assert.AreEqual(ScenarioCommandType.CAPTURE_INPUT, scenario.Steps[0].CommandType);
+			Assert.AreEqual(ScenarioCommandType.CHECK_INPUT_UNCHANGED, scenario.Steps[1].CommandType);
+
+			foreach (ScenarioStep step in scenario.Steps)
+			{
+				Assert.AreEqual(0, step.Arguments.Count);
+			}
+		}
+
+		[TestMethod]
 		public void Parse_CalculationDetailCaptureCommands()
 		{
 			var parser = new ScenarioParser();
