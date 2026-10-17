@@ -1,4 +1,4 @@
-using Gui.Common;
+using Gui.Logging;
 using System.Windows.Forms;
 
 namespace Gui.Validation

@@ -1,4 +1,4 @@
-using Gui.Common;
+using Gui.Definition;
 using System;
 using System.IO;
 using System.Windows.Forms;

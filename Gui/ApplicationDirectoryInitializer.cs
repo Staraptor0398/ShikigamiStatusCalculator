@@ -1,6 +1,7 @@
+using Gui.Definition;
 using System.IO;
 
-namespace Gui.Common
+namespace Gui
 {
 	public static class ApplicationDirectoryInitializer
 	{

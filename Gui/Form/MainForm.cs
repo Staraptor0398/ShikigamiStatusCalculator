@@ -1,12 +1,14 @@
-using Gui.Common;
 using Gui.Converter;
+using Gui.Definition;
 using Gui.Dialog;
 using Gui.Factory;
 using Gui.Form.Applicator;
 using Gui.Form.Control;
 using Gui.Formatter;
+using Gui.Logging;
 using Gui.Model;
 using Gui.Resolver;
+using Gui.ShikigamiData;
 using Gui.Validation;
 using SaveData.Access;
 using SaveData.Model;

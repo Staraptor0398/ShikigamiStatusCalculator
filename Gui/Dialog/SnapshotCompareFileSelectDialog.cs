@@ -1,4 +1,4 @@
-using Gui.Common;
+using Gui.Definition;
 using System.Windows.Forms;
 
 namespace Gui.Dialog

@@ -1,7 +1,8 @@
+using Gui.Logging;
 using System;
 using System.IO;
 
-namespace Gui.Common
+namespace Gui.Definition
 {
 	public static class AppPath
 	{

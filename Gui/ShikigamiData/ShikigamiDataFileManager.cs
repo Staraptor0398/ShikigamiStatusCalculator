@@ -1,10 +1,12 @@
+using Gui.Definition;
+using Gui.Logging;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Gui.Common
+namespace Gui.ShikigamiData
 {
 	public class ShikigamiDataFileManager
 	{

@@ -1,4 +1,4 @@
-namespace Gui.Common
+namespace Gui.Definition
 {
 	public static class DisplayText
 	{

@@ -55,14 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\ApplicationDirectoryInitializer.cs" />
-    <Compile Include="Common\AppPath.cs" />
-    <Compile Include="Common\DisplayText.cs" />
-    <Compile Include="Common\LogFileDefinition.cs" />
-    <Compile Include="Common\Logger.cs" />
-    <Compile Include="Common\SaveDataFileDefinition.cs" />
-    <Compile Include="Common\ShikigamiDataErrorHandler.cs" />
-    <Compile Include="Common\ShikigamiDataFileManager.cs" />
+    <Compile Include="ApplicationDirectoryInitializer.cs" />
     <Compile Include="Converter\CalculationTestSourceConverter.cs" />
     <Compile Include="Converter\MitamaConverter.cs" />
     <Compile Include="Converter\MitamaSetConverter.cs" />
@@ -70,6 +63,9 @@
     <Compile Include="Converter\StatTypeConverter.cs" />
     <Compile Include="Converter\StatusConverter.cs" />
     <Compile Include="Converter\StatValueConverter.cs" />
+    <Compile Include="Definition\AppPath.cs" />
+    <Compile Include="Definition\DisplayText.cs" />
+    <Compile Include="Definition\SaveDataFileDefinition.cs" />
     <Compile Include="Dialog\SaveDataLoadDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -128,6 +124,8 @@
     <Compile Include="Form\StatusComparisonResultForm.Designer.cs">
       <DependentUpon>StatusComparisonResultForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Logging\LogFileDefinition.cs" />
+    <Compile Include="Logging\Logger.cs" />
     <Compile Include="Model\MitamaInputModel.cs" />
     <Compile Include="Model\MitamaSetInputModel.cs" />
     <Compile Include="Model\SetEffectInputModel.cs" />
@@ -136,6 +134,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resolver\MainStatValueResolver.cs" />
     <Compile Include="Resolver\MitamaEffectValueResolver.cs" />
+    <Compile Include="ShikigamiData\ShikigamiDataErrorHandler.cs" />
+    <Compile Include="ShikigamiData\ShikigamiDataFileManager.cs" />
     <Compile Include="Validation\CalculationInputValidator.cs" />
     <Compile Include="Validation\CalculationInputValidationErrorHandler.cs" />
     <Compile Include="Validation\CalculationInputValidationOutcome.cs" />

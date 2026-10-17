@@ -1,8 +1,9 @@
+using Gui.Definition;
 using System;
 using System.IO;
 using System.Text;
 
-namespace Gui.Common
+namespace Gui.Logging
 {
 	public static class Logger
 	{

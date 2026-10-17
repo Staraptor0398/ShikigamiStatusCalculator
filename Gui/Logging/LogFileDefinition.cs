@@ -1,4 +1,4 @@
-namespace Gui.Common
+namespace Gui.Logging
 {
 	public static class LogFileDefinition
 	{

@@ -1,6 +1,7 @@
+using Gui.Logging;
 using System.Windows.Forms;
 
-namespace Gui.Common
+namespace Gui.ShikigamiData
 {
 	public static class ShikigamiDataErrorHandler
 	{

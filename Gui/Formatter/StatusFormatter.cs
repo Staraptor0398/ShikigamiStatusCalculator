@@ -1,4 +1,4 @@
-using Gui.Common;
+using Gui.Definition;
 
 namespace Gui.Formatter
 {

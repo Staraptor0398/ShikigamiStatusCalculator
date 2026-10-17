@@ -1,4 +1,6 @@
-using Gui.Common;
+using Gui.Definition;
+using Gui.Logging;
+using Gui.ShikigamiData;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
