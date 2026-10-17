@@ -106,6 +106,7 @@
     <Compile Include="Form\MainForm.Development.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Form\MainFormOperationState.cs" />
     <Compile Include="Form\ResultViewForm.cs">
       <SubType>Form</SubType>
     </Compile>

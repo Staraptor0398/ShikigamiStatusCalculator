@@ -235,6 +235,8 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  フィールド・プロパティ
 		****************************************************************************************************/
+		private MainFormOperationState mOperationState = MainFormOperationState.IDLE;
+
 		private CalculationResultDto mLastCalculationResult = null;
 
 		private bool mIsCalculationResultDirty = true;
@@ -276,6 +278,24 @@ namespace Gui.Form
 			}
 
 			return File.ReadAllText(AppPath.AppVersionFilePath).Trim();
+		}
+
+		/****************************************************************************************************
+		  MainForm状態遷移
+		****************************************************************************************************/
+		private void setOperationState(MainFormOperationState state)
+		{
+			if (mOperationState == state)
+			{
+				return;
+			}
+
+			MainFormOperationState previousState = mOperationState;
+			mOperationState = state;
+
+			Logger.Info($"Operation=MainForm状態遷移 Previous={previousState} Current={state}");
+
+			updateSaveButtonEnabled();
 		}
 
 		/****************************************************************************************************
@@ -658,7 +678,7 @@ namespace Gui.Form
 					return;
 				}
 
-				setSaveDataOperationButtonsEnabled(false);
+				setOperationState(MainFormOperationState.SAVING);
 
 				try
 				{
@@ -696,7 +716,7 @@ namespace Gui.Form
 				}
 				finally
 				{
-					setSaveDataOperationButtonsEnabled(true);
+					setOperationState(MainFormOperationState.IDLE);
 				}
 			}
 		}
@@ -718,9 +738,25 @@ namespace Gui.Form
 
 		private void updateSaveButtonEnabled()
 		{
-			var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
-			btnSave.Enabled = CalculationInputValidator.Validate(inputModel) != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
+			bool isIdle = mOperationState == MainFormOperationState.IDLE;
+
+			btnLoad.Enabled = isIdle;
+
+			if (!isIdle)
+			{
+				btnSave.Enabled = false;
+				return;
+			}
+
+			var inputModel = MitamaSetInputModelFactory.Create(
+				mMitamaSlotInputControls,
+				mSetEffectComboBoxes,
+				mUniqueEffectComboBoxes);
+
+			btnSave.Enabled = CalculationInputValidator.Validate(inputModel)
+				!= CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
 		}
+
 
 		/****************************************************************************************************
 		  SaveData適用
@@ -734,7 +770,7 @@ namespace Gui.Form
 					return;
 				}
 
-				setSaveDataOperationButtonsEnabled(false);
+				setOperationState(MainFormOperationState.LOADING);
 
 				try
 				{
@@ -791,7 +827,7 @@ namespace Gui.Form
 				}
 				finally
 				{
-					setSaveDataOperationButtonsEnabled(true);
+					setOperationState(MainFormOperationState.IDLE);
 				}
 			}
 		}
@@ -848,12 +884,6 @@ namespace Gui.Form
 			}
 
 			return false;
-		}
-
-		private void setSaveDataOperationButtonsEnabled(bool enabled)
-		{
-			btnSave.Enabled = enabled;
-			btnLoad.Enabled = enabled;
 		}
 
 		/****************************************************************************************************
