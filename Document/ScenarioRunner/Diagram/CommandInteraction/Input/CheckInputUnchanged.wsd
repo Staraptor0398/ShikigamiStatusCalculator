@@ -1,0 +1,57 @@
+@startuml
+title CHECK INPUT UNCHANGED - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/InputStateOperator.cs
+' Source: ScenarioRunner.Engine/Execution/ScenarioExecutonContext.cs
+participant "ScenarioCommandExecutor" as EX
+participant "InputStateOperator" as O
+participant "GuiOperator" as GO
+participant "AutomationElementMap" as MAP
+participant "ComboBoxOperator" as CO
+participant "TextBoxOperator" as TO
+participant "ScenarioExecutonContext" as CTX
+
+EX -> O : CheckUnchanged(context)
+activate O
+O -> CTX : CapturedInputState を参照
+CTX --> O : captured
+alt captured == null
+  O --> EX : 例外（未CAPTURE）
+else captured が存在
+  O -> O : readInputState(context.GuiSession)
+  activate O
+  O -> GO : GetMainElementMap(session)
+  GO --> O : elementMap
+  loop ComboBox対象（式神・メイン／サブ種別・効果）
+    O -> MAP : Get(automationId, ComboBox)
+    MAP --> O : element
+    O -> CO : GetValue(element)
+    CO --> O : value
+    O -> O : nullなら例外／actualへ追加
+  end
+  loop TextBox対象（メイン／サブ値）
+    O -> MAP : Get(automationId)
+    MAP --> O : element
+    O -> TO : GetText(element)
+    TO --> O : value
+    O -> O : nullなら例外／actualへ追加
+  end
+  O -> O : actual.Count == 70 を確認
+  O --> O : actual
+  deactivate O
+  loop captured の各70項目
+    O -> O : actual.TryGetValue(key, out value)
+    O -> O : StringComparison.Ordinal で比較
+    alt 項目なし／不一致
+      O --> EX : 例外（対象・期待値・実際値）
+    end
+  end
+  O --> EX : すべて一致 → 処理完了
+end
+note over O,CTX
+  CHECKはCapturedInputStateを更新しない。
+  空文字は有効な入力状態として完全一致比較する。
+end note
+deactivate O
+@enduml

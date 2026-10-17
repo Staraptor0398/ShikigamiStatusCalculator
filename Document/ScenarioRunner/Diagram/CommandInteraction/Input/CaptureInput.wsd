@@ -1,0 +1,45 @@
+@startuml
+title CAPTURE INPUT - コマンド相互作用図
+skinparam responseMessageBelowArrow true
+' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
+' Source: ScenarioRunner.Engine/Automation/Operator/Feature/InputStateOperator.cs
+' Source: ScenarioRunner.Engine/Execution/ScenarioExecutonContext.cs
+participant "ScenarioCommandExecutor" as EX
+participant "InputStateOperator" as O
+participant "GuiOperator" as GO
+participant "AutomationElementMap" as MAP
+participant "ComboBoxOperator" as CO
+participant "TextBoxOperator" as TO
+participant "ScenarioExecutonContext" as CTX
+
+EX -> O : Capture(context)
+activate O
+O -> O : readInputState(context.GuiSession)
+activate O
+O -> GO : GetMainElementMap(session)
+GO --> O : elementMap
+loop 式神選択・御魂のメイン／サブ種別・効果（ComboBox）
+  O -> MAP : Get(automationId, ComboBox)
+  MAP --> O : element
+  O -> CO : GetValue(element)
+  CO --> O : value
+  O -> O : nullなら例外／値をsnapshotへ追加
+end
+loop 御魂のメイン／サブ値（TextBox）
+  O -> MAP : Get(automationId)
+  MAP --> O : element
+  O -> TO : GetText(element)
+  TO --> O : value
+  O -> O : nullなら例外／値をsnapshotへ追加
+end
+O -> O : snapshot.Count == 70 を確認
+O --> O : snapshot（全項目の取得成功）
+deactivate O
+O -> CTX : CapturedInputState = snapshot
+note right of CTX
+  全項目の取得成功後にのみ上書きする。
+  読取失敗・件数不一致時は以前の保持値を維持。
+end note
+O --> EX : 処理完了（失敗時は例外）
+deactivate O
+@enduml
