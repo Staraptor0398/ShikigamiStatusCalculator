@@ -797,6 +797,8 @@ namespace Gui.Form
 							throw new InvalidOperationException("MitamaSet input model is null.");
 						}
 
+						validateBuildShikigami(data.ShikigamiName);
+
 						applyBuildSaveDataToUI(data.ShikigamiName, inputModel);
 					}
 					else if (dialog.SelectedLoadType == SaveDataLoadType.MitamaSet)
@@ -844,6 +846,19 @@ namespace Gui.Form
 			}
 		}
 
+		private void validateBuildShikigami(string shikigamiName)
+		{
+			if (string.IsNullOrEmpty(shikigamiName))
+			{
+				return;
+			}
+
+			if (mShikigamiList == null || !mShikigamiList.Any(x => x != null && x.Name == shikigamiName))
+			{
+				throw new InvalidOperationException($"Shikigami not found: {shikigamiName}");
+			}
+		}
+
 		private void applyBuildSaveDataToUI(string shikigamiName, MitamaSetInputModel inputModel)
 		{
 			applyShikigami(shikigamiName);
@@ -874,7 +889,7 @@ namespace Gui.Form
 				return;
 			}
 
-			MessageBox.Show($"式神が見つかりません： {name}");
+			throw new InvalidOperationException($"Failed to select Shikigami: {name}");
 		}
 
 		private bool trySelectShikigami(string name)
