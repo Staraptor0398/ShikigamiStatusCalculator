@@ -39,7 +39,16 @@ namespace Gui.Form.Applicator
 				return;
 			}
 
-			slot.MainStatComboBox.Text = data.MainStat.Type;
+			if (string.IsNullOrEmpty(data.MainStat.Type))
+			{
+				slot.MainStatComboBox.SelectedIndex = -1;
+				slot.MainStatComboBox.Text = "";
+			}
+			else
+			{
+				slot.MainStatComboBox.Text = data.MainStat.Type;
+			}
+
 			slot.MainValueTextBox.Text = data.MainStat.ValueText;
 
 			for (int i = 0; i < data.SubStat.Count && i < slot.SubStats.Length; i++)
@@ -91,7 +100,7 @@ namespace Gui.Form.Applicator
 				return;
 			}
 
-			comboBox.SelectedItem = data.Type;
+			applyStatValue(data, comboBox);
 			textBox.Text = data.ValueText;
 		}
 
@@ -102,7 +111,14 @@ namespace Gui.Form.Applicator
 				return;
 			}
 
-			comboBox.SelectedItem = data.Type;
+			if (string.IsNullOrEmpty(data.Type))
+			{
+				comboBox.SelectedIndex = -1;
+			}
+			else
+			{
+				comboBox.SelectedItem = data.Type;
+			}
 		}
 	}
 }

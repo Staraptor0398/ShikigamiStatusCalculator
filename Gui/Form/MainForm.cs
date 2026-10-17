@@ -623,50 +623,50 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  メインステータス表示
 		****************************************************************************************************/
+
 		private void cmbMainStat1_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = MainStatValueResolver.Resolve(cmbMainStat1.SelectedItem.ToString(), 1);
-			txtMainVal1.Text = value.ToString();
-
-			markCalculationResultDirty();
+			updateMainStatValue(cmbMainStat1, txtMainVal1, 1);
 		}
 
 		private void cmbMainStat2_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = MainStatValueResolver.Resolve(cmbMainStat2.SelectedItem.ToString(), 2);
-			txtMainVal2.Text = value.ToString();
-
-			markCalculationResultDirty();
+			updateMainStatValue(cmbMainStat2, txtMainVal2, 2);
 		}
 
 		private void cmbMainStat3_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = MainStatValueResolver.Resolve(cmbMainStat3.SelectedItem.ToString(), 3);
-			txtMainVal3.Text = value.ToString();
-
-			markCalculationResultDirty();
+			updateMainStatValue(cmbMainStat3, txtMainVal3, 3);
 		}
 
 		private void cmbMainStat4_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = MainStatValueResolver.Resolve(cmbMainStat4.SelectedItem.ToString(), 4);
-			txtMainVal4.Text = value.ToString();
-
-			markCalculationResultDirty();
+			updateMainStatValue(cmbMainStat4, txtMainVal4, 4);
 		}
 
 		private void cmbMainStat5_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = MainStatValueResolver.Resolve(cmbMainStat5.SelectedItem.ToString(), 5);
-			txtMainVal5.Text = value.ToString();
-
-			markCalculationResultDirty();
+			updateMainStatValue(cmbMainStat5, txtMainVal5, 5);
 		}
 
 		private void cmbMainStat6_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			var value = MainStatValueResolver.Resolve(cmbMainStat6.SelectedItem.ToString(), 6);
-			txtMainVal6.Text = value.ToString();
+			updateMainStatValue(cmbMainStat6, txtMainVal6, 6);
+		}
+
+		private void updateMainStatValue(ComboBox comboBox, TextBox textBox, int slot)
+		{
+			string statText = comboBox.SelectedItem?.ToString();
+
+			if (string.IsNullOrEmpty(statText))
+			{
+				textBox.Text = "";
+			}
+			else
+			{
+				double value = MainStatValueResolver.Resolve(statText, slot);
+				textBox.Text = value.ToString();
+			}
 
 			markCalculationResultDirty();
 		}
@@ -805,7 +805,7 @@ namespace Gui.Form
 							mSetEffectComboBoxes,
 							mUniqueEffectComboBoxes);
 
-						applyBuildSaveDataToUI(data.ShikigamiName, inputModel);
+						applySaveDataWithRollback(() => applyBuildSaveDataToUI(data.ShikigamiName, inputModel));
 					}
 					else if (dialog.SelectedLoadType == SaveDataLoadType.MitamaSet)
 					{
@@ -823,11 +823,12 @@ namespace Gui.Form
 							mSetEffectComboBoxes,
 							mUniqueEffectComboBoxes);
 
-						MitamaSetInputModelApplicator.Apply(
-							inputModel,
-							mMitamaSlotInputControls,
-							mSetEffectComboBoxes,
-							mUniqueEffectComboBoxes);
+						applySaveDataWithRollback(() =>
+							MitamaSetInputModelApplicator.Apply(
+								inputModel,
+								mMitamaSlotInputControls,
+								mSetEffectComboBoxes,
+								mUniqueEffectComboBoxes));
 					}
 					else
 					{
@@ -881,6 +882,51 @@ namespace Gui.Form
 				mSetEffectComboBoxes,
 				mUniqueEffectComboBoxes);
 		}
+
+
+		private void applySaveDataWithRollback(Action apply)
+		{
+			MitamaSetInputModel previousInputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+
+			string previousShikigamiName = (cmbShikigami.SelectedItem as ShikigamiDto)?.Name;
+			object previousRarity = cmbRarityFilter.SelectedItem;
+
+			try
+			{
+				apply();
+			}
+			catch
+			{
+				try
+				{
+					cmbRarityFilter.SelectedItem = previousRarity;
+
+					if (string.IsNullOrEmpty(previousShikigamiName))
+					{
+						cmbShikigami.SelectedIndex = -1;
+					}
+					else if (!trySelectShikigami(previousShikigamiName))
+					{
+						throw new InvalidOperationException($"Failed to restore Shikigami: {previousShikigamiName}");
+					}
+
+					MitamaSetInputModelApplicator.Apply(
+						previousInputModel,
+						mMitamaSlotInputControls,
+						mSetEffectComboBoxes,
+						mUniqueEffectComboBoxes);
+
+					Logger.Info("Operation=SaveDataロールバック Message=UI状態を復元しました。");
+				}
+				catch (Exception rollbackEx)
+				{
+					Logger.Error($"Operation=SaveDataロールバック Message={rollbackEx}");
+				}
+
+				throw;
+			}
+		}
+
 
 		private void applyShikigami(string name)
 		{
