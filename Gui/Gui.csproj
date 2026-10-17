@@ -140,6 +140,7 @@
     <Compile Include="Validation\CalculationInputValidator.cs" />
     <Compile Include="Validation\CalculationInputValidationErrorHandler.cs" />
     <Compile Include="Validation\CalculationInputValidationOutcome.cs" />
+    <Compile Include="Validation\SaveDataInputModelValidator.cs" />
     <EmbeddedResource Include="Dialog\SaveDataLoadDialog.resx">
       <DependentUpon>SaveDataLoadDialog.cs</DependentUpon>
     </EmbeddedResource>

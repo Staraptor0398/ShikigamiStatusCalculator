@@ -799,6 +799,12 @@ namespace Gui.Form
 
 						validateBuildShikigami(data.ShikigamiName);
 
+						SaveDataInputModelValidator.Validate(
+							inputModel,
+							mMitamaSlotInputControls,
+							mSetEffectComboBoxes,
+							mUniqueEffectComboBoxes);
+
 						applyBuildSaveDataToUI(data.ShikigamiName, inputModel);
 					}
 					else if (dialog.SelectedLoadType == SaveDataLoadType.MitamaSet)
@@ -810,6 +816,12 @@ namespace Gui.Form
 						{
 							throw new InvalidOperationException("MitamaSet input model is null.");
 						}
+
+						SaveDataInputModelValidator.Validate(
+							inputModel,
+							mMitamaSlotInputControls,
+							mSetEffectComboBoxes,
+							mUniqueEffectComboBoxes);
 
 						MitamaSetInputModelApplicator.Apply(
 							inputModel,
