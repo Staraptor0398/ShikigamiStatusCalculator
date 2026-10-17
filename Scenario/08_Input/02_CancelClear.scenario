@@ -1,0 +1,33 @@
+# CancelClear.scenario
+#
+# 式神と御魂を設定した状態でCLEAR確認ダイアログを開き、
+# キャンセルした場合に入力内容が変更されないことを確認する。
+#
+# 式神選択、御魂のメイン・サブステータス、
+# 2セット効果、固有効果を含むMainFormの入力状態を
+# キャンセル前後で完全一致比較する。
+
+START
+
+OPEN GUI
+
+# 式神と御魂セットを設定する
+SEL SHIKIGAMI "願紡縁結神"
+LOAD MITAMA "../02_Calculation/TestData/Valid.mitama.json"
+
+# CLEARキャンセル前の入力状態を保持する
+CAPTURE INPUT
+
+# 入力クリア確認ダイアログを表示する
+OPEN CLEAR DIALOG
+CHECK DIALOG "入力内容と計算結果をクリアします。よろしいですか？"
+
+# 入力クリアをキャンセルする
+CANCEL DIALOG
+
+# キャンセル前後の入力状態が完全一致することを確認する
+CHECK INPUT UNCHANGED
+
+CLOSE GUI
+
+END

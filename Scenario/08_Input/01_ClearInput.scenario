@@ -12,7 +12,7 @@ OPEN GUI
 SEL SHIKIGAMI "願紡縁結神"
 
 # 御魂読み込み
-LOAD MITAMA "TestData/Valid.mitama.json"
+LOAD MITAMA "../02_Calculation/TestData/Valid.mitama.json"
 
 # 計算
 CALC
