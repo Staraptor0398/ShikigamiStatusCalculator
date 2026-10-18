@@ -1001,12 +1001,24 @@ namespace Gui.Form
 					return;
 				}
 
-				var inputModel = MitamaSetInputModelFactory.Create(
-					mMitamaSlotInputControls,
-					mSetEffectComboBoxes,
-					mUniqueEffectComboBoxes);
+				MitamaSetInputModel inputModel;
 
-				btnSave.Enabled = CalculationInputValidator.Validate(inputModel) != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
+				using (mPerformanceTracker.Track("SaveButton.CreateInputModel"))
+				{
+					inputModel = MitamaSetInputModelFactory.Create(
+						mMitamaSlotInputControls,
+						mSetEffectComboBoxes,
+						mUniqueEffectComboBoxes);
+				}
+
+				CalculationInputValidationOutcome validationOutcome;
+
+				using (mPerformanceTracker.Track("SaveButton.Validate"))
+				{
+					validationOutcome = CalculationInputValidator.Validate(inputModel);
+				}
+
+				btnSave.Enabled = validationOutcome != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
 			}
 		}
 
