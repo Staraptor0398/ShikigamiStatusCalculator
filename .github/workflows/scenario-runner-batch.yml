@@ -1,4 +1,3 @@
-
 name: Scenario Runner Batch
 
 on:
@@ -141,6 +140,7 @@ jobs:
 
           $ffmpeg = New-Object System.Diagnostics.Process
           $ffmpeg.StartInfo = $ffmpegInfo
+          $ffmpegStarted = $false
 
           $scenarioProcess = $null
           $scenarioExitCode = 1
@@ -152,7 +152,8 @@ jobs:
           try {
               Write-Host "Starting FFmpeg."
 
-              if (-not $ffmpeg.Start()) {
+              $ffmpegStarted = $ffmpeg.Start()
+              if (-not $ffmpegStarted) {
                   throw "Failed to start FFmpeg."
               }
 
@@ -254,7 +255,7 @@ jobs:
                   $scenarioProcess.Dispose()
               }
 
-              if (-not $ffmpeg.HasExited) {
+              if ($ffmpegStarted -and -not $ffmpeg.HasExited) {
                   try {
                       $ffmpeg.StandardInput.WriteLine("q")
                       $ffmpeg.StandardInput.Flush()
