@@ -552,9 +552,23 @@ namespace Gui.Form
 					DisplayText.RARITY_SR);
 			}
 
-			using (mPerformanceTracker.Track("RarityFilter.SelectAll"))
+			cmbRarityFilter.SelectedIndexChanged -= cmbRarityFilter_SelectedIndexChanged;
+
+			try
 			{
-				cmbRarityFilter.SelectedIndex = 0;
+				using (mPerformanceTracker.Track("RarityFilter.SelectAllWithoutHandler"))
+				{
+					cmbRarityFilter.SelectedIndex = 0;
+				}
+			}
+			finally
+			{
+				cmbRarityFilter.SelectedIndexChanged += cmbRarityFilter_SelectedIndexChanged;
+			}
+
+			using (mPerformanceTracker.Track("RarityFilter.ApplyFilterExplicit"))
+			{
+				applyShikigamiFilter();
 			}
 		}
 
