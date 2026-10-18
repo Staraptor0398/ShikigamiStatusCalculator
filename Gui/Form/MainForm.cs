@@ -448,10 +448,20 @@ namespace Gui.Form
 		{
 			using (mPerformanceTracker.Track("MainForm.Load"))
 			{
-				initializeInputControls();
+				using (mPerformanceTracker.Track("MainForm.InitializeInputControls"))
+				{
+					initializeInputControls();
+				}
 
-				initializeComboBoxes();
-				registerCalculationInputChangedEvents();
+				using (mPerformanceTracker.Track("MainForm.InitializeComboBoxes"))
+				{
+					initializeComboBoxes();
+				}
+
+				using (mPerformanceTracker.Track("MainForm.RegisterCalculationInputChangedEvents"))
+				{
+					registerCalculationInputChangedEvents();
+				}
 			}
 		}
 
