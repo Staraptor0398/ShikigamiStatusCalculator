@@ -471,6 +471,8 @@ namespace Gui.Form
 				{
 					registerCalculationInputChangedEvents();
 				}
+
+				updateSaveButtonEnabled();
 			}
 		}
 
