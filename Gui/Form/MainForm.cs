@@ -268,6 +268,9 @@ namespace Gui.Form
 					InitializeComponent();
 				}
 
+				btnSave.EnabledChanged += btnSave_EnabledChanged;
+				btnLoad.EnabledChanged += btnLoad_EnabledChanged;
+
 #if DEBUG
 		initializeDevelopmentControls();
 #endif
@@ -314,7 +317,7 @@ namespace Gui.Form
 
 			Logger.Info($"Operation=MainForm状態遷移 Previous={previousState} Current={state}");
 
-			updateSaveButtonEnabled();
+			updateSaveButtonEnabled("OperationState");
 		}
 
 		/****************************************************************************************************
@@ -333,7 +336,7 @@ namespace Gui.Form
 
 				using (mPerformanceTracker.Track("Shikigami.MarkCalculationResultDirty"))
 				{
-					markCalculationResultDirty();
+					markCalculationResultDirty("Input.Shikigami");
 				}
 			}
 		}
@@ -411,7 +414,7 @@ namespace Gui.Form
 
 				using (mPerformanceTracker.Track("Calculation.UpdateSaveButton"))
 				{
-					updateSaveButtonEnabled();
+					updateSaveButtonEnabled("Calculation");
 				}
 
 				if (cmbShikigami.SelectedItem != null)
@@ -431,14 +434,14 @@ namespace Gui.Form
 			mIsCalculationResultDirty = false;
 		}
 
-		private void markCalculationResultDirty()
+		private void markCalculationResultDirty(string source = "Other")
 		{
 			if (mOperationState == MainFormOperationState.LOADING)
 			{
 				return;
 			}
 
-			updateSaveButtonEnabled();
+			updateSaveButtonEnabled(source);
 
 			if (mIsCalculationResultDirty)
 			{
@@ -510,7 +513,7 @@ namespace Gui.Form
 					registerCalculationInputChangedEvents();
 				}
 
-				updateSaveButtonEnabled();
+				updateSaveButtonEnabled("Startup");
 			}
 		}
 
@@ -863,7 +866,43 @@ namespace Gui.Form
 
 		private void calculationInputChanged(object sender, EventArgs e)
 		{
-			markCalculationResultDirty();
+			string source = "Input.Other";
+
+			if (sender is System.Windows.Forms.Control control)
+			{
+				if (control.Name.StartsWith("cmbSubStat", StringComparison.Ordinal))
+				{
+					source = "Input.SubStatType";
+				}
+				else if (control.Name.StartsWith("txtSubVal", StringComparison.Ordinal))
+				{
+					source = "Input.SubStatValue";
+				}
+				else if (control.Name.StartsWith("cmbSetBonus", StringComparison.Ordinal))
+				{
+					source = "Input.SetEffect";
+				}
+				else if (control.Name.StartsWith("cmbUnique", StringComparison.Ordinal))
+				{
+					source = "Input.UniqueEffect";
+				}
+			}
+
+			markCalculationResultDirty(source);
+		}
+
+		private void btnSave_EnabledChanged(object sender, EventArgs e)
+		{
+			using (mPerformanceTracker.Track("SaveButton.SaveEnabledChanged"))
+			{
+			}
+		}
+
+		private void btnLoad_EnabledChanged(object sender, EventArgs e)
+		{
+			using (mPerformanceTracker.Track("SaveButton.LoadEnabledChanged"))
+			{
+			}
 		}
 
 		/****************************************************************************************************
@@ -914,7 +953,7 @@ namespace Gui.Form
 				textBox.Text = value.ToString();
 			}
 
-			markCalculationResultDirty();
+			markCalculationResultDirty("Input.MainStat");
 		}
 
 		/****************************************************************************************************
@@ -987,9 +1026,10 @@ namespace Gui.Form
 			return SaveDataSaveLevel.MITAMA_SET_ONLY;
 		}
 
-		private void updateSaveButtonEnabled()
+		private void updateSaveButtonEnabled(string source = "Other")
 		{
 			using (mPerformanceTracker.Track("MainForm.UpdateSaveButtonEnabled"))
+			using (mPerformanceTracker.Track($"SaveButton.Update.Source.{source}"))
 			{
 				bool isIdle = mOperationState == MainFormOperationState.IDLE;
 
