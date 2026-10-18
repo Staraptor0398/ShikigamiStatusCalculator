@@ -1,5 +1,6 @@
 #if DEBUG
-using Gui.Common;
+using Gui.Definition;
+using Gui.Logging;
 using SaveData.Access.Development;
 using System;
 using System.Windows.Forms;

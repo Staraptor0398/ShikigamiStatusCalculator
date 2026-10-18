@@ -272,7 +272,7 @@ namespace Gui.Form
 				btnLoad.EnabledChanged += btnLoad_EnabledChanged;
 
 #if DEBUG
-		initializeDevelopmentControls();
+				initializeDevelopmentControls();
 #endif
 
 				string version;
@@ -351,7 +351,7 @@ namespace Gui.Form
 				CalculationResultDto calculationResult;
 
 #if DEBUG
-		CalculationTestSourceSaveData calculationTestSource;
+				CalculationTestSource calculationTestSource;
 #endif
 
 				try
@@ -390,7 +390,7 @@ namespace Gui.Form
 					}
 
 #if DEBUG
-			calculationTestSource = CalculationTestSourceConverter.ToSaveData(				baseStatus, mitamaSet, calculationResult);
+					calculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, calculationResult);
 #endif
 				}
 				catch (Exception ex)
@@ -409,7 +409,7 @@ namespace Gui.Form
 				mLastCalculationResult = calculationResult;
 
 #if DEBUG
-		mLastCalculationTestSource = calculationTestSource;
+				mLastCalculationTestSource = calculationTestSource;
 #endif
 
 				using (mPerformanceTracker.Track("Calculation.UpdateSaveButton"))
@@ -436,7 +436,8 @@ namespace Gui.Form
 
 		private void markCalculationResultDirty(string source = "Other")
 		{
-			if (mOperationState == MainFormOperationState.LOADING)
+			if (mOperationState == MainFormOperationState.LOADING
+				|| mOperationState == MainFormOperationState.CLEARING)
 			{
 				return;
 			}
@@ -1447,9 +1448,18 @@ namespace Gui.Form
 				return;
 			}
 
-			clearInputs();
+			setOperationState(MainFormOperationState.CLEARING);
 
-			deleteLastCalculationResult();
+			try
+			{
+				clearInputs();
+				deleteLastCalculationResult();
+			}
+			finally
+			{
+				setOperationState(MainFormOperationState.IDLE);
+			}
+
 			markCalculationResultDirty();
 		}
 

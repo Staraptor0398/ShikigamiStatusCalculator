@@ -4,6 +4,7 @@ namespace Gui.Form
 	{
 		IDLE,
 		SAVING,
-		LOADING
+		LOADING,
+		CLEARING,
 	}
 }
