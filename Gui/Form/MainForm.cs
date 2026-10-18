@@ -653,16 +653,20 @@ namespace Gui.Form
 				return;
 			}
 
-			comboBox.Items.Clear();
+			comboBox.BeginUpdate();
 
-			foreach (string item in items)
+			try
 			{
-				comboBox.Items.Add(item);
+				comboBox.Items.Clear();
+				comboBox.Items.AddRange(items);
+
+				comboBox.SelectedIndex = -1;
+				comboBox.Text = "";
 			}
-
-			comboBox.SelectedIndex = -1;
-			comboBox.Text = "";
-
+			finally
+			{
+				comboBox.EndUpdate();
+			}
 		}
 
 		private void registerCalculationInputChangedEvents()
