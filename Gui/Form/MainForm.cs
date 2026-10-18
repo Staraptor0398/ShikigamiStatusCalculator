@@ -235,6 +235,10 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  フィールド・プロパティ
 		****************************************************************************************************/
+		private readonly PerformanceTracker mPerformanceTracker = new PerformanceTracker();
+
+		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
+
 		private MainFormOperationState mOperationState = MainFormOperationState.IDLE;
 
 		private CalculationResultDto mLastCalculationResult = null;
@@ -315,60 +319,64 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void btnCalc_Click(object sender, EventArgs e)
 		{
-			CalculationResultDto calculationResult;
+			using (mPerformanceTracker.Track("Calculation.Execute"))
+			{
+
+				CalculationResultDto calculationResult;
 
 #if DEBUG
     CalculationTestSourceSaveData calculationTestSource;
 #endif
 
-			try
-			{
-				var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
-
-				CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(inputModel);
-
-				if (CalculationInputValidationErrorHandler.Handle(validationOutcome))
+				try
 				{
-					return;
-				}
+					var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 
-				var baseStatus = getSelectedShikigamiStatus();
+					CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(inputModel);
 
-				var mitamaSet = MitamaSetConverter.ToDto(inputModel);
+					if (CalculationInputValidationErrorHandler.Handle(validationOutcome))
+					{
+						return;
+					}
 
-				calculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
+					var baseStatus = getSelectedShikigamiStatus();
+
+					var mitamaSet = MitamaSetConverter.ToDto(inputModel);
+
+					calculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
 
 #if DEBUG
         calculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, calculationResult);
 #endif
-			}
-			catch (Exception ex)
-			{
-				Logger.Error($"Operation=ステータス計算 Message={ex}");
+				}
+				catch (Exception ex)
+				{
+					Logger.Error($"Operation=ステータス計算 Message={ex}");
 
-				MessageBox.Show(
-					"ステータス計算中に予期しないエラーが発生しました。",
-					"ステータス計算",
-					MessageBoxButtons.OK,
-					MessageBoxIcon.Error);
+					MessageBox.Show(
+						"ステータス計算中に予期しないエラーが発生しました。",
+						"ステータス計算",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error);
 
-				return;
-			}
+					return;
+				}
 
-			mLastCalculationResult = calculationResult;
+				mLastCalculationResult = calculationResult;
 
 #if DEBUG
     mLastCalculationTestSource = calculationTestSource;
 #endif
 
-			updateSaveButtonEnabled();
+				updateSaveButtonEnabled();
 
-			if (cmbShikigami.SelectedItem != null)
-			{
-				markCalculationResultClean();
+				if (cmbShikigami.SelectedItem != null)
+				{
+					markCalculationResultClean();
+				}
+
+				showCalculationResult(mLastCalculationResult);
 			}
-
-			showCalculationResult(mLastCalculationResult);
 		}
 
 		private void markCalculationResultClean()
@@ -438,10 +446,13 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void MainForm_Load(object sender, EventArgs e)
 		{
-			initializeInputControls();
+			using (mPerformanceTracker.Track("MainForm.Load"))
+			{
+				initializeInputControls();
 
-			initializeComboBoxes();
-			registerCalculationInputChangedEvents();
+				initializeComboBoxes();
+				registerCalculationInputChangedEvents();
+			}
 		}
 
 		private void initializeInputControls()
@@ -772,25 +783,26 @@ namespace Gui.Form
 
 		private void updateSaveButtonEnabled()
 		{
-			bool isIdle = mOperationState == MainFormOperationState.IDLE;
-
-			btnLoad.Enabled = isIdle;
-
-			if (!isIdle)
+			using (mPerformanceTracker.Track("MainForm.UpdateSaveButtonEnabled"))
 			{
-				btnSave.Enabled = false;
-				return;
+				bool isIdle = mOperationState == MainFormOperationState.IDLE;
+
+				btnLoad.Enabled = isIdle;
+
+				if (!isIdle)
+				{
+					btnSave.Enabled = false;
+					return;
+				}
+
+				var inputModel = MitamaSetInputModelFactory.Create(
+					mMitamaSlotInputControls,
+					mSetEffectComboBoxes,
+					mUniqueEffectComboBoxes);
+
+				btnSave.Enabled = CalculationInputValidator.Validate(inputModel) != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
 			}
-
-			var inputModel = MitamaSetInputModelFactory.Create(
-				mMitamaSlotInputControls,
-				mSetEffectComboBoxes,
-				mUniqueEffectComboBoxes);
-
-			btnSave.Enabled = CalculationInputValidator.Validate(inputModel)
-				!= CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
 		}
-
 
 		/****************************************************************************************************
 		  SaveData適用
@@ -853,11 +865,16 @@ namespace Gui.Form
 							mUniqueEffectComboBoxes);
 
 						applySaveDataWithRollback(() =>
-							MitamaSetInputModelApplicator.Apply(
-								inputModel,
-								mMitamaSlotInputControls,
-								mSetEffectComboBoxes,
-								mUniqueEffectComboBoxes));
+						{
+							using (mPerformanceTracker.Track("SaveData.ApplyMitamaSet"))
+							{
+								MitamaSetInputModelApplicator.Apply(
+									inputModel,
+									mMitamaSlotInputControls,
+									mSetEffectComboBoxes,
+									mUniqueEffectComboBoxes);
+							}
+						});
 					}
 					else
 					{
@@ -903,15 +920,17 @@ namespace Gui.Form
 
 		private void applyBuildSaveDataToUI(string shikigamiName, MitamaSetInputModel inputModel)
 		{
-			applyShikigami(shikigamiName);
+			using (mPerformanceTracker.Track("SaveData.ApplyBuild"))
+			{
+				applyShikigami(shikigamiName);
 
-			MitamaSetInputModelApplicator.Apply(
-				inputModel,
-				mMitamaSlotInputControls,
-				mSetEffectComboBoxes,
-				mUniqueEffectComboBoxes);
+				MitamaSetInputModelApplicator.Apply(
+					inputModel,
+					mMitamaSlotInputControls,
+					mSetEffectComboBoxes,
+					mUniqueEffectComboBoxes);
+			}
 		}
-
 
 		private void applySaveDataWithRollback(Action apply)
 		{
@@ -955,7 +974,6 @@ namespace Gui.Form
 				throw;
 			}
 		}
-
 
 		private void applyShikigami(string name)
 		{
@@ -1170,10 +1188,13 @@ namespace Gui.Form
 		// 起動直後と同じ入力状態に戻す
 		private void clearInputs()
 		{
-			clearShikigamiSelection();
-			clearMitamaInputs();
-			clearEffectInputs();
-			clearResultTexts();
+			using (mPerformanceTracker.Track("MainForm.ClearInputs"))
+			{
+				clearShikigamiSelection();
+				clearMitamaInputs();
+				clearEffectInputs();
+				clearResultTexts();
+			}
 		}
 
 		private void clearShikigamiSelection()
@@ -1379,6 +1400,33 @@ namespace Gui.Form
 					initializeShikigamiComboBox();
 					markCalculationResultDirty();
 				}
+			}
+		}
+
+		/****************************************************************************************************
+		  性能ログ出力
+		****************************************************************************************************/
+
+		protected override void OnFormClosed(FormClosedEventArgs e)
+		{
+			try
+			{
+				PerformanceLogger.Write(mPerformanceSessionId, mPerformanceTracker.GetSnapshot());
+			}
+			catch (Exception ex)
+			{
+				try
+				{
+					Logger.Error($"Operation=性能ログ出力 Message={ex}");
+				}
+				catch
+				{
+					// 性能ログの出力失敗でフォーム終了を妨げない。
+				}
+			}
+			finally
+			{
+				base.OnFormClosed(e);
 			}
 		}
 	}

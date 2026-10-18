@@ -127,6 +127,9 @@
     </Compile>
     <Compile Include="Logging\LogFileDefinition.cs" />
     <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Logging\PerformanceLogger.cs" />
+    <Compile Include="Logging\PerformanceStatistics.cs" />
+    <Compile Include="Logging\PerformanceTracker.cs" />
     <Compile Include="Model\MitamaInputModel.cs" />
     <Compile Include="Model\MitamaSetInputModel.cs" />
     <Compile Include="Model\SetEffectInputModel.cs" />

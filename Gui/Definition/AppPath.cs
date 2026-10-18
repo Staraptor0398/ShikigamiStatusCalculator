@@ -102,6 +102,21 @@ namespace Gui.Definition
 			}
 		}
 
+		public static string PerformanceLogFilePath
+		{
+			get
+			{
+				string fileName =
+					LogFileDefinition.PERFORMANCE_LOG_FILE_PREFIX +
+					DateTime.Now.ToString("yyyyMMdd") +
+					LogFileDefinition.LOG_FILE_EXTENSION;
+
+				return Path.Combine(
+					LogDirectoryPath,
+					fileName);
+			}
+		}
+
 		public static string SaveDataDirectoryPath
 		{
 			get
