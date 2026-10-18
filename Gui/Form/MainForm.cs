@@ -993,11 +993,18 @@ namespace Gui.Form
 			{
 				bool isIdle = mOperationState == MainFormOperationState.IDLE;
 
-				btnLoad.Enabled = isIdle;
+				using (mPerformanceTracker.Track("SaveButton.SetLoadEnabled"))
+				{
+					btnLoad.Enabled = isIdle;
+				}
 
 				if (!isIdle)
 				{
-					btnSave.Enabled = false;
+					using (mPerformanceTracker.Track("SaveButton.SetSaveEnabled"))
+					{
+						btnSave.Enabled = false;
+					}
+
 					return;
 				}
 
@@ -1018,7 +1025,10 @@ namespace Gui.Form
 					validationOutcome = CalculationInputValidator.Validate(inputModel);
 				}
 
-				btnSave.Enabled = validationOutcome != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
+				using (mPerformanceTracker.Track("SaveButton.SetSaveEnabled"))
+				{
+					btnSave.Enabled = validationOutcome != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
+				}
 			}
 		}
 
