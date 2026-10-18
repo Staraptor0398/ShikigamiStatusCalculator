@@ -570,15 +570,34 @@ namespace Gui.Form
 				cmbShikigami.DisplayMember = "Name";
 			}
 
-			using (mPerformanceTracker.Track("Shikigami.SetDataSource"))
+			using (mPerformanceTracker.Track("Shikigami.SetItems"))
 			{
-				cmbShikigami.DataSource = mShikigamiList;
+				setShikigamiComboBoxItems(mShikigamiList);
 			}
 
 			using (mPerformanceTracker.Track("Shikigami.ResetSelection"))
 			{
 				cmbShikigami.SelectedIndex = -1;
 				txtBaseStats.Text = "";
+			}
+		}
+
+		private void setShikigamiComboBoxItems(List<ShikigamiDto> shikigamiList)
+		{
+			cmbShikigami.BeginUpdate();
+
+			try
+			{
+				cmbShikigami.Items.Clear();
+
+				if (shikigamiList != null)
+				{
+					cmbShikigami.Items.AddRange(shikigamiList.ToArray());
+				}
+			}
+			finally
+			{
+				cmbShikigami.EndUpdate();
 			}
 		}
 
@@ -1361,9 +1380,7 @@ namespace Gui.Form
 				filteredList = mShikigamiList.Where(x => x.Rarity == selectedRarity).ToList();
 			}
 
-			cmbShikigami.DataSource = null;
-			cmbShikigami.DataSource = filteredList;
-			cmbShikigami.DisplayMember = "Name";
+			setShikigamiComboBoxItems(filteredList);
 			cmbShikigami.SelectedIndex = -1;
 
 			if (!string.IsNullOrEmpty(selectedShikigamiName))
