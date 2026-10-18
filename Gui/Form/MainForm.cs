@@ -541,15 +541,21 @@ namespace Gui.Form
 
 		private void initializeRarityFilterComboBox()
 		{
-			setComboItems(
-				cmbRarityFilter,
-				DisplayText.RARITY_ALL,
-				DisplayText.RARITY_UR,
-				DisplayText.RARITY_SP,
-				DisplayText.RARITY_SSR,
-				DisplayText.RARITY_SR);
+			using (mPerformanceTracker.Track("RarityFilter.SetItems"))
+			{
+				setComboItems(
+					cmbRarityFilter,
+					DisplayText.RARITY_ALL,
+					DisplayText.RARITY_UR,
+					DisplayText.RARITY_SP,
+					DisplayText.RARITY_SSR,
+					DisplayText.RARITY_SR);
+			}
 
-			cmbRarityFilter.SelectedIndex = 0;
+			using (mPerformanceTracker.Track("RarityFilter.SelectAll"))
+			{
+				cmbRarityFilter.SelectedIndex = 0;
+			}
 		}
 
 		private void initializeShikigamiComboBox()
@@ -1388,29 +1394,39 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void cmbRarityFilter_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			applyShikigamiFilter();
+			using (mPerformanceTracker.Track("RarityFilter.SelectedIndexChanged"))
+			{
+				applyShikigamiFilter();
+			}
 		}
 
 		private void applyShikigamiFilter()
 		{
-			var selectedShikigami = cmbShikigami.SelectedItem as ShikigamiDto;
-			string selectedShikigamiName = selectedShikigami?.Name;
-
-			string selectedRarity = cmbRarityFilter.Text;
-
-			var filteredList = mShikigamiList;
-
-			if (selectedRarity != DisplayText.RARITY_ALL)
+			using (mPerformanceTracker.Track("RarityFilter.ApplyFilter"))
 			{
-				filteredList = mShikigamiList.Where(x => x.Rarity == selectedRarity).ToList();
-			}
+				var selectedShikigami = cmbShikigami.SelectedItem as ShikigamiDto;
+				string selectedShikigamiName = selectedShikigami?.Name;
 
-			setShikigamiComboBoxItems(filteredList);
-			cmbShikigami.SelectedIndex = -1;
+				string selectedRarity = cmbRarityFilter.Text;
 
-			if (!string.IsNullOrEmpty(selectedShikigamiName))
-			{
-				trySelectShikigami(selectedShikigamiName);
+				var filteredList = mShikigamiList;
+
+				if (selectedRarity != DisplayText.RARITY_ALL)
+				{
+					filteredList = mShikigamiList.Where(x => x.Rarity == selectedRarity).ToList();
+				}
+
+				using (mPerformanceTracker.Track("RarityFilter.SetShikigamiItems"))
+				{
+					setShikigamiComboBoxItems(filteredList);
+				}
+
+				cmbShikigami.SelectedIndex = -1;
+
+				if (!string.IsNullOrEmpty(selectedShikigamiName))
+				{
+					trySelectShikigami(selectedShikigamiName);
+				}
 			}
 		}
 
