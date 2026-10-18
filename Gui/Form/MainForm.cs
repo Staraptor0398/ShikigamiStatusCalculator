@@ -330,32 +330,49 @@ namespace Gui.Form
 		{
 			using (mPerformanceTracker.Track("Calculation.Execute"))
 			{
-
 				CalculationResultDto calculationResult;
 
 #if DEBUG
-    CalculationTestSourceSaveData calculationTestSource;
+		CalculationTestSourceSaveData calculationTestSource;
 #endif
 
 				try
 				{
-					var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+					MitamaSetInputModel inputModel;
 
-					CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(inputModel);
+					using (mPerformanceTracker.Track("Calculation.CreateInputModel"))
+					{
+						inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+					}
+
+					CalculationInputValidationOutcome validationOutcome;
+
+					using (mPerformanceTracker.Track("Calculation.Validate"))
+					{
+						validationOutcome = CalculationInputValidator.Validate(inputModel);
+					}
 
 					if (CalculationInputValidationErrorHandler.Handle(validationOutcome))
 					{
 						return;
 					}
 
-					var baseStatus = getSelectedShikigamiStatus();
+					StatusDto baseStatus;
+					MitamaSetDto mitamaSet;
 
-					var mitamaSet = MitamaSetConverter.ToDto(inputModel);
+					using (mPerformanceTracker.Track("Calculation.ConvertInput"))
+					{
+						baseStatus = getSelectedShikigamiStatus();
+						mitamaSet = MitamaSetConverter.ToDto(inputModel);
+					}
 
-					calculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
+					using (mPerformanceTracker.Track("Calculation.Gateway"))
+					{
+						calculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
+					}
 
 #if DEBUG
-        calculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, calculationResult);
+			calculationTestSource = CalculationTestSourceConverter.ToSaveData(				baseStatus, mitamaSet, calculationResult);
 #endif
 				}
 				catch (Exception ex)
@@ -374,17 +391,23 @@ namespace Gui.Form
 				mLastCalculationResult = calculationResult;
 
 #if DEBUG
-    mLastCalculationTestSource = calculationTestSource;
+		mLastCalculationTestSource = calculationTestSource;
 #endif
 
-				updateSaveButtonEnabled();
+				using (mPerformanceTracker.Track("Calculation.UpdateSaveButton"))
+				{
+					updateSaveButtonEnabled();
+				}
 
 				if (cmbShikigami.SelectedItem != null)
 				{
 					markCalculationResultClean();
 				}
 
-				showCalculationResult(mLastCalculationResult);
+				using (mPerformanceTracker.Track("Calculation.ShowResult"))
+				{
+					showCalculationResult(mLastCalculationResult);
+				}
 			}
 		}
 
