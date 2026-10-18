@@ -725,19 +725,41 @@ namespace Gui.Form
 				return;
 			}
 
-			comboBox.BeginUpdate();
+			bool isRarityFilter = comboBox == cmbRarityFilter;
+
+			using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.BeginUpdate") : null)
+			{
+				comboBox.BeginUpdate();
+			}
 
 			try
 			{
-				comboBox.Items.Clear();
-				comboBox.Items.AddRange(items);
+				using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.ClearItems") : null)
+				{
+					comboBox.Items.Clear();
+				}
 
-				comboBox.SelectedIndex = -1;
-				comboBox.Text = "";
+				using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.AddRange") : null)
+				{
+					comboBox.Items.AddRange(items);
+				}
+
+				using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.ResetSelection") : null)
+				{
+					comboBox.SelectedIndex = -1;
+				}
+
+				using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.ClearText") : null)
+				{
+					comboBox.Text = "";
+				}
 			}
 			finally
 			{
-				comboBox.EndUpdate();
+				using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.EndUpdate") : null)
+				{
+					comboBox.EndUpdate();
+				}
 			}
 		}
 
