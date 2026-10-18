@@ -106,6 +106,34 @@ jobs:
               $utf8
           )
 
+          # The drawtext filter reloads this file while the batch is running.
+          # A temporary sharing violation must not abort the E2E run.
+          function Update-ScenarioOverlay {
+              param([string]$text)
+
+              try {
+                  [System.IO.File]::WriteAllText($tempOverlayPath, $text, $utf8)
+
+                  for ($attempt = 1; $attempt -le 10; $attempt++) {
+                      try {
+                          [System.IO.File]::Move($tempOverlayPath, $overlayPath, $true)
+                          return
+                      }
+                      catch [System.IO.IOException] {
+                          if ($attempt -eq 10) { throw }
+                      }
+                      catch [System.UnauthorizedAccessException] {
+                          if ($attempt -eq 10) { throw }
+                      }
+
+                      Start-Sleep -Milliseconds 100
+                  }
+              }
+              catch {
+                  Write-Warning "Overlay update skipped after retries: $($_.Exception.Message)"
+              }
+          }
+
           # Use relative paths to avoid Windows drive-letter escaping.
           $drawText = "drawtext=fontfile=ScenarioVideo/overlay.ttf:textfile=ScenarioVideo/current_scenario.txt:reload=1:fontcolor=white:fontsize=26:box=1:boxcolor=black@0.75:boxborderw=12:x=20:y=20"
 
@@ -190,13 +218,7 @@ jobs:
                       $lastScenarioName = $line.Substring("[Batch] Running: ".Length).Replace("\", "/")
                       $lastScenarioResult = "RUNNING"
 
-                      [System.IO.File]::WriteAllText(
-                          $tempOverlayPath,
-                          $lastScenarioName,
-                          $utf8
-                      )
-
-                      [System.IO.File]::Move($tempOverlayPath, $overlayPath, $true)
+                      Update-ScenarioOverlay -text $lastScenarioName
                   }
                   elseif ($line.StartsWith("[Batch] PASS: ", [System.StringComparison]::Ordinal)) {
                       $lastScenarioResult = "PASS"
@@ -232,13 +254,7 @@ jobs:
                       $finalOverlay += "`nLast: $lastScenarioName [$lastScenarioResult]"
                   }
 
-                  [System.IO.File]::WriteAllText(
-                      $tempOverlayPath,
-                      $finalOverlay,
-                      $utf8
-                  )
-
-                  [System.IO.File]::Move($tempOverlayPath, $overlayPath, $true)
+                  Update-ScenarioOverlay -text $finalOverlay
 
                   # Hold the final result after Scenario Runner has finished.
                   Write-Host "Holding the final result for 3 seconds."
