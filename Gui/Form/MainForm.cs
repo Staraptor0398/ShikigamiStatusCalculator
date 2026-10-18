@@ -261,14 +261,29 @@ namespace Gui.Form
 		****************************************************************************************************/
 		public MainForm()
 		{
-			InitializeComponent();
+			using (mPerformanceTracker.Track("MainForm.Constructor"))
+			{
+				using (mPerformanceTracker.Track("MainForm.InitializeComponent"))
+				{
+					InitializeComponent();
+				}
 
 #if DEBUG
-			initializeDevelopmentControls();
+		initializeDevelopmentControls();
 #endif
 
-			string version = loadAppVersion();
-			this.Text = $"{this.Text} {version}";
+				string version;
+
+				using (mPerformanceTracker.Track("MainForm.LoadAppVersion"))
+				{
+					version = loadAppVersion();
+				}
+
+				using (mPerformanceTracker.Track("MainForm.SetWindowTitle"))
+				{
+					this.Text = $"{this.Text} {version}";
+				}
+			}
 		}
 
 		/****************************************************************************************************
@@ -501,9 +516,20 @@ namespace Gui.Form
 
 		private void initializeInputControls()
 		{
-			mMitamaSlotInputControls = createMitamaSlotInputControls();
-			mSetEffectComboBoxes = createSetEffectComboBoxes();
-			mUniqueEffectComboBoxes = createUniqueEffectComboBoxes();
+			using (mPerformanceTracker.Track("MainForm.CreateMitamaSlotInputControls"))
+			{
+				mMitamaSlotInputControls = createMitamaSlotInputControls();
+			}
+
+			using (mPerformanceTracker.Track("MainForm.CreateSetEffectComboBoxes"))
+			{
+				mSetEffectComboBoxes = createSetEffectComboBoxes();
+			}
+
+			using (mPerformanceTracker.Track("MainForm.CreateUniqueEffectComboBoxes"))
+			{
+				mUniqueEffectComboBoxes = createUniqueEffectComboBoxes();
+			}
 		}
 
 		private void initializeComboBoxes()
