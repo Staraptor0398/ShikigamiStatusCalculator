@@ -789,7 +789,24 @@ namespace Gui.Form
 
 				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.AddRange") : null)
 				{
-					comboBox.Items.AddRange(items);
+					if (isSubStat)
+					{
+						string handleState = comboBox.IsHandleCreated ? "HandleCreated" : "HandleNotCreated";
+
+						using (mPerformanceTracker.Track($"SubStat.AddRange.{handleState}"))
+						{
+							string configuration = $"Sorted{comboBox.Sorted}.{comboBox.DropDownStyle}";
+
+							using (mPerformanceTracker.Track($"SubStat.AddRange.Configuration.{configuration}"))
+							{
+								comboBox.Items.AddRange(items);
+							}
+						}
+					}
+					else
+					{
+						comboBox.Items.AddRange(items);
+					}
 				}
 
 				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.ResetSelection") : null)
