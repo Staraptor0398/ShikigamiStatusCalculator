@@ -524,18 +524,21 @@ namespace Gui.Form
 
 			try
 			{
-				var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
-
-				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
+				using (mPerformanceTracker.Track("Shikigami.LoadData"))
 				{
-					ShikigamiDataFileManager.MoveBrokenFile();
-					ShikigamiDataFileManager.RestoreDefaultIfMissing();
+					var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
 
-					outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
-
-					if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ復元後読み込み"))
+					if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
 					{
-						shikigamiList = new List<ShikigamiDto>();
+						ShikigamiDataFileManager.MoveBrokenFile();
+						ShikigamiDataFileManager.RestoreDefaultIfMissing();
+
+						outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
+
+						if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ復元後読み込み"))
+						{
+							shikigamiList = new List<ShikigamiDto>();
+						}
 					}
 				}
 			}
@@ -553,11 +556,17 @@ namespace Gui.Form
 
 			mShikigamiList = shikigamiList;
 
-			cmbShikigami.DataSource = mShikigamiList;
-			cmbShikigami.DisplayMember = "Name";
+			using (mPerformanceTracker.Track("Shikigami.BindDataSource"))
+			{
+				cmbShikigami.DataSource = mShikigamiList;
+				cmbShikigami.DisplayMember = "Name";
+			}
 
-			cmbShikigami.SelectedIndex = -1;
-			txtBaseStats.Text = "";
+			using (mPerformanceTracker.Track("Shikigami.ResetSelection"))
+			{
+				cmbShikigami.SelectedIndex = -1;
+				txtBaseStats.Text = "";
+			}
 		}
 
 		private void initializeMainStatComboBoxes()
