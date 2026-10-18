@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: scenario-runner-batch
+  group: ${{ inputs.enable_live_stream && 'scenario-runner-batch-live' || github.run_id }}
   cancel-in-progress: false
 
 jobs:
