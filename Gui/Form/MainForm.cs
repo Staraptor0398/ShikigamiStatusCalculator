@@ -474,13 +474,35 @@ namespace Gui.Form
 
 		private void initializeComboBoxes()
 		{
-			initializeRarityFilterComboBox();
+			using (mPerformanceTracker.Track("MainForm.InitializeRarityFilterComboBox"))
+			{
+				initializeRarityFilterComboBox();
+			}
 
-			initializeShikigamiComboBox();
-			initializeMainStatComboBoxes();
-			initializeSubStatComboBoxes();
-			initializeSetEffectComboBoxes();
-			initializeUniqueEffectComboBoxes();
+			using (mPerformanceTracker.Track("MainForm.InitializeShikigamiComboBox"))
+			{
+				initializeShikigamiComboBox();
+			}
+
+			using (mPerformanceTracker.Track("MainForm.InitializeMainStatComboBoxes"))
+			{
+				initializeMainStatComboBoxes();
+			}
+
+			using (mPerformanceTracker.Track("MainForm.InitializeSubStatComboBoxes"))
+			{
+				initializeSubStatComboBoxes();
+			}
+
+			using (mPerformanceTracker.Track("MainForm.InitializeSetEffectComboBoxes"))
+			{
+				initializeSetEffectComboBoxes();
+			}
+
+			using (mPerformanceTracker.Track("MainForm.InitializeUniqueEffectComboBoxes"))
+			{
+				initializeUniqueEffectComboBoxes();
+			}
 		}
 
 		private void initializeRarityFilterComboBox()
