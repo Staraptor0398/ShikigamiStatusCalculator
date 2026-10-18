@@ -128,19 +128,27 @@ namespace Gui.Form
 
 		private void registerShikigami(ShikigamiDto dto)
 		{
-			var duplicateOutcome = validateDuplicateForRegister(dto);
-
-			if (ShikigamiDataErrorHandler.Handle(duplicateOutcome, "式神データ登録"))
+			try
 			{
-				return;
+				var duplicateOutcome = validateDuplicateForRegister(dto);
+
+				if (ShikigamiDataErrorHandler.Handle(duplicateOutcome, "式神データ登録"))
+				{
+					return;
+				}
+
+				ShikigamiDataFileManager.CreateBackup();
+
+				var outcome = ShikigamiGateway.AddShikigami(AppPath.ShikigamiDataCsvPath, dto);
+
+				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ登録"))
+				{
+					return;
+				}
 			}
-
-			ShikigamiDataFileManager.CreateBackup();
-
-			var outcome = ShikigamiGateway.AddShikigami(AppPath.ShikigamiDataCsvPath, dto);
-
-			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ登録"))
+			catch (Exception ex)
 			{
+				ShikigamiDataErrorHandler.Handle(ex, "式神データ登録");
 				return;
 			}
 
@@ -154,7 +162,8 @@ namespace Gui.Form
 			{
 				Logger.Error("式神データ編集に失敗しました。編集対象の式神データがnullです。");
 
-				MessageBox.Show("編集対象の式神データが取得できませんでした。",
+				MessageBox.Show(
+					"編集対象の式神データが取得できませんでした。",
 					"式神データ編集",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error);
@@ -162,19 +171,27 @@ namespace Gui.Form
 				return;
 			}
 
-			var duplicateOutcome = validateDuplicateForEdit(mEditTarget, newDto);
-
-			if (ShikigamiDataErrorHandler.Handle(duplicateOutcome, "式神データ編集"))
+			try
 			{
-				return;
+				var duplicateOutcome = validateDuplicateForEdit(mEditTarget, newDto);
+
+				if (ShikigamiDataErrorHandler.Handle(duplicateOutcome, "式神データ編集"))
+				{
+					return;
+				}
+
+				ShikigamiDataFileManager.CreateBackup();
+
+				var outcome = ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, mEditTarget, newDto);
+
+				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ編集"))
+				{
+					return;
+				}
 			}
-
-			ShikigamiDataFileManager.CreateBackup();
-
-			var outcome = ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, mEditTarget, newDto);
-
-			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ編集"))
+			catch (Exception ex)
 			{
+				ShikigamiDataErrorHandler.Handle(ex, "式神データ編集");
 				return;
 			}
 

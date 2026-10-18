@@ -465,21 +465,38 @@ namespace Gui.Form
 
 		private void initializeShikigamiComboBox()
 		{
-			var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out mShikigamiList);
+			List<ShikigamiDto> shikigamiList;
 
-			if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
+			try
 			{
-				ShikigamiDataFileManager.MoveBrokenFile();
-				ShikigamiDataFileManager.RestoreDefaultIfMissing();
+				var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
 
-				outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out mShikigamiList);
-
-				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ復元後読み込み"))
+				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
 				{
-					mShikigamiList = new List<ShikigamiDto>();
+					ShikigamiDataFileManager.MoveBrokenFile();
+					ShikigamiDataFileManager.RestoreDefaultIfMissing();
 
+					outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
+
+					if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ復元後読み込み"))
+					{
+						shikigamiList = new List<ShikigamiDto>();
+					}
 				}
 			}
+			catch (Exception ex)
+			{
+				ShikigamiDataErrorHandler.Handle(ex, "式神データ読み込み");
+
+				if (mShikigamiList == null)
+				{
+					mShikigamiList = new List<ShikigamiDto>();
+				}
+
+				return;
+			}
+
+			mShikigamiList = shikigamiList;
 
 			cmbShikigami.DataSource = mShikigamiList;
 			cmbShikigami.DisplayMember = "Name";
@@ -1281,16 +1298,26 @@ namespace Gui.Form
 				}
 
 				List<ShikigamiDto> recoveryShikigamiList = new List<ShikigamiDto>();
-				ShikigamiDataOutcomeDto outcome = ShikigamiGateway.GetRecoveryCandidateShikigamiList(AppPath.ShikigamiDataCsvPath, dialog.FileName, out recoveryShikigamiList);
 
-				if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧候補読み込み"))
+				try
 				{
+					ShikigamiDataOutcomeDto outcome = ShikigamiGateway.GetRecoveryCandidateShikigamiList(AppPath.ShikigamiDataCsvPath, dialog.FileName, out recoveryShikigamiList);
+
+					if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧候補読み込み"))
+					{
+						return;
+					}
+				}
+				catch (Exception ex)
+				{
+					ShikigamiDataErrorHandler.Handle(ex, "式神復旧候補読み込み");
 					return;
 				}
 
 				if (recoveryShikigamiList.Count == 0)
 				{
-					String message = "復旧できる式神はありませんでした。";
+					string message = "復旧できる式神はありませんでした。";
+
 					MessageBox.Show(
 						message,
 						"式神復旧候補読み込み",
@@ -1298,7 +1325,6 @@ namespace Gui.Form
 						MessageBoxIcon.Information);
 
 					Logger.Info(message);
-
 					return;
 				}
 
@@ -1311,16 +1337,25 @@ namespace Gui.Form
 						return;
 					}
 
-					ShikigamiDataFileManager.CreateBackup();
-
-					outcome = ShikigamiGateway.RecoveryShikigami(AppPath.ShikigamiDataCsvPath, shikigamiRecoveryDialog.SelectedRecoveryCandidates);
-
-					if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧"))
+					try
 					{
+						ShikigamiDataFileManager.CreateBackup();
+
+						ShikigamiDataOutcomeDto outcome = ShikigamiGateway.RecoveryShikigami(AppPath.ShikigamiDataCsvPath, shikigamiRecoveryDialog.SelectedRecoveryCandidates);
+
+						if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧"))
+						{
+							return;
+						}
+					}
+					catch (Exception ex)
+					{
+						ShikigamiDataErrorHandler.Handle(ex, "式神復旧");
 						return;
 					}
 
-					String message = "式神の復旧に成功しました。";
+					string message = "式神の復旧に成功しました。";
+
 					MessageBox.Show(
 						message,
 						"式神復旧",

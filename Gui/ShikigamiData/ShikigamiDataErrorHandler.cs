@@ -1,10 +1,22 @@
 using Gui.Logging;
+using System;
 using System.Windows.Forms;
 
 namespace Gui.ShikigamiData
 {
 	public static class ShikigamiDataErrorHandler
 	{
+		public static void Handle(Exception exception, string operationName)
+		{
+			Logger.Error($"Operation={operationName} Exception={exception}");
+
+			MessageBox.Show(
+				$"{operationName}中に予期しないエラーが発生しました。",
+				operationName,
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Error);
+		}
+
 		public static bool Handle(ShikigamiDataOutcomeDto outcome, string operationName)
 		{
 			if (outcome == ShikigamiDataOutcomeDto.SUCCESS)

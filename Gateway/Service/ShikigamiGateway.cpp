@@ -25,6 +25,7 @@ ShikigamiDataOutcomeDto ShikigamiGateway::GetShikigamiList(String^ filePath, Lis
 	return ShikigamiDataOutcomeDto::SUCCESS;
 }
 
+
 ShikigamiDataOutcomeDto ShikigamiGateway::AddShikigami(String^ filePath, ShikigamiDto^ dto)
 {
 	std::string nativePath = StringConverter::toStdString(filePath);
@@ -36,9 +37,6 @@ ShikigamiDataOutcomeDto ShikigamiGateway::AddShikigami(String^ filePath, Shikiga
 	}
 	catch (System::ArgumentNullException^) {
 		return ShikigamiDataOutcomeDto::INVALID_ARGUMENT;
-	}
-	catch (...) {
-		return ShikigamiDataOutcomeDto::UNKNOWN_ERROR;
 	}
 
 	ShikigamiDataOutcome outcome = ShikigamiService::addShikigami(nativePath, native);
@@ -59,9 +57,6 @@ ShikigamiDataOutcomeDto ShikigamiGateway::UpdateShikigami(String^ filePath, Shik
 	}
 	catch (System::ArgumentNullException^) {
 		return ShikigamiDataOutcomeDto::INVALID_ARGUMENT;
-	}
-	catch (...) {
-		return ShikigamiDataOutcomeDto::UNKNOWN_ERROR;
 	}
 
 	ShikigamiDataOutcome outcome = ShikigamiService::updateShikigami(nativePath, oldData, newData);
@@ -102,9 +97,6 @@ ShikigamiDataOutcomeDto ShikigamiGateway::RecoveryShikigami(String^ currentFileP
 	}
 	catch (System::ArgumentNullException^) {
 		return ShikigamiDataOutcomeDto::INVALID_ARGUMENT;
-	}
-	catch (...) {
-		return ShikigamiDataOutcomeDto::UNKNOWN_ERROR;
 	}
 
 	ShikigamiDataOutcome outcome = ShikigamiService::recoverShikigamiList(nativeCurrentPath, nativeList);
