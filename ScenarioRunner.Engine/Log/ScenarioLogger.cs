@@ -24,7 +24,7 @@ namespace ScenarioRunner.Log
 
 		public void Write(string message)
 		{
-			string log = $"[{DateTime.Now:HH:mm:ss}] {message}";
+			string log = $"[{DateTime.Now:HH:mm:ss.fff}] {message}";
 
 			mFileWriter.Write(log);
 			LogWritten?.Invoke(log);
