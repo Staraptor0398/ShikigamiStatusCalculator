@@ -307,11 +307,20 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void cmbShikigami_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			ShikigamiDto selected = cmbShikigami.SelectedItem as ShikigamiDto;
+			using (mPerformanceTracker.Track("Shikigami.SelectedIndexChanged"))
+			{
+				ShikigamiDto selected = cmbShikigami.SelectedItem as ShikigamiDto;
 
-			txtBaseStats.Text = StatusFormatter.FormatBaseSummary(selected?.Status);
+				using (mPerformanceTracker.Track("Shikigami.FormatBaseSummary"))
+				{
+					txtBaseStats.Text = StatusFormatter.FormatBaseSummary(selected?.Status);
+				}
 
-			markCalculationResultDirty();
+				using (mPerformanceTracker.Track("Shikigami.MarkCalculationResultDirty"))
+				{
+					markCalculationResultDirty();
+				}
+			}
 		}
 
 		/****************************************************************************************************
