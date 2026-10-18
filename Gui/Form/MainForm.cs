@@ -315,25 +315,31 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void btnCalc_Click(object sender, EventArgs e)
 		{
-			var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+			CalculationResultDto calculationResult;
 
-			CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(inputModel);
-
-			if (CalculationInputValidationErrorHandler.Handle(validationOutcome))
-			{
-				return;
-			}
-
-			var baseStatus = getSelectedShikigamiStatus();
-
-			var mitamaSet = MitamaSetConverter.ToDto(inputModel);
+#if DEBUG
+    CalculationTestSourceSaveData calculationTestSource;
+#endif
 
 			try
 			{
-				mLastCalculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
+				var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+
+				CalculationInputValidationOutcome validationOutcome = CalculationInputValidator.Validate(inputModel);
+
+				if (CalculationInputValidationErrorHandler.Handle(validationOutcome))
+				{
+					return;
+				}
+
+				var baseStatus = getSelectedShikigamiStatus();
+
+				var mitamaSet = MitamaSetConverter.ToDto(inputModel);
+
+				calculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
 
 #if DEBUG
-				mLastCalculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, mLastCalculationResult);
+        calculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, calculationResult);
 #endif
 			}
 			catch (Exception ex)
@@ -348,6 +354,12 @@ namespace Gui.Form
 
 				return;
 			}
+
+			mLastCalculationResult = calculationResult;
+
+#if DEBUG
+    mLastCalculationTestSource = calculationTestSource;
+#endif
 
 			updateSaveButtonEnabled();
 
