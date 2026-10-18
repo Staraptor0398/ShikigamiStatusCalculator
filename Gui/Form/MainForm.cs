@@ -811,6 +811,17 @@ namespace Gui.Form
 			}
 		}
 
+		private void resetComboBox(ComboBox comboBox)
+		{
+			if (comboBox == null)
+			{
+				return;
+			}
+
+			comboBox.SelectedIndex = -1;
+			comboBox.Text = "";
+		}
+
 		private void registerCalculationInputChangedEvents()
 		{
 			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
@@ -1382,11 +1393,30 @@ namespace Gui.Form
 
 		private void clearMitamaInputs()
 		{
-			initializeMainStatComboBoxes();
-			initializeSubStatComboBoxes();
+			resetMainStatComboBoxes();
+			resetSubStatComboBoxes();
 
 			clearMainValueTextBoxes();
 			clearSubValueTextBoxes();
+		}
+
+		private void resetMainStatComboBoxes()
+		{
+			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
+			{
+				resetComboBox(slot.MainStatComboBox);
+			}
+		}
+
+		private void resetSubStatComboBoxes()
+		{
+			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
+			{
+				foreach (SubStatInputControl subStat in slot.SubStats)
+				{
+					resetComboBox(subStat.TypeComboBox);
+				}
+			}
 		}
 
 		private void clearMainValueTextBoxes()
@@ -1410,8 +1440,20 @@ namespace Gui.Form
 
 		private void clearEffectInputs()
 		{
-			initializeSetEffectComboBoxes();
-			initializeUniqueEffectComboBoxes();
+			resetEffectComboBoxes();
+		}
+
+		private void resetEffectComboBoxes()
+		{
+			foreach (ComboBox comboBox in mSetEffectComboBoxes)
+			{
+				resetComboBox(comboBox);
+			}
+
+			foreach (ComboBox comboBox in mUniqueEffectComboBoxes)
+			{
+				resetComboBox(comboBox);
+			}
 		}
 
 		private void clearResultTexts()
