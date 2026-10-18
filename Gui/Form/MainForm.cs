@@ -710,19 +710,22 @@ namespace Gui.Form
 			{
 				foreach (SubStatInputControl subStat in slot.SubStats)
 				{
-					setComboItems(subStat.TypeComboBox,
-						DisplayText.NONE,
-						DisplayText.SPEED,
-						DisplayText.ADDITIONAL_ATTACK_RATE,
-						DisplayText.ADDITIONAL_HP_RATE,
-						DisplayText.ADDITIONAL_DEFENSE_RATE,
-						DisplayText.CRITICAL_RATE,
-						DisplayText.CRITICAL_DAMAGE,
-						DisplayText.EFFECT_HIT,
-						DisplayText.EFFECT_RESIST,
-						DisplayText.ATTACK,
-						DisplayText.HP,
-						DisplayText.DEFENSE);
+					using (mPerformanceTracker.Track("SubStat.SetItems"))
+					{
+						setComboItems(subStat.TypeComboBox,
+							DisplayText.NONE,
+							DisplayText.SPEED,
+							DisplayText.ADDITIONAL_ATTACK_RATE,
+							DisplayText.ADDITIONAL_HP_RATE,
+							DisplayText.ADDITIONAL_DEFENSE_RATE,
+							DisplayText.CRITICAL_RATE,
+							DisplayText.CRITICAL_DAMAGE,
+							DisplayText.EFFECT_HIT,
+							DisplayText.EFFECT_RESIST,
+							DisplayText.ATTACK,
+							DisplayText.HP,
+							DisplayText.DEFENSE);
+					}
 				}
 			}
 		}
@@ -766,37 +769,42 @@ namespace Gui.Form
 			}
 
 			bool isRarityFilter = comboBox == cmbRarityFilter;
+			bool isSubStat = mMitamaSlotInputControls != null &&
+				mMitamaSlotInputControls.Any(slot =>
+					slot.SubStats.Any(subStat => subStat.TypeComboBox == comboBox));
 
-			using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.BeginUpdate") : null)
+			string targetPrefix = isRarityFilter ? "RarityFilter" : isSubStat ? "SubStat" : null;
+
+			using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.BeginUpdate") : null)
 			{
 				comboBox.BeginUpdate();
 			}
 
 			try
 			{
-				using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.ClearItems") : null)
+				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.ClearItems") : null)
 				{
 					comboBox.Items.Clear();
 				}
 
-				using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.AddRange") : null)
+				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.AddRange") : null)
 				{
 					comboBox.Items.AddRange(items);
 				}
 
-				using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.ResetSelection") : null)
+				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.ResetSelection") : null)
 				{
 					comboBox.SelectedIndex = -1;
 				}
 
-				using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.ClearText") : null)
+				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.ClearText") : null)
 				{
 					comboBox.Text = "";
 				}
 			}
 			finally
 			{
-				using (isRarityFilter ? mPerformanceTracker.Track("RarityFilter.EndUpdate") : null)
+				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.EndUpdate") : null)
 				{
 					comboBox.EndUpdate();
 				}
