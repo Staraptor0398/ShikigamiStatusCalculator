@@ -565,14 +565,14 @@ namespace Gui.Form
 
 			mShikigamiList = shikigamiList;
 
-			using (mPerformanceTracker.Track("Shikigami.SetDataSource"))
-			{
-				cmbShikigami.DataSource = mShikigamiList;
-			}
-
 			using (mPerformanceTracker.Track("Shikigami.SetDisplayMember"))
 			{
 				cmbShikigami.DisplayMember = "Name";
+			}
+
+			using (mPerformanceTracker.Track("Shikigami.SetDataSource"))
+			{
+				cmbShikigami.DataSource = mShikigamiList;
 			}
 
 			using (mPerformanceTracker.Track("Shikigami.ResetSelection"))
