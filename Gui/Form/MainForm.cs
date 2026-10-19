@@ -1152,7 +1152,8 @@ namespace Gui.Form
 									inputModel,
 									mMitamaSlotInputControls,
 									mSetEffectComboBoxes,
-									mUniqueEffectComboBoxes);
+									mUniqueEffectComboBoxes,
+									mPerformanceTracker);
 							}
 						});
 					}
@@ -1208,7 +1209,8 @@ namespace Gui.Form
 					inputModel,
 					mMitamaSlotInputControls,
 					mSetEffectComboBoxes,
-					mUniqueEffectComboBoxes);
+					mUniqueEffectComboBoxes,
+					mPerformanceTracker);
 			}
 		}
 
@@ -1242,7 +1244,8 @@ namespace Gui.Form
 						previousInputModel,
 						mMitamaSlotInputControls,
 						mSetEffectComboBoxes,
-						mUniqueEffectComboBoxes);
+						mUniqueEffectComboBoxes,
+						mPerformanceTracker);
 
 					Logger.Info("Operation=SaveDataロールバック Message=UI状態を復元しました。");
 				}
