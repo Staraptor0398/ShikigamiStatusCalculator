@@ -773,11 +773,22 @@ namespace Gui.Form
 			}
 
 			bool isRarityFilter = comboBox == cmbRarityFilter;
+
 			bool isSubStat = mMitamaSlotInputControls != null &&
 				mMitamaSlotInputControls.Any(slot =>
 					slot.SubStats.Any(subStat => subStat.TypeComboBox == comboBox));
 
-			string targetPrefix = isRarityFilter ? "RarityFilter" : isSubStat ? "SubStat" : null;
+			bool isSetEffect = mSetEffectComboBoxes != null &&
+				mSetEffectComboBoxes.Contains(comboBox);
+
+			bool isUniqueEffect = mUniqueEffectComboBoxes != null &&
+				mUniqueEffectComboBoxes.Contains(comboBox);
+
+			string targetPrefix = isRarityFilter ? "RarityFilter"
+				: isSubStat ? "SubStat"
+				: isSetEffect ? "SetEffect"
+				: isUniqueEffect ? "UniqueEffect"
+				: null;
 
 			using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.BeginUpdate") : null)
 			{
