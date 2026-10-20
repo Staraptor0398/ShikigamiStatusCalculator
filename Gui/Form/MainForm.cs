@@ -953,19 +953,43 @@ namespace Gui.Form
 
 		private void updateMainStatValue(ComboBox comboBox, TextBox textBox, int slot)
 		{
-			string statText = comboBox.SelectedItem?.ToString();
-
-			if (string.IsNullOrEmpty(statText))
+			using (mPerformanceTracker.Track("MainStat.UpdateValue"))
+			using (mPerformanceTracker.Track(mOperationState == MainFormOperationState.LOADING ? "MainStat.UpdateValue.Loading" : "MainStat.UpdateValue.Other"))
 			{
-				textBox.Text = "";
-			}
-			else
-			{
-				double value = MainStatValueResolver.Resolve(statText, slot);
-				textBox.Text = value.ToString();
-			}
+				string statText;
 
-			markCalculationResultDirty("Input.MainStat");
+				using (mPerformanceTracker.Track("MainStat.GetSelectedItem"))
+				{
+					statText = comboBox.SelectedItem?.ToString();
+				}
+
+				if (string.IsNullOrEmpty(statText))
+				{
+					using (mPerformanceTracker.Track("MainStat.SetValueText"))
+					{
+						textBox.Text = "";
+					}
+				}
+				else
+				{
+					double value;
+
+					using (mPerformanceTracker.Track("MainStat.ResolveValue"))
+					{
+						value = MainStatValueResolver.Resolve(statText, slot);
+					}
+
+					using (mPerformanceTracker.Track("MainStat.SetValueText"))
+					{
+						textBox.Text = value.ToString();
+					}
+				}
+
+				using (mPerformanceTracker.Track("MainStat.MarkDirty"))
+				{
+					markCalculationResultDirty("Input.MainStat");
+				}
+			}
 		}
 
 		/****************************************************************************************************
