@@ -1134,7 +1134,7 @@ namespace Gui.Form
 
 							using (mPerformanceTracker.Track("SaveData.LoadFile"))
 							{
-								data = SaveDataAccess.LoadBuild(dialog.FilePath);
+								data = SaveDataAccess.LoadBuild(dialog.FilePath, mPerformanceTracker.Track);
 							}
 
 							if (data == null)
@@ -1173,7 +1173,7 @@ namespace Gui.Form
 
 							using (mPerformanceTracker.Track("SaveData.LoadFile"))
 							{
-								data = SaveDataAccess.LoadMitamaSet(dialog.FilePath);
+								data = SaveDataAccess.LoadMitamaSet(dialog.FilePath, mPerformanceTracker.Track);
 							}
 
 							MitamaSetInputModel inputModel;

@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
 using System.Text;
 
@@ -19,10 +20,23 @@ namespace SaveData.Access
 			return JsonConvert.DeserializeObject<T>(json);
 		}
 
-		public static JObject LoadObject(string path)
+		public static JObject LoadObject(string path, Func<string, IDisposable> track = null)
 		{
-			string json = File.ReadAllText(path, Encoding.UTF8);
-			return JObject.Parse(json);
+			string json;
+
+			using (track?.Invoke("SaveData.Json.ReadFile"))
+			{
+				json = File.ReadAllText(path, Encoding.UTF8);
+			}
+
+			JObject root;
+
+			using (track?.Invoke("SaveData.Json.Parse"))
+			{
+				root = JObject.Parse(json);
+			}
+
+			return root;
 		}
 	}
 }

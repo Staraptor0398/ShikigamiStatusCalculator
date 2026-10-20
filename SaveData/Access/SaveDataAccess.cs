@@ -24,14 +24,14 @@ namespace SaveData.Access
 			save(path, data, SaveDataVersionDefinition.CalculationSnapshot);
 		}
 
-		public static MitamaSetSaveData LoadMitamaSet(string path)
+		public static MitamaSetSaveData LoadMitamaSet(string path, Func<string, IDisposable> track = null)
 		{
-			return load<MitamaSetSaveData>(path, SaveDataVersionDefinition.MitamaSet);
+			return load<MitamaSetSaveData>(path, SaveDataVersionDefinition.MitamaSet, track);
 		}
 
-		public static BuildSaveData LoadBuild(string path)
+		public static BuildSaveData LoadBuild(string path, Func<string, IDisposable> track = null)
 		{
-			return load<BuildSaveData>(path, SaveDataVersionDefinition.Build);
+			return load<BuildSaveData>(path, SaveDataVersionDefinition.Build, track);
 		}
 
 		public static CalculationSnapshotSaveData LoadSnapshot(string path)
@@ -50,22 +50,35 @@ namespace SaveData.Access
 			JsonDataAccess.Save(path, file);
 		}
 
-		private static T load<T>(string path, SaveDataVersion currentVersion)
+		private static T load<T>(string path, SaveDataVersion currentVersion, Func<string, IDisposable> track = null)
 		{
-			JObject root = JsonDataAccess.LoadObject(path);
-			int sourceVersion = getSourceVersion(root);
+			JObject root = JsonDataAccess.LoadObject(path, track);
+			int sourceVersion;
 
-			if (sourceVersion > currentVersion.Version)
+			using (track?.Invoke("SaveData.VersionCheck"))
 			{
-				throw new NotSupportedException($"Unsupported save data version: {sourceVersion}");
+				sourceVersion = getSourceVersion(root);
+
+				if (sourceVersion > currentVersion.Version)
+				{
+					throw new NotSupportedException($"Unsupported save data version: {sourceVersion}");
+				}
 			}
 
 			if (sourceVersion < currentVersion.Version)
 			{
-				root = SaveDataMigrator.Migrate(root, currentVersion, sourceVersion);
+				using (track?.Invoke("SaveData.Migrate"))
+				{
+					root = SaveDataMigrator.Migrate(root, currentVersion, sourceVersion);
+				}
 			}
 
-			SaveDataFile<T> file = root.ToObject<SaveDataFile<T>>();
+			SaveDataFile<T> file;
+
+			using (track?.Invoke("SaveData.Json.ToObject"))
+			{
+				file = root.ToObject<SaveDataFile<T>>();
+			}
 
 			if (file == null)
 			{
