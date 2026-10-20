@@ -59,7 +59,42 @@ jobs:
 
       - name: Install FFmpeg
         shell: pwsh
-        run: choco install ffmpeg -y
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $ffmpegUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-gpl-9.0.zip"
+          $ffmpegDirectory = Join-Path $PWD "Tools\FFmpeg"
+          $archivePath = Join-Path $env:RUNNER_TEMP "ffmpeg.zip"
+          $extractDirectory = Join-Path $env:RUNNER_TEMP "ffmpeg-extracted"
+
+          New-Item -ItemType Directory -Force -Path $ffmpegDirectory | Out-Null
+
+          Invoke-WebRequest -Uri $ffmpegUrl -OutFile $archivePath
+
+          Expand-Archive -Path $archivePath -DestinationPath $extractDirectory -Force
+
+          $ffmpegExecutable = Get-ChildItem -Path $extractDirectory -Filter "ffmpeg.exe" -Recurse -File |
+              Select-Object -First 1
+
+          if ($null -eq $ffmpegExecutable) {
+              throw "FFmpeg executable was not found in the archive."
+          }
+
+          Copy-Item $ffmpegExecutable.FullName (Join-Path $ffmpegDirectory "ffmpeg.exe")
+
+          $installedFFmpeg = Join-Path $ffmpegDirectory "ffmpeg.exe"
+
+          if (-not (Test-Path $installedFFmpeg)) {
+              throw "FFmpeg installation failed."
+          }
+
+          & $installedFFmpeg -version | Select-Object -First 1
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "FFmpeg verification failed."
+          }
+
+          Write-Host "FFmpeg installation completed."
 
       - name: Restore SaveData packages
         shell: pwsh
@@ -82,6 +117,10 @@ jobs:
 
           if (-not (Test-Path "ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe")) {
               throw "ScenarioRunnerCli.exe was not built."
+          }
+
+          if (-not (Test-Path "Tools\FFmpeg\ffmpeg.exe")) {
+              throw "FFmpeg.exe was not installed."
           }
 
       - name: Run Scenario Batch with recording
@@ -159,7 +198,7 @@ jobs:
 
           # Never print FFmpeg arguments because live mode includes the stream key.
           $ffmpegInfo = New-Object System.Diagnostics.ProcessStartInfo
-          $ffmpegInfo.FileName = "ffmpeg"
+          $ffmpegInfo.FileName = (Resolve-Path ".\Tools\FFmpeg\ffmpeg.exe").Path
           $ffmpegInfo.Arguments = $ffmpegArguments
           $ffmpegInfo.UseShellExecute = $false
           $ffmpegInfo.RedirectStandardInput = $true
