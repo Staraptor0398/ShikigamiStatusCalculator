@@ -63,7 +63,7 @@ namespace Gui.Form.Applicator
 				}
 				else
 				{
-					slot.MainStatComboBox.Text = data.MainStat.Type;
+					slot.MainStatComboBox.SelectedItem = data.MainStat.Type;
 				}
 			}
 
