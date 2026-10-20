@@ -88,12 +88,13 @@ jobs:
               throw "FFmpeg installation failed."
           }
 
-          & $installedFFmpeg -version | Select-Object -First 1
+          $versionOutput = & $installedFFmpeg -version
 
           if ($LASTEXITCODE -ne 0) {
               throw "FFmpeg verification failed."
           }
 
+          Write-Host ($versionOutput | Select-Object -First 1)
           Write-Host "FFmpeg installation completed."
 
       - name: Restore SaveData packages
