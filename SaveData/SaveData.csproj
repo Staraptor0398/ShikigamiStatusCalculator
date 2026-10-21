@@ -43,6 +43,7 @@
     <Compile Include="Definition\SaveDataType.cs" />
     <Compile Include="Definition\SaveDataVersion.cs" />
     <Compile Include="Definition\SaveDataVersionDefinition.cs" />
+    <Compile Include="Migration\JsonMigrationWriter.cs" />
     <Compile Include="Migration\SaveDataMigrator.cs" />
     <Compile Include="Model\BuildSaveData.cs" />
     <Compile Include="Model\CalculationSnapshotSaveData.cs" />
@@ -56,9 +57,6 @@
     <Compile Include="Model\StatusSaveData.cs" />
     <Compile Include="Model\StatValueSaveData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
