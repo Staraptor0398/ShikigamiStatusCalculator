@@ -99,7 +99,17 @@ jobs:
 
       - name: Restore SaveData packages
         shell: pwsh
-        run: nuget restore SaveData\packages.config -PackagesDirectory packages
+        run: |
+          if (Test-Path "SaveData/packages.config") {
+              nuget restore SaveData/packages.config -PackagesDirectory packages
+
+              if ($LASTEXITCODE -ne 0) {
+                  throw "SaveData NuGet restore failed."
+              }
+          }
+          else {
+              Write-Host "SaveData/packages.config not found. Skipping restore."
+          }
 
       - name: Build ShikigamiApp
         shell: pwsh
