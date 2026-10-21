@@ -1,14 +1,14 @@
-using Newtonsoft.Json.Linq;
 using SaveData.Definition;
 using System;
+using System.Text.Json.Nodes;
 
 namespace SaveData.Migration
 {
 	public static class SaveDataMigrator
 	{
-		public static JObject Migrate(JObject root, SaveDataVersion targetVersion, int sourceVersion)
+		public static string Migrate(string json, SaveDataVersion targetVersion, int sourceVersion)
 		{
-			if (root == null)
+			if (json == null)
 			{
 				return null;
 			}
@@ -23,14 +23,24 @@ namespace SaveData.Migration
 				throw new NotSupportedException($"Downgrade migration is not supported: {sourceVersion} -> {targetVersion.Version}");
 			}
 
-			int version = sourceVersion;
+			JsonObject root = JsonNode.Parse(json) as JsonObject;
+			if (root == null)
+			{
+				throw new FormatException("Save data root must be an object.");
+			}
 
+			int version = sourceVersion;
 			while (version < targetVersion.Version)
 			{
 				switch (version)
 				{
 					case 1:
-						root = migrateV1ToV2(root, targetVersion.Type);
+						migrateV1ToV2(root, targetVersion.Type);
+						root = new JsonObject
+						{
+							["Version"] = 2,
+							["Data"] = root.DeepClone()
+						};
 						version = 2;
 						break;
 
@@ -39,85 +49,59 @@ namespace SaveData.Migration
 				}
 			}
 
-			return root;
+			return root.ToJsonString();
 		}
 
-		private static JObject migrateV1ToV2(JObject root, SaveDataType saveDataType)
+		private static void migrateV1ToV2(JsonObject root, SaveDataType type)
 		{
-			switch (saveDataType)
+			switch (type)
 			{
 				case SaveDataType.MitamaSet:
-					migrateMitamaSetV1ToV2(root);
+					migrateMitamaSet(root);
 					break;
-
 				case SaveDataType.Build:
-					migrateMitamaSetV1ToV2(
-					root["MitamaSet"] as JObject);
-					break;
-
 				case SaveDataType.CalculationSnapshot:
-					migrateMitamaSetV1ToV2(
-					root["MitamaSet"] as JObject);
+					migrateMitamaSet(root["MitamaSet"] as JsonObject);
 					break;
-
 				default:
-					throw new NotSupportedException(
-					$"Unsupported save data type: {saveDataType}");
+					throw new NotSupportedException($"Unsupported save data type: {type}");
 			}
-
-			return createV2Envelope(root);
 		}
 
-		private static void migrateMitamaSetV1ToV2(JObject mitamaSet)
+		private static void migrateMitamaSet(JsonObject set)
 		{
-			if (mitamaSet == null)
+			if (set == null)
 			{
 				return;
 			}
-
-			migrateSetEffectListV1ToV2(
-			mitamaSet["SetEffects"] as JArray);
-
-			migrateSetEffectListV1ToV2(
-			mitamaSet["UniqueEffects"] as JArray);
+			migrateEffects(set["SetEffects"] as JsonArray);
+			migrateEffects(set["UniqueEffects"] as JsonArray);
 		}
 
-		private static void migrateSetEffectListV1ToV2(JArray effects)
+		private static void migrateEffects(JsonArray effects)
 		{
 			if (effects == null)
 			{
 				return;
 			}
 
-			foreach (JToken token in effects)
+			foreach (JsonNode item in effects)
 			{
-				if (!(token is JObject effect))
+				if (!(item is JsonObject effect))
 				{
 					continue;
 				}
 
-				JToken type = effect["Type"];
-				JToken value = effect["Value"];
-
+				JsonNode type = effect["Type"]?.DeepClone();
+				JsonNode value = effect["Value"]?.DeepClone();
 				effect.Remove("Type");
 				effect.Remove("Value");
-
-				effect["Stat"] =
-				new JObject
+				effect["Stat"] = new JsonObject
 				{
 					["Type"] = type,
 					["Value"] = value
 				};
 			}
-		}
-
-		private static JObject createV2Envelope(JObject data)
-		{
-			return new JObject
-			{
-				["Version"] = 2,
-				["Data"] = data
-			};
 		}
 	}
 }

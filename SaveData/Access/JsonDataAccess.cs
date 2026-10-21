@@ -1,42 +1,56 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace SaveData.Access
 {
 	public static class JsonDataAccess
 	{
+		private static readonly JsonSerializerOptions mOptions = new JsonSerializerOptions
+		{
+			PropertyNameCaseInsensitive = true,
+			WriteIndented = true
+		};
+
 		public static void Save<T>(string path, T data)
 		{
-			string json = JsonConvert.SerializeObject(data, Formatting.Indented);
+			string json = JsonSerializer.Serialize(data, mOptions);
 			File.WriteAllText(path, json, new UTF8Encoding(false));
 		}
 
 		public static T Load<T>(string path)
 		{
-			string json = File.ReadAllText(path, Encoding.UTF8);
-			return JsonConvert.DeserializeObject<T>(json);
+			return Deserialize<T>(ReadText(path));
 		}
 
-		public static JObject LoadObject(string path, Func<string, IDisposable> track = null)
+		public static string ReadText(string path, Func<string, IDisposable> track = null)
 		{
-			string json;
-
 			using (track?.Invoke("SaveData.Json.ReadFile"))
 			{
-				json = File.ReadAllText(path, Encoding.UTF8);
+				return File.ReadAllText(path, Encoding.UTF8);
 			}
+		}
 
-			JObject root;
-
-			using (track?.Invoke("SaveData.Json.Parse"))
+		public static int GetVersion(string json)
+		{
+			using (JsonDocument document = JsonDocument.Parse(json))
 			{
-				root = JObject.Parse(json);
+				JsonElement root = document.RootElement;
+				if (root.TryGetProperty("Version", out JsonElement version))
+				{
+					return version.GetInt32();
+				}
+				return 1;
 			}
+		}
 
-			return root;
+		public static T Deserialize<T>(string json, Func<string, IDisposable> track = null)
+		{
+			using (track?.Invoke("SaveData.Json.Deserialize"))
+			{
+				return JsonSerializer.Deserialize<T>(json, mOptions);
+			}
 		}
 	}
 }
