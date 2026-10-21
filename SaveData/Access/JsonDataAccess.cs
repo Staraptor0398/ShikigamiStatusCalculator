@@ -1,8 +1,8 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
+using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Web.Script.Serialization;
 
 namespace SaveData.Access
 {
@@ -10,33 +10,54 @@ namespace SaveData.Access
 	{
 		public static void Save<T>(string path, T data)
 		{
-			string json = JsonConvert.SerializeObject(data, Formatting.Indented);
-			File.WriteAllText(path, json, new UTF8Encoding(false));
+			DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
+			using (MemoryStream stream = new MemoryStream())
+			{
+				serializer.WriteObject(stream, data);
+				File.WriteAllText(path, Encoding.UTF8.GetString(stream.ToArray()), new UTF8Encoding(false));
+			}
 		}
 
 		public static T Load<T>(string path)
 		{
-			string json = File.ReadAllText(path, Encoding.UTF8);
-			return JsonConvert.DeserializeObject<T>(json);
+			return Deserialize<T>(ReadText(path));
 		}
 
-		public static JObject LoadObject(string path, Func<string, IDisposable> track = null)
+		public static string ReadText(string path, Func<string, IDisposable> track = null)
 		{
-			string json;
-
 			using (track?.Invoke("SaveData.Json.ReadFile"))
 			{
-				json = File.ReadAllText(path, Encoding.UTF8);
+				return File.ReadAllText(path, Encoding.UTF8);
 			}
+		}
 
-			JObject root;
-
-			using (track?.Invoke("SaveData.Json.Parse"))
+		public static int GetVersion(string json)
+		{
+			// This version probe is intentionally separate from DataContractJsonSerializer.
+			JavaScriptSerializer parser = new JavaScriptSerializer();
+			parser.MaxJsonLength = int.MaxValue;
+			var root = parser.DeserializeObject(json) as System.Collections.Generic.Dictionary<string, object>;
+			if (root == null)
 			{
-				root = JObject.Parse(json);
+				throw new FormatException("Save data root must be an object.");
 			}
+			if (!root.TryGetValue("Version", out object version))
+			{
+				return 1;
+			}
+			return Convert.ToInt32(version);
+		}
 
-			return root;
+		public static T Deserialize<T>(string json, Func<string, IDisposable> track = null)
+		{
+			using (track?.Invoke("SaveData.Json.Deserialize"))
+			{
+				DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
+				using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+				{
+					return (T)serializer.ReadObject(stream);
+				}
+			}
 		}
 	}
 }

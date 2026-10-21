@@ -1,14 +1,15 @@
-using Newtonsoft.Json.Linq;
 using SaveData.Definition;
 using System;
+using System.Collections.Generic;
+using System.Web.Script.Serialization;
 
 namespace SaveData.Migration
 {
 	public static class SaveDataMigrator
 	{
-		public static JObject Migrate(JObject root, SaveDataVersion targetVersion, int sourceVersion)
+		public static string Migrate(string json, SaveDataVersion targetVersion, int sourceVersion)
 		{
-			if (root == null)
+			if (json == null)
 			{
 				return null;
 			}
@@ -17,107 +18,90 @@ namespace SaveData.Migration
 			{
 				throw new ArgumentNullException(nameof(targetVersion));
 			}
-
 			if (sourceVersion > targetVersion.Version)
 			{
 				throw new NotSupportedException($"Downgrade migration is not supported: {sourceVersion} -> {targetVersion.Version}");
 			}
 
-			int version = sourceVersion;
+			JavaScriptSerializer serializer = new JavaScriptSerializer();
+			serializer.MaxJsonLength = int.MaxValue;
+			Dictionary<string, object> root = serializer.DeserializeObject(json) as Dictionary<string, object>;
+			if (root == null)
+			{
+				throw new FormatException("Save data root must be an object.");
+			}
 
+			int version = sourceVersion;
 			while (version < targetVersion.Version)
 			{
 				switch (version)
 				{
 					case 1:
-						root = migrateV1ToV2(root, targetVersion.Type);
+						migrateV1ToV2(root, targetVersion.Type);
+						root = new Dictionary<string, object>
+						{
+							["Version"] = 2,
+							["Data"] = root
+						};
 						version = 2;
 						break;
-
 					default:
 						throw new NotSupportedException($"Unsupported save data version: {version}");
 				}
 			}
-
-			return root;
+			return serializer.Serialize(root);
 		}
 
-		private static JObject migrateV1ToV2(JObject root, SaveDataType saveDataType)
+		private static void migrateV1ToV2(Dictionary<string, object> root, SaveDataType type)
 		{
-			switch (saveDataType)
+			switch (type)
 			{
 				case SaveDataType.MitamaSet:
-					migrateMitamaSetV1ToV2(root);
+					migrateMitamaSet(root);
 					break;
-
 				case SaveDataType.Build:
-					migrateMitamaSetV1ToV2(
-					root["MitamaSet"] as JObject);
-					break;
-
 				case SaveDataType.CalculationSnapshot:
-					migrateMitamaSetV1ToV2(
-					root["MitamaSet"] as JObject);
+					migrateMitamaSet(root.TryGetValue("MitamaSet", out object value)
+						? value as Dictionary<string, object> : null);
 					break;
-
 				default:
-					throw new NotSupportedException(
-					$"Unsupported save data type: {saveDataType}");
+					throw new NotSupportedException($"Unsupported save data type: {type}");
 			}
-
-			return createV2Envelope(root);
 		}
 
-		private static void migrateMitamaSetV1ToV2(JObject mitamaSet)
+		private static void migrateMitamaSet(Dictionary<string, object> set)
 		{
-			if (mitamaSet == null)
+			if (set == null)
 			{
 				return;
 			}
-
-			migrateSetEffectListV1ToV2(
-			mitamaSet["SetEffects"] as JArray);
-
-			migrateSetEffectListV1ToV2(
-			mitamaSet["UniqueEffects"] as JArray);
+			migrateEffects(set.TryGetValue("SetEffects", out object effects) ? effects as object[] : null);
+			migrateEffects(set.TryGetValue("UniqueEffects", out object unique) ? unique as object[] : null);
 		}
 
-		private static void migrateSetEffectListV1ToV2(JArray effects)
+		private static void migrateEffects(object[] effects)
 		{
 			if (effects == null)
 			{
 				return;
 			}
-
-			foreach (JToken token in effects)
+			foreach (object item in effects)
 			{
-				if (!(token is JObject effect))
+				Dictionary<string, object> effect = item as Dictionary<string, object>;
+				if (effect == null)
 				{
 					continue;
 				}
-
-				JToken type = effect["Type"];
-				JToken value = effect["Value"];
-
+				effect.TryGetValue("Type", out object type);
+				effect.TryGetValue("Value", out object value);
 				effect.Remove("Type");
 				effect.Remove("Value");
-
-				effect["Stat"] =
-				new JObject
+				effect["Stat"] = new Dictionary<string, object>
 				{
 					["Type"] = type,
 					["Value"] = value
 				};
 			}
-		}
-
-		private static JObject createV2Envelope(JObject data)
-		{
-			return new JObject
-			{
-				["Version"] = 2,
-				["Data"] = data
-			};
 		}
 	}
 }

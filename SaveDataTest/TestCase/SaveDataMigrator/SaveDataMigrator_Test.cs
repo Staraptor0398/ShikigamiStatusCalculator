@@ -1,4 +1,4 @@
-using Newtonsoft.Json.Linq;
+using SaveData.Access;
 using SaveData.Definition;
 using SaveData.Migration;
 using SaveData.Model;
@@ -13,37 +13,32 @@ namespace SaveDataTest.TestCase
 		[TestMethod]
 		public void MigrateMitamaSet_V1ToV2()
 		{
-			JObject root = JObject.Parse(SaveDataTestData.V1_MITAMA_SET_JSON);
+			string migrated = SaveDataMigrator.Migrate(SaveDataTestData.V1_MITAMA_SET_JSON, SaveDataVersionDefinition.MitamaSet, 1);
 
-			JObject migrated = SaveDataMigrator.Migrate(root, SaveDataVersionDefinition.MitamaSet, 1);
-			SaveDataFile<MitamaSetSaveData> actualFile = migrated.ToObject<SaveDataFile<MitamaSetSaveData>>();
+			SaveDataFile<MitamaSetSaveData> actualFile = JsonDataAccess.Deserialize<SaveDataFile<MitamaSetSaveData>>(migrated);
 
 			Assert.IsNotNull(actualFile);
 			Assert.AreEqual(2, actualFile.Version);
 
 			MitamaSetSaveData expected = SaveDataTestData.CreateMitamaSet();
-
 			TestAssert.AreEqual(expected, actualFile.Data);
 		}
 
 		[TestMethod]
 		public void Migrate_NullRoot()
 		{
-			JObject actual = SaveDataMigrator.Migrate(null, SaveDataVersionDefinition.MitamaSet, 1);
-
+			string actual = SaveDataMigrator.Migrate(null, SaveDataVersionDefinition.MitamaSet, 1);
 			Assert.IsNull(actual);
 		}
 
 		[TestMethod]
 		public void Migrate_NullTargetVersion()
 		{
-			JObject root = JObject.Parse(SaveDataTestData.V1_MITAMA_SET_JSON);
-
 			bool exceptionThrown = false;
 
 			try
 			{
-				SaveDataMigrator.Migrate(root, null, 1);
+				SaveDataMigrator.Migrate(SaveDataTestData.V1_MITAMA_SET_JSON, null, 1);
 			}
 			catch (ArgumentNullException)
 			{
@@ -56,13 +51,11 @@ namespace SaveDataTest.TestCase
 		[TestMethod]
 		public void Migrate_Downgrade()
 		{
-			JObject root = JObject.Parse(SaveDataTestData.V1_MITAMA_SET_JSON);
-
 			bool exceptionThrown = false;
 
 			try
 			{
-				SaveDataMigrator.Migrate(root, SaveDataVersionDefinition.MitamaSet, 3);
+				SaveDataMigrator.Migrate(SaveDataTestData.V1_MITAMA_SET_JSON, SaveDataVersionDefinition.MitamaSet, 3);
 			}
 			catch (NotSupportedException)
 			{
@@ -75,13 +68,11 @@ namespace SaveDataTest.TestCase
 		[TestMethod]
 		public void Migrate_UnsupportedSourceVersion()
 		{
-			JObject root = JObject.Parse(SaveDataTestData.V1_MITAMA_SET_JSON);
-
 			bool exceptionThrown = false;
 
 			try
 			{
-				SaveDataMigrator.Migrate(root, SaveDataVersionDefinition.MitamaSet, 0);
+				SaveDataMigrator.Migrate(SaveDataTestData.V1_MITAMA_SET_JSON, SaveDataVersionDefinition.MitamaSet, 0);
 			}
 			catch (NotSupportedException)
 			{

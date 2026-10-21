@@ -1,4 +1,3 @@
-using Newtonsoft.Json.Linq;
 using SaveData.Definition;
 using SaveData.Migration;
 using SaveData.Model;
@@ -52,12 +51,12 @@ namespace SaveData.Access
 
 		private static T load<T>(string path, SaveDataVersion currentVersion, Func<string, IDisposable> track = null)
 		{
-			JObject root = JsonDataAccess.LoadObject(path, track);
+			string json = JsonDataAccess.ReadText(path, track);
 			int sourceVersion;
 
 			using (track?.Invoke("SaveData.VersionCheck"))
 			{
-				sourceVersion = getSourceVersion(root);
+				sourceVersion = JsonDataAccess.GetVersion(json);
 
 				if (sourceVersion > currentVersion.Version)
 				{
@@ -69,36 +68,12 @@ namespace SaveData.Access
 			{
 				using (track?.Invoke("SaveData.Migrate"))
 				{
-					root = SaveDataMigrator.Migrate(root, currentVersion, sourceVersion);
+					json = SaveDataMigrator.Migrate(json, currentVersion, sourceVersion);
 				}
 			}
 
-			SaveDataFile<T> file;
-
-			using (track?.Invoke("SaveData.Json.ToObject"))
-			{
-				file = root.ToObject<SaveDataFile<T>>();
-			}
-
-			if (file == null)
-			{
-				return default;
-			}
-
-			return file.Data;
-		}
-
-		private static int getSourceVersion(JObject root)
-		{
-			JToken versionToken = root["Version"];
-
-			// Version導入前のSaveDataはv1として扱う。
-			if (versionToken == null)
-			{
-				return 1;
-			}
-
-			return versionToken.Value<int>();
+			SaveDataFile<T> file = JsonDataAccess.Deserialize<SaveDataFile<T>>(json, track);
+			return file == null ? default : file.Data;
 		}
 	}
 }

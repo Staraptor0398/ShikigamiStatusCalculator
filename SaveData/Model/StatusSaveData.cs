@@ -1,29 +1,30 @@
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace SaveData.Model
 {
+	[DataContract]
 	public class StatusSaveData
 	{
-		public double Attack { get; set; }
+		[DataMember] public double Attack { get; set; }
+		[DataMember] public double HP { get; set; }
+		[DataMember] public double Defense { get; set; }
+		[DataMember] public double Speed { get; set; }
+		[DataMember] public double CritRate { get; set; }
+		[DataMember] public double CritDamage { get; set; }
+		[DataMember] public double EffectHit { get; set; }
+		[DataMember] public double EffectResist { get; set; }
 
-		public double HP { get; set; }
-
-		public double Defense { get; set; }
-
-		[JsonProperty("Deffense")]
-		private double LegacyDeffense
+		[DataMember(Name = "Deffense", EmitDefaultValue = false)]
+		private double? LegacyDeffense
 		{
-			set => Defense = value;
+			get => null;
+			set
+			{
+				if (value.HasValue)
+				{
+					Defense = value.Value;
+				}
+			}
 		}
-
-		public double Speed { get; set; }
-
-		public double CritRate { get; set; }
-
-		public double CritDamage { get; set; }
-
-		public double EffectHit { get; set; }
-
-		public double EffectResist { get; set; }
 	}
 }
