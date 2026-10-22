@@ -36,3 +36,6 @@ ShikigamiDataAuditor/Cache/
 
 # Document generation config
 Document/Tool/_diagram_settings.bat
+
+# Scenario Runner Performance Analysis
+Script/Result/
