@@ -1,11 +1,12 @@
-
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
+using ScenarioRunner.Log;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -25,6 +26,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private const int WAIT_TIMEOUT_MS = 5000;
 		private const int WAIT_INTERVAL_MS = 100;
 
+		private readonly ScenarioLogger mLogger;
+
 		private readonly ButtonOperator mButtonOperator;
 		private readonly ComboBoxOperator mComboBoxOperator;
 		private readonly TextBoxOperator mTextBoxOperator;
@@ -35,8 +38,15 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		private readonly ProcessWindowWaiter mProcessWindowWaiter;
 		private readonly FileDialogWaiter mFileDialogWaiter;
 
-		public SaveDataOperator()
+		public SaveDataOperator(ScenarioLogger logger)
 		{
+			if (logger == null)
+			{
+				throw new ArgumentNullException(nameof(logger));
+			}
+
+			mLogger = logger;
+
 			mButtonOperator = new ButtonOperator();
 			mComboBoxOperator = new ComboBoxOperator();
 			mTextBoxOperator = new TextBoxOperator();
@@ -222,7 +232,12 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			GuiSession session = context.GuiSession;
 
+			var stopwatch = Stopwatch.StartNew();
+			var timings = new List<string>();
+
+			long previousElapsedMs = 0;
 			string stage = "OpenLoadDialog";
+			bool completed = false;
 
 			try
 			{
@@ -232,6 +247,8 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				Window loadDialog = getLoadDialog(session);
 
+				addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
+
 				stage = "GetLoadControls";
 
 				var elementMap = new AutomationElementMap(loadDialog.FindAllChildren());
@@ -240,36 +257,81 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				AutomationElement browseButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.BROWSE, ControlType.Button);
 				AutomationElement loadButton = elementMap.Get(AutomationIds.SaveDataLoadDialog.LOAD, ControlType.Button);
 
+				addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
+
 				stage = "SelectLoadType";
 
 				selectLoadType(loadTypeElement, loadType);
 
-				stage = "SelectLoadFile";
+				addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
+
+				stage = "OpenFileDialog";
 
 				mButtonOperator.PostClick(browseButton);
 
+				addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
+
+				stage = "WaitForFileDialog";
+
 				FileDialogElements fileDialogElements = mFileDialogWaiter.WaitForFileDialog(session, loadDialog);
 
+				addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
+
+				stage = "SelectLoadFile";
+
 				mFileDialogOperator.SelectLoadFile(fileDialogElements, filePath);
+
+				addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
 
 				stage = "ExecuteLoad";
 
 				mButtonOperator.PostClick(loadButton);
 
+				addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
+
 				stage = "WaitForLoadDialogClosed";
 
 				mWindowWaiter.WaitForWindowClosed(loadDialog);
+
+				addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
 
 				if (waitForCompletion)
 				{
 					stage = "WaitForLoadCompleted";
 
 					waitForLoadCompleted(mainLoadButton);
+
+					addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
 				}
+
+				completed = true;
+				stage = "Completed";
 			}
 			catch (Exception ex)
 			{
 				throw new InvalidOperationException($"SaveDataOperator.load failed at stage '{stage}': " + $"LoadType={loadType}, " + $"FilePath={filePath}. " + $"{ex.Message}", ex);
+			}
+			finally
+			{
+				stopwatch.Stop();
+
+				long pendingMs = stopwatch.ElapsedMilliseconds - previousElapsedMs;
+
+				try
+				{
+					mLogger.Write(
+						$"[Timing] SaveDataOperator.load " +
+						$"LoadType={loadType} " +
+						$"Result={(completed ? "PASS" : "FAIL")} " +
+						$"Stage={stage} " +
+						$"TotalMs={stopwatch.ElapsedMilliseconds} " +
+						$"{string.Join(" ", timings)} " +
+						$"PendingMs={pendingMs}");
+				}
+				catch
+				{
+					// 調査ログの出力失敗でシナリオの実行結果を変更しない。
+				}
 			}
 		}
 
@@ -522,6 +584,15 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 
 			throw new InvalidOperationException($"Load operation did not complete within {WAIT_TIMEOUT_MS} ms.");
+		}
+
+		private static void addLoadStageTiming(List<string> timings, Stopwatch stopwatch, ref long previousElapsedMs, string stage)
+		{
+			long elapsedMs = stopwatch.ElapsedMilliseconds;
+
+			timings.Add($"{stage}Ms={elapsedMs - previousElapsedMs}");
+
+			previousElapsedMs = elapsedMs;
 		}
 	}
 }

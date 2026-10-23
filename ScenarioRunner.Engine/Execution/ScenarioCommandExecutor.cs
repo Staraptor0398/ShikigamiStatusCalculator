@@ -2,6 +2,7 @@ using FlaUI.Core.AutomationElements;
 using ScenarioRunner.Automation.Operator;
 using ScenarioRunner.Automation.Operator.Feature;
 using ScenarioRunner.Automation.Waiter;
+using ScenarioRunner.Log;
 using ScenarioRunner.ScenarioFormat;
 using System;
 using System.Threading.Tasks;
@@ -10,6 +11,8 @@ namespace ScenarioRunner.Execution
 {
 	public class ScenarioCommandExecutor
 	{
+		private readonly ScenarioLogger mLogger;
+
 		private readonly WindowOperator mWindowOperator;
 		private readonly GuiOperator mGuiOperator;
 		private readonly ShikigamiOperator mShikigamiOperator;
@@ -27,8 +30,15 @@ namespace ScenarioRunner.Execution
 
 		private readonly ShikigamiDataWaiter mShikigamiDataWaiter;
 
-		public ScenarioCommandExecutor()
+		public ScenarioCommandExecutor(ScenarioLogger logger)
 		{
+			if (logger == null)
+			{
+				throw new ArgumentNullException(nameof(logger));
+			}
+
+			mLogger = logger;
+
 			mWindowOperator = new WindowOperator();
 			mGuiOperator = new GuiOperator();
 			mShikigamiOperator = new ShikigamiOperator();
@@ -36,7 +46,7 @@ namespace ScenarioRunner.Execution
 			mShikigamiEditOperator = new ShikigamiEditOperator();
 			mCalculationOperator = new CalculationOperator();
 			mCalculationDetailOperator = new CalculationDetailOperator();
-			mSaveDataOperator = new SaveDataOperator();
+			mSaveDataOperator = new SaveDataOperator(mLogger);
 			mDialogOperator = new DialogOperator();
 			mShikigamiDataOperator = new ShikigamiDataOperator();
 			mInputOperator = new InputOperator();

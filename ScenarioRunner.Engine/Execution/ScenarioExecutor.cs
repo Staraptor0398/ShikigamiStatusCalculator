@@ -29,7 +29,7 @@ namespace ScenarioRunner.Execution
 			mGuiExecutablePath = guiExecutablePath;
 			mGuiBounds = guiBounds;
 
-			mCommandExecutor = new ScenarioCommandExecutor();
+			mCommandExecutor = new ScenarioCommandExecutor(mLogger);
 
 			string captureDirectoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Capture");
 			mScreenshotCapturer = new ScreenshotCapturer(captureDirectoryPath);
