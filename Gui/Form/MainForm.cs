@@ -1806,14 +1806,50 @@ namespace Gui.Form
 		}
 
 		/****************************************************************************************************
+		  終了処理ログ
+		****************************************************************************************************/
+
+		private void logShutdownEvent(string eventName)
+		{
+			try
+			{
+				Logger.Info($"Operation=Shutdown Event={eventName}");
+			}
+			catch
+			{
+				// 調査ログの出力失敗でフォーム終了を妨げない。
+			}
+		}
+
+		protected override void OnFormClosing(FormClosingEventArgs e)
+		{
+			logShutdownEvent("OnFormClosing.Begin");
+
+			try
+			{
+				base.OnFormClosing(e);
+			}
+			finally
+			{
+				logShutdownEvent("OnFormClosing.End");
+			}
+		}
+
+		/****************************************************************************************************
 		  性能ログ出力
 		****************************************************************************************************/
 
 		protected override void OnFormClosed(FormClosedEventArgs e)
 		{
+			logShutdownEvent("OnFormClosed.Begin");
+
 			try
 			{
+				logShutdownEvent("PerformanceLogger.Write.Begin");
+
 				PerformanceLogger.Write(mPerformanceSessionId, mPerformanceTracker.GetSnapshot());
+
+				logShutdownEvent("PerformanceLogger.Write.End");
 			}
 			catch (Exception ex)
 			{
@@ -1828,7 +1864,16 @@ namespace Gui.Form
 			}
 			finally
 			{
-				base.OnFormClosed(e);
+				logShutdownEvent("Base.OnFormClosed.Begin");
+
+				try
+				{
+					base.OnFormClosed(e);
+				}
+				finally
+				{
+					logShutdownEvent("Base.OnFormClosed.End");
+				}
 			}
 		}
 	}

@@ -1,4 +1,5 @@
 using Gui.Form;
+using Gui.Logging;
 using Gui.ShikigamiData;
 using System;
 using System.Windows.Forms;
@@ -20,6 +21,15 @@ namespace Gui
 			ShikigamiDataFileManager.RestoreDefaultIfMissing();
 
 			Application.Run(new MainForm());
+
+			try
+			{
+				Logger.Info("Operation=Shutdown Event=Application.Run.End");
+			}
+			catch
+			{
+				// 調査ログの出力失敗でアプリケーション終了を妨げない。
+			}
 		}
 	}
 }
