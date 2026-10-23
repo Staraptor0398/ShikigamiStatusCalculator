@@ -90,12 +90,9 @@ $scenarioCommandNames = @(
     'LOAD BUILD',
     'SAVE BUILD',
     'CLOSE GUI',
-    'CHECK CALC',
-    'SEL SHIKIGAMI',
     'CALCULATE',
     'OPEN GUI',
-    'CLEAR',
-    'CALC'
+    'CLEAR'
 )
 
 function Get-ScenarioCommandType([string]$rawText) {
@@ -108,6 +105,8 @@ function Get-ScenarioCommandType([string]$rawText) {
 }
 
 $allCommandDetails = [System.Collections.Generic.List[object]]::new()
+$allLoadOperations = [System.Collections.Generic.List[object]]::new()
+$allLoadStages = [System.Collections.Generic.List[object]]::new()
 $allSamples = [System.Collections.Generic.List[object]]::new()
 $allScenarios = [System.Collections.Generic.List[object]]::new()
 $allSessions = [System.Collections.Generic.List[object]]::new()
@@ -191,7 +190,59 @@ foreach ($runId in $runIds) {
         }
         # Additional command timing pass; existing Gui/session analysis remains unchanged.
         $pendingSteps = @{}
+        $activeCommand = $null
         foreach ($line in $textLines) {
+            if ($line -match '^\[(\d{2}:\d{2}:\d{2}(?:\.\d{3})?)\] \[Timing\] SaveDataOperator\.load (.+)$') {
+                $clock = $Matches[1]
+                $payload = $Matches[2]
+                $fields = @{}
+                foreach ($field in [regex]::Matches($payload, '(?<Key>[A-Za-z][A-Za-z0-9]*)=(?<Value>\S+)')) {
+                    $fields[$field.Groups['Key'].Value] = $field.Groups['Value'].Value
+                }
+                if (-not $fields.ContainsKey('TotalMs') -or -not $fields.ContainsKey('LoadType') -or -not $fields.ContainsKey('Result') -or -not $fields.ContainsKey('Stage')) {
+                    $validationIssues.Add("Invalid SaveData load timing fields in $runId / $($file.Name): $line")
+                    continue
+                }
+                if ($null -eq $activeCommand -or -not $pendingSteps.ContainsKey($activeCommand)) {
+                    $validationIssues.Add("SaveData load timing without an active command in $runId / $($file.Name): $line")
+                    continue
+                }
+                $pending = $pendingSteps[$activeCommand]
+                $stepTime = Parse-ScenarioTime $date $clock
+                if ($stepTime -lt $start.AddHours(-12)) { $stepTime = $stepTime.AddDays(1) }
+                try {
+                    $totalMs = [double]::Parse($fields['TotalMs'], $culture)
+                    $pendingMs = if ($fields.ContainsKey('PendingMs')) { [double]::Parse($fields['PendingMs'], $culture) } else { $null }
+                    if ($totalMs -lt 0 -or ($null -ne $pendingMs -and $pendingMs -lt 0)) { throw 'Negative timing value' }
+                    $operation = [pscustomobject]@{
+                        RunId=$runId;Scenario=$declaredName;FileName=$file.Name;
+                        LineNumber=[int]$activeCommand;CommandType=$pending.Type;CommandText=$pending.RawText;
+                        Timestamp=$stepTime;LoadType=$fields['LoadType'];Result=$fields['Result'];
+                        Stage=$fields['Stage'];TotalMs=$totalMs;PendingMs=$pendingMs
+                    }
+                    $allLoadOperations.Add($operation)
+                    $stageTotal = 0.0
+                    foreach ($name in $fields.Keys) {
+                        if ($name -notmatch 'Ms$' -or $name -eq 'TotalMs' -or $name -eq 'PendingMs') { continue }
+                        $duration = [double]::Parse($fields[$name], $culture)
+                        if ($duration -lt 0) { throw "Negative stage duration: $name" }
+                        $stageTotal += $duration
+                        $allLoadStages.Add([pscustomobject]@{
+                            RunId=$runId;Scenario=$declaredName;FileName=$file.Name;
+                            LineNumber=[int]$activeCommand;CommandType=$pending.Type;
+                            LoadType=$fields['LoadType'];Result=$fields['Result'];
+                            Stage=$name.Substring(0, $name.Length-2);DurationMs=$duration
+                        })
+                    }
+                    if ([math]::Abs(($stageTotal + $(if ($null -ne $pendingMs) { $pendingMs } else { 0 })) - $totalMs) -gt 3) {
+                        $warnings.Add("SaveData load stage total differs from TotalMs in $runId / $($file.Name), line $activeCommand")
+                    }
+                }
+                catch {
+                    $validationIssues.Add("Invalid SaveData load timing in $runId / $($file.Name): $($_.Exception.Message)")
+                }
+                continue
+            }
             if ($line -notmatch '^\[(\d{2}:\d{2}:\d{2}(?:\.\d{3})?)\] \[(\d+)\] (.*?)\s{4}(START|PASS|FAIL)\s*$') { continue }
             $clock = $Matches[1]
             $lineNumber = [int]$Matches[2]
@@ -206,6 +257,7 @@ foreach ($runId in $runIds) {
                     $validationIssues.Add("Duplicate START for command line $lineNumber in $runId / $($file.Name)")
                 }
                 $pendingSteps[$key] = [pscustomobject]@{Time=$stepTime;RawText=$rawCommand;Type=$commandType;Precise=$clock.Contains('.')}
+                $activeCommand = $key
                 continue
             }
             if (-not $pendingSteps.ContainsKey($key)) {
@@ -214,6 +266,7 @@ foreach ($runId in $runIds) {
             }
             $pending = $pendingSteps[$key]
             $pendingSteps.Remove($key)
+            if ($activeCommand -eq $key) { $activeCommand = $null }
             if ($pending.RawText -ne $rawCommand) {
                 $validationIssues.Add("Command text mismatch at line $lineNumber in $runId / $($file.Name)")
             }
@@ -424,6 +477,40 @@ foreach ($g in ($passedCommands | Group-Object RunId,Scenario,CommandType)) {
         MaxMs=[math]::Round(($g.Group | Measure-Object DurationMs -Maximum).Maximum,3)
     })
 }
+# SaveData load timing records are parsed from Runner logs and linked to their active command.
+# Both the stage list and load types are dynamic; newly added stage measurements need no parser changes.
+$loadStageSummary = [System.Collections.Generic.List[object]]::new()
+$loadStageGroups = @(
+    @($allLoadStages | Group-Object Stage | ForEach-Object {
+        [pscustomobject]@{LoadType='ALL';Stage=$_.Name;Values=@($_.Group)}
+    })
+    @($allLoadStages | Group-Object LoadType,Stage | ForEach-Object {
+        $first = $_.Group[0]
+        [pscustomobject]@{LoadType=$first.LoadType;Stage=$first.Stage;Values=@($_.Group)}
+    })
+)
+foreach ($group in $loadStageGroups) {
+    $values = @($group.Values | Sort-Object DurationMs)
+    if ($values.Count -eq 0) { continue }
+    $durations = @($values | ForEach-Object { $_.DurationMs })
+    $middle = [int][math]::Floor($durations.Count / 2)
+    $median = if ($durations.Count % 2 -eq 0) { ($durations[$middle-1] + $durations[$middle]) / 2 } else { $durations[$middle] }
+    $runTotals = @($values | Group-Object RunId | ForEach-Object { ($_.Group | Measure-Object DurationMs -Sum).Sum })
+    $loadStageSummary.Add([pscustomobject]@{
+        LoadType=$group.LoadType;Stage=$group.Stage;Count=$values.Count;
+        Runs=@($values | Select-Object -ExpandProperty RunId -Unique).Count;
+        TotalMs=[math]::Round(($durations | Measure-Object -Sum).Sum,3);
+        MeanTotalMsPerRun=[math]::Round(($runTotals | Measure-Object -Average).Average,3);
+        MeanMs=[math]::Round(($durations | Measure-Object -Average).Average,3);
+        MedianMs=[math]::Round($median,3);
+        MinMs=[math]::Round($durations[0],3);
+        MaxMs=[math]::Round($durations[-1],3)
+    })
+}
+Export-Rows @($allLoadOperations | Sort-Object RunId,FileName,LineNumber) (Join-Path $OutputDirectory 'SaveDataLoadOperations.csv')
+Export-Rows @($allLoadStages | Sort-Object RunId,FileName,LineNumber,Stage) (Join-Path $OutputDirectory 'SaveDataLoadStages.csv')
+Export-Rows @($loadStageSummary | Sort-Object LoadType,TotalMs -Descending) (Join-Path $OutputDirectory 'SaveDataLoadStageSummary.csv')
+
 Export-Rows @($allCommandDetails | Sort-Object RunId,FileName,LineNumber) (Join-Path $OutputDirectory 'ScenarioCommandDetails.csv')
 Export-Rows @($commandSummary | Sort-Object TotalMs -Descending) (Join-Path $OutputDirectory 'ScenarioCommandSummary.csv')
 Export-Rows @($commandByScenario | Sort-Object RunId,Scenario,CommandType) (Join-Path $OutputDirectory 'ScenarioCommandByScenario.csv')
@@ -476,6 +563,18 @@ foreach ($c in ($commandSummary | Sort-Object TotalMs -Descending)) {
     $md.Add("| $($c.CommandType) | $($c.Count) | $($c.TotalMs) | $($c.MeanMs) | $($c.MaxMs) |")
 }
 $md.Add('')
+$md.Add('## SaveData load timing (Runner instrumentation)')
+$md.Add('')
+$md.Add("Recorded load operations: $($allLoadOperations.Count); recorded stages: $($allLoadStages.Count).")
+$md.Add('')
+$md.Add('| Stage | Count | Total ms | Mean ms | Median ms | Max ms |')
+$md.Add('|---|---:|---:|---:|---:|---:|')
+foreach ($row in ($loadStageSummary | Where-Object { $_.LoadType -eq 'ALL' } | Sort-Object TotalMs -Descending)) {
+    $md.Add("| $($row.Stage) | $($row.Count) | $($row.TotalMs) | $($row.MeanMs) | $($row.MedianMs) | $($row.MaxMs) |")
+}
+$md.Add('')
+$md.Add('Per-load-type breakdown and individual records are in SaveDataLoadStageSummary.csv, SaveDataLoadStages.csv, and SaveDataLoadOperations.csv.')
+$md.Add('')
 $md.Add('## Caveats')
 $md.Add('- Performance totals contain nested measurement scopes; do not add parent/child totals.')
 $md.Add('- Elapsed time includes UI waits and modal dialogs; it is not CPU time.')
@@ -484,6 +583,7 @@ $md.Add('- First vs later Gui sessions are separately available in PerformanceSt
 $md.Add('- Per-run means are used to reduce distortions from different session counts.')
 $md.Add('- Command timings are START-to-PASS log timestamp differences and include logging overhead; they are not CPU timings.')
 $md.Add('- Command timing summaries exclude FAIL/INCOMPLETE. Inspect ScenarioCommandDetails.csv for these records.')
+$md.Add('- SaveData load timing is emitted by the Runner, not the Gui PerformanceTracker. The breakdown covers only instrumented load() calls; older logs may have no records.')
 if($warnings.Count -gt 0) {
     $md.Add('');$md.Add('## Warnings');foreach ($warning in $warnings) { $md.Add('- '+$warning) }
 }
@@ -502,7 +602,10 @@ $reportFiles = @(
     'ScenarioCommandSummary.csv',
     'ScenarioCommandByScenario.csv',
     'SessionMapping.csv',
-    'GuiWindows.csv'
+    'GuiWindows.csv',
+    'SaveDataLoadOperations.csv',
+    'SaveDataLoadStages.csv',
+    'SaveDataLoadStageSummary.csv'
 )
 $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $zipPath = Join-Path $OutputDirectory "ScenarioBatchAnalysis_$timestamp.zip"
