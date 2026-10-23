@@ -72,6 +72,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new InvalidOperationException("Gui.exe is not running.");
 			}
 
+			context.GuiSession.Application.CloseTimeout = TimeSpan.FromSeconds(1);
 			context.GuiSession.Application.Close();
 			context.GuiSession.Dispose();
 			context.GuiSession = null;
