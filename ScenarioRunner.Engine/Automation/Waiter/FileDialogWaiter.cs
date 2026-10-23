@@ -1,8 +1,10 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Exceptions;
+using ScenarioRunner.Log;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -29,6 +31,22 @@ namespace ScenarioRunner.Automation.Waiter
 		[DllImport("user32.dll")]
 		private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
+		private readonly ScenarioLogger mLogger;
+
+		public FileDialogWaiter()
+		{
+		}
+
+		public FileDialogWaiter(ScenarioLogger logger)
+		{
+			if (logger == null)
+			{
+				throw new ArgumentNullException(nameof(logger));
+			}
+
+			mLogger = logger;
+		}
+
 		public FileDialogElements WaitForFileDialog(GuiSession session, Window owner)
 		{
 			if (session == null)
@@ -44,52 +62,154 @@ namespace ScenarioRunner.Automation.Waiter
 			int elapsed = 0;
 			int attempt = 0;
 			int nativeCandidateWaitElapsed = 0;
+			int nativeCandidateAttempts = 0;
 
-			while (elapsed < DEFAULT_TIMEOUT_MS)
+			var stopwatch = Stopwatch.StartNew();
+
+			long nativeOwnerMs = 0;
+			long ownerDescendantMs = 0;
+			long desktopMs = 0;
+			long sleepMs = 0;
+
+			string route = "None";
+
+			try
 			{
-				attempt++;
-
-				FileDialogElements fileDialogElements = findNativeOwnedFileDialog(session, owner, attempt, out bool hasNativeCandidate);
-
-				if (fileDialogElements != null)
+				while (elapsed < DEFAULT_TIMEOUT_MS)
 				{
-					return fileDialogElements;
-				}
+					attempt++;
 
-				if (hasNativeCandidate && nativeCandidateWaitElapsed < NATIVE_FILE_DIALOG_GRACE_MS)
-				{
-					Thread.Sleep(DEFAULT_INTERVAL_MS);
+					long startedMs = stopwatch.ElapsedMilliseconds;
+
+					FileDialogElements fileDialogElements;
+					bool hasNativeCandidate = false;
+
+					try
+					{
+						fileDialogElements = findNativeOwnedFileDialog(session, owner, attempt, out hasNativeCandidate);
+					}
+					finally
+					{
+						nativeOwnerMs += stopwatch.ElapsedMilliseconds - startedMs;
+					}
+
+					if (hasNativeCandidate)
+					{
+						nativeCandidateAttempts++;
+					}
+
+					if (fileDialogElements != null)
+					{
+						route = "NativeOwner";
+
+						return fileDialogElements;
+					}
+
+					if (hasNativeCandidate && nativeCandidateWaitElapsed < NATIVE_FILE_DIALOG_GRACE_MS)
+					{
+						startedMs = stopwatch.ElapsedMilliseconds;
+
+						try
+						{
+							Thread.Sleep(DEFAULT_INTERVAL_MS);
+						}
+						finally
+						{
+							sleepMs += stopwatch.ElapsedMilliseconds - startedMs;
+						}
+
+						elapsed += DEFAULT_INTERVAL_MS;
+						nativeCandidateWaitElapsed += DEFAULT_INTERVAL_MS;
+
+						continue;
+					}
+
+					if (!hasNativeCandidate)
+					{
+						nativeCandidateWaitElapsed = 0;
+					}
+
+					startedMs = stopwatch.ElapsedMilliseconds;
+
+					try
+					{
+						fileDialogElements = findFileDialog(owner, attempt);
+					}
+					finally
+					{
+						ownerDescendantMs += stopwatch.ElapsedMilliseconds - startedMs;
+					}
+
+					if (fileDialogElements != null)
+					{
+						route = "OwnerDescendant";
+
+						return fileDialogElements;
+					}
+
+					startedMs = stopwatch.ElapsedMilliseconds;
+
+					try
+					{
+						fileDialogElements = findFileDialog(session, attempt);
+					}
+					finally
+					{
+						desktopMs += stopwatch.ElapsedMilliseconds - startedMs;
+					}
+
+					if (fileDialogElements != null)
+					{
+						route = "Desktop";
+
+						return fileDialogElements;
+					}
+
+					startedMs = stopwatch.ElapsedMilliseconds;
+
+					try
+					{
+						Thread.Sleep(DEFAULT_INTERVAL_MS);
+					}
+					finally
+					{
+						sleepMs += stopwatch.ElapsedMilliseconds - startedMs;
+					}
 
 					elapsed += DEFAULT_INTERVAL_MS;
-					nativeCandidateWaitElapsed += DEFAULT_INTERVAL_MS;
-
-					continue;
 				}
 
-				if (!hasNativeCandidate)
-				{
-					nativeCandidateWaitElapsed = 0;
-				}
-
-				fileDialogElements = findFileDialog(owner, attempt);
-
-				if (fileDialogElements != null)
-				{
-					return fileDialogElements;
-				}
-
-				fileDialogElements = findFileDialog(session, attempt);
-
-				if (fileDialogElements != null)
-				{
-					return fileDialogElements;
-				}
-
-				Thread.Sleep(DEFAULT_INTERVAL_MS);
-				elapsed += DEFAULT_INTERVAL_MS;
+				throw new InvalidOperationException($"File dialog was not found within {DEFAULT_TIMEOUT_MS} ms.");
 			}
+			finally
+			{
+				stopwatch.Stop();
 
-			throw new InvalidOperationException($"File dialog was not found within {DEFAULT_TIMEOUT_MS} ms.");
+				if (mLogger != null)
+				{
+					try
+					{
+						long otherMs = stopwatch.ElapsedMilliseconds - nativeOwnerMs - ownerDescendantMs - desktopMs - sleepMs;
+
+						mLogger.Write(
+							$"[Timing] FileDialogWaiter.WaitForFileDialog " +
+							$"Result={(route == "None" ? "FAIL" : "PASS")} " +
+							$"Route={route} " +
+							$"Attempts={attempt} " +
+							$"NativeCandidateAttempts={nativeCandidateAttempts} " +
+							$"TotalMs={stopwatch.ElapsedMilliseconds} " +
+							$"NativeOwnerMs={nativeOwnerMs} " +
+							$"OwnerDescendantMs={ownerDescendantMs} " +
+							$"DesktopMs={desktopMs} " +
+							$"SleepMs={sleepMs} " +
+							$"OtherMs={otherMs}");
+					}
+					catch
+					{
+						// 調査ログの出力失敗でシナリオの実行結果を変更しない。
+					}
+				}
+			}
 		}
 
 		private FileDialogElements findNativeOwnedFileDialog(GuiSession session, Window owner, int attempt, out bool hasCandidate)

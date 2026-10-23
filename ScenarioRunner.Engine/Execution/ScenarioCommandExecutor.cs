@@ -52,7 +52,7 @@ namespace ScenarioRunner.Execution
 			mInputOperator = new InputOperator();
 			mInputStateOperator = new InputStateOperator();
 			mShikigamiRecoveryOperator = new ShikigamiRecoveryOperator();
-			mSnapshotComparisonOperator = new SnapshotComparisonOperator();
+			mSnapshotComparisonOperator = new SnapshotComparisonOperator(mLogger);
 
 			mShikigamiDataWaiter = new ShikigamiDataWaiter();
 		}

@@ -55,7 +55,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 			mWindowWaiter = new WindowWaiter();
 			mProcessWindowWaiter = new ProcessWindowWaiter();
-			mFileDialogWaiter = new FileDialogWaiter();
+			mFileDialogWaiter = new FileDialogWaiter(mLogger);
 		}
 
 		public void LoadMitama(ScenarioExecutonContext context, string filePath)
@@ -236,14 +236,22 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			var timings = new List<string>();
 
 			long previousElapsedMs = 0;
-			string stage = "OpenLoadDialog";
+			string stage = "GetMainLoadElement";
 			bool completed = false;
 
 			try
 			{
 				AutomationElement mainLoadButton = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.LOAD, ControlType.Button);
 
+				addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
+
+				stage = "PostClickLoad";
+
 				mButtonOperator.PostClick(mainLoadButton);
+
+				addLoadStageTiming(timings, stopwatch, ref previousElapsedMs, stage);
+
+				stage = "GetLoadDialog";
 
 				Window loadDialog = getLoadDialog(session);
 

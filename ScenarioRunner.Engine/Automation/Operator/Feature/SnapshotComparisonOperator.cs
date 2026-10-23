@@ -3,6 +3,7 @@ using FlaUI.Core.Definitions;
 using ScenarioRunner.Automation.Definition;
 using ScenarioRunner.Automation.Waiter;
 using ScenarioRunner.Execution;
+using ScenarioRunner.Log;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,15 +28,20 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private IReadOnlyDictionary<string, string[]> mComparisonResultRows;
 
-		public SnapshotComparisonOperator()
+		public SnapshotComparisonOperator(ScenarioLogger logger)
 		{
+			if (logger == null)
+			{
+				throw new ArgumentNullException(nameof(logger));
+			}
+
 			mGuiOperator = new GuiOperator();
 			mButtonOperator = new ButtonOperator();
 			mFileDialogOperator = new FileDialogOperator();
 			mDataGridViewOperator = new DataGridViewOperator();
 
 			mProcessWindowWaiter = new ProcessWindowWaiter();
-			mFileDialogWaiter = new FileDialogWaiter();
+			mFileDialogWaiter = new FileDialogWaiter(logger);
 		}
 
 		public void Compare(ScenarioExecutonContext context, string baseSnapshotPath, string targetSnapshotPath)
