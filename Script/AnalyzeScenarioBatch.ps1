@@ -109,6 +109,8 @@ $allLoadOperations = [System.Collections.Generic.List[object]]::new()
 $allLoadStages = [System.Collections.Generic.List[object]]::new()
 $allFileDialogOperations = [System.Collections.Generic.List[object]]::new()
 $allFileDialogStages = [System.Collections.Generic.List[object]]::new()
+$allDetailedTimingOperations = [System.Collections.Generic.List[object]]::new()
+$allDetailedTimingStages = [System.Collections.Generic.List[object]]::new()
 $allSamples = [System.Collections.Generic.List[object]]::new()
 $allScenarios = [System.Collections.Generic.List[object]]::new()
 $allSessions = [System.Collections.Generic.List[object]]::new()
@@ -194,6 +196,81 @@ foreach ($runId in $runIds) {
         $pendingSteps = @{}
         $activeCommand = $null
         foreach ($line in $textLines) {
+            # Detailed instrumentation is recorded separately from the parent timings.
+            # Each line belongs to the active scenario command; the method name
+            # distinguishes parent/child scopes so their durations are never summed.
+            if ($line -match '^\[(\d{2}:\d{2}:\d{2}(?:\.\d{3})?)\] \[Timing\] (SaveDataOperator\.GetLoadDialog|ProcessWindowWaiter\.(?:FindProcessWindow|WaitForProcessWindow|NativeOwner|TryGetNativeWindow)|FileDialogWaiter\.(?:NativeOwner|InspectCandidate)) (.+)$') {
+                $clock = $Matches[1]
+                $method = $Matches[2]
+                $payload = $Matches[3]
+                $fields = @{}
+                foreach ($field in [regex]::Matches($payload, '(?<Key>[A-Za-z][A-Za-z0-9]*)=(?<Value>\S+)')) {
+                    $fields[$field.Groups['Key'].Value] = $field.Groups['Value'].Value
+                }
+                if (-not $fields.ContainsKey('TotalMs')) {
+                    $validationIssues.Add("Missing TotalMs in detailed timing in $runId / $($file.Name): $line")
+                    continue
+                }
+                if ($null -eq $activeCommand -or -not $pendingSteps.ContainsKey($activeCommand)) {
+                    $validationIssues.Add("Detailed timing without an active command in $runId / $($file.Name): $line")
+                    continue
+                }
+                $pending = $pendingSteps[$activeCommand]
+                $stepTime = Parse-ScenarioTime $date $clock
+                if ($stepTime -lt $start.AddHours(-12)) { $stepTime = $stepTime.AddDays(1) }
+                try {
+                    $totalMs = [double]::Parse($fields['TotalMs'], $culture)
+                    if ($totalMs -lt 0) { throw 'Negative TotalMs' }
+                    $attempt = if ($fields.ContainsKey('Attempt')) { [int]::Parse($fields['Attempt'], $culture) } else { $null }
+                    $candidateIndex = if ($fields.ContainsKey('CandidateIndex')) { [int]::Parse($fields['CandidateIndex'], $culture) } else { $null }
+                    $handles = if ($fields.ContainsKey('Handles')) { [int]::Parse($fields['Handles'], $culture) } else { $null }
+                    $candidates = if ($fields.ContainsKey('Candidates')) { [int]::Parse($fields['Candidates'], $culture) } else { $null }
+                    $attempts = if ($fields.ContainsKey('Attempts')) { [int]::Parse($fields['Attempts'], $culture) } else { $null }
+                    foreach ($countValue in @($attempt, $candidateIndex, $handles, $candidates, $attempts)) {
+                        if ($null -ne $countValue -and $countValue -lt 0) { throw 'Negative count/index value' }
+                    }
+                    foreach ($booleanName in @('Found', 'Matched')) {
+                        if ($fields.ContainsKey($booleanName) -and $fields[$booleanName] -notin @('True', 'False')) {
+                            throw "Invalid boolean field: $booleanName"
+                        }
+                    }
+                    $operation = [pscustomobject]@{
+                        RunId=$runId;Scenario=$declaredName;FileName=$file.Name;
+                        LineNumber=[int]$activeCommand;CommandType=$pending.Type;CommandText=$pending.RawText;
+                        Timestamp=$stepTime;Method=$method;
+                        Result=if($fields.ContainsKey('Result')){$fields['Result']}else{''};
+                        Route=if($fields.ContainsKey('Route')){$fields['Route']}else{''};
+                        Found=if($fields.ContainsKey('Found')){$fields['Found']}else{''};
+                        Matched=if($fields.ContainsKey('Matched')){$fields['Matched']}else{''};
+                        Attempt=$attempt;Attempts=$attempts;CandidateIndex=$candidateIndex;
+                        Handles=$handles;Candidates=$candidates;TotalMs=$totalMs
+                    }
+                    $allDetailedTimingOperations.Add($operation)
+                    $stageTotal = 0.0
+                    foreach ($name in $fields.Keys) {
+                        if ($name -notmatch 'Ms$' -or $name -eq 'TotalMs') { continue }
+                        $duration = [double]::Parse($fields[$name], $culture)
+                        if ($duration -lt 0) { throw "Negative detailed timing stage: $name" }
+                        $stageTotal += $duration
+                        $allDetailedTimingStages.Add([pscustomobject]@{
+                            RunId=$runId;Scenario=$declaredName;FileName=$file.Name;
+                            LineNumber=[int]$activeCommand;CommandType=$pending.Type;
+                            Timestamp=$stepTime;Method=$method;Attempt=$attempt;
+                            CandidateIndex=$candidateIndex;Stage=$name.Substring(0,$name.Length-2);
+                            DurationMs=$duration
+                        })
+                    }
+                    # Nested log writes and non-timed bookkeeping are excluded
+                    # from individual stages; do not require exact equality.
+                    if ($stageTotal -gt $totalMs + 3) {
+                        $warnings.Add("Detailed timing stages exceed TotalMs in $runId / $($file.Name), method $method, line $activeCommand")
+                    }
+                }
+                catch {
+                    $validationIssues.Add("Invalid detailed timing in $runId / $($file.Name): $($_.Exception.Message)")
+                }
+                continue
+            }
             if ($line -match '^\[(\d{2}:\d{2}:\d{2}(?:\.\d{3})?)\] \[Timing\] FileDialogWaiter\.WaitForFileDialog (.+)$') {
                 $clock = $Matches[1]
                 $payload = $Matches[2]
@@ -557,6 +634,43 @@ if ($instrumentedLoads.Count -gt 0) {
     }
 }
 
+# Verify that new GetLoadDialog instrumentation is present for every
+# completed GetLoadDialog stage, but allow older batches with no detailed logs.
+$getLoadDialogDetails = @($allDetailedTimingOperations | Where-Object { $_.Method -eq 'SaveDataOperator.GetLoadDialog' })
+if ($getLoadDialogDetails.Count -gt 0) {
+    $detailKeys = @{}
+    $instrumentedRuns = @{}
+    foreach ($operation in $getLoadDialogDetails) {
+        $detailKeys["$($operation.RunId)|$($operation.FileName)|$($operation.LineNumber)"] = $true
+        $instrumentedRuns[$operation.RunId] = $true
+    }
+    foreach ($stage in ($allLoadStages | Where-Object { $_.Stage -eq 'GetLoadDialog' })) {
+        if (-not $instrumentedRuns.ContainsKey($stage.RunId)) { continue }
+        $key = "$($stage.RunId)|$($stage.FileName)|$($stage.LineNumber)"
+        if (-not $detailKeys.ContainsKey($key)) {
+            $validationIssues.Add("Missing GetLoadDialog detailed timing in $($stage.RunId) / $($stage.FileName), line $($stage.LineNumber)")
+        }
+    }
+}
+# Similarly, the new FileDialogWaiter.NativeOwner log should be present
+# whenever a detailed-instrumented command invokes the parent waiter.
+$nativeFileDialogDetails = @($allDetailedTimingOperations | Where-Object { $_.Method -eq 'FileDialogWaiter.NativeOwner' })
+if ($nativeFileDialogDetails.Count -gt 0) {
+    $nativeKeys = @{}
+    $instrumentedRuns = @{}
+    foreach ($operation in $nativeFileDialogDetails) {
+        $nativeKeys["$($operation.RunId)|$($operation.FileName)|$($operation.LineNumber)"] = $true
+        $instrumentedRuns[$operation.RunId] = $true
+    }
+    foreach ($operation in $allFileDialogOperations) {
+        if (-not $instrumentedRuns.ContainsKey($operation.RunId)) { continue }
+        $key = "$($operation.RunId)|$($operation.FileName)|$($operation.LineNumber)"
+        if (-not $nativeKeys.ContainsKey($key)) {
+            $validationIssues.Add("Missing FileDialogWaiter.NativeOwner detailed timing in $($operation.RunId) / $($operation.FileName), line $($operation.LineNumber)")
+        }
+    }
+}
+
 # SaveData load timing records are parsed from Runner logs and linked to their active command.
 # Both the stage list and load types are dynamic; newly added stage measurements need no parser changes.
 $loadStageSummary = [System.Collections.Generic.List[object]]::new()
@@ -613,6 +727,61 @@ foreach ($g in ($allFileDialogOperations | Group-Object CommandType,Route)) {
         TotalMs=[math]::Round(($g.Group | Measure-Object TotalMs -Sum).Sum,3)
     })
 }
+# Detailed timings are nested. Summarize each method and each method/stage
+# independently; do not combine parent and child elapsed times.
+$detailedTimingMethodSummary = [System.Collections.Generic.List[object]]::new()
+foreach ($g in ($allDetailedTimingOperations | Group-Object Method)) {
+    $values = @($g.Group | Sort-Object TotalMs)
+    $durations = @($values | ForEach-Object { $_.TotalMs })
+    $middle = [int][math]::Floor($durations.Count / 2)
+    $median = if ($durations.Count % 2 -eq 0) { ($durations[$middle-1] + $durations[$middle]) / 2 } else { $durations[$middle] }
+    $runTotals = @($values | Group-Object RunId | ForEach-Object { ($_.Group | Measure-Object TotalMs -Sum).Sum })
+    $detailedTimingMethodSummary.Add([pscustomobject]@{
+        Method=$g.Name;Count=$values.Count;
+        Runs=@($values | Select-Object -ExpandProperty RunId -Unique).Count;
+        TotalMs=[math]::Round(($durations | Measure-Object -Sum).Sum,3);
+        MeanTotalMsPerRun=[math]::Round(($runTotals | Measure-Object -Average).Average,3);
+        MeanMs=[math]::Round(($durations | Measure-Object -Average).Average,3);
+        MedianMs=[math]::Round($median,3);
+        MinMs=[math]::Round($durations[0],3);
+        MaxMs=[math]::Round($durations[-1],3)
+    })
+}
+$detailedTimingStageSummary = [System.Collections.Generic.List[object]]::new()
+foreach ($g in ($allDetailedTimingStages | Group-Object Method,Stage)) {
+    $values = @($g.Group | Sort-Object DurationMs)
+    $durations = @($values | ForEach-Object { $_.DurationMs })
+    $middle = [int][math]::Floor($durations.Count / 2)
+    $median = if ($durations.Count % 2 -eq 0) { ($durations[$middle-1] + $durations[$middle]) / 2 } else { $durations[$middle] }
+    $first = $values[0]
+    $detailedTimingStageSummary.Add([pscustomobject]@{
+        Method=$first.Method;Stage=$first.Stage;Count=$values.Count;
+        Runs=@($values | Select-Object -ExpandProperty RunId -Unique).Count;
+        TotalMs=[math]::Round(($durations | Measure-Object -Sum).Sum,3);
+        MeanMs=[math]::Round(($durations | Measure-Object -Average).Average,3);
+        MedianMs=[math]::Round($median,3);
+        MinMs=[math]::Round($durations[0],3);
+        MaxMs=[math]::Round($durations[-1],3)
+    })
+}
+$detailedTimingAttemptSummary = [System.Collections.Generic.List[object]]::new()
+foreach ($g in ($allDetailedTimingOperations | Where-Object { $null -ne $_.Attempt } | Group-Object Method,Attempt)) {
+    $first = $g.Group[0]
+    $detailedTimingAttemptSummary.Add([pscustomobject]@{
+        Method=$first.Method;Attempt=$first.Attempt;Count=$g.Count;
+        FoundCount=@($g.Group | Where-Object { $_.Found -eq 'True' }).Count;
+        NotFoundCount=@($g.Group | Where-Object { $_.Found -eq 'False' }).Count;
+        TotalMs=[math]::Round(($g.Group | Measure-Object TotalMs -Sum).Sum,3);
+        MeanMs=[math]::Round(($g.Group | Measure-Object TotalMs -Average).Average,3);
+        MaxMs=[math]::Round(($g.Group | Measure-Object TotalMs -Maximum).Maximum,3)
+    })
+}
+Export-Rows @($allDetailedTimingOperations | Sort-Object RunId,FileName,LineNumber,Timestamp,Method) (Join-Path $OutputDirectory 'DetailedTimingOperations.csv')
+Export-Rows @($allDetailedTimingStages | Sort-Object RunId,FileName,LineNumber,Timestamp,Method,Stage) (Join-Path $OutputDirectory 'DetailedTimingStages.csv')
+Export-Rows @($detailedTimingMethodSummary | Sort-Object TotalMs -Descending) (Join-Path $OutputDirectory 'DetailedTimingMethodSummary.csv')
+Export-Rows @($detailedTimingStageSummary | Sort-Object TotalMs -Descending) (Join-Path $OutputDirectory 'DetailedTimingStageSummary.csv')
+Export-Rows @($detailedTimingAttemptSummary | Sort-Object Method,Attempt) (Join-Path $OutputDirectory 'DetailedTimingAttemptSummary.csv')
+
 Export-Rows @($allFileDialogOperations | Sort-Object RunId,FileName,LineNumber,Timestamp) (Join-Path $OutputDirectory 'FileDialogTimingOperations.csv')
 Export-Rows @($allFileDialogStages | Sort-Object RunId,FileName,LineNumber,Stage) (Join-Path $OutputDirectory 'FileDialogTimingStages.csv')
 Export-Rows @($fileDialogStageSummary | Sort-Object TotalMs -Descending) (Join-Path $OutputDirectory 'FileDialogTimingStageSummary.csv')
@@ -701,6 +870,25 @@ $md.Add('')
 $md.Add('The successful search routes and command-type breakdown are in FileDialogTimingRoutes.csv.')
 $md.Add('FileDialogWaiter timing is nested within caller timing (e.g., SaveDataOperator.load); do not add their totals.')
 $md.Add('')
+$md.Add('## Detailed window/dialog timing (Runner instrumentation)')
+$md.Add('')
+$md.Add("Detailed timing records: $($allDetailedTimingOperations.Count); stages: $($allDetailedTimingStages.Count).")
+$md.Add('')
+$md.Add('| Method | Count | Total ms | Mean ms | Median ms | Max ms |')
+$md.Add('|---|---:|---:|---:|---:|---:|')
+foreach ($row in ($detailedTimingMethodSummary | Sort-Object TotalMs -Descending)) {
+    $md.Add("| $($row.Method) | $($row.Count) | $($row.TotalMs) | $($row.MeanMs) | $($row.MedianMs) | $($row.MaxMs) |")
+}
+$md.Add('')
+$md.Add('| Method | Stage | Count | Total ms | Mean ms | Max ms |')
+$md.Add('|---|---|---:|---:|---:|---:|')
+foreach ($row in ($detailedTimingStageSummary | Sort-Object TotalMs -Descending)) {
+    $md.Add("| $($row.Method) | $($row.Stage) | $($row.Count) | $($row.TotalMs) | $($row.MeanMs) | $($row.MaxMs) |")
+}
+$md.Add('')
+$md.Add('Individual calls, stages, and attempt-level comparisons are in DetailedTimingOperations.csv, DetailedTimingStages.csv, and DetailedTimingAttemptSummary.csv.')
+$md.Add('These measurements contain nested scopes. Compare stages within the same method; do not add totals from different methods.')
+$md.Add('')
 $md.Add('## Caveats')
 $md.Add('- Performance totals contain nested measurement scopes; do not add parent/child totals.')
 $md.Add('- Elapsed time includes UI waits and modal dialogs; it is not CPU time.')
@@ -711,6 +899,8 @@ $md.Add('- Command timings are START-to-PASS log timestamp differences and inclu
 $md.Add('- Command timing summaries exclude FAIL/INCOMPLETE. Inspect ScenarioCommandDetails.csv for these records.')
 $md.Add('- SaveData load timing is emitted by the Runner, not the Gui PerformanceTracker. The breakdown covers only instrumented load() calls; older logs may have no records.')
 $md.Add('- FileDialogWaiter timing covers only calls supplied with a ScenarioLogger; older logs and other callers may have no records.')
+$md.Add('- Detailed timing records include nested ProcessWindowWaiter/FileDialogWaiter calls; method totals overlap and must not be summed together.')
+$md.Add('- Detailed timings may include inner logging overhead; individual stage sums need not equal their parent TotalMs.')
 if($warnings.Count -gt 0) {
     $md.Add('');$md.Add('## Warnings');foreach ($warning in $warnings) { $md.Add('- '+$warning) }
 }
@@ -736,7 +926,12 @@ $reportFiles = @(
     'FileDialogTimingOperations.csv',
     'FileDialogTimingStages.csv',
     'FileDialogTimingStageSummary.csv',
-    'FileDialogTimingRoutes.csv'
+    'FileDialogTimingRoutes.csv',
+    'DetailedTimingOperations.csv',
+    'DetailedTimingStages.csv',
+    'DetailedTimingMethodSummary.csv',
+    'DetailedTimingStageSummary.csv',
+    'DetailedTimingAttemptSummary.csv'
 )
 $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $zipPath = Join-Path $OutputDirectory "ScenarioBatchAnalysis_$timestamp.zip"
@@ -752,6 +947,7 @@ foreach ($file in $filesToArchive) {
 Compress-Archive -LiteralPath $filesToArchive -DestinationPath $zipPath -CompressionLevel Optimal
 Write-Host "SaveData load timing: $($allLoadOperations.Count) operations / $($allLoadStages.Count) stages"
 Write-Host "FileDialog timing: $($allFileDialogOperations.Count) operations / $($allFileDialogStages.Count) stages"
+Write-Host "Detailed timing: $($allDetailedTimingOperations.Count) operations / $($allDetailedTimingStages.Count) stages"
 if ($validationIssues.Count -gt 0) {
     Write-Warning "Analysis found $($validationIssues.Count) structural issue(s). See PerformanceReport.md."
 }
