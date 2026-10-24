@@ -214,75 +214,159 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private FileDialogElements findNativeOwnedFileDialog(GuiSession session, Window owner, int attempt, out bool hasCandidate)
 		{
-			IntPtr ownerHandle = owner.Properties.NativeWindowHandle.ValueOrDefault;
+			var stopwatch = Stopwatch.StartNew();
 
-			if (ownerHandle == IntPtr.Zero)
+			long getOwnerHandleMs = 0;
+			long enumWindowsMs = 0;
+			long fromHandleMs = 0;
+			long candidateSelectionMs = 0;
+
+			int handleCount = 0;
+			int candidateCount = 0;
+
+			bool found = false;
+
+			hasCandidate = false;
+
+			try
 			{
-				hasCandidate = false;
-
-				return null;
-			}
-
-			int processId = session.Application.ProcessId;
-			var windowHandles = new List<IntPtr>();
-
-			EnumWindows((windowHandle, lParam) =>
-			{
-				GetWindowThreadProcessId(windowHandle, out uint windowProcessId);
-
-				if (windowProcessId != (uint)processId)
-				{
-					return true;
-				}
-
-				if (GetWindow(windowHandle, GW_OWNER) != ownerHandle)
-				{
-					return true;
-				}
-
-				windowHandles.Add(windowHandle);
-
-				return true;
-			}, IntPtr.Zero);
-
-			hasCandidate = windowHandles.Count > 0;
-
-			var candidates = new List<AutomationElement>();
-
-			foreach (IntPtr windowHandle in windowHandles)
-			{
-				AutomationElement candidate;
+				long startedMs = stopwatch.ElapsedMilliseconds;
+				IntPtr ownerHandle;
 
 				try
 				{
-					candidate = session.Automation.FromHandle(windowHandle);
+					ownerHandle = owner.Properties.NativeWindowHandle.ValueOrDefault;
 				}
-				catch (PropertyNotSupportedException)
+				finally
 				{
-					continue;
-				}
-				catch (ElementNotAvailableException)
-				{
-					continue;
-				}
-				catch (System.Windows.Automation.ElementNotAvailableException)
-				{
-					continue;
-				}
-				catch (COMException)
-				{
-					continue;
+					getOwnerHandleMs += stopwatch.ElapsedMilliseconds - startedMs;
 				}
 
-				if (candidate != null)
+				if (ownerHandle == IntPtr.Zero)
 				{
-					candidates.Add(candidate);
+					return null;
+				}
+
+				int processId = session.Application.ProcessId;
+				var windowHandles = new List<IntPtr>();
+
+				startedMs = stopwatch.ElapsedMilliseconds;
+
+				try
+				{
+					EnumWindows((windowHandle, lParam) =>
+					{
+						GetWindowThreadProcessId(windowHandle, out uint windowProcessId);
+
+						if (windowProcessId != (uint)processId)
+						{
+							return true;
+						}
+
+						if (GetWindow(windowHandle, GW_OWNER) != ownerHandle)
+						{
+							return true;
+						}
+
+						windowHandles.Add(windowHandle);
+
+						return true;
+					}, IntPtr.Zero);
+				}
+				finally
+				{
+					enumWindowsMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
+
+				handleCount = windowHandles.Count;
+				hasCandidate = handleCount > 0;
+
+				var candidates = new List<AutomationElement>();
+
+				foreach (IntPtr windowHandle in windowHandles)
+				{
+					AutomationElement candidate = null;
+
+					startedMs = stopwatch.ElapsedMilliseconds;
+
+					try
+					{
+						try
+						{
+							candidate = session.Automation.FromHandle(windowHandle);
+						}
+						catch (PropertyNotSupportedException)
+						{
+							continue;
+						}
+						catch (ElementNotAvailableException)
+						{
+							continue;
+						}
+						catch (System.Windows.Automation.ElementNotAvailableException)
+						{
+							continue;
+						}
+						catch (COMException)
+						{
+							continue;
+						}
+					}
+					finally
+					{
+						fromHandleMs += stopwatch.ElapsedMilliseconds - startedMs;
+					}
+
+					if (candidate != null)
+					{
+						candidates.Add(candidate);
+					}
+				}
+
+				candidateCount = candidates.Count;
+
+				startedMs = stopwatch.ElapsedMilliseconds;
+				FileDialogElements fileDialogElements;
+
+				try
+				{
+					fileDialogElements = findBestFileDialogCandidate(candidates.ToArray(), false, "NativeOwner", attempt);
+				}
+				finally
+				{
+					candidateSelectionMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
+
+				found = fileDialogElements != null;
+
+				return fileDialogElements;
+			}
+			finally
+			{
+				stopwatch.Stop();
+
+				if (mLogger != null)
+				{
+					try
+					{
+						mLogger.Write(
+							$"[Timing] FileDialogWaiter.NativeOwner " +
+							$"Attempt={attempt} " +
+							$"Found={found} " +
+							$"Handles={handleCount} " +
+							$"Candidates={candidateCount} " +
+							$"TotalMs={stopwatch.ElapsedMilliseconds} " +
+							$"GetOwnerHandleMs={getOwnerHandleMs} " +
+							$"EnumWindowsMs={enumWindowsMs} " +
+							$"FromHandleMs={fromHandleMs} " +
+							$"CandidateSelectionMs={candidateSelectionMs}");
+					}
+					catch
+					{
+						// 計測ログの出力失敗でシナリオの実行結果を変更しない。
+					}
 				}
 			}
-
-			FileDialogElements fileDialogElements = findBestFileDialogCandidate(candidates.ToArray(), false, "NativeOwner", attempt);
-
-			return fileDialogElements;
 		}
 
 		private FileDialogElements findFileDialog(Window owner, int attempt)
@@ -412,62 +496,124 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private bool tryInspectFileDialogCandidate(AutomationElement element, string candidateGroup, int candidateIndex, int attempt, out AutomationElement[] descendants, out AutomationElement[] fileNameComboBoxCandidates, out AutomationElement[] fileNameEdits, out int descendantWindowCount)
 		{
-			descendants = element.FindAllDescendants();
+			var stopwatch = Stopwatch.StartNew();
 
-			var comboBoxes = new List<AutomationElement>();
-			var comboBoxCandidates = new List<AutomationElement>();
-			var editCandidates = new List<AutomationElement>();
+			long findDescendantsMs = 0;
+			long scanDescendantsMs = 0;
+			long findEditControlsMs = 0;
 
-			bool hasActionButton = false;
-			descendantWindowCount = 0;
+			bool isFileDialog = false;
 
-			foreach (AutomationElement descendant in descendants)
+			try
 			{
-				ControlType controlType = descendant.Properties.ControlType.ValueOrDefault;
+				long startedMs = stopwatch.ElapsedMilliseconds;
 
-				if (controlType == ControlType.ComboBox)
+				try
 				{
-					comboBoxes.Add(descendant);
-					continue;
+					descendants = element.FindAllDescendants();
+				}
+				finally
+				{
+					findDescendantsMs += stopwatch.ElapsedMilliseconds - startedMs;
 				}
 
-				if (controlType == ControlType.Button)
-				{
-					string name = descendant.Properties.Name.ValueOrDefault;
+				var comboBoxes = new List<AutomationElement>();
+				var comboBoxCandidates = new List<AutomationElement>();
+				var editCandidates = new List<AutomationElement>();
 
-					if (name.StartsWith("開く", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Open", StringComparison.OrdinalIgnoreCase) || name.StartsWith("保存", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Save", StringComparison.OrdinalIgnoreCase))
+				bool hasActionButton = false;
+				descendantWindowCount = 0;
+
+				startedMs = stopwatch.ElapsedMilliseconds;
+
+				try
+				{
+					foreach (AutomationElement descendant in descendants)
 					{
-						hasActionButton = true;
+						ControlType controlType = descendant.Properties.ControlType.ValueOrDefault;
+
+						if (controlType == ControlType.ComboBox)
+						{
+							comboBoxes.Add(descendant);
+							continue;
+						}
+
+						if (controlType == ControlType.Button)
+						{
+							string name = descendant.Properties.Name.ValueOrDefault;
+
+							if (name.StartsWith("開く", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Open", StringComparison.OrdinalIgnoreCase) || name.StartsWith("保存", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Save", StringComparison.OrdinalIgnoreCase))
+							{
+								hasActionButton = true;
+							}
+
+							continue;
+						}
+
+						if (controlType == ControlType.Window)
+						{
+							descendantWindowCount++;
+						}
 					}
-
-					continue;
 				}
-
-				if (controlType == ControlType.Window)
+				finally
 				{
-					descendantWindowCount++;
+					scanDescendantsMs += stopwatch.ElapsedMilliseconds - startedMs;
 				}
-			}
 
-			foreach (AutomationElement comboBox in comboBoxes)
+				startedMs = stopwatch.ElapsedMilliseconds;
+
+				try
+				{
+					foreach (AutomationElement comboBox in comboBoxes)
+					{
+						AutomationElement edit = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
+
+						if (edit == null)
+						{
+							continue;
+						}
+
+						comboBoxCandidates.Add(comboBox);
+						editCandidates.Add(edit);
+					}
+				}
+				finally
+				{
+					findEditControlsMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
+
+				fileNameComboBoxCandidates = comboBoxCandidates.ToArray();
+				fileNameEdits = editCandidates.ToArray();
+
+				isFileDialog = fileNameComboBoxCandidates.Length > 0 && hasActionButton;
+
+				return isFileDialog;
+			}
+			finally
 			{
-				AutomationElement edit = comboBox.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit));
+				stopwatch.Stop();
 
-				if (edit == null)
+				if (mLogger != null && candidateGroup == "NativeOwner")
 				{
-					continue;
+					try
+					{
+						mLogger.Write(
+							$"[Timing] FileDialogWaiter.InspectCandidate " +
+							$"Attempt={attempt} " +
+							$"CandidateIndex={candidateIndex} " +
+							$"IsFileDialog={isFileDialog} " +
+							$"TotalMs={stopwatch.ElapsedMilliseconds} " +
+							$"FindDescendantsMs={findDescendantsMs} " +
+							$"ScanDescendantsMs={scanDescendantsMs} " +
+							$"FindEditControlsMs={findEditControlsMs}");
+					}
+					catch
+					{
+						// 計測ログの出力失敗でシナリオの実行結果を変更しない。
+					}
 				}
-
-				comboBoxCandidates.Add(comboBox);
-				editCandidates.Add(edit);
 			}
-
-			fileNameComboBoxCandidates = comboBoxCandidates.ToArray();
-			fileNameEdits = editCandidates.ToArray();
-
-			bool isFileDialog = fileNameComboBoxCandidates.Length > 0 && hasActionButton;
-
-			return isFileDialog;
 		}
 	}
 }

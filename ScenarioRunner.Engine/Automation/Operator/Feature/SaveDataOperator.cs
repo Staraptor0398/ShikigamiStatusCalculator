@@ -54,7 +54,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mGuiOperator = new GuiOperator();
 
 			mWindowWaiter = new WindowWaiter();
-			mProcessWindowWaiter = new ProcessWindowWaiter();
+			mProcessWindowWaiter = new ProcessWindowWaiter(mLogger);
 			mFileDialogWaiter = new FileDialogWaiter(mLogger);
 		}
 
@@ -477,9 +477,61 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 		private Window getLoadDialog(GuiSession session)
 		{
-			Window mainWindow = mGuiOperator.GetMainWindow(session);
+			var stopwatch = Stopwatch.StartNew();
 
-			return mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isLoadDialog(element));
+			long getMainWindowMs = 0;
+			long waitForProcessWindowMs = 0;
+
+			bool completed = false;
+
+			try
+			{
+				long startedMs = stopwatch.ElapsedMilliseconds;
+				Window mainWindow;
+
+				try
+				{
+					mainWindow = mGuiOperator.GetMainWindow(session);
+				}
+				finally
+				{
+					getMainWindowMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
+
+				startedMs = stopwatch.ElapsedMilliseconds;
+				Window loadDialog;
+
+				try
+				{
+					loadDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isLoadDialog(element));
+				}
+				finally
+				{
+					waitForProcessWindowMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
+
+				completed = true;
+
+				return loadDialog;
+			}
+			finally
+			{
+				stopwatch.Stop();
+
+				try
+				{
+					mLogger.Write(
+						$"[Timing] SaveDataOperator.GetLoadDialog " +
+						$"Result={(completed ? "PASS" : "FAIL")} " +
+						$"TotalMs={stopwatch.ElapsedMilliseconds} " +
+						$"GetMainWindowMs={getMainWindowMs} " +
+						$"WaitForProcessWindowMs={waitForProcessWindowMs}");
+				}
+				catch
+				{
+					// 計測ログの出力失敗でシナリオの実行結果を変更しない。
+				}
+			}
 		}
 
 		private bool isSaveDialog(AutomationElement element)

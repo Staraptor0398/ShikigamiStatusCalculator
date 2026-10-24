@@ -1,8 +1,10 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.Core.Exceptions;
+using ScenarioRunner.Log;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -26,6 +28,22 @@ namespace ScenarioRunner.Automation.Waiter
 
 		[DllImport("user32.dll")]
 		private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+		private readonly ScenarioLogger mLogger;
+
+		public ProcessWindowWaiter()
+		{
+		}
+
+		public ProcessWindowWaiter(ScenarioLogger logger)
+		{
+			if (logger == null)
+			{
+				throw new ArgumentNullException(nameof(logger));
+			}
+
+			mLogger = logger;
+		}
 
 		public Window FindProcessWindow(GuiSession session, Func<AutomationElement, bool> predicate)
 		{
@@ -69,21 +87,83 @@ namespace ScenarioRunner.Automation.Waiter
 				throw new ArgumentNullException(nameof(predicate));
 			}
 
-			Window window = findNativeOwnedProcessWindow(session, owner, predicate);
+			var stopwatch = Stopwatch.StartNew();
 
-			if (window != null)
+			long nativeOwnerMs = 0;
+			long ownerMs = 0;
+			long desktopMs = 0;
+
+			string route = "None";
+
+			try
 			{
+				long startedMs = stopwatch.ElapsedMilliseconds;
+				Window window;
+
+				try
+				{
+					window = findNativeOwnedProcessWindow(session, owner, predicate);
+				}
+				finally
+				{
+					nativeOwnerMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
+
+				if (window != null)
+				{
+					route = "NativeOwner";
+
+					return window;
+				}
+
+				startedMs = stopwatch.ElapsedMilliseconds;
+
+				try
+				{
+					window = findProcessWindow(owner, session.Application.ProcessId, predicate);
+				}
+				finally
+				{
+					ownerMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
+
+				if (window != null)
+				{
+					route = "Owner";
+
+					return window;
+				}
+
+				startedMs = stopwatch.ElapsedMilliseconds;
+
+				try
+				{
+					window = FindProcessWindow(session, predicate);
+				}
+				finally
+				{
+					desktopMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
+
+				if (window != null)
+				{
+					route = "Desktop";
+				}
+
 				return window;
 			}
-
-			window = findProcessWindow(owner, session.Application.ProcessId, predicate);
-
-			if (window != null)
+			finally
 			{
-				return window;
-			}
+				stopwatch.Stop();
 
-			return FindProcessWindow(session, predicate);
+				writeTiming(
+					$"[Timing] ProcessWindowWaiter.FindProcessWindow " +
+					$"Route={route} " +
+					$"TotalMs={stopwatch.ElapsedMilliseconds} " +
+					$"NativeOwnerMs={nativeOwnerMs} " +
+					$"OwnerMs={ownerMs} " +
+					$"DesktopMs={desktopMs}");
+			}
 		}
 
 		public Window WaitForProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate)
@@ -119,21 +199,68 @@ namespace ScenarioRunner.Automation.Waiter
 			}
 
 			int elapsed = 0;
+			int attempts = 0;
 
-			while (elapsed < timeoutMs)
+			long searchMs = 0;
+			long sleepMs = 0;
+
+			bool completed = false;
+
+			var stopwatch = Stopwatch.StartNew();
+
+			try
 			{
-				Window window = FindProcessWindow(session, owner, predicate);
-
-				if (window != null)
+				while (elapsed < timeoutMs)
 				{
-					return window;
+					attempts++;
+
+					long startedMs = stopwatch.ElapsedMilliseconds;
+					Window window;
+
+					try
+					{
+						window = FindProcessWindow(session, owner, predicate);
+					}
+					finally
+					{
+						searchMs += stopwatch.ElapsedMilliseconds - startedMs;
+					}
+
+					if (window != null)
+					{
+						completed = true;
+
+						return window;
+					}
+
+					startedMs = stopwatch.ElapsedMilliseconds;
+
+					try
+					{
+						Thread.Sleep(intervalMs);
+					}
+					finally
+					{
+						sleepMs += stopwatch.ElapsedMilliseconds - startedMs;
+					}
+
+					elapsed += intervalMs;
 				}
 
-				Thread.Sleep(intervalMs);
-				elapsed += intervalMs;
+				throw new InvalidOperationException($"Process window was not found within {timeoutMs} ms.");
 			}
+			finally
+			{
+				stopwatch.Stop();
 
-			throw new InvalidOperationException($"Process window was not found within {timeoutMs} ms.");
+				writeTiming(
+					$"[Timing] ProcessWindowWaiter.WaitForProcessWindow " +
+					$"Result={(completed ? "PASS" : "FAIL")} " +
+					$"Attempts={attempts} " +
+					$"TotalMs={stopwatch.ElapsedMilliseconds} " +
+					$"SearchMs={searchMs} " +
+					$"SleepMs={sleepMs}");
+			}
 		}
 
 		public Window WaitForProcessWindow(GuiSession session, Func<AutomationElement, bool> predicate)
@@ -183,67 +310,145 @@ namespace ScenarioRunner.Automation.Waiter
 
 		private Window findNativeOwnedProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate)
 		{
-			IntPtr ownerHandle = owner.Properties.NativeWindowHandle.ValueOrDefault;
+			var stopwatch = Stopwatch.StartNew();
 
-			if (ownerHandle == IntPtr.Zero)
+			long getOwnerHandleMs = 0;
+			long enumWindowsMs = 0;
+			long fromHandleMs = 0;
+			long inspectCandidateMs = 0;
+
+			int handleCount = 0;
+			int candidateCount = 0;
+
+			bool found = false;
+
+			try
 			{
-				return null;
-			}
-
-			int processId = session.Application.ProcessId;
-			var windowHandles = new List<IntPtr>();
-
-			EnumWindows((windowHandle, lParam) =>
-			{
-				GetWindowThreadProcessId(windowHandle, out uint windowProcessId);
-
-				if (windowProcessId != (uint)processId)
-				{
-					return true;
-				}
-
-				if (GetWindow(windowHandle, GW_OWNER) != ownerHandle)
-				{
-					return true;
-				}
-
-				windowHandles.Add(windowHandle);
-
-				return true;
-			}, IntPtr.Zero);
-
-			foreach (IntPtr windowHandle in windowHandles)
-			{
-				AutomationElement candidate;
+				long startedMs = stopwatch.ElapsedMilliseconds;
+				IntPtr ownerHandle;
 
 				try
 				{
-					candidate = session.Automation.FromHandle(windowHandle);
+					ownerHandle = owner.Properties.NativeWindowHandle.ValueOrDefault;
 				}
-				catch (PropertyNotSupportedException)
+				finally
 				{
-					continue;
-				}
-				catch (ElementNotAvailableException)
-				{
-					continue;
-				}
-				catch (System.Windows.Automation.ElementNotAvailableException)
-				{
-					continue;
-				}
-				catch (COMException)
-				{
-					continue;
+					getOwnerHandleMs += stopwatch.ElapsedMilliseconds - startedMs;
 				}
 
-				if (candidate != null && tryGetNativeWindow(candidate, predicate, out Window window))
+				if (ownerHandle == IntPtr.Zero)
 				{
-					return window;
+					return null;
 				}
+
+				int processId = session.Application.ProcessId;
+				var windowHandles = new List<IntPtr>();
+
+				startedMs = stopwatch.ElapsedMilliseconds;
+
+				try
+				{
+					EnumWindows((windowHandle, lParam) =>
+					{
+						GetWindowThreadProcessId(windowHandle, out uint windowProcessId);
+
+						if (windowProcessId != (uint)processId)
+						{
+							return true;
+						}
+
+						if (GetWindow(windowHandle, GW_OWNER) != ownerHandle)
+						{
+							return true;
+						}
+
+						windowHandles.Add(windowHandle);
+
+						return true;
+					}, IntPtr.Zero);
+				}
+				finally
+				{
+					enumWindowsMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
+
+				handleCount = windowHandles.Count;
+
+				foreach (IntPtr windowHandle in windowHandles)
+				{
+					AutomationElement candidate = null;
+
+					startedMs = stopwatch.ElapsedMilliseconds;
+
+					try
+					{
+						try
+						{
+							candidate = session.Automation.FromHandle(windowHandle);
+						}
+						catch (PropertyNotSupportedException)
+						{
+							continue;
+						}
+						catch (ElementNotAvailableException)
+						{
+							continue;
+						}
+						catch (System.Windows.Automation.ElementNotAvailableException)
+						{
+							continue;
+						}
+						catch (COMException)
+						{
+							continue;
+						}
+					}
+					finally
+					{
+						fromHandleMs += stopwatch.ElapsedMilliseconds - startedMs;
+					}
+
+					if (candidate == null)
+					{
+						continue;
+					}
+
+					candidateCount++;
+
+					startedMs = stopwatch.ElapsedMilliseconds;
+
+					try
+					{
+						if (tryGetNativeWindow(candidate, predicate, out Window window))
+						{
+							found = true;
+
+							return window;
+						}
+					}
+					finally
+					{
+						inspectCandidateMs += stopwatch.ElapsedMilliseconds - startedMs;
+					}
+				}
+
+				return null;
 			}
+			finally
+			{
+				stopwatch.Stop();
 
-			return null;
+				writeTiming(
+					$"[Timing] ProcessWindowWaiter.NativeOwner " +
+					$"Found={found} " +
+					$"Handles={handleCount} " +
+					$"Candidates={candidateCount} " +
+					$"TotalMs={stopwatch.ElapsedMilliseconds} " +
+					$"GetOwnerHandleMs={getOwnerHandleMs} " +
+					$"EnumWindowsMs={enumWindowsMs} " +
+					$"FromHandleMs={fromHandleMs} " +
+					$"InspectCandidateMs={inspectCandidateMs}");
+			}
 		}
 
 		private Window findProcessWindow(Window owner, int processId, Func<AutomationElement, bool> predicate)
@@ -327,34 +532,76 @@ namespace ScenarioRunner.Automation.Waiter
 		{
 			window = null;
 
-			if (!tryGetWindow(element, predicate, out Window candidate))
-			{
-				return false;
-			}
+			var stopwatch = Stopwatch.StartNew();
+
+			long matchWindowMs = 0;
+			long findDescendantsMs = 0;
+
+			bool matched = false;
+			bool completed = false;
 
 			try
 			{
-				element.FindAllDescendants();
+				long startedMs = stopwatch.ElapsedMilliseconds;
+				Window candidate;
 
-				window = candidate;
+				try
+				{
+					matched = tryGetWindow(element, predicate, out candidate);
+				}
+				finally
+				{
+					matchWindowMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
 
-				return true;
+				if (!matched)
+				{
+					return false;
+				}
+
+				startedMs = stopwatch.ElapsedMilliseconds;
+
+				try
+				{
+					element.FindAllDescendants();
+
+					window = candidate;
+					completed = true;
+
+					return true;
+				}
+				catch (PropertyNotSupportedException)
+				{
+					return false;
+				}
+				catch (ElementNotAvailableException)
+				{
+					return false;
+				}
+				catch (System.Windows.Automation.ElementNotAvailableException)
+				{
+					return false;
+				}
+				catch (COMException)
+				{
+					return false;
+				}
+				finally
+				{
+					findDescendantsMs += stopwatch.ElapsedMilliseconds - startedMs;
+				}
 			}
-			catch (PropertyNotSupportedException)
+			finally
 			{
-				return false;
-			}
-			catch (ElementNotAvailableException)
-			{
-				return false;
-			}
-			catch (System.Windows.Automation.ElementNotAvailableException)
-			{
-				return false;
-			}
-			catch (COMException)
-			{
-				return false;
+				stopwatch.Stop();
+
+				writeTiming(
+					$"[Timing] ProcessWindowWaiter.TryGetNativeWindow " +
+					$"Matched={matched} " +
+					$"Result={(completed ? "PASS" : "FAIL")} " +
+					$"TotalMs={stopwatch.ElapsedMilliseconds} " +
+					$"MatchWindowMs={matchWindowMs} " +
+					$"FindDescendantsMs={findDescendantsMs}");
 			}
 		}
 
@@ -388,6 +635,23 @@ namespace ScenarioRunner.Automation.Waiter
 			catch (COMException)
 			{
 				return false;
+			}
+		}
+
+		private void writeTiming(string message)
+		{
+			if (mLogger == null)
+			{
+				return;
+			}
+
+			try
+			{
+				mLogger.Write(message);
+			}
+			catch
+			{
+				// 計測ログの出力失敗でシナリオの実行結果を変更しない。
 			}
 		}
 	}
