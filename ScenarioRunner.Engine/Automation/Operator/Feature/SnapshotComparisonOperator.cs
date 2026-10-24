@@ -76,7 +76,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-				Window fileSelectDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID);
+				Window fileSelectDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.AutomationId == AutomationIds.SnapshotCompareFileSelectDialog.ID, AutomationIds.SnapshotCompareFileSelectDialog.ID);
 
 				stage = "GetCompareControls";
 
@@ -110,7 +110,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				stage = "WaitForResult";
 
-				mResultForm = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.AutomationId == AutomationIds.StatusComparisonResultForm.ID);
+				mResultForm = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => element.AutomationId == AutomationIds.StatusComparisonResultForm.ID, AutomationIds.StatusComparisonResultForm.ID);
 			}
 			catch (Exception ex)
 			{
