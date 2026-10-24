@@ -472,7 +472,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 		{
 			Window mainWindow = mGuiOperator.GetMainWindow(session);
 
-			return mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isSaveDialog(element));
+			return mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isSaveDialog(element), AutomationIds.SaveDataSaveDialog.ID);
 		}
 
 		private Window getLoadDialog(GuiSession session)
@@ -503,7 +503,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 
 				try
 				{
-					loadDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isLoadDialog(element));
+					loadDialog = mProcessWindowWaiter.WaitForProcessWindow(session, mainWindow, element => isLoadDialog(element), AutomationIds.SaveDataLoadDialog.ID);
 				}
 				finally
 				{

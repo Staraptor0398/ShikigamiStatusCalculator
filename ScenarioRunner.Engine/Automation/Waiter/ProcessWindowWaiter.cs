@@ -72,6 +72,11 @@ namespace ScenarioRunner.Automation.Waiter
 
 		public Window FindProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate)
 		{
+			return FindProcessWindow(session, owner, predicate, null);
+		}
+
+		public Window FindProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate, string automationId)
+		{
 			if (session == null)
 			{
 				throw new ArgumentNullException(nameof(session));
@@ -120,6 +125,18 @@ namespace ScenarioRunner.Automation.Waiter
 
 				try
 				{
+					if (!string.IsNullOrEmpty(automationId))
+					{
+						window = findOwnerWindowByAutomationId(owner, session.Application.ProcessId, predicate, automationId);
+
+						if (window != null)
+						{
+							route = "OwnerFast";
+
+							return window;
+						}
+					}
+
 					window = findProcessWindow(owner, session.Application.ProcessId, predicate);
 				}
 				finally
@@ -171,7 +188,22 @@ namespace ScenarioRunner.Automation.Waiter
 			return WaitForProcessWindow(session, owner, predicate, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS);
 		}
 
+		public Window WaitForProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate, string automationId)
+		{
+			if (string.IsNullOrWhiteSpace(automationId))
+			{
+				throw new ArgumentException("AutomationId is empty.", nameof(automationId));
+			}
+
+			return waitForProcessWindow(session, owner, predicate, DEFAULT_TIMEOUT_MS, DEFAULT_INTERVAL_MS, automationId);
+		}
+
 		public Window WaitForProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate, int timeoutMs, int intervalMs)
+		{
+			return waitForProcessWindow(session, owner, predicate, timeoutMs, intervalMs, null);
+		}
+
+		private Window waitForProcessWindow(GuiSession session, Window owner, Func<AutomationElement, bool> predicate, int timeoutMs, int intervalMs, string automationId)
 		{
 			if (session == null)
 			{
@@ -219,7 +251,7 @@ namespace ScenarioRunner.Automation.Waiter
 
 					try
 					{
-						window = FindProcessWindow(session, owner, predicate);
+						window = FindProcessWindow(session, owner, predicate, automationId);
 					}
 					finally
 					{
@@ -448,6 +480,42 @@ namespace ScenarioRunner.Automation.Waiter
 					$"EnumWindowsMs={enumWindowsMs} " +
 					$"FromHandleMs={fromHandleMs} " +
 					$"InspectCandidateMs={inspectCandidateMs}");
+			}
+		}
+
+		private Window findOwnerWindowByAutomationId(AutomationElement owner, int processId, Func<AutomationElement, bool> predicate, string automationId)
+		{
+			try
+			{
+				AutomationElement element = owner.FindFirstDescendant(cf => cf.ByControlType(ControlType.Window).And(cf.ByProcessId(processId)).And(cf.ByAutomationId(automationId)));
+
+				if (element == null)
+				{
+					return null;
+				}
+
+				if (tryGetWindow(element, predicate, out Window window))
+				{
+					return window;
+				}
+
+				return null;
+			}
+			catch (PropertyNotSupportedException)
+			{
+				return null;
+			}
+			catch (ElementNotAvailableException)
+			{
+				return null;
+			}
+			catch (System.Windows.Automation.ElementNotAvailableException)
+			{
+				return null;
+			}
+			catch (COMException)
+			{
+				return null;
 			}
 		}
 
