@@ -145,6 +145,7 @@ jobs:
           }
 
       - name: Run Scenario Batch with recording
+        id: scenario_batch
         shell: pwsh
         run: |
           $enableLiveStream = $env:ENABLE_LIVE_STREAM -eq "true"
@@ -393,3 +394,203 @@ jobs:
             ScenarioRunnerCli\bin\x64\Release\Log
             Gui\bin\x64\Release\Log
           if-no-files-found: ignore
+
+      - name: Prepare failure reproduction package
+        if: ${{ failure() && steps.scenario_batch.outcome == 'failure' }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $packageDirectory = Join-Path $PWD "FailureReproduction"
+          $guiSourceDirectory = Join-Path $PWD "Gui\bin\x64\Release"
+          $cliSourceDirectory = Join-Path $PWD "ScenarioRunnerCli\bin\x64\Release"
+          $scenarioSourceDirectory = Join-Path $PWD "Scenario"
+
+          $guiTargetDirectory = Join-Path $packageDirectory "Gui"
+          $cliTargetDirectory = Join-Path $packageDirectory "ScenarioRunnerCli"
+          $scenarioTargetDirectory = Join-Path $packageDirectory "Scenario"
+
+          $requiredPaths = @(
+              (Join-Path $guiSourceDirectory "Gui.exe"),
+              (Join-Path $cliSourceDirectory "ScenarioRunnerCli.exe"),
+              $scenarioSourceDirectory
+          )
+
+          foreach ($path in $requiredPaths) {
+              if (-not (Test-Path -LiteralPath $path)) {
+                  throw "Required reproduction input was not found: $path"
+              }
+          }
+
+          New-Item -ItemType Directory -Force -Path $guiTargetDirectory | Out-Null
+          New-Item -ItemType Directory -Force -Path $cliTargetDirectory | Out-Null
+          New-Item -ItemType Directory -Force -Path $scenarioTargetDirectory | Out-Null
+
+          # Copy the binaries and their sidecar files, but not runtime logs or captures.
+          $binaryExtensions = @(
+              ".exe",
+              ".dll",
+              ".config",
+              ".json",
+              ".pdb",
+              ".xml",
+              ".manifest"
+          )
+
+          $binaryDirectories = @(
+              @{
+                  Source = $guiSourceDirectory
+                  Target = $guiTargetDirectory
+              },
+              @{
+                  Source = $cliSourceDirectory
+                  Target = $cliTargetDirectory
+              }
+          )
+
+          foreach ($directory in $binaryDirectories) {
+              Get-ChildItem -LiteralPath $directory.Source -File |
+                  Where-Object { $_.Extension -in $binaryExtensions } |
+                  ForEach-Object {
+                      Copy-Item -LiteralPath $_.FullName -Destination $directory.Target -Force
+                  }
+          }
+
+          # Include application data needed to launch Gui.
+          $guiDataSourceDirectory = Join-Path $guiSourceDirectory "Data"
+          $guiDataTargetDirectory = Join-Path $guiTargetDirectory "Data"
+
+          if (-not (Test-Path -LiteralPath $guiDataSourceDirectory)) {
+              throw "Gui Data directory was not found."
+          }
+
+          New-Item -ItemType Directory -Force -Path $guiDataTargetDirectory | Out-Null
+
+          Get-ChildItem -LiteralPath $guiDataSourceDirectory -File |
+              Where-Object { $_.Extension -in @(".csv", ".txt", ".json") } |
+              ForEach-Object {
+                  Copy-Item -LiteralPath $_.FullName -Destination $guiDataTargetDirectory -Force
+              }
+
+          # Copy scenario definitions and their referenced test data.
+          Copy-Item -Path (Join-Path $scenarioSourceDirectory "*") `
+              -Destination $scenarioTargetDirectory `
+              -Recurse -Force
+
+          $scenarioFiles = @(
+              Get-ChildItem -LiteralPath $scenarioTargetDirectory `
+                  -Filter "*.scenario" -File -Recurse
+          )
+
+          if ($scenarioFiles.Count -eq 0) {
+              throw "No scenario files were found."
+          }
+
+          foreach ($file in $scenarioFiles) {
+              $relativePath = $file.FullName.Substring($scenarioSourceDirectory.Length + 1)
+              $targetPath = Join-Path $scenarioTargetDirectory $relativePath
+              $targetDirectory = Split-Path -Parent $targetPath
+
+              New-Item -ItemType Directory -Force -Path $targetDirectory | Out-Null
+              Copy-Item -LiteralPath $file.FullName -Destination $targetPath -Force
+          }
+
+          # Validate the minimum reproduction package.
+          $requiredPackagePaths = @(
+              (Join-Path $guiTargetDirectory "Gui.exe"),
+              (Join-Path $cliTargetDirectory "ScenarioRunnerCli.exe"),
+              (Join-Path $guiDataTargetDirectory "ShikigamiData.csv")
+          )
+
+          foreach ($path in $requiredPackagePaths) {
+              if (-not (Test-Path -LiteralPath $path)) {
+                  throw "Required file is missing from reproduction package: $path"
+              }
+          }
+
+          # Record the commit actually checked out, not only the workflow commit.
+          $checkoutCommit = (& git rev-parse HEAD).Trim()
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "Failed to resolve checkout commit."
+          }
+
+          $operatingSystem = Get-CimInstance Win32_OperatingSystem
+          $dotNetRelease = Get-ItemPropertyValue `
+              -Path "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" `
+              -Name Release `
+              -ErrorAction SilentlyContinue
+
+          Add-Type -AssemblyName System.Windows.Forms
+          $screen = [System.Windows.Forms.Screen]::PrimaryScreen
+
+          $metadata = @(
+              "Repository: $env:GITHUB_REPOSITORY"
+              "Checkout Commit: $checkoutCommit"
+              "Workflow Commit: $env:GITHUB_SHA"
+              "Requested Ref: ${{ inputs.ref }}"
+              "Workflow Run ID: $env:GITHUB_RUN_ID"
+              "Workflow Attempt: $env:GITHUB_RUN_ATTEMPT"
+              "Runner Name: $env:RUNNER_NAME"
+              "Runner OS: $env:RUNNER_OS"
+              "Runner Image: $env:ImageOS"
+              "Runner Image Version: $env:ImageVersion"
+              "Windows: $($operatingSystem.Caption)"
+              "Windows Version: $($operatingSystem.Version)"
+              ".NET Framework Release: $dotNetRelease"
+              "PowerShell: $($PSVersionTable.PSVersion)"
+              "Primary Screen Bounds: $($screen.Bounds)"
+              "Primary Screen Working Area: $($screen.WorkingArea)"
+              "Scenario Count: $($scenarioFiles.Count)"
+          )
+
+          $metadata |
+              Set-Content -LiteralPath (Join-Path $packageDirectory "Environment.txt") -Encoding utf8
+
+          # Provide a standalone command for local reproduction.
+          $reproductionScript = @'
+          @echo off
+          setlocal
+          cd /d "%~dp0"
+
+          "ScenarioRunnerCli\ScenarioRunnerCli.exe" --run-directory "Scenario" --gui-path "Gui\Gui.exe"
+
+          set "EXIT_CODE=%ERRORLEVEL%"
+          echo.
+          echo Scenario Runner exit code: %EXIT_CODE%
+          pause
+          exit /b %EXIT_CODE%
+          '@
+
+          $reproductionScript |
+              Set-Content -LiteralPath (Join-Path $packageDirectory "Reproduce.bat") -Encoding ascii
+
+          # Record hashes using paths relative to the package root.
+          $hashLines = @(
+              Get-ChildItem -LiteralPath $packageDirectory -Recurse -File |
+                  Where-Object { $_.Name -ne "SHA256.txt" } |
+                  Sort-Object FullName |
+                  ForEach-Object {
+                      $hash = Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256
+                      $relativePath = $_.FullName.Substring($packageDirectory.Length + 1)
+                      "$($hash.Hash)  $relativePath"
+                  }
+          )
+
+          $hashLines |
+              Set-Content -LiteralPath (Join-Path $packageDirectory "SHA256.txt") -Encoding utf8
+
+          Write-Host "Failure reproduction package prepared."
+          Write-Host "Checkout commit: $checkoutCommit"
+          Write-Host "Scenario count: $($scenarioFiles.Count)"
+          Write-Host "Package files: $($hashLines.Count + 1)"
+
+      - name: Upload failure reproduction package
+        if: ${{ failure() && steps.scenario_batch.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-batch-reproduction
+          path: FailureReproduction/
+          retention-days: 90
+          if-no-files-found: error
+
