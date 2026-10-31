@@ -183,4 +183,4 @@ Before updating shikigami master data:
 
 Current Release:
 
-V00.02.00
+V00.03.00
