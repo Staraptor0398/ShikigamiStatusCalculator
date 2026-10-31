@@ -57,7 +57,7 @@ namespace ScenarioRunner.Execution
 			mShikigamiDataWaiter = new ShikigamiDataWaiter();
 		}
 
-		public void Execute(ScenarioStep step, ScenarioExecutonContext context)
+		public void Execute(ScenarioStep step, ScenarioExecutionContext context)
 		{
 			switch (step.CommandType)
 			{
@@ -227,7 +227,7 @@ namespace ScenarioRunner.Execution
 			}
 		}
 
-		private void startGuiWindowArrangement(ScenarioExecutonContext context)
+		private void startGuiWindowArrangement(ScenarioExecutionContext context)
 		{
 			Task.Run(() =>
 			{

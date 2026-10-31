@@ -44,7 +44,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mFileDialogWaiter = new FileDialogWaiter(logger);
 		}
 
-		public void Compare(ScenarioExecutonContext context, string baseSnapshotPath, string targetSnapshotPath)
+		public void Compare(ScenarioExecutionContext context, string baseSnapshotPath, string targetSnapshotPath)
 		{
 			if (context == null)
 			{
@@ -118,7 +118,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		public void CompareSaved(ScenarioExecutonContext context)
+		public void CompareSaved(ScenarioExecutionContext context)
 		{
 			if (context == null)
 			{

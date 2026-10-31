@@ -56,7 +56,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.PostClick(button);
 		}
 
-		public void Register(ScenarioExecutonContext context, string filePath)
+		public void Register(ScenarioExecutionContext context, string filePath)
 		{
 			if (context == null)
 			{

@@ -2,7 +2,7 @@
 #
 # 同一Scenario内でGui.exeを終了・再起動しても、
 # CAPTURE CALC DETAILで取得した計算結果詳細が
-# ScenarioExecutonContextに保持されることを確認する。
+# ScenarioExecutionContextに保持されることを確認する。
 #
 # 再起動後に同じ式神と御魂セットで再計算し、
 # 御魂のみのステータス詳細と最終ステータス詳細が

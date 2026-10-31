@@ -41,7 +41,7 @@ namespace ScenarioRunner.Execution
 
 			mCancellationTokenSource = new CancellationTokenSource();
 
-			var context = new ScenarioExecutonContext(scenario.FilePath, mGuiExecutablePath, options, mGuiBounds, mCancellationTokenSource.Token);
+			var context = new ScenarioExecutionContext(scenario.FilePath, mGuiExecutablePath, options, mGuiBounds, mCancellationTokenSource.Token);
 
 			try
 			{
@@ -200,7 +200,7 @@ namespace ScenarioRunner.Execution
 			}
 		}
 
-		private static void cleanupGui(ScenarioExecutonContext context)
+		private static void cleanupGui(ScenarioExecutionContext context)
 		{
 			if (context.GuiSession == null)
 			{

@@ -58,7 +58,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mFileDialogWaiter = new FileDialogWaiter(mLogger);
 		}
 
-		public void LoadMitama(ScenarioExecutonContext context, string filePath)
+		public void LoadMitama(ScenarioExecutionContext context, string filePath)
 		{
 			if (context == null)
 			{
@@ -68,7 +68,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			load(context, MITAMA_SAVE_TYPE, context.ResolvePath(filePath));
 		}
 
-		public void LoadBuild(ScenarioExecutonContext context, string filePath)
+		public void LoadBuild(ScenarioExecutionContext context, string filePath)
 		{
 			if (context == null)
 			{
@@ -78,7 +78,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			load(context, BUILD_SAVE_TYPE, context.ResolvePath(filePath));
 		}
 
-		public void TryLoadMitama(ScenarioExecutonContext context, string filePath)
+		public void TryLoadMitama(ScenarioExecutionContext context, string filePath)
 		{
 			if (context == null)
 			{
@@ -88,7 +88,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			load(context, MITAMA_SAVE_TYPE, context.ResolvePath(filePath), false);
 		}
 
-		public void TryLoadBuild(ScenarioExecutonContext context, string filePath)
+		public void TryLoadBuild(ScenarioExecutionContext context, string filePath)
 		{
 			if (context == null)
 			{
@@ -98,7 +98,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			load(context, BUILD_SAVE_TYPE, context.ResolvePath(filePath), false);
 		}
 
-		public void LoadSavedMitama(ScenarioExecutonContext context)
+		public void LoadSavedMitama(ScenarioExecutionContext context)
 		{
 			if (context == null)
 			{
@@ -110,7 +110,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			load(context, MITAMA_SAVE_TYPE, context.SavedMitamaFilePath);
 		}
 
-		public void LoadSavedBuild(ScenarioExecutonContext context)
+		public void LoadSavedBuild(ScenarioExecutionContext context)
 		{
 			if (context == null)
 			{
@@ -122,21 +122,21 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			load(context, BUILD_SAVE_TYPE, context.SavedBuildFilePath);
 		}
 
-		public void SaveMitama(ScenarioExecutonContext context)
+		public void SaveMitama(ScenarioExecutionContext context)
 		{
 			string filePath = save(context, MITAMA_SAVE_TYPE, "Mitama", MITAMA_EXTENSION);
 
 			context.SavedMitamaFilePath = filePath;
 		}
 
-		public void SaveBuild(ScenarioExecutonContext context)
+		public void SaveBuild(ScenarioExecutionContext context)
 		{
 			string filePath = save(context, BUILD_SAVE_TYPE, "Build", BUILD_EXTENSION);
 
 			context.SavedBuildFilePath = filePath;
 		}
 
-		public void SaveSnapshot(ScenarioExecutonContext context, string target)
+		public void SaveSnapshot(ScenarioExecutionContext context, string target)
 		{
 			if (context == null)
 			{
@@ -156,7 +156,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		public void CheckSaveDataLevel(ScenarioExecutonContext context, string expectedLevel)
+		public void CheckSaveDataLevel(ScenarioExecutionContext context, string expectedLevel)
 		{
 			validateContext(context);
 
@@ -225,7 +225,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		private void load(ScenarioExecutonContext context, string loadType, string filePath, bool waitForCompletion = true)
+		private void load(ScenarioExecutionContext context, string loadType, string filePath, bool waitForCompletion = true)
 		{
 			validateContext(context);
 			validateLoadFilePath(filePath);
@@ -343,7 +343,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		private string save(ScenarioExecutonContext context, string saveType, string fileNameSuffix, string extension)
+		private string save(ScenarioExecutionContext context, string saveType, string fileNameSuffix, string extension)
 		{
 			validateContext(context);
 
@@ -416,7 +416,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mComboBoxOperator.SelectItem(saveTypeElement, saveType);
 		}
 
-		private string createUniqueSaveFilePath(ScenarioExecutonContext context, string fileNameSuffix, string extension)
+		private string createUniqueSaveFilePath(ScenarioExecutionContext context, string fileNameSuffix, string extension)
 		{
 			string scenarioName = Path.GetFileNameWithoutExtension(context.ScenarioPath);
 
@@ -544,7 +544,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			return element.Properties.AutomationId.ValueOrDefault == AutomationIds.SaveDataLoadDialog.ID;
 		}
 
-		private void validateContext(ScenarioExecutonContext context)
+		private void validateContext(ScenarioExecutionContext context)
 		{
 			if (context == null)
 			{

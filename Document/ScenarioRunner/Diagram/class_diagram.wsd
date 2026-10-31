@@ -38,7 +38,7 @@ package "Execution" {
     class ScenarioExecutor
     class ScenarioCommandExecutor
 
-    class ScenarioExecutonContext {
+    class ScenarioExecutionContext {
         + string ScenarioPath
         + string GuiExecutablePath
         + GuiSession GuiSession
@@ -84,11 +84,11 @@ ScenarioStep --> ScenarioCommandType
 ' Scenario execution
 ' ========================================
 ScenarioExecutor --> ScenarioCommandExecutor
-ScenarioExecutor ..> ScenarioExecutonContext : creates
+ScenarioExecutor ..> ScenarioExecutionContext : creates
 ScenarioExecutor ..> ScenarioExecutionResult : creates
 
-ScenarioExecutonContext --> ScenarioExecutionOptions
-ScenarioExecutonContext --> GuiSession
+ScenarioExecutionContext --> ScenarioExecutionOptions
+ScenarioExecutionContext --> GuiSession
 
 ' ========================================
 ' Form / Log

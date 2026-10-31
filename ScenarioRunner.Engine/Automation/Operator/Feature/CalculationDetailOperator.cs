@@ -49,7 +49,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			getDetails(session, out _, out _);
 		}
 
-		public void Capture(ScenarioExecutonContext context)
+		public void Capture(ScenarioExecutionContext context)
 		{
 			if (context == null)
 			{
@@ -62,7 +62,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			context.CapturedFinalStatus = finalStatus;
 		}
 
-		public void CheckUnchanged(ScenarioExecutonContext context)
+		public void CheckUnchanged(ScenarioExecutionContext context)
 		{
 			if (context == null)
 			{

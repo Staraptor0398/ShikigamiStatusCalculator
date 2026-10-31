@@ -19,7 +19,7 @@ start
 
 :Stopwatch.StartNew();
 :CancellationTokenSource生成;
-:ScenarioExecutonContext生成;
+:ScenarioExecutionContext生成;
 
 :式神データのパスを設定;
 :Broken / Backupディレクトリを作成;

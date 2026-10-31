@@ -63,7 +63,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.PostClick(button);
 		}
 
-		public void Edit(ScenarioExecutonContext context, string filePath)
+		public void Edit(ScenarioExecutionContext context, string filePath)
 		{
 			if (context == null)
 			{

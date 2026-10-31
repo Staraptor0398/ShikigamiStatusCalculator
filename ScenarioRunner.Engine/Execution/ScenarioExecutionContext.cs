@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace ScenarioRunner.Execution
 {
-	public class ScenarioExecutonContext
+	public class ScenarioExecutionContext
 	{
 		public string ScenarioPath { get; }
 		public string GuiExecutablePath { get; }
@@ -33,7 +33,7 @@ namespace ScenarioRunner.Execution
 
 		public CancellationToken CancellationToken { get; }
 
-		public ScenarioExecutonContext(string scenarioPath, string guiExecutablePath, ScenarioExecutionOptions options, WindowBounds guiBounds, CancellationToken cancellationToken)
+		public ScenarioExecutionContext(string scenarioPath, string guiExecutablePath, ScenarioExecutionOptions options, WindowBounds guiBounds, CancellationToken cancellationToken)
 		{
 			ScenarioPath = scenarioPath;
 			GuiExecutablePath = guiExecutablePath;

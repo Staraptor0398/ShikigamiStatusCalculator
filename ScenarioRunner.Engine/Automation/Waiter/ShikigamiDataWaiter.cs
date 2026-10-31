@@ -11,7 +11,7 @@ namespace ScenarioRunner.Automation.Waiter
 		private const int DEFAULT_INTERVAL_MS = 100;
 		private const int REQUIRED_STABLE_COUNT = 3;
 
-		public void WaitForAutoRepair(ScenarioExecutonContext context)
+		public void WaitForAutoRepair(ScenarioExecutionContext context)
 		{
 			if (context == null)
 			{
@@ -42,7 +42,7 @@ namespace ScenarioRunner.Automation.Waiter
 			throw new InvalidOperationException("Shikigami auto repair was not completed within the timeout.");
 		}
 
-		private bool isAutoRepairCompleted(ScenarioExecutonContext context, ref int stableCount, ref long previousLength, ref DateTime previousLastWriteTimeUtc)
+		private bool isAutoRepairCompleted(ScenarioExecutionContext context, ref int stableCount, ref long previousLength, ref DateTime previousLastWriteTimeUtc)
 		{
 			string brokenPath = context.ShikigamiBrokenDataFilePath;
 

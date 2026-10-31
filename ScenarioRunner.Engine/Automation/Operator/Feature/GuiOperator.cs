@@ -23,7 +23,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mProcessWindowWaiter = new ProcessWindowWaiter();
 		}
 
-		public void Launch(ScenarioExecutonContext context)
+		public void Launch(ScenarioExecutionContext context)
 		{
 			if (context == null)
 			{
@@ -48,7 +48,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			context.GuiSession = new GuiSession(application, automation);
 		}
 
-		public void Open(ScenarioExecutonContext context)
+		public void Open(ScenarioExecutionContext context)
 		{
 			Launch(context);
 
@@ -60,7 +60,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			}
 		}
 
-		public void Close(ScenarioExecutonContext context)
+		public void Close(ScenarioExecutionContext context)
 		{
 			if (context == null)
 			{

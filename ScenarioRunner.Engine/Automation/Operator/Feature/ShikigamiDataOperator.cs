@@ -40,7 +40,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mButtonOperator.Click(button);
 		}
 
-		public void BreakHeader(ScenarioExecutonContext context)
+		public void BreakHeader(ScenarioExecutionContext context)
 		{
 			if (context == null)
 			{
@@ -60,7 +60,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mFileOperator.WriteAllLines(filePath, lines);
 		}
 
-		public void RemoveShikigami(ScenarioExecutonContext context, string shikigamiName)
+		public void RemoveShikigami(ScenarioExecutionContext context, string shikigamiName)
 		{
 			if (context == null)
 			{
@@ -118,7 +118,7 @@ namespace ScenarioRunner.Automation.Operator.Feature
 			mShikigamiEditOperator.Save(session);
 		}
 
-		private string getShikigamiDataPath(ScenarioExecutonContext context)
+		private string getShikigamiDataPath(ScenarioExecutionContext context)
 		{
 			string guiDirectoryPath = Path.GetDirectoryName(context.GuiExecutablePath);
 

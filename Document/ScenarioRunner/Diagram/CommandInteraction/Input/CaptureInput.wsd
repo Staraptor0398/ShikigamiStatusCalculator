@@ -3,14 +3,14 @@ title CAPTURE INPUT - コマンド相互作用図
 skinparam responseMessageBelowArrow true
 ' Source: ScenarioRunner.Engine/Execution/ScenarioCommandExecutor.cs
 ' Source: ScenarioRunner.Engine/Automation/Operator/Feature/InputStateOperator.cs
-' Source: ScenarioRunner.Engine/Execution/ScenarioExecutonContext.cs
+' Source: ScenarioRunner.Engine/Execution/ScenarioExecutionContext.cs
 participant "ScenarioCommandExecutor" as EX
 participant "InputStateOperator" as O
 participant "GuiOperator" as GO
 participant "AutomationElementMap" as MAP
 participant "ComboBoxOperator" as CO
 participant "TextBoxOperator" as TO
-participant "ScenarioExecutonContext" as CTX
+participant "ScenarioExecutionContext" as CTX
 
 EX -> O : Capture(context)
 activate O
