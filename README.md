@@ -89,7 +89,6 @@ ShikigamiStatusCalculator/
 ├─ Gui.exe
 ├─ Gateway.dll
 ├─ SaveData.dll
-├─ Newtonsoft.Json.dll
 │
 ├─ Data/
 │  ├─ AppVersion.txt
