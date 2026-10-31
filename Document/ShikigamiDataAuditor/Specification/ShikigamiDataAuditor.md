@@ -6,7 +6,7 @@ Shikigami Data Auditorは、ShikigamiAppが保持する式神ステータスと�
 
 本ツールの目的は、式神追加やバランス調整による `Gui/Data/ShikigamiData.csv` の更新漏れ、転記誤り、外部参照データとの不一致を検出し、人間が確認可能な監査結果を出力することである。
 
-本ツールは監査のみを行い、`ShikigamiData.csv` を自動更新しない。
+通常の監査実行では`ShikigamiData.csv`を更新しない。一方、明示的に`--apply-confirmed-changes`を指定した場合は、公式変更履歴から確定できる変更をアプリCSVへ反映する別モードを実行する。
 
 ## 2. 設計方針
 
@@ -17,7 +17,7 @@ Shikigami Data Auditorは、ShikigamiAppが保持する式神ステータスと�
 - 比較対象の範囲が一致しない値を、単純な不一致として扱わない。
 - ネットワーク障害や外部サイトの変更によって、ローカルCSVの監査全体が実行不能にならないようにする。
 - 取得した外部データと監査結果には、取得日時および出典を残す。
-- 元データは読み取り専用として扱い、自動修正は将来も既定動作にしない。
+- 通常の監査モードでは元データを読み取り専用として扱う。CSVへの反映は`--apply-confirmed-changes`を明示的に指定した場合に限る。
 
 ## 3. 対象範囲
 
@@ -373,7 +373,9 @@ rarity + shikigami + stat
 
 ## 10. コマンドライン
 
-基本実行例：
+引数なしでは通常の監査を実行する。監査・対応表生成・公式履歴生成・確定変更反映は`Program.Main()`で分岐する実行モードである。
+
+監査実行例：
 
 ```text
 ShikigamiDataAuditor.exe
@@ -383,28 +385,43 @@ ShikigamiDataAuditor.exe
     --output "Audit"
 ```
 
-想定オプション：
+実装済みオプション：
 
 | オプション | 内容 |
 |---|---|
-| --app-data | 監査対象CSV |
-| --official-history | 公式変更履歴CSV |
-| --external-name-map | 外部ページ対応CSV |
-| --output | レポート出力先 |
-| --no-network | 外部通信を行わずキャッシュのみ使用 |
-| --cache-max-age | キャッシュ有効期間 |
-| --request-interval | 外部要求間隔 |
+| `--app-data PATH` | 監査・反映対象のアプリCSVパス |
+| `--official-history PATH` | 公式変更履歴CSVパス |
+| `--external-name-map PATH` | 外部ページ対応CSVパス |
+| `--output DIRECTORY` | 監査レポート出力先 |
+| `--cache DIRECTORY` | キャッシュ保存先 |
+| `--generate-external-name-map` | 外部ページ対応CSVを生成するモード |
+| `--generate-official-change-history` | 公式告知を利用して公式変更履歴CSVを生成するモード |
+| `--apply-confirmed-changes` | 確定した公式変更をアプリCSVへ反映するモード |
+| `--refresh-official-cache` | 公式告知のキャッシュを再取得する指定 |
+| `--no-network` | 外部通信を行わずキャッシュを利用する指定（通常監査の外部取得） |
+| `--cache-max-age DURATION` | キャッシュ有効期間（例：`7d`） |
+| `--request-interval DURATION` | 外部要求間隔（例：`2s`） |
+| `--http-timeout DURATION` | HTTPタイムアウト（例：`30s`） |
+| `--help` | 使用方法を表示 |
+
+期間は`ms`、`s`、`m`、`h`、`d`の単位で指定できる。
+
+モード別の出力先と処理内容：
+
+- `--generate-external-name-map`：アプリCSVと既存の対応表を読み込み、外部ページを確認して`ExternalNameMap.csv`を書き出す。
+- `--generate-official-change-history`：既存の公式履歴CSVをSeedとして読み込み、公式告知を解析して同じ公式履歴CSVへ書き出す。
+- `--apply-confirmed-changes`：アプリCSVと公式履歴CSVを用い、`ShikigamiDataOfficialChangeApplicator.Apply()`を呼び出して確定変更を反映する。
 
 ## 11. 終了コード
 
 | コード | 意味 |
 |---:|---|
-| 0 | 確定不一致なし。手動確認項目が存在する場合を含む |
-| 1 | `CONFIRMED_MISMATCH` を1件以上検出 |
-| 2 | 入力ファイル不正など、監査を開始または完了できないエラー |
-| 3 | 外部データ取得または解析が一部失敗。公式履歴の監査結果は出力済み |
+| 0 | 正常終了。通常監査では確定不一致なし（手動確認項目を含む）。生成・反映モードでは処理成功 |
+| 1 | 通常監査で`CONFIRMED_MISMATCH`を1件以上検出 |
+| 2 | 入力ファイル不正など、処理を開始または完了できない例外 |
+| 3 | 通常監査で外部データ取得または解析が一部失敗し、確定不一致が検出されなかった場合 |
 
-外部サイトとの不一致だけでは終了コード1にしない。
+通常監査では確定不一致の判定を外部取得失敗より優先する。外部サイトとの不一致だけでは終了コード1にしない。
 
 ## 12. クラス責務
 
@@ -492,6 +509,7 @@ ShikigamiDataAuditor.exe
 - 認証情報は使用しない。
 - 外部サイトの利用条件およびアクセス負荷へ配慮する。
 - 監査結果の確定不一致は、公式告知本文を再確認してからアプリCSVへ反映する。
+- `--apply-confirmed-changes`はアプリCSVを書き換えるため、実行前に監査結果と対象CSVを確認し、必要に応じてバックアップを取得する。
 
 ## 17. 初期実装の完了条件
 
@@ -502,19 +520,19 @@ ShikigamiDataAuditor.exe
 - 時曜滝夜叉姫、姑獲鳥、絡新婦など、同一範囲で比較可能な既知差分を検出できる。
 - 大嶽丸の初期素早さなど、範囲が一致しない値を確定不一致にしない。
 - MarkdownおよびCSVの監査結果を出力できる。
-- `ShikigamiData.csv` を変更しない。
+- 通常の監査モードでは`ShikigamiData.csv`を変更しない。
 
 ## 18. 将来拡張
 
 - 外部情報源の追加
 - 新式神の未登録検出
 - 御魂データの監査
-- 公式告知から変更履歴候補を抽出する補助機能
+- 公式告知から変更履歴候補を抽出する補助機能の精度改善
 - CIでの定期監査
 - 前回監査結果との差分レポート
 - 人間が承認した変更だけを反映する更新候補CSVの生成
 
-自動更新を追加する場合も、監査結果の確認および明示的な承認を必須とする。
+公式履歴の生成と確定変更の反映機能は実装済みである。ただし、`--apply-confirmed-changes`の実行は明示的なオプション指定によるものであり、監査から自動的に更新へ進むことはない。変更の妥当性確認と実行判断は利用者が行う。
 
 ## 19. 関連図
 

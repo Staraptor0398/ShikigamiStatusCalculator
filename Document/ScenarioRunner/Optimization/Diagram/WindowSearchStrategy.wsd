@@ -5,42 +5,46 @@ title ShikigamiApp Scenario Runner - Window Search Strategy
 top to bottom direction
 
 package "ProcessWindowWaiter" {
-	rectangle "Native Owned Window\n\nWin32\nEnumWindows + GW_OWNER" as ProcessNative
-	rectangle "Owner Direct Child\n\nUI Automation\nFindAllChildren" as ProcessOwnerChild
-	rectangle "Owner Descendant\n\nUI Automation\nFindAllDescendants" as ProcessOwnerDescendant
-	rectangle "Process Top-Level Window\n\nDesktop.FindAllChildren\n+ ProcessId" as ProcessTopLevel
-	rectangle "Process Descendant\n\nDesktop.FindAllDescendants\n+ ProcessId" as ProcessDescendant
-	rectangle "Return Window" as ProcessReturn
+    rectangle "Native Owned Window\n\nWin32\nEnumWindows + GW_OWNER" as ProcessNative
+    rectangle "OwnerFast (AutomationId指定時)\n\nUI Automation\nFindFirstDescendant\nWindow + ProcessId + AutomationId" as ProcessOwnerFast
+    rectangle "Owner Direct Child\n\nUI Automation\nFindAllChildren" as ProcessOwnerChild
+    rectangle "Owner Descendant\n\nUI Automation\nFindAllDescendants" as ProcessOwnerDescendant
+    rectangle "Process Top-Level Window\n\nDesktop.FindAllChildren\n+ ProcessId" as ProcessTopLevel
+    rectangle "Process Descendant\n\nDesktop.FindAllDescendants\n+ ProcessId" as ProcessDescendant
+    rectangle "Return Window" as ProcessReturn
 
-	ProcessNative -down-> ProcessOwnerChild : not found
-	ProcessOwnerChild -down-> ProcessOwnerDescendant : not found
-	ProcessOwnerDescendant -down-> ProcessTopLevel : not found
-	ProcessTopLevel -down-> ProcessDescendant : not found
+    ProcessNative -down-> ProcessOwnerFast : not found / AutomationId指定時
+    ProcessNative -down-> ProcessOwnerChild : not found / AutomationIdなし
+    ProcessOwnerFast -down-> ProcessOwnerChild : not found
+    ProcessOwnerChild -down-> ProcessOwnerDescendant : not found
+    ProcessOwnerDescendant -down-> ProcessTopLevel : not found
+    ProcessTopLevel -down-> ProcessDescendant : not found
 
-	ProcessNative ..> ProcessReturn : found
-	ProcessOwnerChild ..> ProcessReturn : found
-	ProcessOwnerDescendant ..> ProcessReturn : found
-	ProcessTopLevel ..> ProcessReturn : found
-	ProcessDescendant ..> ProcessReturn : found
+    ProcessNative ..> ProcessReturn : found
+    ProcessOwnerFast ..> ProcessReturn : found
+    ProcessOwnerChild ..> ProcessReturn : found
+    ProcessOwnerDescendant ..> ProcessReturn : found
+    ProcessTopLevel ..> ProcessReturn : found
+    ProcessDescendant ..> ProcessReturn : found
 }
 
 package "FileDialogWaiter" {
-	rectangle "Native Owned Candidate\n\nWin32\nEnumWindows + GW_OWNER" as FileNative
-	rectangle "Owner Descendant\n\nUI Automation\nFindAllDescendants(Window)" as FileOwnerDescendant
-	rectangle "Collect Process Top-Level Candidates\n\nDesktop.FindAllChildren\n+ ProcessId" as FileTopLevelCandidates
-	rectangle "Inspect Process Descendants\n\nDesktop.FindAllDescendants\n+ ProcessId\n- Top-Level HWNDs" as FileDescendants
-	rectangle "Inspect Top-Level Candidates\n\nRequire no descendant Window" as FileTopLevel
-	rectangle "Return FileDialogElements" as FileReturn
+    rectangle "Native Owned Candidate\n\nWin32\nEnumWindows + GW_OWNER" as FileNative
+    rectangle "Owner Descendant\n\nUI Automation\nFindAllDescendants(Window)" as FileOwnerDescendant
+    rectangle "Collect Process Top-Level Candidates\n\nDesktop.FindAllChildren\n+ ProcessId" as FileTopLevelCandidates
+    rectangle "Inspect Process Descendants\n\nDesktop.FindAllDescendants\n+ ProcessId\n- Top-Level HWNDs" as FileDescendants
+    rectangle "Inspect Top-Level Candidates\n\nRequire no descendant Window" as FileTopLevel
+    rectangle "Return FileDialogElements" as FileReturn
 
-	FileNative -down-> FileOwnerDescendant : not ready / not found
-	FileOwnerDescendant -down-> FileTopLevelCandidates : not found
-	FileTopLevelCandidates -down-> FileDescendants
-	FileDescendants -down-> FileTopLevel : not found
+    FileNative -down-> FileOwnerDescendant : not ready / not found
+    FileOwnerDescendant -down-> FileTopLevelCandidates : not found
+    FileTopLevelCandidates -down-> FileDescendants
+    FileDescendants -down-> FileTopLevel : not found
 
-	FileNative ..> FileReturn : ready
-	FileOwnerDescendant ..> FileReturn : found
-	FileDescendants ..> FileReturn : found
-	FileTopLevel ..> FileReturn : found
+    FileNative ..> FileReturn : ready
+    FileOwnerDescendant ..> FileReturn : found
+    FileDescendants ..> FileReturn : found
+    FileTopLevel ..> FileReturn : found
 }
 
 note right of ProcessNative
@@ -52,6 +56,14 @@ UI Automation tree の構築が
 
 そのため Native candidate は、
 使用前に UIA readiness も確認する。
+end note
+
+note right of ProcessOwnerFast
+AutomationId が指定されている場合のみ、
+Owner の子孫から条件に一致する Window を
+FindFirstDescendant で直接取得する。
+
+見つからなければ従来の Owner探索へ進む。
 end note
 
 note right of ProcessDescendant

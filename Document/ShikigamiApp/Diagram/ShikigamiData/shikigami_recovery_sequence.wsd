@@ -5,128 +5,116 @@ hide footbox
 skinparam shadowing false
 skinparam sequenceMessageAlign center
 
-actor ユーザー as User
-
-participant MainForm
-
+actor "ユーザー" as User
+participant "MainForm" as MainForm
 box "Gui"
-   participant "ShikigamiRecoveryForm" as RecoveryForm
-   participant "ShikigamiDataErrorHandler" as ErrorHandler
+    participant "OpenFileDialog" as FileDialog
+    participant "ShikigamiRecoveryDialog" as RecoveryDialog
+    participant "ShikigamiDataFileManager" as FileManager
+    participant "ShikigamiDataErrorHandler" as ErrorHandler
 end box
-
 box "Gateway"
-   participant ShikigamiGateway
+    participant "ShikigamiGateway" as Gateway
 end box
-
 box "Core"
-   participant ShikigamiService
-   participant ShikigamiRepository
-   participant FileAccess
+    participant "ShikigamiService" as Service
+    participant "ShikigamiRepository" as Repository
+    participant "FileAccess" as FileAccess
 end box
-
 database "ShikigamiData.csv" as CurrentData
+database "選択された復旧元CSV\n（Backup / Brokenなど）" as SourceData
 database "Data/Backup" as Backup
-database "Data/Broken" as Broken
 
-User -> MainForm : 式神データ復旧を開く
+== 復旧元の選択 ==
+User -> MainForm : 式神データ復旧ボタン押下
+MainForm -> FileDialog : ShowDialog(this)
+alt キャンセル
+    FileDialog --> MainForm : Cancel
+    MainForm --> User : 終了
+else CSVを選択
+    FileDialog --> MainForm : FileName
 
-MainForm -> RecoveryForm : ShowDialog()
+    == 復旧候補取得 ==
+    MainForm -> Gateway : GetRecoveryCandidateShikigamiList(currentPath, sourcePath, out list)
+    Gateway -> Service : 復旧候補取得
+    Service -> Repository : getRecoveryCandidateShikigamiList(currentPath, sourcePath, out list)
+    Repository -> FileAccess : loadShikigami(currentPath)
+    FileAccess -> CurrentData : 読込
+    CurrentData --> FileAccess : CSV
+    FileAccess --> Repository : 現行式神一覧 / Outcome
+    Repository -> FileAccess : loadValidShikigami(sourcePath)
+    FileAccess -> SourceData : 有効な行を読込
+    SourceData --> FileAccess : CSV
+    FileAccess --> Repository : 復旧元式神一覧 / Outcome
+    Repository -> Repository : mRecoverySourceFilePath = sourcePath
+    Repository -> Repository : extractUnknownShikigamiList(current, source)
+    Repository --> Service : 復旧候補 / Outcome
+    Service --> Gateway : 復旧候補 / Outcome
+    Gateway --> MainForm : DTO一覧 / Outcome
 
-== 復旧候補取得 ==
-RecoveryForm -> ShikigamiGateway : 復旧候補取得
-ShikigamiGateway -> ShikigamiService : 復旧候補取得
-ShikigamiService -> ShikigamiRepository : getRecoveryCandidateShikigamiList()
+    alt 候補取得失敗・例外
+        MainForm -> ErrorHandler : Handle(outcome / exception)
+        ErrorHandler --> User : エラー表示
+    else 候補が0件
+        MainForm --> User : 復旧できる式神なし
+    else 候補あり
+        MainForm -> RecoveryDialog : new(recoveryCandidates)
+        MainForm -> RecoveryDialog : ShowDialog(this)
+        RecoveryDialog --> User : 復旧候補一覧を表示
+        User -> RecoveryDialog : 復旧対象を選択 / 実行
 
-activate ShikigamiRepository
+        alt キャンセル
+            RecoveryDialog --> MainForm : Cancel
+        else OK
+            RecoveryDialog --> MainForm : SelectedRecoveryCandidates
 
-ShikigamiRepository -> FileAccess : 現在の式神データを読込
-FileAccess -> CurrentData : loadShikigami(...)
-CurrentData --> FileAccess : CSVデータ
-FileAccess --> ShikigamiRepository : 現在のShikigami一覧
+            == 復旧実行 ==
+            MainForm -> FileManager : CreateBackup()
+            FileManager -> Backup : 現行CSVをバックアップ
+            MainForm -> Gateway : RecoveryShikigami(currentPath, selected)
+            Gateway -> Service : 復旧要求
+            Service -> Repository : recoverShikigamiList(currentPath, selected)
+            Repository -> FileAccess : loadShikigami(currentPath)
+            FileAccess -> CurrentData : 読込
+            CurrentData --> FileAccess : CSV
+            FileAccess --> Repository : 現行式神一覧 / Outcome
+            Repository -> FileAccess : loadValidShikigami(mRecoverySourceFilePath)
+            FileAccess -> SourceData : 再読込
+            SourceData --> FileAccess : CSV
+            FileAccess --> Repository : 復旧元式神一覧 / Outcome
+            Repository -> Repository : extractUnknownShikigamiList(current, selected)
 
-group Backupから候補取得
-   ShikigamiRepository -> FileAccess : loadValidShikigami(...)
-   FileAccess -> Backup : Backup CSVを読込
-   Backup --> FileAccess : CSVデータ
-   FileAccess -> FileAccess : 完全な行のみ解析
-   FileAccess --> ShikigamiRepository : 有効なShikigami一覧
-end
+            alt 追加対象が0件
+                Repository --> Service : SUCCESS（保存なし）
+            else 追加対象あり
+                Repository -> Repository : mergeShikigamiList(current, source, targets)
+                note right of Repository
+                    復旧元の並びを基準に、前後の共通式神を
+                    アンカーとして挿入位置を決める。
+                    共通式神がない場合はレア度順に挿入する。
+                end note
+                Repository -> FileAccess : saveShikigami(currentPath, merged)
+                FileAccess -> CurrentData : CSV保存
+                CurrentData --> FileAccess : 完了
+                FileAccess --> Repository : Outcome
+                opt 保存成功
+                    Repository -> Repository : mRecoverySourceFilePath.clear()
+                end
+                Repository --> Service : Outcome
+            end
+            Service --> Gateway : Outcome
+            Gateway --> MainForm : Outcome
 
-group Brokenから候補取得
-   ShikigamiRepository -> FileAccess : loadValidShikigami(...)
-   FileAccess -> Broken : Broken CSVを読込
-   Broken --> FileAccess : CSVデータ
-   FileAccess -> FileAccess : 完全な行のみ解析
-   FileAccess --> ShikigamiRepository : 有効なShikigami一覧
-end
-
-ShikigamiRepository -> ShikigamiRepository : Backup / Broken候補を統合
-ShikigamiRepository -> ShikigamiRepository : 現行データと比較
-ShikigamiRepository -> ShikigamiRepository : 現行に存在しない式神を抽出
-
-note right of ShikigamiRepository
-復旧対象は、
-Backup / Broken に存在し、
-現在の ShikigamiData.csv には
-存在しない式神。
-ユーザーが追加した式神や、
-何らかの理由でロストした式神を
-復旧候補として扱う。
-end note
-
-ShikigamiRepository --> ShikigamiService : 復旧候補一覧
-
-deactivate ShikigamiRepository
-
-ShikigamiService --> ShikigamiGateway : 復旧候補一覧
-ShikigamiGateway -> ShikigamiGateway : Native → DTO変換
-ShikigamiGateway --> RecoveryForm : 復旧候補DTO一覧
-RecoveryForm --> User : 復旧候補を表示
-
-== 復旧実行 ==
-User -> RecoveryForm : 復旧対象を選択
-User -> RecoveryForm : 復旧実行
-
-RecoveryForm -> ShikigamiGateway : 選択した式神を復旧
-ShikigamiGateway -> ShikigamiService : 復旧要求
-ShikigamiService -> ShikigamiRepository : 復旧対象を追加
-
-activate ShikigamiRepository
-
-alt 個別の式神を復旧
-   ShikigamiRepository -> ShikigamiRepository : 対象式神のレア度を確認
-   ShikigamiRepository -> ShikigamiRepository : 対象レア度グループ末尾へ挿入
-else レア度単位でまとめて復旧
-   ShikigamiRepository -> ShikigamiRepository : 同一レア度の復旧対象をまとめる
-   ShikigamiRepository -> ShikigamiRepository : ファイル末尾へ追加
-end
-
-ShikigamiRepository -> FileAccess : ShikigamiData.csvを更新
-FileAccess -> CurrentData : 保存
-CurrentData --> FileAccess : 完了
-FileAccess --> ShikigamiRepository : FileAccessOutcome
-ShikigamiRepository --> ShikigamiService : ShikigamiDataOutcome
-
-deactivate ShikigamiRepository
-
-ShikigamiService --> ShikigamiGateway : ShikigamiDataOutcome
-ShikigamiGateway --> RecoveryForm : ShikigamiDataOutcome
-
-alt SUCCESS
-   RecoveryForm -> ShikigamiGateway : 式神一覧を再取得
-   ShikigamiGateway -> ShikigamiService : getShikigamiList()
-   ShikigamiService -> ShikigamiRepository : getShikigamiList()
-   ShikigamiRepository -> FileAccess : loadShikigami(...)
-   FileAccess -> CurrentData : 読込
-   CurrentData --> FileAccess : CSVデータ
-   FileAccess --> ShikigamiRepository : 式神一覧
-   ShikigamiRepository --> ShikigamiService : 式神一覧
-   ShikigamiService --> ShikigamiGateway : 式神一覧
-   ShikigamiGateway --> RecoveryForm : 式神一覧DTO
-   RecoveryForm --> User : 復旧完了
-else 復旧失敗
-   RecoveryForm -> ErrorHandler : Handle(outcome, ...)
-   ErrorHandler --> User : エラー表示
+            alt 復旧失敗・例外
+                MainForm -> ErrorHandler : Handle(outcome / exception)
+                ErrorHandler --> User : エラー表示
+            else SUCCESS
+                MainForm --> User : 復旧成功を表示
+                MainForm -> MainForm : initializeShikigamiComboBox()
+                MainForm -> MainForm : markCalculationResultDirty()
+            end
+        end
+    end
 end
 
 @enduml
