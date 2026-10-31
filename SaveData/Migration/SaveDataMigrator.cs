@@ -1,5 +1,5 @@
-using SaveData.Access;
 using SaveData.Definition;
+using SaveData.Serialization;
 using System;
 using System.Collections.Generic;
 
@@ -25,7 +25,7 @@ namespace SaveData.Migration
 				throw new NotSupportedException($"Downgrade migration is not supported: {sourceVersion} -> {targetVersion.Version}");
 			}
 
-			Dictionary<string, object> root = SimpleJson.Parse(json) as Dictionary<string, object>;
+			Dictionary<string, object> root = JsonParser.Parse(json) as Dictionary<string, object>;
 			if (root == null)
 			{
 				throw new FormatException("Save data root must be an object.");
