@@ -14,6 +14,7 @@ participant "StatusConverter" as StatusConverter
 
 participant "SaveDataAccess" as SaveDataAccess
 participant "JsonDataAccess" as JsonDataAccess
+participant "JsonSerializer" as JsonSerializer
 
 database "JSONファイル" as JsonFile
 
@@ -66,7 +67,9 @@ else OK
    SaveDataAccess -> SaveDataAccess : SaveDataFile<T>生成\nVersion + Data
    SaveDataAccess -> JsonDataAccess : Save(path, SaveDataFile<T>)
 
-   JsonDataAccess -> JsonDataAccess : JSONへシリアライズ
+   JsonDataAccess -> JsonSerializer : Write(SaveDataFile<T>)
+   JsonSerializer --> JsonDataAccess : JSON文字列
+
    JsonDataAccess -> JsonFile : UTF-8で書込
    JsonFile --> JsonDataAccess : 完了
    JsonDataAccess --> SaveDataAccess : 完了

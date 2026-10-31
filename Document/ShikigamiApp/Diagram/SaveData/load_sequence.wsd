@@ -8,7 +8,10 @@ participant "MainForm" as MainForm
 participant "SaveDataLoadDialog" as LoadDialog
 participant "SaveDataAccess" as SaveDataAccess
 participant "JsonDataAccess" as JsonDataAccess
+participant "JsonParser" as JsonParser
+participant "JsonObjectConverter" as JsonObjectConverter
 participant "SaveDataMigrator" as Migrator
+participant "JsonMigrationWriter" as MigrationWriter
 participant "MitamaSetConverter" as MitamaSetConverter
 participant "SaveDataInputModelValidator" as InputValidator
 participant "MitamaSetInputModelApplicator" as InputModelApplicator
@@ -39,21 +42,36 @@ else OK
         JsonDataAccess -> JsonFile : UTF-8で読込
         JsonFile --> JsonDataAccess : JSON文字列
         JsonDataAccess --> SaveDataAccess : json
+
         SaveDataAccess -> JsonDataAccess : GetVersion(json)
-        JsonDataAccess -> JsonDataAccess : SimpleJson.Parse(json)
-        JsonDataAccess --> SaveDataAccess : sourceVersion
+        JsonDataAccess -> JsonParser : Parse(json)
+        JsonParser --> JsonDataAccess : Dictionary<string, object>
+
+        opt Versionプロパティあり
+            JsonDataAccess -> JsonObjectConverter : ConvertTo(value, typeof(int))
+            JsonObjectConverter --> JsonDataAccess : Version
+        end
+
+        JsonDataAccess --> SaveDataAccess : sourceVersion（未指定時は1）
 
         alt 保存Version > 現行Version
             SaveDataAccess --> MainForm : NotSupportedException
         else 保存Version < 現行Version
             SaveDataAccess -> Migrator : Migrate(json, currentVersion, sourceVersion)
-            Migrator -> Migrator : SimpleJson.Parse / 変換 / JsonMigrationWriter.Write
+            Migrator -> JsonParser : Parse(json)
+            JsonParser --> Migrator : Dictionary<string, object>
+            Migrator -> Migrator : Versionに応じたデータ構造の変換
+            Migrator -> MigrationWriter : Write(root)
+            MigrationWriter --> Migrator : 移行後JSON文字列
             Migrator --> SaveDataAccess : 移行後JSON文字列
         end
 
         opt Version確認・移行が成功
             SaveDataAccess -> JsonDataAccess : Deserialize<SaveDataFile<T>>(json)
-            JsonDataAccess -> JsonDataAccess : SimpleJson.Parse / ConvertTo
+            JsonDataAccess -> JsonParser : Parse(json)
+            JsonParser --> JsonDataAccess : JSON解析結果
+            JsonDataAccess -> JsonObjectConverter : ConvertTo(value, typeof(SaveDataFile<T>))
+            JsonObjectConverter --> JsonDataAccess : SaveDataFile<T>
             JsonDataAccess --> SaveDataAccess : SaveDataFile<T>
             SaveDataAccess --> MainForm : file.Data
         end
