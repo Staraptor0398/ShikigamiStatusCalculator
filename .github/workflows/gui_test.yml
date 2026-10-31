@@ -2,6 +2,7 @@ name: GuiTest
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -19,15 +20,6 @@ jobs:
         uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
-
-      - name: Setup NuGet
-        uses: nuget/setup-nuget@v3
-        with:
-          nuget-version: latest
-
-      - name: Restore SaveData packages
-        shell: pwsh
-        run: nuget restore SaveData\packages.config -PackagesDirectory packages
 
       - name: Restore GuiTest packages
         shell: pwsh

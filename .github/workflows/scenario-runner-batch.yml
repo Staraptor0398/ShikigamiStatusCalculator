@@ -13,6 +13,16 @@ on:
         required: true
         default: false
         type: boolean
+  
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+      enable_live_stream:
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read

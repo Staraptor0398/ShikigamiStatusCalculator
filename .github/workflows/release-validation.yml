@@ -1,0 +1,26 @@
+name: Release Validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-test:
+    uses: ./.github/workflows/core_test.yml
+
+  gui-test:
+    uses: ./.github/workflows/gui_test.yml
+
+  save-data-test:
+    uses: ./.github/workflows/save_data_test.yml
+
+  scenario-runner-test:
+    uses: ./.github/workflows/scenario_runner_test.yml
+
+  scenario-runner-batch:
+    uses: ./.github/workflows/scenario-runner-batch.yml
+    with:
+      ref: ${{ github.sha }}
+      enable_live_stream: false
