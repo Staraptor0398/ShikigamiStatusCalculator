@@ -103,7 +103,9 @@
     <Compile Include="Form\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form\MainForm.Development.cs" />
+    <Compile Include="Form\MainForm.Development.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Form\MainFormOperationState.cs" />
     <Compile Include="Form\ResultViewForm.cs">
       <SubType>Form</SubType>
