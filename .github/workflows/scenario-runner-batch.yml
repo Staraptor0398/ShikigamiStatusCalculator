@@ -472,10 +472,14 @@ jobs:
                   Copy-Item -LiteralPath $_.FullName -Destination $guiDataTargetDirectory -Force
               }
 
-          # Copy scenario definitions and their referenced test data.
-          Copy-Item -Path (Join-Path $scenarioSourceDirectory "*") `
-              -Destination $scenarioTargetDirectory `
-              -Recurse -Force
+          # Copy scenario definitions and test data, excluding generated production files.
+          Get-ChildItem -LiteralPath $scenarioSourceDirectory -Force |
+              Where-Object { $_.Name -ne "production" } |
+              ForEach-Object {
+                  Copy-Item -LiteralPath $_.FullName `
+                      -Destination $scenarioTargetDirectory `
+                      -Recurse -Force
+              }
 
           $scenarioFiles = @(
               Get-ChildItem -LiteralPath $scenarioTargetDirectory `
@@ -484,15 +488,6 @@ jobs:
 
           if ($scenarioFiles.Count -eq 0) {
               throw "No scenario files were found."
-          }
-
-          foreach ($file in $scenarioFiles) {
-              $relativePath = $file.FullName.Substring($scenarioSourceDirectory.Length + 1)
-              $targetPath = Join-Path $scenarioTargetDirectory $relativePath
-              $targetDirectory = Split-Path -Parent $targetPath
-
-              New-Item -ItemType Directory -Force -Path $targetDirectory | Out-Null
-              Copy-Item -LiteralPath $file.FullName -Destination $targetPath -Force
           }
 
           # Validate the minimum reproduction package.
