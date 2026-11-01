@@ -847,6 +847,28 @@ Gui.exeの計算結果詳細画面上にある通常の終了操作を使用し�
 
 ### 入力・データ操作
 
+#### SEL RARITY
+Gui.exeの式神レアリティフィルタを指定した値へ変更する。
+
+形式：
+
+    SEL RARITY "<レアリティ>"
+
+例：
+
+    SEL RARITY "SSR"
+
+レアリティには `すべて`、`UR`、`SP`、`SSR`、`SR` のいずれかを指定する。
+指定値は大文字小文字を区別する。定義外の値は構文エラーとして扱う。
+
+Scenario Runnerは、Gui.exeのレアリティフィルタに対して選択操作を実行する。
+フィルタの現在値や式神候補一覧、式神の選択状態については検証しない。
+それぞれ `CHECK RARITY`、`CHECK SHIKIGAMI LIST`、
+`CHECK SHIKIGAMI SELECTION` を使用して確認する。
+
+Gui.exeが起動していない、操作対象を取得できない、
+または指定した選択操作を実行できない場合は、コマンドの実行失敗として扱う。
+
 #### LOAD BUILD
 指定されたビルド保存データファイルをGui.exeへ読み込む。
 
@@ -1323,6 +1345,89 @@ Scenario Runnerが保持している比較元または比較先のファイル�
 
 ### 確認
 
+#### CHECK RARITY
+Gui.exeのレアリティフィルタの現在の選択値が、指定した値と一致することを確認する。
+
+形式：
+
+    CHECK RARITY "<レアリティ>"
+
+例：
+
+    CHECK RARITY "SSR"
+
+レアリティには `すべて`、`UR`、`SP`、`SSR`、`SR` のいずれかを指定する。
+指定値は大文字小文字を区別する。定義外の値は構文エラーとして扱う。
+
+Scenario Runnerはフィルタの現在の選択値を取得し、指定した値と文字列の完全一致で比較する。
+本コマンドはフィルタを変更せず、式神候補一覧の内容も検証しない。
+
+Gui.exeが起動していない、操作対象または選択値を取得できない、
+あるいは現在値が期待値と一致しない場合は、コマンドの実行失敗として扱う。
+
+#### CHECK SHIKIGAMI LIST
+Gui.exeの式神選択候補一覧が、指定したレアリティに対応する式神データと過不足なく一致することを確認する。
+
+形式：
+
+    CHECK SHIKIGAMI LIST "<レアリティ>"
+
+例：
+
+    CHECK SHIKIGAMI LIST "SSR"
+
+レアリティには `すべて`、`UR`、`SP`、`SSR`、`SR` のいずれかを指定する。
+指定値は大文字小文字を区別する。定義外の値は構文エラーとして扱う。
+
+Scenario Runnerは、Gui.exeが読み込み対象とする `ShikigamiData.csv` をGui.exeとは独立して読み込み、
+指定したレアリティに該当する式神名を期待候補一覧として取得する。
+`すべて` の場合は全レアリティを対象とする。
+
+Gui.exeの式神選択ComboBoxから表示候補をすべて取得し、期待候補一覧と照合する。
+比較では候補の順序を問わないが、式神名ごとの出現回数も含めて一致する必要がある。
+式神名は文字列の完全一致で比較し、空白除去や正規化は行わない。
+
+以下の場合はコマンドの実行失敗として扱う。
+
+- Gui.exeが起動していない。
+- 対象の `ShikigamiData.csv` を取得できない、または正常に読み込めない。
+- 式神選択ComboBoxの候補一覧を取得できない。
+- 期待候補一覧に対して、候補の不足、余分な候補、または重複数の不一致がある。
+
+不一致の場合は期待件数、実際件数、不足候補、余分な候補を診断情報に出力する。
+本コマンドはGui.exeのフィルタや式神の選択状態を変更しない。
+フィルタ自体の現在値は `CHECK RARITY` で確認する。
+
+本コマンドは、照合時点のCSVを期待値として使用する。
+CSVの内容自体の正当性や、Gui.exeが以前に読み込んだデータとの一致は保証しない。
+CSVを変更するScenarioでは、Gui.exe側のデータ再読み込みが完了してから使用する。
+
+#### CHECK SHIKIGAMI SELECTION
+Gui.exeの式神選択ComboBoxの現在の選択状態が、指定した期待値と一致することを確認する。
+
+形式：
+
+    CHECK SHIKIGAMI SELECTION "<式神名>"
+
+または、
+
+    CHECK SHIKIGAMI SELECTION NONE
+
+例：
+
+    CHECK SHIKIGAMI SELECTION "願紡縁結神"
+    CHECK SHIKIGAMI SELECTION NONE
+
+式神名を指定した場合は、現在選択されている式神の表示名と文字列の完全一致で比較する。
+`NONE` を指定した場合は、式神が選択されていないことを確認する。
+引用符なしの `NONE` は未選択状態を表す予約語とし、`"NONE"` は式神名として扱う。
+
+Gui.exeが起動していない、式神選択ComboBoxの状態を取得できない、
+または選択状態が期待値と一致しない場合は、コマンドの実行失敗として扱う。
+
+本コマンドは式神の選択・選択解除を行わず、御魂入力や計算結果も変更しない。
+既存の `CHECK CLEARED` と異なり、式神選択以外の入力状態は確認しない。
+
 #### CHECK CALC DETAIL
 計算結果詳細画面が表示され、
 計算結果の詳細が正常に表示されていることを確認する。
@@ -1659,6 +1764,11 @@ Version 2では、Version 1の実装対象に加えて以下のコマンドを�
     OPEN CLEAR DIALOG
     CONFIRM DIALOG
     CANCEL DIALOG
+    SEL RARITY "<レアリティ>"
+    CHECK RARITY "<レアリティ>"
+    CHECK SHIKIGAMI LIST "<レアリティ>"
+    CHECK SHIKIGAMI SELECTION "<式神名>"
+    CHECK SHIKIGAMI SELECTION NONE
 
 新しいコマンドは、実際のScenarioを作成する上で必要になった時点で追加する。
 
@@ -1967,6 +2077,40 @@ Scenario実行中に生成される保存ファイルの具体的なパスを
 
     END
 
+### 18.10 式神レアリティフィルタ確認試験
+
+    # レアリティフィルタの選択状態と式神候補一覧を確認する。
+
+    START
+
+    OPEN GUI
+
+    CHECK RARITY "すべて"
+    CHECK SHIKIGAMI LIST "すべて"
+    CHECK SHIKIGAMI SELECTION NONE
+
+    SEL SHIKIGAMI "願紡縁結神"
+    CHECK SHIKIGAMI SELECTION "願紡縁結神"
+
+    SEL RARITY "SSR"
+    CHECK RARITY "SSR"
+    CHECK SHIKIGAMI LIST "SSR"
+
+    SEL RARITY "SP"
+    CHECK RARITY "SP"
+    CHECK SHIKIGAMI LIST "SP"
+
+    SEL RARITY "すべて"
+    CHECK RARITY "すべて"
+    CHECK SHIKIGAMI LIST "すべて"
+
+    CLOSE GUI
+
+    END
+
+選択解除・選択維持の確認は、対象式神のレアリティと
+フィルタの組み合わせを確定したScenarioで `CHECK SHIKIGAMI SELECTION` を使用する。
+
 ## 19. 改訂履歴
 | Version | Date | 内容 |
 |---|---|---|
@@ -1991,3 +2135,4 @@ Scenario実行中に生成される保存ファイルの具体的なパスを
 | 2.8 | 2026-10-15 | `CAPTURE CALC DETAIL`、`CHECK CALC DETAIL UNCHANGED` をVersion 2実装対象として追加。表示文字列の取得・完全一致比較、取得値のScenario単位の寿命、再取得時の上書き、失敗条件、既存 `CHECK CALC DETAIL` との責務分離を定義。 |
 | 2.9 | 2026-10-17 | `CAPTURE INPUT`、`CHECK INPUT UNCHANGED` をVersion 2実装対象として追加。MainFormの入力70項目の取得・完全一致比較、Scenario単位の保持、再取得時の一括更新、失敗条件、既存の計算結果・クリア確認コマンドとの責務分離を定義。 |
 | 2.10 | 2026-10-17 | `LOAD BUILD`、`TRY LOAD MITAMA`、`TRY LOAD BUILD` をVersion 2実装対象として追加。ビルド保存データの読み込み完了を待機する操作と、御魂セット・ビルド保存データの読み込み結果を待たない試行操作を定義。 |
+| 2.11 | 2026-11-01 | 式神レアリティフィルタ試験用に `SEL RARITY`、`CHECK RARITY`、`CHECK SHIKIGAMI LIST`、`CHECK SHIKIGAMI SELECTION` をVersion 2実装対象として追加。フィルタ操作と確認を分離し、CSVを基準とする候補一覧照合および式神選択状態の確認を定義。 |
