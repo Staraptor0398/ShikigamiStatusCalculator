@@ -138,6 +138,11 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.SELECT_SHIKIGAMI;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "SEL", "RARITY"))
+			{
+				commandType = ScenarioCommandType.SELECT_RARITY;
+				argumentStartIndex = 2;
+			}
 			else if (matches(tokens, "REGISTER", "SHIKIGAMI"))
 			{
 				commandType = ScenarioCommandType.REGISTER_SHIKIGAMI;
@@ -282,6 +287,29 @@ namespace ScenarioRunner.ScenarioFormat
 				commandType = ScenarioCommandType.CHECK_CLEARED;
 				argumentStartIndex = 2;
 			}
+			else if (matches(tokens, "CHECK", "RARITY"))
+			{
+				commandType = ScenarioCommandType.CHECK_RARITY;
+				argumentStartIndex = 2;
+			}
+			else if (matches(tokens, "CHECK", "SHIKIGAMI", "LIST"))
+			{
+				commandType = ScenarioCommandType.CHECK_SHIKIGAMI_LIST;
+				argumentStartIndex = 3;
+			}
+			else if (matches(tokens, "CHECK", "SHIKIGAMI", "SELECTION"))
+			{
+				if (tokens.Count == 4 && tokens[3] == "NONE" && !quotedTokens[3])
+				{
+					commandType = ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION_NONE;
+				}
+				else
+				{
+					commandType = ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION;
+				}
+
+				argumentStartIndex = 3;
+			}
 			else if (matches(tokens, "CHECK", "SHIKIGAMI"))
 			{
 				commandType = ScenarioCommandType.CHECK_SHIKIGAMI;
@@ -407,7 +435,14 @@ namespace ScenarioRunner.ScenarioFormat
 			switch (commandType)
 			{
 				case ScenarioCommandType.SELECT_SHIKIGAMI:
+				case ScenarioCommandType.SELECT_RARITY:
+				case ScenarioCommandType.CHECK_RARITY:
 					requireQuotedToken(lineNumber, rawText, quotedTokens, 2);
+					break;
+
+				case ScenarioCommandType.CHECK_SHIKIGAMI_LIST:
+				case ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION:
+					requireQuotedToken(lineNumber, rawText, quotedTokens, 3);
 					break;
 
 				case ScenarioCommandType.REGISTER_SHIKIGAMI:

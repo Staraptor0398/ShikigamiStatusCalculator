@@ -75,5 +75,36 @@ namespace ScenarioRunner.Automation.Operator.Feature
 				throw new InvalidOperationException("Shikigami ComboBox has no items.");
 			}
 		}
+
+		public void CheckSelection(GuiSession session, string expectedName, bool expectNone)
+		{
+			if (session == null)
+			{
+				throw new ArgumentNullException(nameof(session));
+			}
+
+			AutomationElement element = mGuiOperator.GetMainElement(session, AutomationIds.MainForm.SHIKIGAMI, ControlType.ComboBox);
+
+			bool hasSelection = mComboBoxOperator.HasSelectedItem(element);
+
+			if (expectNone)
+			{
+				if (hasSelection)
+				{
+					string actualName = mComboBoxOperator.GetValue(element);
+
+					throw new InvalidOperationException($"Shikigami selection mismatch: Expected=NONE, Actual={actualName}");
+				}
+
+				return;
+			}
+
+			string actual = hasSelection ? mComboBoxOperator.GetValue(element) : null;
+
+			if (!string.Equals(expectedName, actual, StringComparison.Ordinal))
+			{
+				throw new InvalidOperationException($"Shikigami selection mismatch: Expected={expectedName}, Actual={actual ?? "NONE"}");
+			}
+		}
 	}
 }

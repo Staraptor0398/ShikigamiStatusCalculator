@@ -7,6 +7,9 @@ namespace ScenarioRunner.Automation.Definition
 			public const string ID = "MainForm";
 
 			public const string SHIKIGAMI = "cmbShikigami";
+
+			public const string RARITY_FILTER = "cmbRarityFilter";
+
 			public const string BASE_STATS = "txtBaseStats";
 
 			public static string MainStat(int mitamaSlot)

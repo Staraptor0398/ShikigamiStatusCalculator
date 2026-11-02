@@ -200,6 +200,22 @@ namespace ScenarioRunner.Automation.Operator
 		public IReadOnlyList<string> GetItems(AutomationElement parent, string automationId)
 		{
 			ComboBox comboBox = getComboBox(parent, automationId);
+
+			return getItems(comboBox, automationId);
+		}
+
+		public IReadOnlyList<string> GetItems(AutomationElement element)
+		{
+			if (element == null)
+			{
+				throw new ArgumentNullException(nameof(element));
+			}
+
+			return getItems(element.AsComboBox(), element.Properties.AutomationId.ValueOrDefault);
+		}
+
+		private IReadOnlyList<string> getItems(ComboBox comboBox, string automationId)
+		{
 			IntPtr handle = comboBox.Properties.NativeWindowHandle.Value;
 
 			int itemCount = SendMessage(handle, CB_GETCOUNT, IntPtr.Zero, IntPtr.Zero).ToInt32();

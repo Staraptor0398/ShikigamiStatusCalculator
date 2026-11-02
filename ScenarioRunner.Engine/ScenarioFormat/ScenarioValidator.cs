@@ -77,6 +77,12 @@ namespace ScenarioRunner.ScenarioFormat
 					continue;
 				}
 
+				if (step.CommandType == ScenarioCommandType.SELECT_RARITY || step.CommandType == ScenarioCommandType.CHECK_RARITY || step.CommandType == ScenarioCommandType.CHECK_SHIKIGAMI_LIST)
+				{
+					validateRarityArguments(step);
+					continue;
+				}
+
 				int expectedCount = getExpectedArgumentCount(step.CommandType);
 
 				if (step.Arguments.Count < expectedCount)
@@ -177,6 +183,24 @@ namespace ScenarioRunner.ScenarioFormat
 			}
 		}
 
+		private void validateRarityArguments(ScenarioStep step)
+		{
+			validateArgumentCount(step, 1, 1);
+
+			switch (step.Arguments[0])
+			{
+				case "すべて":
+				case "UR":
+				case "SP":
+				case "SSR":
+				case "SR":
+					return;
+
+				default:
+					throw new ScenarioValidationException($"Unknown rarity at line {step.LineNumber}: {step.RawText}");
+			}
+		}
+
 		private void validateArgumentCount(ScenarioStep step, int minimumCount, int maximumCount)
 		{
 			if (step.Arguments.Count < minimumCount)
@@ -226,7 +250,9 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.CHECK_SHIKIGAMI:
 				case ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR:
 					return 0;
+
 				case ScenarioCommandType.SELECT_SHIKIGAMI:
+				case ScenarioCommandType.SELECT_RARITY:
 				case ScenarioCommandType.REGISTER_SHIKIGAMI:
 				case ScenarioCommandType.EDIT_SHIKIGAMI:
 				case ScenarioCommandType.LOAD_MITAMA:
@@ -235,10 +261,16 @@ namespace ScenarioRunner.ScenarioFormat
 				case ScenarioCommandType.TRY_LOAD_BUILD:
 				case ScenarioCommandType.CHECK_DIALOG:
 				case ScenarioCommandType.REMOVE_SHIKIGAMI:
+				case ScenarioCommandType.CHECK_RARITY:
+				case ScenarioCommandType.CHECK_SHIKIGAMI_LIST:
+				case ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION:
+				case ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION_NONE:
 					return 1;
+
 				case ScenarioCommandType.COMPARE_SNAPSHOT:
 				case ScenarioCommandType.CHECK_SNAPSHOT_COMPARISON:
 					return 2;
+
 				default:
 					throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
 			}

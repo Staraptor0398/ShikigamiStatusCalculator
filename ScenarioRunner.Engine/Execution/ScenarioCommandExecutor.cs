@@ -16,6 +16,7 @@ namespace ScenarioRunner.Execution
 		private readonly WindowOperator mWindowOperator;
 		private readonly GuiOperator mGuiOperator;
 		private readonly ShikigamiOperator mShikigamiOperator;
+		private readonly ShikigamiRarityFilterOperator mShikigamiRarityFilterOperator;
 		private readonly ShikigamiRegisterOperator mShikigamiRegisterOperator;
 		private readonly ShikigamiEditOperator mShikigamiEditOperator;
 		private readonly CalculationOperator mCalculationOperator;
@@ -42,6 +43,7 @@ namespace ScenarioRunner.Execution
 			mWindowOperator = new WindowOperator();
 			mGuiOperator = new GuiOperator();
 			mShikigamiOperator = new ShikigamiOperator();
+			mShikigamiRarityFilterOperator = new ShikigamiRarityFilterOperator();
 			mShikigamiRegisterOperator = new ShikigamiRegisterOperator();
 			mShikigamiEditOperator = new ShikigamiEditOperator();
 			mCalculationOperator = new CalculationOperator();
@@ -69,108 +71,147 @@ namespace ScenarioRunner.Execution
 						startGuiWindowArrangement(context);
 					}
 					return;
+
 				case ScenarioCommandType.OPEN_GUI:
 					mGuiOperator.Open(context);
 					return;
+
 				case ScenarioCommandType.CLOSE_GUI:
 					mGuiOperator.Close(context);
 					return;
+
 				case ScenarioCommandType.CLOSE_DIALOG:
 					mDialogOperator.Close(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.OPEN_CLEAR_DIALOG:
 					mInputOperator.OpenClearDialog(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.CONFIRM_DIALOG:
 					mDialogOperator.Confirm(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.CANCEL_DIALOG:
 					mDialogOperator.Cancel(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.OPEN_SHIKIGAMI_REGISTER:
 					mShikigamiRegisterOperator.Open(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.OPEN_SHIKIGAMI_EDIT:
 					mShikigamiEditOperator.Open(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.SELECT_SHIKIGAMI:
 					mShikigamiOperator.Select(context.GuiSession, step.Arguments[0]);
 					return;
+
+				case ScenarioCommandType.SELECT_RARITY:
+					mShikigamiRarityFilterOperator.Select(context.GuiSession, step.Arguments[0]);
+					return;
+
 				case ScenarioCommandType.REGISTER_SHIKIGAMI:
 					mShikigamiRegisterOperator.Register(context, step.Arguments[0]);
 					return;
+
 				case ScenarioCommandType.EDIT_SHIKIGAMI:
 					mShikigamiEditOperator.Edit(context, step.Arguments[0]);
 					return;
+
 				case ScenarioCommandType.EQUIP_MITAMA:
 					mInputOperator.Equip(context.GuiSession, step.Arguments);
 					return;
+
 				case ScenarioCommandType.LOAD_MITAMA:
 					mSaveDataOperator.LoadMitama(context, step.Arguments[0]);
 					return;
+
 				case ScenarioCommandType.LOAD_BUILD:
 					mSaveDataOperator.LoadBuild(context, step.Arguments[0]);
 					return;
+
 				case ScenarioCommandType.TRY_LOAD_MITAMA:
 					mSaveDataOperator.TryLoadMitama(context, step.Arguments[0]);
 					return;
+
 				case ScenarioCommandType.TRY_LOAD_BUILD:
 					mSaveDataOperator.TryLoadBuild(context, step.Arguments[0]);
 					return;
+
 				case ScenarioCommandType.SAVE_MITAMA:
 					mSaveDataOperator.SaveMitama(context);
 					return;
+
 				case ScenarioCommandType.SAVE_BUILD:
 					mSaveDataOperator.SaveBuild(context);
 					return;
+
 				case ScenarioCommandType.SAVE_SNAPSHOT:
 					mSaveDataOperator.SaveSnapshot(context, step.Arguments[0]);
 					return;
+
 				case ScenarioCommandType.LOAD_SAVED_MITAMA:
 					mSaveDataOperator.LoadSavedMitama(context);
 					return;
+
 				case ScenarioCommandType.LOAD_SAVED_BUILD:
 					mSaveDataOperator.LoadSavedBuild(context);
 					return;
+
 				case ScenarioCommandType.COMPARE_SNAPSHOT:
 					mSnapshotComparisonOperator.Compare(context, step.Arguments[0], step.Arguments[1]);
 					return;
+
 				case ScenarioCommandType.COMPARE_SAVED_SNAPSHOT:
 					mSnapshotComparisonOperator.CompareSaved(context);
 					return;
+
 				case ScenarioCommandType.CALCULATE:
 					mCalculationOperator.Calculate(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.OPEN_CALC_DETAIL:
 					mCalculationDetailOperator.Open(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.CAPTURE_INPUT:
 					mInputStateOperator.Capture(context);
 					return;
+
 				case ScenarioCommandType.CAPTURE_CALC_DETAIL:
 					mCalculationDetailOperator.Capture(context);
 					return;
+
 				case ScenarioCommandType.CLOSE_CALC_DETAIL:
 					mCalculationDetailOperator.Close(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.CLEAR:
 					mInputOperator.Clear(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.CLEAR_SHIKIGAMI:
 					mShikigamiOperator.ClearSelection(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.RELOAD_SHIKIGAMI:
 					mShikigamiDataOperator.Reload(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.BREAK_SHIKIGAMI_HEADER:
 					mShikigamiDataOperator.BreakHeader(context);
 					return;
+
 				case ScenarioCommandType.REMOVE_SHIKIGAMI:
 					mShikigamiDataOperator.RemoveShikigami(context, step.Arguments[0]);
 					return;
+
 				case ScenarioCommandType.CREATE_SHIKIGAMI_BACKUP:
 					mShikigamiDataOperator.CreateBackup(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.RECOVER_SHIKIGAMI:
 					string source = step.Arguments[0];
 
@@ -192,36 +233,63 @@ namespace ScenarioRunner.Execution
 
 					mShikigamiRecoveryOperator.Recover(context.GuiSession, recoveryFilePath);
 					return;
+
 				case ScenarioCommandType.CHECK_CALCULATION:
 					mCalculationOperator.Check(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.CHECK_CALC_DETAIL:
 					mCalculationDetailOperator.Check(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.CHECK_INPUT_UNCHANGED:
 					mInputStateOperator.CheckUnchanged(context);
 					return;
+
 				case ScenarioCommandType.CHECK_CALC_DETAIL_UNCHANGED:
 					mCalculationDetailOperator.CheckUnchanged(context);
 					return;
+
 				case ScenarioCommandType.CHECK_SAVEDATA_LEVEL:
 					mSaveDataOperator.CheckSaveDataLevel(context, step.Arguments[0]);
 					return;
+
 				case ScenarioCommandType.CHECK_CLEARED:
 					mInputOperator.CheckCleared(context.GuiSession);
 					return;
+
 				case ScenarioCommandType.CHECK_SHIKIGAMI:
 					mShikigamiOperator.Check(context.GuiSession);
 					return;
+
+				case ScenarioCommandType.CHECK_RARITY:
+					mShikigamiRarityFilterOperator.CheckRarity(context.GuiSession, step.Arguments[0]);
+					return;
+
+				case ScenarioCommandType.CHECK_SHIKIGAMI_LIST:
+					mShikigamiRarityFilterOperator.CheckShikigamiList(context, step.Arguments[0]);
+					return;
+
+				case ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION:
+					mShikigamiRarityFilterOperator.CheckShikigamiSelection(context.GuiSession, step.Arguments[0], false);
+					return;
+
+				case ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION_NONE:
+					mShikigamiRarityFilterOperator.CheckShikigamiSelection(context.GuiSession, null, true);
+					return;
+
 				case ScenarioCommandType.CHECK_DIALOG:
 					mDialogOperator.CheckMessage(context.GuiSession, step.Arguments[0]);
 					return;
+
 				case ScenarioCommandType.CHECK_SNAPSHOT_COMPARISON:
 					mSnapshotComparisonOperator.Check(context.GuiSession, step.Arguments[0], step.Arguments[1]);
 					return;
+
 				case ScenarioCommandType.WAIT_SHIKIGAMI_AUTO_REPAIR:
 					mShikigamiDataWaiter.WaitForAutoRepair(context);
 					return;
+
 				default:
 					throw new ArgumentOutOfRangeException(nameof(step.CommandType), step.CommandType, null);
 			}
