@@ -1,6 +1,7 @@
 ﻿param(
     [string]$RunIdFile = (Join-Path $PSScriptRoot 'Result/RunIds.txt'),
     [string]$OutputDirectory = (Join-Path $PSScriptRoot 'Result/Analysis'),
+    [int]$ExpectedScenarioCount = 48,
     [switch]$SkipDownload
 )
 
@@ -9,6 +10,9 @@ $repo = 'Staraptor0398/ShikigamiStatusCalculator'
 $artifactName = 'scenario-runner-batch-logs'
 $culture = [System.Globalization.CultureInfo]::InvariantCulture
 
+if ($ExpectedScenarioCount -le 0) {
+    throw "ExpectedScenarioCount must be greater than zero: $ExpectedScenarioCount"
+}
 if (-not (Test-Path $RunIdFile)) { throw "Run ID file does not exist: $RunIdFile" }
 $runIds = @((Get-Content $RunIdFile | ForEach-Object { $_.Trim() }) | Where-Object { $_ -match '^\d+$' } | Select-Object -Unique)
 if ($runIds.Count -eq 0) { throw "No valid run IDs in $RunIdFile" }
@@ -47,11 +51,13 @@ function Export-Rows([object[]]$rows, [string]$path) {
 
 # Scenario command timing. Command names match ScenarioCommandType; longest names first.
 $scenarioCommandNames = @(
+    'CHECK SHIKIGAMI SELECTION',
     'CHECK CALC DETAIL UNCHANGED',
     'WAIT SHIKIGAMI AUTO REPAIR',
     'CHECK SNAPSHOT COMPARISON',
     'OPEN SHIKIGAMI REGISTER',
     'CREATE SHIKIGAMI BACKUP',
+    'CHECK SHIKIGAMI LIST',
     'COMPARE SAVED SNAPSHOT',
     'BREAK SHIKIGAMI HEADER',
     'CHECK INPUT UNCHANGED',
@@ -86,12 +92,17 @@ $scenarioCommandNames = @(
     'CHECK DIALOG',
     'LOAD MITAMA',
     'SAVE MITAMA',
+    'SEL SHIKIGAMI',
+    'CHECK RARITY',
+    'SEL RARITY',
     'LAUNCH GUI',
     'LOAD BUILD',
     'SAVE BUILD',
     'CLOSE GUI',
-    'CALCULATE',
+    'CHECK CALC',
     'OPEN GUI',
+    'CALCULATE',
+    'CALC',
     'CLEAR'
 )
 
@@ -190,7 +201,7 @@ foreach ($runId in $runIds) {
             }
             if ($line -match '^\[\d{2}:\d{2}:\d{2}(?:\.\d{3})?\] Scenario: (.+)$') { $declaredName = $Matches[1] }
             if ($line -match '^\[\d{2}:\d{2}:\d{2}(?:\.\d{3})?\] Scenario Result: (PASS|FAIL)') { $status = $Matches[1] }
-            if ($line -match '^\[\d{2}:\d{2}:\d{2}(?:\.\d{3})?\] \[\d+\] .*\sFAIL\s*$') { $stepFailures++ }
+            if ($line -match '^\[\d{2}:\d{2}:\d{2}:\d{2}(?:\.\d{3})?\] \[\d+\] .*\sFAIL\s*$') { $stepFailures++ }
         }
         # Additional command timing pass; existing Gui/session analysis remains unchanged.
         $pendingSteps = @{}
@@ -520,7 +531,9 @@ foreach ($runId in $runIds) {
     }
     $unmatchedWindows = @($runWindows | Where-Object { -not $_.SessionId })
     if ($unmatchedWindows.Count -gt 0) { $warnings.Add("Run ${runId}: $($unmatchedWindows.Count) Gui open/close windows have no Performance session (not necessarily an error).") }
-    if ($scenarios.Count -ne 45) { $validationIssues.Add("Run ${runId}: expected 45 scenarios, got $($scenarios.Count)") }
+    if ($scenarios.Count -ne $ExpectedScenarioCount) {
+        $validationIssues.Add("Run ${runId}: expected $ExpectedScenarioCount scenarios, got $($scenarios.Count)")
+    }
     if (@($scenarios | Where-Object { $_.Result -ne 'PASS' }).Count -gt 0) { $validationIssues.Add("Run ${runId}: one or more scenarios did not PASS") }
     if ($orderedSessions.Count -eq 0) { $validationIssues.Add("Run ${runId}: no Gui Performance sessions") }
     $duplicateSamples = @($orderedSessions | ForEach-Object {
@@ -838,7 +851,7 @@ $md.Add('')
 $md.Add('## Scenario command timing (successful commands)')
 $md.Add('')
 $md.Add('| Command | Count | Total ms | Mean ms | Max ms |')
-$md.Add('|---|---:|---:|---:|---:|')
+$md.Add('|---|---:|---:|---:|---:|---:|')
 foreach ($c in ($commandSummary | Sort-Object TotalMs -Descending)) {
     $md.Add("| $($c.CommandType) | $($c.Count) | $($c.TotalMs) | $($c.MeanMs) | $($c.MaxMs) |")
 }

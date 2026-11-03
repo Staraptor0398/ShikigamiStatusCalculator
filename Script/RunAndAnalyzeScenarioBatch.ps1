@@ -6,7 +6,10 @@
     [int]$PollIntervalSeconds = 30,
 
     [ValidateRange(1, 1440)]
-    [int]$TimeoutMinutes = 20
+    [int]$TimeoutMinutes = 20,
+
+    [ValidateRange(1, [int]::MaxValue)]
+    [int]$ExpectedScenarioCount = 48
 )
 
 $ErrorActionPreference = 'Stop'
@@ -92,7 +95,7 @@ while ($completed.Count -lt $runIds.Count) {
 
 # Analyze even if one or more workflow runs failed. Their logs may explain why.
 Write-Host 'All runs completed. Starting Scenario Runner Batch analysis...'
-& $analyzeScript -RunIdFile $runIdFile
+& $analyzeScript -RunIdFile $runIdFile -ExpectedScenarioCount $ExpectedScenarioCount
 
 if ($failed.Count -gt 0) {
     throw "Analysis completed, but some GitHub Actions runs were not successful: $($failed -join ', ')"
