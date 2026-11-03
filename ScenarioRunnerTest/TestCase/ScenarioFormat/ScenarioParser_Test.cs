@@ -362,5 +362,67 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 				Assert.AreEqual($"Command keyword must not be enclosed in double quotes at line 2: {command}", ex.Message);
 			}
 		}
+
+		[TestMethod]
+		public void Parse_RarityFilterCommands()
+		{
+			var parser = new ScenarioParser();
+
+			Scenario scenario = parser.Parse("Test.scenario", new[]
+			{
+				"START",
+				"SEL RARITY \"SSR\"",
+				"CHECK RARITY \"SSR\"",
+				"CHECK SHIKIGAMI LIST \"SSR\"",
+				"CHECK SHIKIGAMI SELECTION \"NONE\"",
+				"CHECK SHIKIGAMI SELECTION NONE",
+				"END"
+			});
+
+			Assert.AreEqual(5, scenario.Steps.Count);
+
+			Assert.AreEqual(ScenarioCommandType.SELECT_RARITY, scenario.Steps[0].CommandType);
+			Assert.AreEqual(ScenarioCommandType.CHECK_RARITY, scenario.Steps[1].CommandType);
+			Assert.AreEqual(ScenarioCommandType.CHECK_SHIKIGAMI_LIST, scenario.Steps[2].CommandType);
+			Assert.AreEqual(ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION, scenario.Steps[3].CommandType);
+			Assert.AreEqual(ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION_NONE, scenario.Steps[4].CommandType);
+
+			foreach (ScenarioStep step in scenario.Steps)
+			{
+				Assert.AreEqual(1, step.Arguments.Count);
+			}
+
+			Assert.AreEqual("SSR", scenario.Steps[0].Arguments[0]);
+			Assert.AreEqual("SSR", scenario.Steps[1].Arguments[0]);
+			Assert.AreEqual("SSR", scenario.Steps[2].Arguments[0]);
+			Assert.AreEqual("NONE", scenario.Steps[3].Arguments[0]);
+			Assert.AreEqual("NONE", scenario.Steps[4].Arguments[0]);
+		}
+
+		[TestMethod]
+		[DataRow("SEL RARITY SSR")]
+		[DataRow("CHECK RARITY SSR")]
+		[DataRow("CHECK SHIKIGAMI LIST SSR")]
+		[DataRow("CHECK SHIKIGAMI SELECTION 大天狗")]
+		public void Parse_RarityFilterUnquotedArguments(string command)
+		{
+			var parser = new ScenarioParser();
+
+			try
+			{
+				parser.Parse("Test.scenario", new[]
+				{
+					"START",
+					command,
+					"END"
+				});
+
+				Assert.Fail("FormatException was not thrown.");
+			}
+			catch (FormatException ex)
+			{
+				Assert.AreEqual($"String argument must be enclosed in double quotes at line 2: {command}", ex.Message);
+			}
+		}
 	}
 }

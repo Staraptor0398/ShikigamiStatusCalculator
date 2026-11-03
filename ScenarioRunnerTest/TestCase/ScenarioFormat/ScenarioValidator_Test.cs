@@ -766,5 +766,69 @@ namespace ScenarioRunnerTest.TestCase.ScenarioFormat
 				Assert.AreEqual("Argument is missing at line 2: EQUIP MITAMA MAIN 2", ex.Message);
 			}
 		}
+
+		[TestMethod]
+		[DataRow(ScenarioCommandType.SELECT_RARITY)]
+		[DataRow(ScenarioCommandType.CHECK_RARITY)]
+		[DataRow(ScenarioCommandType.CHECK_SHIKIGAMI_LIST)]
+		public void Validate_RarityArguments(ScenarioCommandType commandType)
+		{
+			var validator = new ScenarioValidator();
+
+			foreach (string rarity in new[] { "すべて", "UR", "SP", "SSR", "SR" })
+			{
+				var scenario = new Scenario("Test.scenario", 1, 3, new[]
+				{
+					new ScenarioStep(2, commandType, new[] { rarity }, "TEST")
+				});
+
+				validator.Validate(scenario);
+			}
+
+			var invalid = new Scenario("Test.scenario", 1, 3, new[]
+			{
+				new ScenarioStep(2, commandType, new[] { "INVALID" }, "TEST")
+			});
+
+			try
+			{
+				validator.Validate(invalid);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Unknown rarity at line 2: TEST", ex.Message);
+			}
+		}
+
+		[TestMethod]
+		[DataRow(ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION)]
+		[DataRow(ScenarioCommandType.CHECK_SHIKIGAMI_SELECTION_NONE)]
+		public void Validate_ShikigamiSelectionArguments(ScenarioCommandType commandType)
+		{
+			var validator = new ScenarioValidator();
+
+			var valid = new Scenario("Test.scenario", 1, 3, new[]
+			{
+				new ScenarioStep(2, commandType, new[] { "NONE" }, "TEST")
+			});
+
+			validator.Validate(valid);
+
+			var missing = new Scenario("Test.scenario", 1, 3, new[]
+			{
+				new ScenarioStep(2, commandType, Array.Empty<string>(), "TEST")
+			});
+
+			try
+			{
+				validator.Validate(missing);
+				Assert.Fail("ScenarioValidationException was not thrown.");
+			}
+			catch (ScenarioValidationException ex)
+			{
+				Assert.AreEqual("Argument is missing at line 2: TEST", ex.Message);
+			}
+		}
 	}
 }
