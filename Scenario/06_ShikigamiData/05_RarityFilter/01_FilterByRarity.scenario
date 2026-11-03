@@ -1,0 +1,55 @@
+# FilterByRarity.scenario
+#
+# レアリティフィルタの選択状態、式神候補一覧、
+# 式神選択状態の変化を確認する。
+
+START
+
+# Gui.exeを起動する
+OPEN GUI
+
+# 起動直後のレアリティフィルタと式神候補一覧を確認する
+CHECK RARITY "すべて"
+CHECK SHIKIGAMI LIST "すべて"
+CHECK SHIKIGAMI SELECTION NONE
+
+# SP式神を選択する
+SEL SHIKIGAMI "願紡縁結神"
+CHECK SHIKIGAMI SELECTION "願紡縁結神"
+
+# SPフィルタへ変更し、式神選択が維持されることを確認する
+SEL RARITY "SP"
+CHECK RARITY "SP"
+CHECK SHIKIGAMI LIST "SP"
+CHECK SHIKIGAMI SELECTION "願紡縁結神"
+
+# SSRフィルタへ変更し、対象外の式神選択が解除されることを確認する
+SEL RARITY "SSR"
+CHECK RARITY "SSR"
+CHECK SHIKIGAMI LIST "SSR"
+CHECK SHIKIGAMI SELECTION NONE
+
+# SPフィルタに戻しても、解除された式神が自動選択されないことを確認する
+SEL RARITY "SP"
+CHECK RARITY "SP"
+CHECK SHIKIGAMI LIST "SP"
+CHECK SHIKIGAMI SELECTION NONE
+
+# SP式神を再選択する
+SEL SHIKIGAMI "願紡縁結神"
+CHECK SHIKIGAMI SELECTION "願紡縁結神"
+
+# 全件表示へ戻し、式神選択が維持されることを確認する
+SEL RARITY "すべて"
+CHECK RARITY "すべて"
+CHECK SHIKIGAMI LIST "すべて"
+CHECK SHIKIGAMI SELECTION "願紡縁結神"
+
+# 選択を解除する
+CLEAR SHIKIGAMI
+CHECK SHIKIGAMI SELECTION NONE
+
+# Gui.exeを終了する
+CLOSE GUI
+
+END
