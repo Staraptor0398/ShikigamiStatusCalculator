@@ -1,0 +1,42 @@
+# EditCancel.scenario
+#
+# Gui.exeの式神編集画面を開いてキャンセルした場合、
+# MainFormの入力状態と式神候補一覧が
+# 変更されないことを確認する。
+#
+# キャンセル後も編集対象の式神選択が維持され、
+# 式神データが引き続き利用可能であることを確認する。
+
+START
+
+# Gui.exeを起動する
+OPEN GUI
+
+# 編集対象の式神を選択する
+SEL SHIKIGAMI "少羽大天狗"
+
+# キャンセル前の入力状態を保持する
+CAPTURE INPUT
+
+# キャンセル前の式神候補一覧を確認する
+CHECK SHIKIGAMI LIST "すべて"
+
+# 選択中の式神に対する編集画面を開く
+OPEN SHIKIGAMI EDIT
+
+# 更新処理を実行せずにキャンセルする
+CANCEL DIALOG
+
+# キャンセル前後の入力状態が完全一致することを確認する
+CHECK INPUT UNCHANGED
+
+# 編集対象の式神選択が維持されていることを確認する
+CHECK SHIKIGAMI SELECTION "少羽大天狗"
+
+# 式神候補一覧が正常であることを確認する
+CHECK SHIKIGAMI LIST "すべて"
+
+# Gui.exeを終了する
+CLOSE GUI
+
+END
