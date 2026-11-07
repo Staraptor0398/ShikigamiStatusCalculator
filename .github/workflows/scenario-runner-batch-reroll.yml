@@ -124,69 +124,137 @@ jobs:
           $deadline = [DateTime]::UtcNow.AddMinutes(8)
           $selection = $null
 
-          while ([DateTime]::UtcNow -lt $deadline) {
-              $artifacts = gh api `
-                  "repos/$repository/actions/runs/$runId/artifacts" |
-                  ConvertFrom-Json
+          $waitTimer = [System.Diagnostics.Stopwatch]::StartNew()
+          $apiTotalMs = 0.0
+          $downloadTotalMs = 0.0
+          $sleepTotalMs = 0.0
+          $pollCount = 0
 
-              if ($LASTEXITCODE -ne 0) {
-                  throw "Failed to list workflow artifacts."
-              }
+          try {
+              while ([DateTime]::UtcNow -lt $deadline) {
+                  $pollCount++
 
-              $decision = $artifacts.artifacts |
-                  Where-Object {
-                      $_.name -eq "runner-selection" -and
-                      -not $_.expired
-                  } |
-                  Select-Object -First 1
+                  $apiTimer = [System.Diagnostics.Stopwatch]::StartNew()
 
-              if ($null -ne $decision) {
                   try {
-                      New-Item -ItemType Directory -Force `
-                          -Path $selectionDirectory | Out-Null
+                      $artifacts = gh api `
+                          "repos/$repository/actions/runs/$runId/artifacts" |
+                          ConvertFrom-Json
+                  }
+                  finally {
+                      $apiTimer.Stop()
+                      $apiTotalMs += $apiTimer.Elapsed.TotalMilliseconds
 
-                      gh run download $runId `
-                          --repo $repository `
-                          --name "runner-selection" `
-                          --dir $selectionDirectory
+                      Write-Host (
+                          "[Timing] SelectionArtifactList #{0}: {1:N2} ms" -f
+                          $pollCount, $apiTimer.Elapsed.TotalMilliseconds
+                      )
+                  }
 
-                      if ($LASTEXITCODE -ne 0) {
-                          throw "Selection download failed."
+                  if ($LASTEXITCODE -ne 0) {
+                      throw "Failed to list workflow artifacts."
+                  }
+
+                  $decision = $artifacts.artifacts |
+                      Where-Object {
+                          $_.name -eq "runner-selection" -and
+                          -not $_.expired
+                      } |
+                      Select-Object -First 1
+
+                  if ($null -ne $decision) {
+                      try {
+                          New-Item -ItemType Directory -Force `
+                              -Path $selectionDirectory | Out-Null
+
+                          $downloadTimer = [System.Diagnostics.Stopwatch]::StartNew()
+
+                          try {
+                              gh run download $runId `
+                                  --repo $repository `
+                                  --name "runner-selection" `
+                                  --dir $selectionDirectory
+                          }
+                          finally {
+                              $downloadTimer.Stop()
+                              $downloadTotalMs += $downloadTimer.Elapsed.TotalMilliseconds
+
+                              Write-Host (
+                                  "[Timing] SelectionDownload: {0:N2} ms" -f
+                                  $downloadTimer.Elapsed.TotalMilliseconds
+                              )
+                          }
+
+                          if ($LASTEXITCODE -ne 0) {
+                              throw "Selection download failed."
+                          }
                       }
-                  }
-                  catch {
-                      Write-Warning $_.Exception.Message
-                      Start-Sleep -Seconds 5
-                      continue
-                  }
+                      catch {
+                          Write-Warning $_.Exception.Message
 
-                  $failurePath = Join-Path `
-                      $selectionDirectory "failure.json"
+                          $sleepTimer = [System.Diagnostics.Stopwatch]::StartNew()
+                          Start-Sleep -Seconds 5
+                          $sleepTimer.Stop()
 
-                  if (Test-Path -LiteralPath $failurePath) {
-                      $failure = Get-Content `
-                          -LiteralPath $failurePath -Raw |
+                          $sleepTotalMs += $sleepTimer.Elapsed.TotalMilliseconds
+                          continue
+                      }
+
+                      $failurePath = Join-Path `
+                          $selectionDirectory "failure.json"
+
+                      if (Test-Path -LiteralPath $failurePath) {
+                          $failure = Get-Content `
+                              -LiteralPath $failurePath -Raw |
+                              ConvertFrom-Json
+
+                          throw "Runner selector failed: $($failure.Reason)"
+                      }
+
+                      $selectionPath = Join-Path `
+                          $selectionDirectory "selection.json"
+
+                      if (-not (Test-Path -LiteralPath $selectionPath)) {
+                          throw "Selection artifact contains no decision."
+                      }
+
+                      $selection = Get-Content `
+                          -LiteralPath $selectionPath -Raw |
                           ConvertFrom-Json
 
-                      throw "Runner selector failed: $($failure.Reason)"
+                      break
                   }
 
-                  $selectionPath = Join-Path `
-                      $selectionDirectory "selection.json"
+                  Write-Host "Waiting for runner selection..."
 
-                  if (-not (Test-Path -LiteralPath $selectionPath)) {
-                      throw "Selection artifact contains no decision."
-                  }
+                  $sleepTimer = [System.Diagnostics.Stopwatch]::StartNew()
+                  Start-Sleep -Seconds 5
+                  $sleepTimer.Stop()
 
-                  $selection = Get-Content `
-                      -LiteralPath $selectionPath -Raw |
-                      ConvertFrom-Json
-
-                  break
+                  $sleepTotalMs += $sleepTimer.Elapsed.TotalMilliseconds
               }
+          }
+          finally {
+              $waitTimer.Stop()
 
-              Write-Host "Waiting for runner selection..."
-              Start-Sleep -Seconds 5
+              Write-Host (
+                  "[Timing] SelectionWaitTotal: {0:N2} ms" -f
+                  $waitTimer.Elapsed.TotalMilliseconds
+              )
+              Write-Host "[Timing] SelectionArtifactListCalls: $pollCount"
+
+              Write-Host (
+                  "[Timing] SelectionArtifactListTotal: {0:N2} ms" -f
+                  $apiTotalMs
+              )
+              Write-Host (
+                  "[Timing] SelectionDownloadTotal: {0:N2} ms" -f
+                  $downloadTotalMs
+              )
+              Write-Host (
+                  "[Timing] SelectionSleepTotal: {0:N2} ms" -f
+                  $sleepTotalMs
+              )
           }
 
           if ($null -eq $selection) {
@@ -776,40 +844,79 @@ jobs:
           mkdir -p candidates
           deadline=$((SECONDS + 480))
 
+          wait_start_ms=$(date +%s%3N)
+          poll_count=0
+          api_total_ms=0
+          sleep_total_ms=0
+          count=0
+
           while (( SECONDS < deadline )); do
+            poll_count=$((poll_count + 1))
+
+            api_start_ms=$(date +%s%3N)
+
             names=$(gh api \
               "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
               --jq '.artifacts[].name')
 
+            api_end_ms=$(date +%s%3N)
+            api_ms=$((api_end_ms - api_start_ms))
+            api_total_ms=$((api_total_ms + api_ms))
+
             count=0
+
             for id in 1 2 3 4 5; do
               if grep -Fxq "runner-candidate-$id" <<< "$names"; then
                 count=$((count + 1))
               fi
             done
 
+            echo "[Timing] ArtifactList #$poll_count: ${api_ms} ms"
             echo "Candidates published: $count / 5"
 
             if (( count == 5 )); then
               break
             fi
 
+            sleep_start_ms=$(date +%s%3N)
             sleep 5
+            sleep_end_ms=$(date +%s%3N)
+
+            sleep_total_ms=$((sleep_total_ms + sleep_end_ms - sleep_start_ms))
           done
+
+          wait_end_ms=$(date +%s%3N)
+
+          echo "[Timing] CandidateWait: $((wait_end_ms - wait_start_ms)) ms"
+          echo "[Timing] ArtifactListCalls: $poll_count"
+          echo "[Timing] ArtifactListTotal: ${api_total_ms} ms"
+          echo "[Timing] CandidateSleepTotal: ${sleep_total_ms} ms"
 
           if (( count != 5 )); then
             echo "Timed out waiting for candidates."
             exit 1
           fi
 
+          download_total_ms=0
+
           for id in 1 2 3 4 5; do
             mkdir -p "candidates/$id"
+
+            download_start_ms=$(date +%s%3N)
 
             gh run download "$GITHUB_RUN_ID" \
               --repo "$GITHUB_REPOSITORY" \
               --name "runner-candidate-$id" \
               --dir "candidates/$id"
+
+            download_end_ms=$(date +%s%3N)
+            download_ms=$((download_end_ms - download_start_ms))
+            download_total_ms=$((download_total_ms + download_ms))
+
+            echo "[Timing] CandidateDownload $id: ${download_ms} ms"
           done
+
+          echo "[Timing] CandidateDownloadTotal: ${download_total_ms} ms"
 
       - name: Select candidate
         id: select
@@ -817,12 +924,24 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
 
-          ./Script/RunnerSelection/SelectRunner.ps1 `
-              -SelectionMode $env:SELECTION_MODE `
-              -CandidatesDirectory "candidates" `
-              -CatalogPath "Data/RunnerPerformance/CpuCatalog.json" `
-              -OutputDirectory "RunnerSelection" `
-              -ExpectedCandidates 5
+          $timer = [System.Diagnostics.Stopwatch]::StartNew()
+
+          try {
+              ./Script/RunnerSelection/SelectRunner.ps1 `
+                  -SelectionMode $env:SELECTION_MODE `
+                  -CandidatesDirectory "candidates" `
+                  -CatalogPath "Data/RunnerPerformance/CpuCatalog.json" `
+                  -OutputDirectory "RunnerSelection" `
+                  -ExpectedCandidates 5
+          }
+          finally {
+              $timer.Stop()
+
+              Write-Host (
+                  "[Timing] RunnerSelection: {0:N2} ms" -f
+                  $timer.Elapsed.TotalMilliseconds
+              )
+          }
 
       - name: Prepare selection failure
         if: failure()
