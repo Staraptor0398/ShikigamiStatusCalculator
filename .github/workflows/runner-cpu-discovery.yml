@@ -1,0 +1,167 @@
+name: Runner CPU Discovery
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    name: Discover CPU ${{ matrix.id }}
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        id: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+
+    steps:
+      - name: Checkout measurement script
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            Script/MeasureRunnerPerformance.ps1
+          sparse-checkout-cone-mode: false
+
+      - name: Measure runner performance
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./Script/MeasureRunnerPerformance.ps1 -Iterations 7 -OutputDirectory RunnerPerformance
+
+      - name: Prepare discovery result
+        shell: pwsh
+        env:
+          CANDIDATE_ID: ${{ matrix.id }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $environment = Get-Content RunnerPerformance/Environment.json -Raw | ConvertFrom-Json
+          $benchmark = Get-Content RunnerPerformance/Benchmark.json -Raw | ConvertFrom-Json
+
+          $result = [ordered]@{
+              CandidateId = [int]$env:CANDIDATE_ID
+              RunId = $env:GITHUB_RUN_ID
+              RunAttempt = $env:GITHUB_RUN_ATTEMPT
+              CpuName = $environment.CPUName.Trim()
+              RunnerName = $environment.RunnerName
+              RunnerImage = $environment.RunnerImage
+              RunnerImageVersion = $environment.RunnerImageVersion
+              CpuCores = $environment.CPUCores
+              LogicalProcessors = $environment.LogicalProcessors
+              Sha256MedianMs = $benchmark.CPU.MedianMs
+              ProcessStartupMedianMs = $benchmark.ProcessStartup.MedianMs
+              TimestampUtc = $environment.TimestampUtc
+          }
+
+          $result | ConvertTo-Json -Depth 5 |
+              Set-Content RunnerPerformance/result.json -Encoding utf8
+
+          Write-Host "Candidate: $env:CANDIDATE_ID"
+          Write-Host "CPU: $($result.CpuName)"
+          Write-Host "SHA256 median: $($result.Sha256MedianMs) ms"
+          Write-Host "Process startup median: $($result.ProcessStartupMedianMs) ms"
+
+      - name: Upload discovery result
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-cpu-${{ matrix.id }}
+          path: RunnerPerformance/
+          if-no-files-found: error
+          retention-days: 7
+
+  aggregate:
+    name: Aggregate CPU discovery
+    needs: discover
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Download discovery results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: runner-cpu-*
+          path: discoveries
+          merge-multiple: false
+
+      - name: Aggregate results
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $files = @(Get-ChildItem discoveries -Filter result.json -Recurse -File)
+          if ($files.Count -eq 0) {
+              throw 'No CPU discovery results were downloaded.'
+          }
+
+          $results = @($files | ForEach-Object {
+              Get-Content $_.FullName -Raw | ConvertFrom-Json
+          } | Sort-Object CandidateId)
+
+          $knownCpuPatterns = @(
+              'EPYC 9V45',
+              'EPYC 9V74',
+              'Xeon.*8573C',
+              'Xeon.*8370C',
+              'EPYC 7763',
+              'Xeon.*6973P-C'
+          )
+
+          $rows = @($results | ForEach-Object {
+              $candidate = $_
+              $known = @($knownCpuPatterns | Where-Object { $candidate.CpuName -match $_ }).Count -gt 0
+              [pscustomobject]@{
+                  CandidateId = $candidate.CandidateId
+                  CpuName = $candidate.CpuName
+                  KnownCpu = $known
+                  RunnerName = $candidate.RunnerName
+                  Sha256MedianMs = $candidate.Sha256MedianMs
+                  ProcessStartupMedianMs = $candidate.ProcessStartupMedianMs
+                  RunId = $candidate.RunId
+                  RunAttempt = $candidate.RunAttempt
+                  TimestampUtc = $candidate.TimestampUtc
+              }
+          })
+
+          New-Item -ItemType Directory -Path summary -Force | Out-Null
+          $rows | Export-Csv summary/RunnerCpuSamples.csv -NoTypeInformation -Encoding utf8
+
+          $models = @($rows | Group-Object CpuName | ForEach-Object {
+              [pscustomobject]@{
+                  CpuName = $_.Name
+                  Count = $_.Count
+                  KnownCpu = $_.Group[0].KnownCpu
+                  BestSha256MedianMs = ($_.Group | Measure-Object Sha256MedianMs -Minimum).Minimum
+                  BestProcessStartupMedianMs = ($_.Group | Measure-Object ProcessStartupMedianMs -Minimum).Minimum
+              }
+          } | Sort-Object CpuName)
+
+          $models | Export-Csv summary/RunnerCpuModels.csv -NoTypeInformation -Encoding utf8
+          $models | ConvertTo-Json -Depth 5 | Set-Content summary/RunnerCpuModels.json -Encoding utf8
+
+          Write-Host "Collected samples: $($rows.Count) / 25"
+          Write-Host "Unique CPU models: $($models.Count)"
+          $models | Format-Table -AutoSize
+
+          $unknown = @($models | Where-Object { -not $_.KnownCpu })
+          if ($unknown.Count -gt 0) {
+              Write-Host 'UNKNOWN CPU MODELS FOUND:'
+              $unknown | Format-Table -AutoSize
+          }
+          else {
+              Write-Host 'No unknown CPU models found.'
+          }
+
+          if ($rows.Count -ne 25) {
+              Write-Warning "Expected 25 results but received $($rows.Count)."
+          }
+
+      - name: Upload discovery summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-cpu-summary
+          path: summary/
+          if-no-files-found: warn
+          retention-days: 7
