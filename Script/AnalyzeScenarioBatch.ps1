@@ -919,6 +919,84 @@ if($warnings.Count -gt 0) {
 }
 [System.IO.File]::WriteAllLines((Join-Path $OutputDirectory 'PerformanceReport.md'), $md, [System.Text.UTF8Encoding]::new($false))
 
+# Runner performance comparison.
+$runnerPerformanceRows = [System.Collections.Generic.List[object]]::new()
+$performanceArtifactName = 'scenario-runner-performance'
+
+foreach ($runId in $runIds) {
+    $performanceDirectory = Join-Path $downloadRoot "$runId/RunnerPerformance"
+
+    if (-not $SkipDownload) {
+        New-Item -ItemType Directory -Path $performanceDirectory -Force | Out-Null
+
+        & gh run download $runId `
+            --repo $repo `
+            --name $performanceArtifactName `
+            --dir $performanceDirectory
+
+        if ($LASTEXITCODE -ne 0) {
+            $warnings.Add("Runner performance artifact missing: $runId")
+            continue
+        }
+    }
+
+    $environmentPath = Join-Path $performanceDirectory "Environment.json"
+    $benchmarkPath = Join-Path $performanceDirectory "Benchmark.json"
+
+    if (-not (Test-Path -LiteralPath $environmentPath) -or
+        -not (Test-Path -LiteralPath $benchmarkPath)) {
+        $warnings.Add("Runner performance data incomplete: $runId")
+        continue
+    }
+
+    $environment = Get-Content -LiteralPath $environmentPath -Raw |
+        ConvertFrom-Json
+
+    $benchmark = Get-Content -LiteralPath $benchmarkPath -Raw |
+        ConvertFrom-Json
+
+    $runScenarios = @(
+        $allScenarios | Where-Object { $_.RunId -eq $runId }
+    )
+
+    if ($runScenarios.Count -eq 0) {
+        $warnings.Add("No scenarios for Runner comparison: $runId")
+        continue
+    }
+
+    $firstStart = ($runScenarios | Measure-Object Start -Minimum).Minimum
+    $lastEnd = ($runScenarios | Measure-Object End -Maximum).Maximum
+
+    $elapsedSeconds = ($lastEnd - $firstStart).TotalSeconds
+    $passedCount = @($runScenarios | Where-Object {
+        $_.Result -eq 'PASS'
+    }).Count
+
+    $runnerPerformanceRows.Add([pscustomobject]@{
+        RunId = $runId
+        RunAttempt = $environment.RunAttempt
+        RunnerName = $environment.RunnerName
+        RunnerImage = $environment.RunnerImage
+        RunnerImageVersion = $environment.RunnerImageVersion
+        CPUName = $environment.CPUName
+        LogicalProcessors = $environment.LogicalProcessors
+        TotalMemoryBytes = $environment.TotalMemoryBytes
+        WindowsBuild = $environment.WindowsBuild
+        CPUMedianMs = $benchmark.CPU.MedianMs
+        ProcessStartupMedianMs = $benchmark.ProcessStartup.MedianMs
+        ScenarioCount = $runScenarios.Count
+        PassedCount = $passedCount
+        ScenarioElapsedSeconds = [Math]::Round($elapsedSeconds, 3)
+    })
+}
+
+$comparisonPath = Join-Path $OutputDirectory 'RunnerPerformanceComparison.csv'
+
+Export-Rows @($runnerPerformanceRows | Sort-Object RunId) $comparisonPath
+
+Write-Host "Runner performance records: $($runnerPerformanceRows.Count)"
+
+
 # Package only the analysis outputs for ChatGPT. Raw artifacts and previously
 # generated ZIPs are deliberately excluded.
 $reportFiles = @(
@@ -944,7 +1022,8 @@ $reportFiles = @(
     'DetailedTimingStages.csv',
     'DetailedTimingMethodSummary.csv',
     'DetailedTimingStageSummary.csv',
-    'DetailedTimingAttemptSummary.csv'
+    'DetailedTimingAttemptSummary.csv',
+    'RunnerPerformanceComparison.csv'
 )
 $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $zipPath = Join-Path $OutputDirectory "ScenarioBatchAnalysis_$timestamp.zip"

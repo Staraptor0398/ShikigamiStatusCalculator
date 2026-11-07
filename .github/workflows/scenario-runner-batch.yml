@@ -144,6 +144,14 @@ jobs:
               throw "FFmpeg.exe was not installed."
           }
 
+      - name: Measure Runner performance
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          & ".\Script\MeasureRunnerPerformance.ps1" `
+              -Iterations 7 `
+              -OutputDirectory "RunnerPerformance"
+
       - name: Run Scenario Batch with recording
         id: scenario_batch
         shell: pwsh
@@ -368,6 +376,15 @@ jobs:
           }
 
           Write-Host "Scenario Runner Batch and recording completed."
+
+      - name: Upload Runner performance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-performance
+          path: RunnerPerformance/
+          retention-days: 90
+          if-no-files-found: warn
 
       - name: Upload Scenario Batch video
         if: always()
