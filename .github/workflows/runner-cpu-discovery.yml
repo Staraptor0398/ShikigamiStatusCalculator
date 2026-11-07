@@ -77,8 +77,19 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: runner-cpu-catalog-master
+      cancel-in-progress: false
 
     steps:
+      - name: Checkout catalog and aggregation script
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          persist-credentials: true
+
       - name: Download discovery results
         uses: actions/download-artifact@v4
         with:
@@ -86,76 +97,11 @@ jobs:
           path: discoveries
           merge-multiple: false
 
-      - name: Aggregate results
+      - name: Aggregate results and update catalog
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $files = @(Get-ChildItem discoveries -Filter result.json -Recurse -File)
-          if ($files.Count -eq 0) {
-              throw 'No CPU discovery results were downloaded.'
-          }
-
-          $results = @($files | ForEach-Object {
-              Get-Content $_.FullName -Raw | ConvertFrom-Json
-          } | Sort-Object CandidateId)
-
-          $knownCpuPatterns = @(
-              'EPYC 9V45',
-              'EPYC 9V74',
-              'Xeon.*8573C',
-              'Xeon.*8370C',
-              'EPYC 7763',
-              'Xeon.*6973P-C'
-          )
-
-          $rows = @($results | ForEach-Object {
-              $candidate = $_
-              $known = @($knownCpuPatterns | Where-Object { $candidate.CpuName -match $_ }).Count -gt 0
-              [pscustomobject]@{
-                  CandidateId = $candidate.CandidateId
-                  CpuName = $candidate.CpuName
-                  KnownCpu = $known
-                  RunnerName = $candidate.RunnerName
-                  Sha256MedianMs = $candidate.Sha256MedianMs
-                  ProcessStartupMedianMs = $candidate.ProcessStartupMedianMs
-                  RunId = $candidate.RunId
-                  RunAttempt = $candidate.RunAttempt
-                  TimestampUtc = $candidate.TimestampUtc
-              }
-          })
-
-          New-Item -ItemType Directory -Path summary -Force | Out-Null
-          $rows | Export-Csv summary/RunnerCpuSamples.csv -NoTypeInformation -Encoding utf8
-
-          $models = @($rows | Group-Object CpuName | ForEach-Object {
-              [pscustomobject]@{
-                  CpuName = $_.Name
-                  Count = $_.Count
-                  KnownCpu = $_.Group[0].KnownCpu
-                  BestSha256MedianMs = ($_.Group | Measure-Object Sha256MedianMs -Minimum).Minimum
-                  BestProcessStartupMedianMs = ($_.Group | Measure-Object ProcessStartupMedianMs -Minimum).Minimum
-              }
-          } | Sort-Object CpuName)
-
-          $models | Export-Csv summary/RunnerCpuModels.csv -NoTypeInformation -Encoding utf8
-          $models | ConvertTo-Json -Depth 5 | Set-Content summary/RunnerCpuModels.json -Encoding utf8
-
-          Write-Host "Collected samples: $($rows.Count) / 25"
-          Write-Host "Unique CPU models: $($models.Count)"
-          $models | Format-Table -AutoSize
-
-          $unknown = @($models | Where-Object { -not $_.KnownCpu })
-          if ($unknown.Count -gt 0) {
-              Write-Host 'UNKNOWN CPU MODELS FOUND:'
-              $unknown | Format-Table -AutoSize
-          }
-          else {
-              Write-Host 'No unknown CPU models found.'
-          }
-
-          if ($rows.Count -ne 25) {
-              Write-Warning "Expected 25 results but received $($rows.Count)."
-          }
+          ./Script/RunnerCpuDiscovery/UpdateCpuCatalog.ps1
 
       - name: Upload discovery summary
         if: always()
@@ -165,3 +111,19 @@ jobs:
           path: summary/
           if-no-files-found: warn
           retention-days: 7
+
+      - name: Commit newly discovered CPUs
+        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set -euo pipefail
+          catalog=Data/RunnerPerformance/CpuCatalog.json
+          git add -- "$catalog"
+          if git diff --cached --quiet; then
+            echo 'No new CPU models. Nothing to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Update runner CPU catalog with discovered models'
+          git push origin HEAD:master

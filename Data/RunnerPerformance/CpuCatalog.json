@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "cpuModels": [
+    { "name": "AMD EPYC 7763 64-Core Processor", "firstSeenRunId": null, "firstSeenAtUtc": null, "sha256MedianMs": null, "processStartupMedianMs": null },
+    { "name": "AMD EPYC 9V45 96-Core Processor", "firstSeenRunId": null, "firstSeenAtUtc": null, "sha256MedianMs": null, "processStartupMedianMs": null },
+    { "name": "AMD EPYC 9V74 80-Core Processor", "firstSeenRunId": null, "firstSeenAtUtc": null, "sha256MedianMs": null, "processStartupMedianMs": null },
+    { "name": "Intel(R) Xeon(R) 6973P-C", "firstSeenRunId": 42337860759, "firstSeenAtUtc": null, "sha256MedianMs": 79.8, "processStartupMedianMs": 15.76 },
+    { "name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz", "firstSeenRunId": null, "firstSeenAtUtc": null, "sha256MedianMs": null, "processStartupMedianMs": null },
+    { "name": "INTEL(R) XEON(R) PLATINUM 8573C", "firstSeenRunId": null, "firstSeenAtUtc": null, "sha256MedianMs": null, "processStartupMedianMs": null }
+  ]
+}
