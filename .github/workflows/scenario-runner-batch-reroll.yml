@@ -518,14 +518,63 @@ jobs:
 
           $repository = $env:GITHUB_REPOSITORY
           $runId = $env:GITHUB_RUN_ID
-          $deadline = [DateTime]::UtcNow.AddSeconds(15)
           $downloaded = $false
           $timer = [System.Diagnostics.Stopwatch]::StartNew()
-
           $stagingDirectory = Join-Path $env:RUNNER_TEMP "BuildArtifactStaging"
 
+          $pollIntervalSeconds = 2
+          $maximumWaitSeconds = 15
+          $minimumBuildElapsedSeconds = 25
+
           try {
-              while ([DateTime]::UtcNow -lt $deadline) {
+              $jobs = gh api `
+                  "repos/$repository/actions/runs/$runId/jobs?per_page=100" |
+                  ConvertFrom-Json
+
+              if ($LASTEXITCODE -ne 0) {
+                  throw "Failed to query workflow jobs."
+              }
+
+              $buildJob = $jobs.jobs |
+                  Where-Object { $_.name -eq "Build binaries" } |
+                  Select-Object -First 1
+
+              $waitSeconds = 0
+
+              if ($null -ne $buildJob) {
+                  Write-Host "Build job status: $($buildJob.status)"
+                  Write-Host "Build job conclusion: $($buildJob.conclusion)"
+
+                  if ($buildJob.status -eq "completed") {
+                      if ($buildJob.conclusion -eq "success") {
+                          $waitSeconds = $maximumWaitSeconds
+                      }
+                  }
+                  elseif ($buildJob.status -eq "in_progress") {
+                      $buildElapsed = (
+                          [DateTime]::UtcNow -
+                          ([DateTime]$buildJob.started_at).ToUniversalTime()
+                      ).TotalSeconds
+
+                      Write-Host (
+                          "Build job elapsed: {0:N2} seconds" -f
+                          $buildElapsed
+                      )
+
+                      if ($buildElapsed -ge $minimumBuildElapsedSeconds) {
+                          $waitSeconds = $maximumWaitSeconds
+                      }
+                  }
+              }
+
+              Write-Host "Artifact wait budget: $waitSeconds seconds"
+
+              $deadline = [DateTime]::UtcNow.AddSeconds($waitSeconds)
+              $firstAttempt = $true
+
+              while ($firstAttempt -or [DateTime]::UtcNow -lt $deadline) {
+                  $firstAttempt = $false
+
                   $artifacts = gh api `
                       "repos/$repository/actions/runs/$runId/artifacts" |
                       ConvertFrom-Json
@@ -541,81 +590,85 @@ jobs:
                       } |
                       Select-Object -First 1
 
-                  if ($null -eq $artifact) {
-                      Start-Sleep -Seconds 2
-                      continue
-                  }
+                  if ($null -ne $artifact) {
+                      New-Item -ItemType Directory -Force `
+                          -Path $stagingDirectory | Out-Null
 
-                  New-Item -ItemType Directory -Force `
-                      -Path $stagingDirectory | Out-Null
+                      gh run download $runId `
+                          --repo $repository `
+                          --name "scenario-runner-build" `
+                          --dir $stagingDirectory
 
-                  gh run download $runId `
-                      --repo $repository `
-                      --name "scenario-runner-build" `
-                      --dir $stagingDirectory
-
-                  if ($LASTEXITCODE -ne 0) {
-                      throw "Build artifact download failed."
-                  }
-
-                  $manifestPath = Join-Path $stagingDirectory "manifest.json"
-
-                  if (-not (Test-Path -LiteralPath $manifestPath)) {
-                      throw "Build artifact manifest is missing."
-                  }
-
-                  $manifest = Get-Content `
-                      -LiteralPath $manifestPath -Raw |
-                      ConvertFrom-Json
-
-                  $checkoutCommit = (& git rev-parse HEAD).Trim()
-
-                  if ($LASTEXITCODE -ne 0) {
-                      throw "Failed to resolve checkout commit."
-                  }
-
-                  if ($manifest.Commit -ne $checkoutCommit) {
-                      throw "Build artifact commit does not match checkout."
-                  }
-
-                  if ($manifest.RunnerImage -ne $env:ImageOS) {
-                      throw "Build artifact runner image does not match."
-                  }
-
-                  $requiredPaths = @(
-                      "Gui\Gui.exe"
-                      "Gui\Data\ShikigamiData.csv"
-                      "ScenarioRunnerCli\ScenarioRunnerCli.exe"
-                  )
-
-                  foreach ($relativePath in $requiredPaths) {
-                      $path = Join-Path $stagingDirectory $relativePath
-
-                      if (-not (Test-Path -LiteralPath $path)) {
-                          throw "Build artifact is incomplete: $relativePath"
+                      if ($LASTEXITCODE -ne 0) {
+                          throw "Build artifact download failed."
                       }
+
+                      $manifestPath = Join-Path `
+                          $stagingDirectory "manifest.json"
+
+                      if (-not (Test-Path -LiteralPath $manifestPath)) {
+                          throw "Build artifact manifest is missing."
+                      }
+
+                      $manifest = Get-Content `
+                          -LiteralPath $manifestPath -Raw |
+                          ConvertFrom-Json
+
+                      $checkoutCommit = (& git rev-parse HEAD).Trim()
+
+                      if ($LASTEXITCODE -ne 0) {
+                          throw "Failed to resolve checkout commit."
+                      }
+
+                      if ($manifest.Commit -ne $checkoutCommit) {
+                          throw "Build artifact commit does not match checkout."
+                      }
+
+                      if ($manifest.RunnerImage -ne $env:ImageOS) {
+                          throw "Build artifact runner image does not match."
+                      }
+
+                      $requiredPaths = @(
+                          "Gui\Gui.exe"
+                          "Gui\Data\ShikigamiData.csv"
+                          "ScenarioRunnerCli\ScenarioRunnerCli.exe"
+                      )
+
+                      foreach ($relativePath in $requiredPaths) {
+                          $path = Join-Path $stagingDirectory $relativePath
+
+                          if (-not (Test-Path -LiteralPath $path)) {
+                              throw "Build artifact is incomplete: $relativePath"
+                          }
+                      }
+
+                      $guiSource = Join-Path $stagingDirectory "Gui"
+                      $cliSource = Join-Path $stagingDirectory "ScenarioRunnerCli"
+
+                      $guiTarget = Join-Path $PWD "Gui\bin\x64\Release"
+                      $cliTarget = Join-Path $PWD "ScenarioRunnerCli\bin\x64\Release"
+
+                      New-Item -ItemType Directory -Force `
+                          -Path $guiTarget | Out-Null
+
+                      New-Item -ItemType Directory -Force `
+                          -Path $cliTarget | Out-Null
+
+                      Copy-Item -Path "$guiSource\*" `
+                          -Destination $guiTarget -Recurse -Force
+
+                      Copy-Item -Path "$cliSource\*" `
+                          -Destination $cliTarget -Recurse -Force
+
+                      $downloaded = $true
+                      break
                   }
 
-                  $guiSource = Join-Path $stagingDirectory "Gui"
-                  $cliSource = Join-Path $stagingDirectory "ScenarioRunnerCli"
+                  if ([DateTime]::UtcNow -ge $deadline) {
+                      break
+                  }
 
-                  $guiTarget = Join-Path $PWD "Gui\bin\x64\Release"
-                  $cliTarget = Join-Path $PWD "ScenarioRunnerCli\bin\x64\Release"
-
-                  New-Item -ItemType Directory -Force `
-                      -Path $guiTarget | Out-Null
-
-                  New-Item -ItemType Directory -Force `
-                      -Path $cliTarget | Out-Null
-
-                  Copy-Item -Path "$guiSource\*" `
-                      -Destination $guiTarget -Recurse -Force
-
-                  Copy-Item -Path "$cliSource\*" `
-                      -Destination $cliTarget -Recurse -Force
-
-                  $downloaded = $true
-                  break
+                  Start-Sleep -Seconds $pollIntervalSeconds
               }
           }
           catch {
