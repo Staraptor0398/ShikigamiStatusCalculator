@@ -32,6 +32,236 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  build:
+    name: Build binaries
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v3
+        with:
+          nuget-version: latest
+
+      - name: Restore SaveData packages
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          if (Test-Path "SaveData/packages.config") {
+              nuget restore SaveData/packages.config -PackagesDirectory packages
+
+              if ($LASTEXITCODE -ne 0) {
+                  throw "SaveData NuGet restore failed."
+              }
+          }
+          else {
+              Write-Host "SaveData/packages.config not found. Skipping restore."
+          }
+
+      - name: Build ShikigamiApp and ScenarioRunner CLI
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $msbuild = (Get-Command msbuild -ErrorAction Stop).Source
+          $logDirectory = Join-Path $env:RUNNER_TEMP "BuildLogs"
+
+          New-Item -ItemType Directory -Force `
+              -Path $logDirectory | Out-Null
+
+          $builds = @(
+              @{
+                  Name = "ShikigamiApp"
+                  Arguments = @(
+                      "ShikigamiApp.slnx"
+                      "/m"
+                      "/p:Configuration=Release"
+                      "/p:Platform=x64"
+                  )
+              },
+              @{
+                  Name = "ScenarioRunnerCli"
+                  Arguments = @(
+                      "ScenarioRunner.slnx"
+                      "/restore"
+                      "/m"
+                      "/p:Configuration=ReleaseCli"
+                      "/p:Platform=x64"
+                  )
+              }
+          )
+
+          $processes = @()
+          $timer = [System.Diagnostics.Stopwatch]::StartNew()
+          $startError = $null
+
+          try {
+              foreach ($build in $builds) {
+                  $name = $build.Name
+                  $outputPath = Join-Path $logDirectory "$name.stdout.log"
+                  $errorPath = Join-Path $logDirectory "$name.stderr.log"
+
+                  Write-Host "Starting build: $name"
+
+                  $process = Start-Process `
+                      -FilePath $msbuild `
+                      -ArgumentList $build.Arguments `
+                      -RedirectStandardOutput $outputPath `
+                      -RedirectStandardError $errorPath `
+                      -PassThru `
+                      -NoNewWindow
+
+                  $processes += @{
+                      Name = $name
+                      Process = $process
+                      OutputPath = $outputPath
+                      ErrorPath = $errorPath
+                  }
+              }
+          }
+          catch {
+              $startError = $_
+          }
+          finally {
+              foreach ($entry in $processes) {
+                  $entry.Process.WaitForExit()
+              }
+
+              $timer.Stop()
+          }
+
+          $failedBuilds = @()
+
+          foreach ($entry in $processes) {
+              $name = $entry.Name
+              $exitCode = $entry.Process.ExitCode
+
+              Write-Host "========================================"
+              Write-Host "Build: $name"
+              Write-Host "Exit code: $exitCode"
+              Write-Host "========================================"
+
+              if (Test-Path -LiteralPath $entry.OutputPath) {
+                  Get-Content -LiteralPath $entry.OutputPath |
+                      ForEach-Object { Write-Host $_ }
+              }
+
+              if (Test-Path -LiteralPath $entry.ErrorPath) {
+                  Get-Content -LiteralPath $entry.ErrorPath |
+                      ForEach-Object { Write-Host $_ }
+              }
+
+              if ($exitCode -ne 0) {
+                  $failedBuilds += $name
+              }
+
+              $entry.Process.Dispose()
+          }
+
+          Write-Host (
+              "[Timing] BuildJobParallelBuild: {0:N2} ms" -f
+              $timer.Elapsed.TotalMilliseconds
+          )
+
+          if ($null -ne $startError) {
+              throw "Failed to start parallel builds: $($startError.Exception.Message)"
+          }
+
+          if ($failedBuilds.Count -gt 0) {
+              throw "Build failed: $($failedBuilds -join ', ')"
+          }
+
+          Write-Host "Both builds completed successfully."
+
+      - name: Verify binaries
+        shell: pwsh
+        run: |
+          $requiredPaths = @(
+              "Gui\bin\x64\Release\Gui.exe"
+              "Gui\bin\x64\Release\Data\ShikigamiData.csv"
+              "ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe"
+          )
+
+          foreach ($path in $requiredPaths) {
+              if (-not (Test-Path -LiteralPath $path)) {
+                  throw "Missing build output: $path"
+              }
+          }
+
+      - name: Prepare build artifact
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $packageDirectory = Join-Path $PWD "BuildArtifact"
+          $guiSource = Join-Path $PWD "Gui\bin\x64\Release"
+          $cliSource = Join-Path $PWD "ScenarioRunnerCli\bin\x64\Release"
+
+          $guiTarget = Join-Path $packageDirectory "Gui"
+          $cliTarget = Join-Path $packageDirectory "ScenarioRunnerCli"
+
+          New-Item -ItemType Directory -Force -Path $guiTarget | Out-Null
+          New-Item -ItemType Directory -Force -Path $cliTarget | Out-Null
+
+          Copy-Item -Path "$guiSource\*" `
+              -Destination $guiTarget -Recurse -Force
+
+          Copy-Item -Path "$cliSource\*" `
+              -Destination $cliTarget -Recurse -Force
+
+          $requiredPaths = @(
+              (Join-Path $guiTarget "Gui.exe")
+              (Join-Path $guiTarget "Data\ShikigamiData.csv")
+              (Join-Path $cliTarget "ScenarioRunnerCli.exe")
+          )
+
+          foreach ($path in $requiredPaths) {
+              if (-not (Test-Path -LiteralPath $path)) {
+                  throw "Missing packaged output: $path"
+              }
+          }
+
+          $commit = (& git rev-parse HEAD).Trim()
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "Failed to resolve build commit."
+          }
+
+          $manifest = [ordered]@{
+              Commit = $commit
+              RunnerImage = $env:ImageOS
+              RunnerImageVersion = $env:ImageVersion
+              CreatedUtc = [DateTime]::UtcNow.ToString("o")
+          }
+
+          $manifest |
+              ConvertTo-Json -Depth 5 |
+              Set-Content `
+                  -LiteralPath (Join-Path $packageDirectory "manifest.json") `
+                  -Encoding utf8
+
+          Write-Host "Build artifact prepared."
+          Write-Host "Commit: $commit"
+
+      - name: Upload build binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-build
+          path: BuildArtifact/
+          retention-days: 1
+          if-no-files-found: error
+
   candidate:
     name: Candidate ${{ matrix.id }}
     runs-on: windows-2025-vs2026
@@ -279,6 +509,133 @@ jobs:
           Write-Host "Candidate $env:CANDIDATE_ID rejected."
           Write-Host "Benchmark data was preserved."
 
+      - name: Download build binaries
+        id: download_build
+        if: steps.selection.outputs.selected == 'true'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $repository = $env:GITHUB_REPOSITORY
+          $runId = $env:GITHUB_RUN_ID
+          $deadline = [DateTime]::UtcNow.AddSeconds(15)
+          $downloaded = $false
+          $timer = [System.Diagnostics.Stopwatch]::StartNew()
+
+          $stagingDirectory = Join-Path $env:RUNNER_TEMP "BuildArtifactStaging"
+
+          try {
+              while ([DateTime]::UtcNow -lt $deadline) {
+                  $artifacts = gh api `
+                      "repos/$repository/actions/runs/$runId/artifacts" |
+                      ConvertFrom-Json
+
+                  if ($LASTEXITCODE -ne 0) {
+                      throw "Failed to list build artifacts."
+                  }
+
+                  $artifact = $artifacts.artifacts |
+                      Where-Object {
+                          $_.name -eq "scenario-runner-build" -and
+                          -not $_.expired
+                      } |
+                      Select-Object -First 1
+
+                  if ($null -eq $artifact) {
+                      Start-Sleep -Seconds 2
+                      continue
+                  }
+
+                  New-Item -ItemType Directory -Force `
+                      -Path $stagingDirectory | Out-Null
+
+                  gh run download $runId `
+                      --repo $repository `
+                      --name "scenario-runner-build" `
+                      --dir $stagingDirectory
+
+                  if ($LASTEXITCODE -ne 0) {
+                      throw "Build artifact download failed."
+                  }
+
+                  $manifestPath = Join-Path $stagingDirectory "manifest.json"
+
+                  if (-not (Test-Path -LiteralPath $manifestPath)) {
+                      throw "Build artifact manifest is missing."
+                  }
+
+                  $manifest = Get-Content `
+                      -LiteralPath $manifestPath -Raw |
+                      ConvertFrom-Json
+
+                  $checkoutCommit = (& git rev-parse HEAD).Trim()
+
+                  if ($LASTEXITCODE -ne 0) {
+                      throw "Failed to resolve checkout commit."
+                  }
+
+                  if ($manifest.Commit -ne $checkoutCommit) {
+                      throw "Build artifact commit does not match checkout."
+                  }
+
+                  if ($manifest.RunnerImage -ne $env:ImageOS) {
+                      throw "Build artifact runner image does not match."
+                  }
+
+                  $requiredPaths = @(
+                      "Gui\Gui.exe"
+                      "Gui\Data\ShikigamiData.csv"
+                      "ScenarioRunnerCli\ScenarioRunnerCli.exe"
+                  )
+
+                  foreach ($relativePath in $requiredPaths) {
+                      $path = Join-Path $stagingDirectory $relativePath
+
+                      if (-not (Test-Path -LiteralPath $path)) {
+                          throw "Build artifact is incomplete: $relativePath"
+                      }
+                  }
+
+                  $guiSource = Join-Path $stagingDirectory "Gui"
+                  $cliSource = Join-Path $stagingDirectory "ScenarioRunnerCli"
+
+                  $guiTarget = Join-Path $PWD "Gui\bin\x64\Release"
+                  $cliTarget = Join-Path $PWD "ScenarioRunnerCli\bin\x64\Release"
+
+                  New-Item -ItemType Directory -Force `
+                      -Path $guiTarget | Out-Null
+
+                  New-Item -ItemType Directory -Force `
+                      -Path $cliTarget | Out-Null
+
+                  Copy-Item -Path "$guiSource\*" `
+                      -Destination $guiTarget -Recurse -Force
+
+                  Copy-Item -Path "$cliSource\*" `
+                      -Destination $cliTarget -Recurse -Force
+
+                  $downloaded = $true
+                  break
+              }
+          }
+          catch {
+              Write-Warning "Build artifact unavailable: $($_.Exception.Message)"
+          }
+          finally {
+              $timer.Stop()
+
+              Write-Host (
+                  "[Timing] BuildArtifactWaitAndDownload: {0:N2} ms" -f
+                  $timer.Elapsed.TotalMilliseconds
+              )
+
+              Write-Host "Build artifact downloaded: $downloaded"
+
+              "downloaded=$($downloaded.ToString().ToLowerInvariant())" |
+                  Out-File -FilePath $env:GITHUB_OUTPUT `
+                      -Append -Encoding utf8
+          }
+
       - name: Verify live stream configuration
         if: steps.selection.outputs.selected == 'true' && inputs.enable_live_stream
         shell: pwsh
@@ -290,13 +647,13 @@ jobs:
           Write-Host "YouTube live streaming is enabled."
 
       - name: Setup MSBuild
-        if: steps.selection.outputs.selected == 'true'
+        if: steps.selection.outputs.selected == 'true' && steps.download_build.outputs.downloaded != 'true'
         uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
 
       - name: Setup NuGet
-        if: steps.selection.outputs.selected == 'true'
+        if: steps.selection.outputs.selected == 'true' && steps.download_build.outputs.downloaded != 'true'
         uses: nuget/setup-nuget@v3
         with:
           nuget-version: latest
@@ -343,7 +700,7 @@ jobs:
           Write-Host "FFmpeg installation completed."
 
       - name: Restore SaveData packages
-        if: steps.selection.outputs.selected == 'true'
+        if: steps.selection.outputs.selected == 'true' && steps.download_build.outputs.downloaded != 'true'
         shell: pwsh
         run: |
           if (Test-Path "SaveData/packages.config") {
@@ -358,10 +715,16 @@ jobs:
           }
 
       - name: Build ShikigamiApp and ScenarioRunner CLI
-        if: steps.selection.outputs.selected == 'true'
+        if: steps.selection.outputs.selected == 'true' && steps.download_build.outputs.downloaded != 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
+
+          Remove-Item "Gui\bin\x64\Release" `
+              -Recurse -Force -ErrorAction SilentlyContinue
+
+          Remove-Item "ScenarioRunnerCli\bin\x64\Release" `
+              -Recurse -Force -ErrorAction SilentlyContinue
 
           $msbuild = (Get-Command msbuild -ErrorAction Stop).Source
           $logDirectory = Join-Path $env:RUNNER_TEMP "BuildLogs"
