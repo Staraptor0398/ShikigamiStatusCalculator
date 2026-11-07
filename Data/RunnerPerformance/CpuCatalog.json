@@ -5,8 +5,8 @@
       "name": "AMD EPYC 7763 64-Core Processor",
       "firstSeenRunId": null,
       "firstSeenAtUtc": null,
-      "sha256MedianMs": null,
-      "processStartupMedianMs": null,
+      "sha256MedianMs": 86.0855,
+      "processStartupMedianMs": 17.3125,
       "scenarioBatchMedianSeconds": 310.74,
       "scenarioBatchSampleCount": 12
     },
@@ -14,8 +14,8 @@
       "name": "AMD EPYC 9V45 96-Core Processor",
       "firstSeenRunId": null,
       "firstSeenAtUtc": null,
-      "sha256MedianMs": null,
-      "processStartupMedianMs": null,
+      "sha256MedianMs": 65.14500000000001,
+      "processStartupMedianMs": 11.847999999999999,
       "scenarioBatchMedianSeconds": 163.18,
       "scenarioBatchSampleCount": 2
     },
@@ -23,8 +23,8 @@
       "name": "AMD EPYC 9V74 80-Core Processor",
       "firstSeenRunId": null,
       "firstSeenAtUtc": null,
-      "sha256MedianMs": null,
-      "processStartupMedianMs": null,
+      "sha256MedianMs": 75.2875,
+      "processStartupMedianMs": 13.439,
       "scenarioBatchMedianSeconds": 201.765,
       "scenarioBatchSampleCount": 8
     },
@@ -50,8 +50,8 @@
       "name": "INTEL(R) XEON(R) PLATINUM 8573C",
       "firstSeenRunId": null,
       "firstSeenAtUtc": null,
-      "sha256MedianMs": null,
-      "processStartupMedianMs": null,
+      "sha256MedianMs": 88.7525,
+      "processStartupMedianMs": 17.6615,
       "scenarioBatchMedianSeconds": 251.005,
       "scenarioBatchSampleCount": 6
     }
