@@ -154,8 +154,10 @@ $rankedCandidates = @(
                 $processStartupRatio
             )
 
-            $isAnomalous = $sha256Ratio -ge $anomalyThreshold -and
-                $processStartupRatio -ge $anomalyThreshold
+            $epsilon = 1e-10
+
+            $isAnomalous = $sha256Ratio -ge ($anomalyThreshold - $epsilon) -and
+                $processStartupRatio -ge ($anomalyThreshold - $epsilon)
 
             if ($isAnomalous) {
                 $anomalyReason = (
