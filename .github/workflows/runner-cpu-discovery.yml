@@ -112,18 +112,23 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Commit newly discovered CPUs
+      - name: Commit CPU catalog updates
         if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           set -euo pipefail
+
           catalog=Data/RunnerPerformance/CpuCatalog.json
+
           git add -- "$catalog"
+
           if git diff --cached --quiet; then
-            echo 'No new CPU models. Nothing to commit.'
+            echo 'No CPU catalog changes. Nothing to commit.'
             exit 0
           fi
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'Update runner CPU catalog with discovered models'
+
+          git commit -m 'Update runner CPU catalog'
           git push origin HEAD:master
