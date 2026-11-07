@@ -134,19 +134,36 @@ jobs:
                       if ($LASTEXITCODE -ne 0) {
                           throw "Selection download failed."
                       }
-
-                      $selectionPath = Join-Path `
-                          $selectionDirectory "selection.json"
-
-                      $selection = Get-Content `
-                          -Path $selectionPath -Raw |
-                          ConvertFrom-Json
-
-                      break
                   }
                   catch {
                       Write-Warning $_.Exception.Message
+                      Start-Sleep -Seconds 5
+                      continue
                   }
+
+                  $failurePath = Join-Path `
+                      $selectionDirectory "failure.json"
+
+                  if (Test-Path -LiteralPath $failurePath) {
+                      $failure = Get-Content `
+                          -LiteralPath $failurePath -Raw |
+                          ConvertFrom-Json
+
+                      throw "Runner selector failed: $($failure.Reason)"
+                  }
+
+                  $selectionPath = Join-Path `
+                      $selectionDirectory "selection.json"
+
+                  if (-not (Test-Path -LiteralPath $selectionPath)) {
+                      throw "Selection artifact contains no decision."
+                  }
+
+                  $selection = Get-Content `
+                      -LiteralPath $selectionPath -Raw |
+                      ConvertFrom-Json
+
+                  break
               }
 
               Write-Host "Waiting for runner selection..."
@@ -213,6 +230,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Wait for candidates
+        id: wait
         shell: bash
         run: |
           set -euo pipefail
@@ -256,6 +274,7 @@ jobs:
           done
 
       - name: Select candidate
+        id: select
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
@@ -267,7 +286,31 @@ jobs:
               -OutputDirectory "RunnerSelection" `
               -ExpectedCandidates 5
 
+      - name: Prepare selection failure
+        if: failure()
+        shell: pwsh
+        env:
+          WAIT_OUTCOME: ${{ steps.wait.outcome }}
+          SELECT_OUTCOME: ${{ steps.select.outcome }}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          New-Item -ItemType Directory -Force `
+              -Path "RunnerSelection" | Out-Null
+
+          $failure = [ordered]@{
+              Reason = "Selector failed. Wait=$env:WAIT_OUTCOME, Select=$env:SELECT_OUTCOME"
+              TimestampUtc = [DateTime]::UtcNow.ToString("o")
+          }
+
+          $failure |
+              ConvertTo-Json -Depth 5 |
+              Set-Content "RunnerSelection/failure.json" -Encoding utf8
+
+          Write-Host $failure.Reason
+
       - name: Publish selection
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: runner-selection
