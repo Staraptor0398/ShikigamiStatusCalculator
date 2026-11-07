@@ -1,0 +1,857 @@
+name: Scenario Runner Batch Reroll
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or commit SHA to test"
+        required: true
+        default: "master"
+        type: string
+      selection_mode:
+        description: "Runner selection strategy"
+        required: true
+        default: Fastest
+        type: choice
+        options:
+          - Unknown
+          - Fastest
+          - Target
+      enable_live_stream:
+        description: "Stream to YouTube Live (do not start consecutive live runs)"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ${{ inputs.enable_live_stream && 'scenario-runner-batch-live' || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    name: Candidate ${{ matrix.id }}
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [1, 2, 3, 4, 5]
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CANDIDATE_ID: ${{ matrix.id }}
+      ENABLE_LIVE_STREAM: ${{ inputs.enable_live_stream }}
+      YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+      YOUTUBE_RTMPS_URL: rtmps://a.rtmps.youtube.com/live2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Measure runner performance
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          & ".\Script\MeasureRunnerPerformance.ps1" `
+              -Iterations 7 `
+              -OutputDirectory "RunnerPerformance"
+
+      - name: Prepare candidate metadata
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $environment = Get-Content `
+              "RunnerPerformance/Environment.json" -Raw |
+              ConvertFrom-Json
+          $benchmark = Get-Content `
+              "RunnerPerformance/Benchmark.json" -Raw |
+              ConvertFrom-Json
+
+          $result = [ordered]@{
+              CandidateId = [int]$env:CANDIDATE_ID
+              CpuName = $environment.CPUName.Trim()
+              RunnerName = $environment.RunnerName
+              RunnerImage = $environment.RunnerImageVersion
+              LogicalProcessors = $environment.LogicalProcessors
+              Sha256MedianMs = $benchmark.CPU.MedianMs
+              ProcessStartupMedianMs = $benchmark.ProcessStartup.MedianMs
+              TimestampUtc = [DateTime]::UtcNow.ToString("o")
+          }
+
+          New-Item -ItemType Directory -Force `
+              -Path "RunnerCandidate" | Out-Null
+
+          $result |
+              ConvertTo-Json -Depth 5 |
+              Set-Content "RunnerCandidate/result.json" -Encoding utf8
+
+          Write-Host "Candidate: $env:CANDIDATE_ID"
+          Write-Host "CPU: $($result.CpuName)"
+          Write-Host "Runner: $($result.RunnerName)"
+          Write-Host "SHA256 median: $($result.Sha256MedianMs) ms"
+          Write-Host "Process startup median: $($result.ProcessStartupMedianMs) ms"
+
+      - name: Publish candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-candidate-${{ matrix.id }}
+          path: |
+            RunnerCandidate/result.json
+            RunnerPerformance/Environment.json
+            RunnerPerformance/Benchmark.json
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Wait for selection
+        id: selection
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $repository = $env:GITHUB_REPOSITORY
+          $runId = $env:GITHUB_RUN_ID
+          $candidateId = [int]$env:CANDIDATE_ID
+          $selectionDirectory = Join-Path $env:RUNNER_TEMP "RunnerSelection"
+          $deadline = [DateTime]::UtcNow.AddMinutes(8)
+          $selection = $null
+
+          while ([DateTime]::UtcNow -lt $deadline) {
+              $artifacts = gh api `
+                  "repos/$repository/actions/runs/$runId/artifacts" |
+                  ConvertFrom-Json
+
+              if ($LASTEXITCODE -ne 0) {
+                  throw "Failed to list workflow artifacts."
+              }
+
+              $decision = $artifacts.artifacts |
+                  Where-Object {
+                      $_.name -eq "runner-selection" -and
+                      -not $_.expired
+                  } |
+                  Select-Object -First 1
+
+              if ($null -ne $decision) {
+                  try {
+                      New-Item -ItemType Directory -Force `
+                          -Path $selectionDirectory | Out-Null
+
+                      gh run download $runId `
+                          --repo $repository `
+                          --name "runner-selection" `
+                          --dir $selectionDirectory
+
+                      if ($LASTEXITCODE -ne 0) {
+                          throw "Selection download failed."
+                      }
+                  }
+                  catch {
+                      Write-Warning $_.Exception.Message
+                      Start-Sleep -Seconds 5
+                      continue
+                  }
+
+                  $failurePath = Join-Path `
+                      $selectionDirectory "failure.json"
+
+                  if (Test-Path -LiteralPath $failurePath) {
+                      $failure = Get-Content `
+                          -LiteralPath $failurePath -Raw |
+                          ConvertFrom-Json
+
+                      throw "Runner selector failed: $($failure.Reason)"
+                  }
+
+                  $selectionPath = Join-Path `
+                      $selectionDirectory "selection.json"
+
+                  if (-not (Test-Path -LiteralPath $selectionPath)) {
+                      throw "Selection artifact contains no decision."
+                  }
+
+                  $selection = Get-Content `
+                      -LiteralPath $selectionPath -Raw |
+                      ConvertFrom-Json
+
+                  break
+              }
+
+              Write-Host "Waiting for runner selection..."
+              Start-Sleep -Seconds 5
+          }
+
+          if ($null -eq $selection) {
+              throw "Runner selection timed out."
+          }
+
+          $selectedId = [int]$selection.SelectedCandidateId
+          $selected = $candidateId -eq $selectedId
+
+          Write-Host "Selected candidate: $selectedId"
+          Write-Host "This candidate: $candidateId"
+          Write-Host "Selected: $selected"
+
+          "selected=$($selected.ToString().ToLowerInvariant())" |
+              Out-File -FilePath $env:GITHUB_OUTPUT `
+                  -Append -Encoding utf8
+
+      - name: Report rejected candidate
+        if: steps.selection.outputs.selected == 'false'
+        shell: pwsh
+        run: |
+          Write-Host "Candidate $env:CANDIDATE_ID rejected."
+          Write-Host "Benchmark data was preserved."
+
+      - name: Verify live stream configuration
+        if: steps.selection.outputs.selected == 'true' && inputs.enable_live_stream
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:YOUTUBE_STREAM_KEY)) {
+              throw "Repository secret YOUTUBE_STREAM_KEY is not configured."
+          }
+
+          Write-Host "YouTube live streaming is enabled."
+
+      - name: Setup MSBuild
+        if: steps.selection.outputs.selected == 'true'
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Setup NuGet
+        if: steps.selection.outputs.selected == 'true'
+        uses: nuget/setup-nuget@v3
+        with:
+          nuget-version: latest
+
+      - name: Install FFmpeg
+        if: steps.selection.outputs.selected == 'true'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $ffmpegUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-gpl-9.0.zip"
+          $ffmpegDirectory = Join-Path $PWD "Tools\FFmpeg"
+          $archivePath = Join-Path $env:RUNNER_TEMP "ffmpeg.zip"
+          $extractDirectory = Join-Path $env:RUNNER_TEMP "ffmpeg-extracted"
+
+          New-Item -ItemType Directory -Force -Path $ffmpegDirectory | Out-Null
+
+          Invoke-WebRequest -Uri $ffmpegUrl -OutFile $archivePath
+
+          Expand-Archive -Path $archivePath -DestinationPath $extractDirectory -Force
+
+          $ffmpegExecutable = Get-ChildItem -Path $extractDirectory -Filter "ffmpeg.exe" -Recurse -File |
+              Select-Object -First 1
+
+          if ($null -eq $ffmpegExecutable) {
+              throw "FFmpeg executable was not found in the archive."
+          }
+
+          Copy-Item $ffmpegExecutable.FullName (Join-Path $ffmpegDirectory "ffmpeg.exe")
+
+          $installedFFmpeg = Join-Path $ffmpegDirectory "ffmpeg.exe"
+
+          if (-not (Test-Path $installedFFmpeg)) {
+              throw "FFmpeg installation failed."
+          }
+
+          $versionOutput = & $installedFFmpeg -version
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "FFmpeg verification failed."
+          }
+
+          Write-Host ($versionOutput | Select-Object -First 1)
+          Write-Host "FFmpeg installation completed."
+
+      - name: Restore SaveData packages
+        if: steps.selection.outputs.selected == 'true'
+        shell: pwsh
+        run: |
+          if (Test-Path "SaveData/packages.config") {
+              nuget restore SaveData/packages.config -PackagesDirectory packages
+
+              if ($LASTEXITCODE -ne 0) {
+                  throw "SaveData NuGet restore failed."
+              }
+          }
+          else {
+              Write-Host "SaveData/packages.config not found. Skipping restore."
+          }
+
+      - name: Build ShikigamiApp
+        if: steps.selection.outputs.selected == 'true'
+        shell: pwsh
+        run: msbuild ShikigamiApp.slnx /m /p:Configuration=Release /p:Platform=x64
+
+      - name: Build ScenarioRunner CLI
+        if: steps.selection.outputs.selected == 'true'
+        shell: pwsh
+        run: msbuild ScenarioRunner.slnx /restore /m /p:Configuration=ReleaseCli /p:Platform=x64
+
+      - name: Verify binaries
+        if: steps.selection.outputs.selected == 'true'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "Gui\bin\x64\Release\Gui.exe")) {
+              throw "Gui.exe was not built."
+          }
+
+          if (-not (Test-Path "ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe")) {
+              throw "ScenarioRunnerCli.exe was not built."
+          }
+
+          if (-not (Test-Path "Tools\FFmpeg\ffmpeg.exe")) {
+              throw "FFmpeg.exe was not installed."
+          }
+
+      - name: Run Scenario Batch with recording
+        if: steps.selection.outputs.selected == 'true'
+        id: scenario_batch
+        shell: pwsh
+        run: |
+          $enableLiveStream = $env:ENABLE_LIVE_STREAM -eq "true"
+
+          $videoDirectory = Join-Path $PWD "ScenarioVideo"
+          $videoPath = "ScenarioVideo/ScenarioBatch.mp4"
+          $overlayPath = Join-Path $videoDirectory "current_scenario.txt"
+          $tempOverlayPath = Join-Path $videoDirectory "current_scenario.tmp"
+          $fontPath = Join-Path $videoDirectory "overlay.ttf"
+
+          New-Item -ItemType Directory -Force -Path $videoDirectory | Out-Null
+          Copy-Item "C:\Windows\Fonts\arial.ttf" $fontPath
+
+          $utf8 = [System.Text.UTF8Encoding]::new($false)
+
+          [System.IO.File]::WriteAllText(
+              $overlayPath,
+              "Waiting for Scenario Runner...",
+              $utf8
+          )
+
+          function Update-ScenarioOverlay {
+              param([string]$text)
+
+              try {
+                  [System.IO.File]::WriteAllText($tempOverlayPath, $text, $utf8)
+
+                  for ($attempt = 1; $attempt -le 10; $attempt++) {
+                      try {
+                          [System.IO.File]::Move($tempOverlayPath, $overlayPath, $true)
+                          return
+                      }
+                      catch [System.IO.IOException] {
+                          if ($attempt -eq 10) { throw }
+                      }
+                      catch [System.UnauthorizedAccessException] {
+                          if ($attempt -eq 10) { throw }
+                      }
+
+                      Start-Sleep -Milliseconds 100
+                  }
+              }
+              catch {
+                  Write-Warning "Overlay update skipped after retries: $($_.Exception.Message)"
+              }
+          }
+
+          $drawText = "drawtext=fontfile=ScenarioVideo/overlay.ttf:textfile=ScenarioVideo/current_scenario.txt:reload=1:fontcolor=white:fontsize=26:box=1:boxcolor=black@0.75:boxborderw=12:x=20:y=20"
+
+          $ffmpegArguments = "-hide_banner -loglevel quiet -nostats -y -f gdigrab -framerate 5 -draw_mouse 1 -i desktop -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -map 0:v:0 -map 1:a:0 -vf `"$drawText`" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -b:v 1800k -maxrate 1800k -bufsize 3600k -g 10 -flags +global_header -c:a aac -b:a 128k -ar 44100"
+
+          if ($enableLiveStream) {
+              $streamUrl = "$env:YOUTUBE_RTMPS_URL/$env:YOUTUBE_STREAM_KEY"
+              $teeOutput = "[f=mp4]$videoPath|[f=flv:onfail=ignore]$streamUrl"
+              $ffmpegArguments += " -f tee `"$teeOutput`""
+
+              Write-Host "Recording and YouTube live streaming are enabled."
+          }
+          else {
+              $ffmpegArguments += " -f mp4 `"$videoPath`""
+              Write-Host "Recording is enabled. YouTube live streaming is disabled."
+          }
+
+          $ffmpegInfo = New-Object System.Diagnostics.ProcessStartInfo
+          $ffmpegInfo.FileName = (Resolve-Path ".\Tools\FFmpeg\ffmpeg.exe").Path
+          $ffmpegInfo.Arguments = $ffmpegArguments
+          $ffmpegInfo.UseShellExecute = $false
+          $ffmpegInfo.RedirectStandardInput = $true
+          $ffmpegInfo.RedirectStandardOutput = $false
+          $ffmpegInfo.RedirectStandardError = $false
+
+          $ffmpeg = New-Object System.Diagnostics.Process
+          $ffmpeg.StartInfo = $ffmpegInfo
+          $ffmpegStarted = $false
+
+          $scenarioProcess = $null
+          $scenarioExitCode = 1
+          $streamFailed = $false
+          $lastScenarioName = $null
+          $lastScenarioResult = $null
+          $batchResult = $null
+
+          try {
+              Write-Host "Starting FFmpeg."
+
+              $ffmpegStarted = $ffmpeg.Start()
+              if (-not $ffmpegStarted) {
+                  throw "Failed to start FFmpeg."
+              }
+
+              $startupWaitSeconds = if ($enableLiveStream) { 5 } else { 1 }
+              Start-Sleep -Seconds $startupWaitSeconds
+
+              if ($ffmpeg.HasExited) {
+                  throw "FFmpeg exited before Scenario Runner started."
+              }
+
+              Write-Host "Starting Scenario Runner Batch."
+
+              $scenarioInfo = New-Object System.Diagnostics.ProcessStartInfo
+              $scenarioInfo.FileName = (Resolve-Path ".\ScenarioRunnerCli\bin\x64\Release\ScenarioRunnerCli.exe").Path
+              $scenarioInfo.Arguments = '--run-directory ".\Scenario"'
+              $scenarioInfo.UseShellExecute = $false
+              $scenarioInfo.RedirectStandardOutput = $true
+              $scenarioInfo.RedirectStandardError = $false
+
+              $scenarioProcess = New-Object System.Diagnostics.Process
+              $scenarioProcess.StartInfo = $scenarioInfo
+
+              if (-not $scenarioProcess.Start()) {
+                  throw "Failed to start Scenario Runner."
+              }
+
+              while ($null -ne ($line = $scenarioProcess.StandardOutput.ReadLine())) {
+                  Write-Host $line
+
+                  if ($line.StartsWith("[Batch] Running: ", [System.StringComparison]::Ordinal)) {
+                      $lastScenarioName = $line.Substring("[Batch] Running: ".Length).Replace("\", "/")
+                      $lastScenarioResult = "RUNNING"
+
+                      Update-ScenarioOverlay -text $lastScenarioName
+                  }
+                  elseif ($line.StartsWith("[Batch] PASS: ", [System.StringComparison]::Ordinal)) {
+                      $lastScenarioResult = "PASS"
+                  }
+                  elseif ($line.StartsWith("[Batch] FAIL: ", [System.StringComparison]::Ordinal)) {
+                      $lastScenarioResult = "FAIL"
+                  }
+                  elseif ($line.StartsWith("Batch Result: ", [System.StringComparison]::Ordinal)) {
+                      $batchResult = $line.Substring("Batch Result: ".Length).Trim()
+                  }
+
+                  if ($ffmpeg.HasExited) {
+                      $streamFailed = $true
+                  }
+              }
+
+              $scenarioProcess.WaitForExit()
+              $scenarioExitCode = $scenarioProcess.ExitCode
+              $streamFailed = $streamFailed -or $ffmpeg.HasExited
+
+              if (-not $ffmpeg.HasExited) {
+                  if ([string]::IsNullOrWhiteSpace($batchResult)) {
+                      $batchResult = if ($scenarioExitCode -eq 0) { "PASS" } else { "FAIL" }
+                  }
+
+                  if ([string]::IsNullOrWhiteSpace($lastScenarioResult)) {
+                      $lastScenarioResult = "UNKNOWN"
+                  }
+
+                  $finalOverlay = "Batch: $batchResult"
+
+                  if (-not [string]::IsNullOrWhiteSpace($lastScenarioName)) {
+                      $finalOverlay += "`nLast: $lastScenarioName [$lastScenarioResult]"
+                  }
+
+                  Update-ScenarioOverlay -text $finalOverlay
+
+                  Write-Host "Holding the final result for 3 seconds."
+                  Start-Sleep -Seconds 3
+              }
+          }
+          finally {
+              if ($null -ne $scenarioProcess) {
+                  if (-not $scenarioProcess.HasExited) {
+                      $scenarioProcess.Kill()
+                      $scenarioProcess.WaitForExit()
+                  }
+
+                  $scenarioProcess.Dispose()
+              }
+
+              if ($ffmpegStarted -and -not $ffmpeg.HasExited) {
+                  try {
+                      $ffmpeg.StandardInput.WriteLine("q")
+                      $ffmpeg.StandardInput.Flush()
+
+                      if (-not $ffmpeg.WaitForExit(10000)) {
+                          $ffmpeg.Kill()
+                          $ffmpeg.WaitForExit()
+                      }
+                  }
+                  catch {
+                      if (-not $ffmpeg.HasExited) {
+                          $ffmpeg.Kill()
+                          $ffmpeg.WaitForExit()
+                      }
+
+                      throw
+                  }
+              }
+
+              $ffmpeg.Dispose()
+          }
+
+          if ($scenarioExitCode -ne 0) {
+              throw "Scenario Runner Batch failed with exit code $scenarioExitCode."
+          }
+
+          if ($streamFailed) {
+              throw "FFmpeg stopped before Scenario Runner finished."
+          }
+
+          if (-not (Test-Path $videoPath)) {
+              throw "MP4 recording was not created."
+          }
+
+          Write-Host "Scenario Runner Batch and recording completed."
+
+      - name: Upload Runner performance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-performance-${{ matrix.id }}
+          path: RunnerPerformance/
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Upload Scenario Batch video
+        if: always() && steps.selection.outputs.selected == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-batch-video
+          path: ScenarioVideo\ScenarioBatch.mp4
+          if-no-files-found: warn
+
+      - name: Upload failure captures
+        if: failure() && steps.selection.outputs.selected == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-batch-captures
+          path: ScenarioRunnerCli\bin\x64\Release\Capture
+          if-no-files-found: ignore
+
+      - name: Upload logs
+        if: always() && steps.selection.outputs.selected == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-batch-logs
+          path: |
+            ScenarioRunnerCli\bin\x64\Release\Log
+            Gui\bin\x64\Release\Log
+          if-no-files-found: ignore
+
+      - name: Prepare failure reproduction package
+        if: ${{ failure() && steps.scenario_batch.outcome == 'failure' }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $packageDirectory = Join-Path $PWD "FailureReproduction"
+          $guiSourceDirectory = Join-Path $PWD "Gui\bin\x64\Release"
+          $cliSourceDirectory = Join-Path $PWD "ScenarioRunnerCli\bin\x64\Release"
+          $scenarioSourceDirectory = Join-Path $PWD "Scenario"
+
+          $guiTargetDirectory = Join-Path $packageDirectory "Gui"
+          $cliTargetDirectory = Join-Path $packageDirectory "ScenarioRunnerCli"
+          $scenarioTargetDirectory = Join-Path $packageDirectory "Scenario"
+
+          $requiredPaths = @(
+              (Join-Path $guiSourceDirectory "Gui.exe"),
+              (Join-Path $cliSourceDirectory "ScenarioRunnerCli.exe"),
+              $scenarioSourceDirectory
+          )
+
+          foreach ($path in $requiredPaths) {
+              if (-not (Test-Path -LiteralPath $path)) {
+                  throw "Required reproduction input was not found: $path"
+              }
+          }
+
+          New-Item -ItemType Directory -Force -Path $guiTargetDirectory | Out-Null
+          New-Item -ItemType Directory -Force -Path $cliTargetDirectory | Out-Null
+          New-Item -ItemType Directory -Force -Path $scenarioTargetDirectory | Out-Null
+
+          $binaryExtensions = @(
+              ".exe",
+              ".dll",
+              ".config",
+              ".json",
+              ".pdb",
+              ".xml",
+              ".manifest"
+          )
+
+          $binaryDirectories = @(
+              @{
+                  Source = $guiSourceDirectory
+                  Target = $guiTargetDirectory
+              },
+              @{
+                  Source = $cliSourceDirectory
+                  Target = $cliTargetDirectory
+              }
+          )
+
+          foreach ($directory in $binaryDirectories) {
+              Get-ChildItem -LiteralPath $directory.Source -File |
+                  Where-Object { $_.Extension -in $binaryExtensions } |
+                  ForEach-Object {
+                      Copy-Item -LiteralPath $_.FullName -Destination $directory.Target -Force
+                  }
+          }
+
+          $guiDataSourceDirectory = Join-Path $guiSourceDirectory "Data"
+          $guiDataTargetDirectory = Join-Path $guiTargetDirectory "Data"
+
+          if (-not (Test-Path -LiteralPath $guiDataSourceDirectory)) {
+              throw "Gui Data directory was not found."
+          }
+
+          New-Item -ItemType Directory -Force -Path $guiDataTargetDirectory | Out-Null
+
+          Get-ChildItem -LiteralPath $guiDataSourceDirectory -File |
+              Where-Object { $_.Extension -in @(".csv", ".txt", ".json") } |
+              ForEach-Object {
+                  Copy-Item -LiteralPath $_.FullName -Destination $guiDataTargetDirectory -Force
+              }
+
+          Get-ChildItem -LiteralPath $scenarioSourceDirectory -Force |
+              Where-Object { $_.Name -ne "production" } |
+              ForEach-Object {
+                  Copy-Item -LiteralPath $_.FullName `
+                      -Destination $scenarioTargetDirectory `
+                      -Recurse -Force
+              }
+
+          $scenarioFiles = @(
+              Get-ChildItem -LiteralPath $scenarioTargetDirectory `
+                  -Filter "*.scenario" -File -Recurse
+          )
+
+          if ($scenarioFiles.Count -eq 0) {
+              throw "No scenario files were found."
+          }
+
+          $requiredPackagePaths = @(
+              (Join-Path $guiTargetDirectory "Gui.exe"),
+              (Join-Path $cliTargetDirectory "ScenarioRunnerCli.exe"),
+              (Join-Path $guiDataTargetDirectory "ShikigamiData.csv")
+          )
+
+          foreach ($path in $requiredPackagePaths) {
+              if (-not (Test-Path -LiteralPath $path)) {
+                  throw "Required file is missing from reproduction package: $path"
+              }
+          }
+
+          $checkoutCommit = (& git rev-parse HEAD).Trim()
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "Failed to resolve checkout commit."
+          }
+
+          $operatingSystem = Get-CimInstance Win32_OperatingSystem
+          $dotNetRelease = Get-ItemPropertyValue `
+              -Path "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" `
+              -Name Release `
+              -ErrorAction SilentlyContinue
+
+          Add-Type -AssemblyName System.Windows.Forms
+          $screen = [System.Windows.Forms.Screen]::PrimaryScreen
+
+          $metadata = @(
+              "Repository: $env:GITHUB_REPOSITORY"
+              "Checkout Commit: $checkoutCommit"
+              "Workflow Commit: $env:GITHUB_SHA"
+              "Requested Ref: ${{ inputs.ref }}"
+              "Workflow Run ID: $env:GITHUB_RUN_ID"
+              "Workflow Attempt: $env:GITHUB_RUN_ATTEMPT"
+              "Runner Name: $env:RUNNER_NAME"
+              "Runner OS: $env:RUNNER_OS"
+              "Runner Image: $env:ImageOS"
+              "Runner Image Version: $env:ImageVersion"
+              "Windows: $($operatingSystem.Caption)"
+              "Windows Version: $($operatingSystem.Version)"
+              ".NET Framework Release: $dotNetRelease"
+              "PowerShell: $($PSVersionTable.PSVersion)"
+              "Primary Screen Bounds: $($screen.Bounds)"
+              "Primary Screen Working Area: $($screen.WorkingArea)"
+              "Scenario Count: $($scenarioFiles.Count)"
+          )
+
+          $metadata |
+              Set-Content -LiteralPath (Join-Path $packageDirectory "Environment.txt") -Encoding utf8
+
+          $reproductionScript = @'
+          @echo off
+          setlocal
+          cd /d "%~dp0"
+
+          "ScenarioRunnerCli\ScenarioRunnerCli.exe" --run-directory "Scenario" --gui-path "Gui\Gui.exe"
+
+          set "EXIT_CODE=%ERRORLEVEL%"
+          echo.
+          echo Scenario Runner exit code: %EXIT_CODE%
+          pause
+          exit /b %EXIT_CODE%
+          '@
+
+          $reproductionScript |
+              Set-Content -LiteralPath (Join-Path $packageDirectory "Reproduce.bat") -Encoding ascii
+
+          $hashLines = @(
+              Get-ChildItem -LiteralPath $packageDirectory -Recurse -File |
+                  Where-Object { $_.Name -ne "SHA256.txt" } |
+                  Sort-Object FullName |
+                  ForEach-Object {
+                      $hash = Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256
+                      $relativePath = $_.FullName.Substring($packageDirectory.Length + 1)
+                      "$($hash.Hash)  $relativePath"
+                  }
+          )
+
+          $hashLines |
+              Set-Content -LiteralPath (Join-Path $packageDirectory "SHA256.txt") -Encoding utf8
+
+          Write-Host "Failure reproduction package prepared."
+          Write-Host "Checkout commit: $checkoutCommit"
+          Write-Host "Scenario count: $($scenarioFiles.Count)"
+          Write-Host "Package files: $($hashLines.Count + 1)"
+
+      - name: Upload failure reproduction package
+        if: ${{ failure() && steps.scenario_batch.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-batch-reproduction
+          path: FailureReproduction/
+          retention-days: 90
+          if-no-files-found: error
+
+  selector:
+    name: Select runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SELECTION_MODE: ${{ inputs.selection_mode }}
+
+    steps:
+      - name: Checkout selection script and CPU catalog
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            Script/RunnerSelection/SelectRunner.ps1
+            Data/RunnerPerformance/CpuCatalog.json
+          sparse-checkout-cone-mode: false
+
+      - name: Wait for candidates
+        id: wait
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p candidates
+          deadline=$((SECONDS + 480))
+
+          while (( SECONDS < deadline )); do
+            names=$(gh api \
+              "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+              --jq '.artifacts[].name')
+
+            count=0
+            for id in 1 2 3 4 5; do
+              if grep -Fxq "runner-candidate-$id" <<< "$names"; then
+                count=$((count + 1))
+              fi
+            done
+
+            echo "Candidates published: $count / 5"
+
+            if (( count == 5 )); then
+              break
+            fi
+
+            sleep 5
+          done
+
+          if (( count != 5 )); then
+            echo "Timed out waiting for candidates."
+            exit 1
+          fi
+
+          for id in 1 2 3 4 5; do
+            mkdir -p "candidates/$id"
+
+            gh run download "$GITHUB_RUN_ID" \
+              --repo "$GITHUB_REPOSITORY" \
+              --name "runner-candidate-$id" \
+              --dir "candidates/$id"
+          done
+
+      - name: Select candidate
+        id: select
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          ./Script/RunnerSelection/SelectRunner.ps1 `
+              -SelectionMode $env:SELECTION_MODE `
+              -CandidatesDirectory "candidates" `
+              -CatalogPath "Data/RunnerPerformance/CpuCatalog.json" `
+              -OutputDirectory "RunnerSelection" `
+              -ExpectedCandidates 5
+
+      - name: Prepare selection failure
+        if: failure()
+        shell: pwsh
+        env:
+          WAIT_OUTCOME: ${{ steps.wait.outcome }}
+          SELECT_OUTCOME: ${{ steps.select.outcome }}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          New-Item -ItemType Directory -Force `
+              -Path "RunnerSelection" | Out-Null
+
+          $failure = [ordered]@{
+              Reason = "Selector failed. Wait=$env:WAIT_OUTCOME, Select=$env:SELECT_OUTCOME"
+              TimestampUtc = [DateTime]::UtcNow.ToString("o")
+          }
+
+          $failure |
+              ConvertTo-Json -Depth 5 |
+              Set-Content "RunnerSelection/failure.json" -Encoding utf8
+
+          Write-Host $failure.Reason
+
+      - name: Publish selection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-selection
+          path: RunnerSelection/
+          retention-days: 7
+          if-no-files-found: error
