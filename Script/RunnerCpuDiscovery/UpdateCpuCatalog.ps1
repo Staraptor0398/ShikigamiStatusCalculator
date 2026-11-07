@@ -75,6 +75,8 @@ $newModels = @($rows | Where-Object { -not $_.KnownCpu } | Group-Object CpuName 
         firstSeenAtUtc = [string]$first.TimestampUtc
         sha256MedianMs = [double]$first.Sha256MedianMs
         processStartupMedianMs = [double]$first.ProcessStartupMedianMs
+        scenarioBatchMedianSeconds = $null
+        scenarioBatchSampleCount = 0
     }
 } | Sort-Object name)
 

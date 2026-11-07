@@ -1,11 +1,59 @@
 {
   "schemaVersion": 1,
   "cpuModels": [
-    { "name": "AMD EPYC 7763 64-Core Processor", "firstSeenRunId": null, "firstSeenAtUtc": null, "sha256MedianMs": null, "processStartupMedianMs": null },
-    { "name": "AMD EPYC 9V45 96-Core Processor", "firstSeenRunId": null, "firstSeenAtUtc": null, "sha256MedianMs": null, "processStartupMedianMs": null },
-    { "name": "AMD EPYC 9V74 80-Core Processor", "firstSeenRunId": null, "firstSeenAtUtc": null, "sha256MedianMs": null, "processStartupMedianMs": null },
-    { "name": "Intel(R) Xeon(R) 6973P-C", "firstSeenRunId": 42337860759, "firstSeenAtUtc": null, "sha256MedianMs": 79.8, "processStartupMedianMs": 15.76 },
-    { "name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz", "firstSeenRunId": null, "firstSeenAtUtc": null, "sha256MedianMs": null, "processStartupMedianMs": null },
-    { "name": "INTEL(R) XEON(R) PLATINUM 8573C", "firstSeenRunId": null, "firstSeenAtUtc": null, "sha256MedianMs": null, "processStartupMedianMs": null }
+    {
+      "name": "AMD EPYC 7763 64-Core Processor",
+      "firstSeenRunId": null,
+      "firstSeenAtUtc": null,
+      "sha256MedianMs": null,
+      "processStartupMedianMs": null,
+      "scenarioBatchMedianSeconds": 310.74,
+      "scenarioBatchSampleCount": 12
+    },
+    {
+      "name": "AMD EPYC 9V45 96-Core Processor",
+      "firstSeenRunId": null,
+      "firstSeenAtUtc": null,
+      "sha256MedianMs": null,
+      "processStartupMedianMs": null,
+      "scenarioBatchMedianSeconds": 163.18,
+      "scenarioBatchSampleCount": 2
+    },
+    {
+      "name": "AMD EPYC 9V74 80-Core Processor",
+      "firstSeenRunId": null,
+      "firstSeenAtUtc": null,
+      "sha256MedianMs": null,
+      "processStartupMedianMs": null,
+      "scenarioBatchMedianSeconds": 201.765,
+      "scenarioBatchSampleCount": 8
+    },
+    {
+      "name": "Intel(R) Xeon(R) 6973P-C",
+      "firstSeenRunId": 42337860759,
+      "firstSeenAtUtc": null,
+      "sha256MedianMs": 79.8,
+      "processStartupMedianMs": 15.76,
+      "scenarioBatchMedianSeconds": null,
+      "scenarioBatchSampleCount": 0
+    },
+    {
+      "name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+      "firstSeenRunId": null,
+      "firstSeenAtUtc": null,
+      "sha256MedianMs": null,
+      "processStartupMedianMs": null,
+      "scenarioBatchMedianSeconds": 258.275,
+      "scenarioBatchSampleCount": 2
+    },
+    {
+      "name": "INTEL(R) XEON(R) PLATINUM 8573C",
+      "firstSeenRunId": null,
+      "firstSeenAtUtc": null,
+      "sha256MedianMs": null,
+      "processStartupMedianMs": null,
+      "scenarioBatchMedianSeconds": 251.005,
+      "scenarioBatchSampleCount": 6
+    }
   ]
 }
