@@ -2,6 +2,16 @@ name: Runner Reroll Test
 
 on:
   workflow_dispatch:
+    inputs:
+      selection_mode:
+        description: "Runner selection strategy"
+        required: true
+        default: Unknown
+        type: choice
+        options:
+          - Unknown
+          - Fastest
+          - Target
 
 permissions:
   contents: read
@@ -23,20 +33,38 @@ jobs:
       CANDIDATE_ID: ${{ matrix.id }}
 
     steps:
-      - name: Inspect runner
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Measure runner performance
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
 
-          $processor = Get-CimInstance Win32_Processor |
-              Select-Object -First 1
+          & ".\Script\MeasureRunnerPerformance.ps1" `
+              -Iterations 7 `
+              -OutputDirectory "RunnerPerformance"
+
+      - name: Prepare candidate metadata
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $environment = Get-Content `
+              "RunnerPerformance/Environment.json" -Raw |
+              ConvertFrom-Json
+          $benchmark = Get-Content `
+              "RunnerPerformance/Benchmark.json" -Raw |
+              ConvertFrom-Json
 
           $result = [ordered]@{
               CandidateId = [int]$env:CANDIDATE_ID
-              CpuName = $processor.Name.Trim()
-              LogicalProcessors = $processor.NumberOfLogicalProcessors
-              RunnerName = $env:RUNNER_NAME
-              RunnerImage = $env:ImageVersion
+              CpuName = $environment.CPUName.Trim()
+              RunnerName = $environment.RunnerName
+              RunnerImage = $environment.RunnerImageVersion
+              LogicalProcessors = $environment.LogicalProcessors
+              Sha256MedianMs = $benchmark.CPU.MedianMs
+              ProcessStartupMedianMs = $benchmark.ProcessStartup.MedianMs
               TimestampUtc = [DateTime]::UtcNow.ToString("o")
           }
 
@@ -45,20 +73,24 @@ jobs:
 
           $result |
               ConvertTo-Json -Depth 5 |
-              Set-Content `
-                  -Path "RunnerCandidate/result.json" `
-                  -Encoding utf8
+              Set-Content "RunnerCandidate/result.json" -Encoding utf8
 
           Write-Host "Candidate: $env:CANDIDATE_ID"
           Write-Host "CPU: $($result.CpuName)"
           Write-Host "Runner: $($result.RunnerName)"
+          Write-Host "SHA256 median: $($result.Sha256MedianMs) ms"
+          Write-Host "Process startup median: $($result.ProcessStartupMedianMs) ms"
 
       - name: Publish candidate
         uses: actions/upload-artifact@v4
         with:
           name: runner-candidate-${{ matrix.id }}
-          path: RunnerCandidate/result.json
-          retention-days: 1
+          path: |
+            RunnerCandidate/result.json
+            RunnerPerformance/Environment.json
+            RunnerPerformance/Benchmark.json
+          retention-days: 7
+          if-no-files-found: error
 
       - name: Wait for selection
         id: selection
@@ -69,18 +101,18 @@ jobs:
           $repository = $env:GITHUB_REPOSITORY
           $runId = $env:GITHUB_RUN_ID
           $candidateId = [int]$env:CANDIDATE_ID
-
-          $selectionDirectory = Join-Path `
-              $env:RUNNER_TEMP "RunnerSelection"
-
+          $selectionDirectory = Join-Path $env:RUNNER_TEMP "RunnerSelection"
           $deadline = [DateTime]::UtcNow.AddMinutes(8)
-
           $selection = $null
 
           while ([DateTime]::UtcNow -lt $deadline) {
               $artifacts = gh api `
                   "repos/$repository/actions/runs/$runId/artifacts" |
                   ConvertFrom-Json
+
+              if ($LASTEXITCODE -ne 0) {
+                  throw "Failed to list workflow artifacts."
+              }
 
               $decision = $artifacts.artifacts |
                   Where-Object {
@@ -132,13 +164,9 @@ jobs:
           Write-Host "This candidate: $candidateId"
           Write-Host "Selected: $selected"
 
-          $selectedText = $selected.ToString().ToLowerInvariant()
-
-          "selected=$selectedText" |
-              Out-File `
-                  -FilePath $env:GITHUB_OUTPUT `
-                  -Append `
-                  -Encoding utf8
+          "selected=$($selected.ToString().ToLowerInvariant())" |
+              Out-File -FilePath $env:GITHUB_OUTPUT `
+                  -Append -Encoding utf8
 
       - name: Run selected candidate
         if: steps.selection.outputs.selected == 'true'
@@ -157,7 +185,6 @@ jobs:
 
           Write-Host "Simulating Scenario Runner execution..."
           Start-Sleep -Seconds 10
-
           Write-Host "Selected runner completed successfully."
 
       - name: Report rejected candidate
@@ -165,15 +192,16 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Candidate $env:CANDIDATE_ID rejected."
-          Write-Host "No Scenario Runner execution."
+          Write-Host "Benchmark data was preserved."
 
   selector:
-    name: Select fastest candidate
+    name: Select runner
     runs-on: ubuntu-latest
     timeout-minutes: 12
 
     env:
       GH_TOKEN: ${{ github.token }}
+      SELECTION_MODE: ${{ inputs.selection_mode }}
 
     steps:
       - name: Wait for candidates
@@ -182,17 +210,16 @@ jobs:
           set -euo pipefail
 
           mkdir -p candidates
-
           deadline=$((SECONDS + 480))
 
           while (( SECONDS < deadline )); do
-            count=0
+            names=$(gh api \
+              "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+              --jq '.artifacts[].name')
 
+            count=0
             for id in 1 2 3 4 5; do
-              if gh api \
-                "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
-                --jq '.artifacts[].name' |
-                grep -Fxq "runner-candidate-$id"; then
+              if grep -Fxq "runner-candidate-$id" <<< "$names"; then
                 count=$((count + 1))
               fi
             done
@@ -227,58 +254,76 @@ jobs:
 
           $candidates = @(
               for ($id = 1; $id -le 5; $id++) {
-                  $path = "candidates/$id/result.json"
-
-                  Get-Content $path -Raw |
+                  Get-Content "candidates/$id/RunnerCandidate/result.json" -Raw |
                       ConvertFrom-Json
               }
           )
 
-          function Get-CpuPriority {
+          function Get-KnownCpuPriority {
               param([string]$cpuName)
 
-              if ($cpuName -match "EPYC 9V45") {
-                  return 1
-              }
-
-              if ($cpuName -match "EPYC 9V74") {
-                  return 2
-              }
-
-              if ($cpuName -match "Xeon.*8573C") {
-                  return 3
-              }
-
-              if ($cpuName -match "Xeon.*8370C") {
-                  return 4
-              }
-
-              if ($cpuName -match "EPYC 7763") {
-                  return 5
-              }
+              if ($cpuName -match "EPYC 9V45") { return 1 }
+              if ($cpuName -match "EPYC 9V74") { return 2 }
+              if ($cpuName -match "Xeon.*8573C") { return 3 }
+              if ($cpuName -match "Xeon.*8370C") { return 4 }
+              if ($cpuName -match "EPYC 7763") { return 5 }
 
               return 100
           }
+
+          function Get-SelectionPriority {
+              param(
+                  [string]$cpuName,
+                  [string]$mode
+              )
+
+              $knownPriority = Get-KnownCpuPriority $cpuName
+
+              switch ($mode) {
+                  "Unknown" {
+                      if ($knownPriority -eq 100) { return 0 }
+                      return $knownPriority
+                  }
+                  "Target" {
+                      if ($cpuName -match "Xeon.*6973P-C") { return 0 }
+                      return $knownPriority
+                  }
+                  "Fastest" {
+                      return $knownPriority
+                  }
+                  default {
+                      throw "Unsupported selection mode: $mode"
+                  }
+              }
+          }
+
+          $mode = $env:SELECTION_MODE
 
           $ranked = @(
               $candidates |
                   ForEach-Object {
                       [PSCustomObject]@{
-                          CandidateId = $_.CandidateId
+                          CandidateId = [int]$_.CandidateId
                           CpuName = $_.CpuName
-                          Priority = Get-CpuPriority $_.CpuName
+                          RunnerName = $_.RunnerName
+                          Sha256MedianMs = [double]$_.Sha256MedianMs
+                          ProcessStartupMedianMs = [double]$_.ProcessStartupMedianMs
+                          Priority = Get-SelectionPriority $_.CpuName $mode
                       }
                   } |
                   Sort-Object Priority, CandidateId
           )
 
-          $ranked | Format-Table -AutoSize
+          Write-Host "Selection mode: $mode"
+          $ranked | Format-Table -AutoSize | Out-String | Write-Host
 
           $winner = $ranked[0]
 
           $selection = [ordered]@{
+              SelectionMode = $mode
               SelectedCandidateId = $winner.CandidateId
               CpuName = $winner.CpuName
+              RunnerName = $winner.RunnerName
               Priority = $winner.Priority
               TimestampUtc = [DateTime]::UtcNow.ToString("o")
           }
@@ -288,20 +333,24 @@ jobs:
 
           $selection |
               ConvertTo-Json |
-              Set-Content `
-                  -Path "RunnerSelection/selection.json" `
-                  -Encoding utf8
+              Set-Content "RunnerSelection/selection.json" -Encoding utf8
+
+          $ranked |
+              ConvertTo-Json -Depth 5 |
+              Set-Content "RunnerSelection/ranking.json" -Encoding utf8
 
           Write-Host "========================================"
           Write-Host "SELECTED RUNNER"
           Write-Host "========================================"
           Write-Host "Candidate: $($winner.CandidateId)"
           Write-Host "CPU: $($winner.CpuName)"
+          Write-Host "Runner: $($winner.RunnerName)"
           Write-Host "Priority: $($winner.Priority)"
 
       - name: Publish selection
         uses: actions/upload-artifact@v4
         with:
           name: runner-selection
-          path: RunnerSelection/selection.json
-          retention-days: 1
+          path: RunnerSelection/
+          retention-days: 7
+          if-no-files-found: error
