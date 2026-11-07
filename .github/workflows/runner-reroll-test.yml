@@ -1,0 +1,307 @@
+name: Runner Reroll Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  candidate:
+    name: Candidate ${{ matrix.id }}
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [1, 2, 3, 4, 5]
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CANDIDATE_ID: ${{ matrix.id }}
+
+    steps:
+      - name: Inspect runner
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $processor = Get-CimInstance Win32_Processor |
+              Select-Object -First 1
+
+          $result = [ordered]@{
+              CandidateId = [int]$env:CANDIDATE_ID
+              CpuName = $processor.Name.Trim()
+              LogicalProcessors = $processor.NumberOfLogicalProcessors
+              RunnerName = $env:RUNNER_NAME
+              RunnerImage = $env:ImageVersion
+              TimestampUtc = [DateTime]::UtcNow.ToString("o")
+          }
+
+          New-Item -ItemType Directory -Force `
+              -Path "RunnerCandidate" | Out-Null
+
+          $result |
+              ConvertTo-Json -Depth 5 |
+              Set-Content `
+                  -Path "RunnerCandidate/result.json" `
+                  -Encoding utf8
+
+          Write-Host "Candidate: $env:CANDIDATE_ID"
+          Write-Host "CPU: $($result.CpuName)"
+          Write-Host "Runner: $($result.RunnerName)"
+
+      - name: Publish candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-candidate-${{ matrix.id }}
+          path: RunnerCandidate/result.json
+          retention-days: 1
+
+      - name: Wait for selection
+        id: selection
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $repository = $env:GITHUB_REPOSITORY
+          $runId = $env:GITHUB_RUN_ID
+          $candidateId = [int]$env:CANDIDATE_ID
+
+          $selectionDirectory = Join-Path `
+              $env:RUNNER_TEMP "RunnerSelection"
+
+          $deadline = [DateTime]::UtcNow.AddMinutes(8)
+
+          $selection = $null
+
+          while ([DateTime]::UtcNow -lt $deadline) {
+              $artifacts = gh api `
+                  "repos/$repository/actions/runs/$runId/artifacts" |
+                  ConvertFrom-Json
+
+              $decision = $artifacts.artifacts |
+                  Where-Object {
+                      $_.name -eq "runner-selection" -and
+                      -not $_.expired
+                  } |
+                  Select-Object -First 1
+
+              if ($null -ne $decision) {
+                  try {
+                      New-Item -ItemType Directory -Force `
+                          -Path $selectionDirectory | Out-Null
+
+                      gh run download $runId `
+                          --repo $repository `
+                          --name "runner-selection" `
+                          --dir $selectionDirectory
+
+                      if ($LASTEXITCODE -ne 0) {
+                          throw "Selection download failed."
+                      }
+
+                      $selectionPath = Join-Path `
+                          $selectionDirectory "selection.json"
+
+                      $selection = Get-Content `
+                          -Path $selectionPath -Raw |
+                          ConvertFrom-Json
+
+                      break
+                  }
+                  catch {
+                      Write-Warning $_.Exception.Message
+                  }
+              }
+
+              Write-Host "Waiting for runner selection..."
+              Start-Sleep -Seconds 5
+          }
+
+          if ($null -eq $selection) {
+              throw "Runner selection timed out."
+          }
+
+          $selectedId = [int]$selection.SelectedCandidateId
+          $selected = $candidateId -eq $selectedId
+
+          Write-Host "Selected candidate: $selectedId"
+          Write-Host "This candidate: $candidateId"
+          Write-Host "Selected: $selected"
+
+          $selectedText = $selected.ToString().ToLowerInvariant()
+
+          "selected=$selectedText" |
+              Out-File `
+                  -FilePath $env:GITHUB_OUTPUT `
+                  -Append `
+                  -Encoding utf8
+
+      - name: Run selected candidate
+        if: steps.selection.outputs.selected == 'true'
+        shell: pwsh
+        run: |
+          $processor = Get-CimInstance Win32_Processor |
+              Select-Object -First 1
+
+          Write-Host "========================================"
+          Write-Host "RUNNER REROLL SUCCESS"
+          Write-Host "========================================"
+          Write-Host "Candidate: $env:CANDIDATE_ID"
+          Write-Host "CPU: $($processor.Name.Trim())"
+          Write-Host "Runner: $env:RUNNER_NAME"
+          Write-Host "========================================"
+
+          Write-Host "Simulating Scenario Runner execution..."
+          Start-Sleep -Seconds 10
+
+          Write-Host "Selected runner completed successfully."
+
+      - name: Report rejected candidate
+        if: steps.selection.outputs.selected == 'false'
+        shell: pwsh
+        run: |
+          Write-Host "Candidate $env:CANDIDATE_ID rejected."
+          Write-Host "No Scenario Runner execution."
+
+  selector:
+    name: Select fastest candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Wait for candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p candidates
+
+          deadline=$((SECONDS + 480))
+
+          while (( SECONDS < deadline )); do
+            count=0
+
+            for id in 1 2 3 4 5; do
+              if gh api \
+                "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+                --jq '.artifacts[].name' |
+                grep -Fxq "runner-candidate-$id"; then
+                count=$((count + 1))
+              fi
+            done
+
+            echo "Candidates published: $count / 5"
+
+            if (( count == 5 )); then
+              break
+            fi
+
+            sleep 5
+          done
+
+          if (( count != 5 )); then
+            echo "Timed out waiting for candidates."
+            exit 1
+          fi
+
+          for id in 1 2 3 4 5; do
+            mkdir -p "candidates/$id"
+
+            gh run download "$GITHUB_RUN_ID" \
+              --repo "$GITHUB_REPOSITORY" \
+              --name "runner-candidate-$id" \
+              --dir "candidates/$id"
+          done
+
+      - name: Select candidate
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $candidates = @(
+              for ($id = 1; $id -le 5; $id++) {
+                  $path = "candidates/$id/result.json"
+
+                  Get-Content $path -Raw |
+                      ConvertFrom-Json
+              }
+          )
+
+          function Get-CpuPriority {
+              param([string]$cpuName)
+
+              if ($cpuName -match "EPYC 9V45") {
+                  return 1
+              }
+
+              if ($cpuName -match "EPYC 9V74") {
+                  return 2
+              }
+
+              if ($cpuName -match "Xeon.*8573C") {
+                  return 3
+              }
+
+              if ($cpuName -match "Xeon.*8370C") {
+                  return 4
+              }
+
+              if ($cpuName -match "EPYC 7763") {
+                  return 5
+              }
+
+              return 100
+          }
+
+          $ranked = @(
+              $candidates |
+                  ForEach-Object {
+                      [PSCustomObject]@{
+                          CandidateId = $_.CandidateId
+                          CpuName = $_.CpuName
+                          Priority = Get-CpuPriority $_.CpuName
+                      }
+                  } |
+                  Sort-Object Priority, CandidateId
+          )
+
+          $ranked | Format-Table -AutoSize
+
+          $winner = $ranked[0]
+
+          $selection = [ordered]@{
+              SelectedCandidateId = $winner.CandidateId
+              CpuName = $winner.CpuName
+              Priority = $winner.Priority
+              TimestampUtc = [DateTime]::UtcNow.ToString("o")
+          }
+
+          New-Item -ItemType Directory -Force `
+              -Path "RunnerSelection" | Out-Null
+
+          $selection |
+              ConvertTo-Json |
+              Set-Content `
+                  -Path "RunnerSelection/selection.json" `
+                  -Encoding utf8
+
+          Write-Host "========================================"
+          Write-Host "SELECTED RUNNER"
+          Write-Host "========================================"
+          Write-Host "Candidate: $($winner.CandidateId)"
+          Write-Host "CPU: $($winner.CpuName)"
+          Write-Host "Priority: $($winner.Priority)"
+
+      - name: Publish selection
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-selection
+          path: RunnerSelection/selection.json
+          retention-days: 1
