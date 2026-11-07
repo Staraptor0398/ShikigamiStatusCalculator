@@ -41,8 +41,8 @@
       "name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
       "firstSeenRunId": null,
       "firstSeenAtUtc": null,
-      "sha256MedianMs": null,
-      "processStartupMedianMs": null,
+      "sha256MedianMs": 103.654,
+      "processStartupMedianMs": 17.482,
       "scenarioBatchMedianSeconds": 258.275,
       "scenarioBatchSampleCount": 2
     },
