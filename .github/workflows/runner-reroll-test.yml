@@ -204,6 +204,14 @@ jobs:
       SELECTION_MODE: ${{ inputs.selection_mode }}
 
     steps:
+      - name: Checkout selection script and CPU catalog
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            Script/RunnerSelection/SelectRunner.ps1
+            Data/RunnerPerformance/CpuCatalog.json
+          sparse-checkout-cone-mode: false
+
       - name: Wait for candidates
         shell: bash
         run: |
@@ -252,100 +260,12 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
 
-          $candidates = @(
-              for ($id = 1; $id -le 5; $id++) {
-                  Get-Content "candidates/$id/RunnerCandidate/result.json" -Raw |
-                      ConvertFrom-Json
-              }
-          )
-
-          function Get-KnownCpuPriority {
-              param([string]$cpuName)
-
-              if ($cpuName -match "EPYC 9V45") { return 1 }
-              if ($cpuName -match "EPYC 9V74") { return 2 }
-              if ($cpuName -match "Xeon.*8573C") { return 3 }
-              if ($cpuName -match "Xeon.*8370C") { return 4 }
-              if ($cpuName -match "EPYC 7763") { return 5 }
-
-              return 100
-          }
-
-          function Get-SelectionPriority {
-              param(
-                  [string]$cpuName,
-                  [string]$mode
-              )
-
-              $knownPriority = Get-KnownCpuPriority $cpuName
-
-              switch ($mode) {
-                  "Unknown" {
-                      if ($knownPriority -eq 100) { return 0 }
-                      return $knownPriority
-                  }
-                  "Target" {
-                      if ($cpuName -match "Xeon.*6973P-C") { return 0 }
-                      return $knownPriority
-                  }
-                  "Fastest" {
-                      return $knownPriority
-                  }
-                  default {
-                      throw "Unsupported selection mode: $mode"
-                  }
-              }
-          }
-
-          $mode = $env:SELECTION_MODE
-
-          $ranked = @(
-              $candidates |
-                  ForEach-Object {
-                      [PSCustomObject]@{
-                          CandidateId = [int]$_.CandidateId
-                          CpuName = $_.CpuName
-                          RunnerName = $_.RunnerName
-                          Sha256MedianMs = [double]$_.Sha256MedianMs
-                          ProcessStartupMedianMs = [double]$_.ProcessStartupMedianMs
-                          Priority = Get-SelectionPriority $_.CpuName $mode
-                      }
-                  } |
-                  Sort-Object Priority, CandidateId
-          )
-
-          Write-Host "Selection mode: $mode"
-          $ranked | Format-Table -AutoSize | Out-String | Write-Host
-
-          $winner = $ranked[0]
-
-          $selection = [ordered]@{
-              SelectionMode = $mode
-              SelectedCandidateId = $winner.CandidateId
-              CpuName = $winner.CpuName
-              RunnerName = $winner.RunnerName
-              Priority = $winner.Priority
-              TimestampUtc = [DateTime]::UtcNow.ToString("o")
-          }
-
-          New-Item -ItemType Directory -Force `
-              -Path "RunnerSelection" | Out-Null
-
-          $selection |
-              ConvertTo-Json |
-              Set-Content "RunnerSelection/selection.json" -Encoding utf8
-
-          $ranked |
-              ConvertTo-Json -Depth 5 |
-              Set-Content "RunnerSelection/ranking.json" -Encoding utf8
-
-          Write-Host "========================================"
-          Write-Host "SELECTED RUNNER"
-          Write-Host "========================================"
-          Write-Host "Candidate: $($winner.CandidateId)"
-          Write-Host "CPU: $($winner.CpuName)"
-          Write-Host "Runner: $($winner.RunnerName)"
-          Write-Host "Priority: $($winner.Priority)"
+          ./Script/RunnerSelection/SelectRunner.ps1 `
+              -SelectionMode $env:SELECTION_MODE `
+              -CandidatesDirectory "candidates" `
+              -CatalogPath "Data/RunnerPerformance/CpuCatalog.json" `
+              -OutputDirectory "RunnerSelection" `
+              -ExpectedCandidates 5
 
       - name: Publish selection
         uses: actions/upload-artifact@v4
