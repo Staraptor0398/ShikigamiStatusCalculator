@@ -509,6 +509,102 @@ jobs:
           Write-Host "Candidate $env:CANDIDATE_ID rejected."
           Write-Host "Benchmark data was preserved."
 
+      - name: Start FFmpeg installation
+        if: steps.selection.outputs.selected == 'true'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $scriptPath = Join-Path $env:RUNNER_TEMP "InstallFFmpeg.ps1"
+          $processInfoPath = Join-Path $env:RUNNER_TEMP "FFmpegInstallProcess.json"
+          $successPath = Join-Path $env:RUNNER_TEMP "FFmpegInstall.ok"
+          $failurePath = Join-Path $env:RUNNER_TEMP "FFmpegInstall.failed"
+          $stdoutPath = Join-Path $env:RUNNER_TEMP "FFmpegInstall.stdout.log"
+          $stderrPath = Join-Path $env:RUNNER_TEMP "FFmpegInstall.stderr.log"
+
+          foreach ($path in @($processInfoPath, $successPath, $failurePath,
+                  $stdoutPath, $stderrPath)) {
+              Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+          }
+
+          $scriptContent = @'
+          $ErrorActionPreference = "Stop"
+          $successPath = Join-Path $env:RUNNER_TEMP "FFmpegInstall.ok"
+          $failurePath = Join-Path $env:RUNNER_TEMP "FFmpegInstall.failed"
+          $timer = [System.Diagnostics.Stopwatch]::StartNew()
+
+          try {
+              $ffmpegUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-gpl-9.0.zip"
+              $ffmpegDirectory = Join-Path $PWD "Tools\FFmpeg"
+              $archivePath = Join-Path $env:RUNNER_TEMP "ffmpeg.zip"
+              $extractDirectory = Join-Path $env:RUNNER_TEMP "ffmpeg-extracted"
+
+              New-Item -ItemType Directory -Force -Path $ffmpegDirectory | Out-Null
+
+              Invoke-WebRequest -Uri $ffmpegUrl -OutFile $archivePath
+              Expand-Archive -Path $archivePath -DestinationPath $extractDirectory -Force
+
+              $ffmpegExecutable = Get-ChildItem -Path $extractDirectory -Filter "ffmpeg.exe" -Recurse -File |
+                  Select-Object -First 1
+
+              if ($null -eq $ffmpegExecutable) {
+                  throw "FFmpeg executable was not found in the archive."
+              }
+
+              Copy-Item $ffmpegExecutable.FullName (Join-Path $ffmpegDirectory "ffmpeg.exe")
+
+              $installedFFmpeg = Join-Path $ffmpegDirectory "ffmpeg.exe"
+
+              if (-not (Test-Path $installedFFmpeg)) {
+                  throw "FFmpeg installation failed."
+              }
+
+              $versionOutput = & $installedFFmpeg -version
+
+              if ($LASTEXITCODE -ne 0) {
+                  throw "FFmpeg verification failed."
+              }
+
+              Write-Host ($versionOutput | Select-Object -First 1)
+              "success" | Set-Content -LiteralPath $successPath -Encoding ascii
+              Write-Host "FFmpeg installation completed."
+          }
+          catch {
+              $message = $_.Exception.ToString()
+              $message | Set-Content -LiteralPath $failurePath -Encoding utf8
+              Write-Host "FFmpeg installation failed: $message"
+              exit 1
+          }
+          finally {
+              $timer.Stop()
+              Write-Host (
+                  "[Timing] FFmpegInstall: {0:N2} ms" -f
+                  $timer.Elapsed.TotalMilliseconds
+              )
+          }
+          '@
+
+          $scriptContent | Set-Content -LiteralPath $scriptPath -Encoding utf8
+
+          $process = Start-Process -FilePath (Get-Command pwsh).Source `
+              -ArgumentList @("-NoProfile", "-NonInteractive", "-File", "`"$scriptPath`"") `
+              -WorkingDirectory $PWD.Path `
+              -RedirectStandardOutput $stdoutPath `
+              -RedirectStandardError $stderrPath `
+              -PassThru
+
+          if ($null -eq $process) {
+              throw "Failed to start FFmpeg installation process."
+          }
+
+          [PSCustomObject]@{
+              ProcessId = $process.Id
+              StartedAtUtc = [DateTime]::UtcNow.ToString("o")
+          } | ConvertTo-Json |
+              Set-Content -LiteralPath $processInfoPath -Encoding utf8
+
+          Write-Host "FFmpeg installation started. Process ID: $($process.Id)"
+
       - name: Download build binaries
         id: download_build
         if: steps.selection.outputs.selected == 'true'
@@ -711,47 +807,6 @@ jobs:
         with:
           nuget-version: latest
 
-      - name: Install FFmpeg
-        if: steps.selection.outputs.selected == 'true'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-
-          $ffmpegUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-gpl-9.0.zip"
-          $ffmpegDirectory = Join-Path $PWD "Tools\FFmpeg"
-          $archivePath = Join-Path $env:RUNNER_TEMP "ffmpeg.zip"
-          $extractDirectory = Join-Path $env:RUNNER_TEMP "ffmpeg-extracted"
-
-          New-Item -ItemType Directory -Force -Path $ffmpegDirectory | Out-Null
-
-          Invoke-WebRequest -Uri $ffmpegUrl -OutFile $archivePath
-
-          Expand-Archive -Path $archivePath -DestinationPath $extractDirectory -Force
-
-          $ffmpegExecutable = Get-ChildItem -Path $extractDirectory -Filter "ffmpeg.exe" -Recurse -File |
-              Select-Object -First 1
-
-          if ($null -eq $ffmpegExecutable) {
-              throw "FFmpeg executable was not found in the archive."
-          }
-
-          Copy-Item $ffmpegExecutable.FullName (Join-Path $ffmpegDirectory "ffmpeg.exe")
-
-          $installedFFmpeg = Join-Path $ffmpegDirectory "ffmpeg.exe"
-
-          if (-not (Test-Path $installedFFmpeg)) {
-              throw "FFmpeg installation failed."
-          }
-
-          $versionOutput = & $installedFFmpeg -version
-
-          if ($LASTEXITCODE -ne 0) {
-              throw "FFmpeg verification failed."
-          }
-
-          Write-Host ($versionOutput | Select-Object -First 1)
-          Write-Host "FFmpeg installation completed."
-
       - name: Restore SaveData packages
         if: steps.selection.outputs.selected == 'true' && steps.download_build.outputs.downloaded != 'true'
         shell: pwsh
@@ -888,6 +943,93 @@ jobs:
           }
 
           Write-Host "Both builds completed successfully."
+
+      - name: Wait for FFmpeg installation
+        if: steps.selection.outputs.selected == 'true'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $processInfoPath = Join-Path $env:RUNNER_TEMP "FFmpegInstallProcess.json"
+          $successPath = Join-Path $env:RUNNER_TEMP "FFmpegInstall.ok"
+          $failurePath = Join-Path $env:RUNNER_TEMP "FFmpegInstall.failed"
+          $stdoutPath = Join-Path $env:RUNNER_TEMP "FFmpegInstall.stdout.log"
+          $stderrPath = Join-Path $env:RUNNER_TEMP "FFmpegInstall.stderr.log"
+          $timer = [System.Diagnostics.Stopwatch]::StartNew()
+
+          if (-not (Test-Path -LiteralPath $processInfoPath)) {
+              throw "FFmpeg installation process metadata is missing."
+          }
+
+          $processInfo = Get-Content -LiteralPath $processInfoPath -Raw |
+              ConvertFrom-Json
+          $processId = [int]$processInfo.ProcessId
+          $startedAt = [DateTime]::Parse(
+              [string]$processInfo.StartedAtUtc,
+              [System.Globalization.CultureInfo]::InvariantCulture,
+              [System.Globalization.DateTimeStyles]::RoundtripKind
+          ).ToUniversalTime()
+          $deadline = $startedAt.AddMinutes(5)
+
+          try {
+              while ($true) {
+                  if (Test-Path -LiteralPath $failurePath) {
+                      $failureMessage = Get-Content -LiteralPath $failurePath -Raw
+                      throw "FFmpeg installation failed: $failureMessage"
+                  }
+
+                  if (Test-Path -LiteralPath $successPath) {
+                      if (-not (Test-Path -LiteralPath "Tools\FFmpeg\ffmpeg.exe")) {
+                          throw "FFmpeg installation reported success, but ffmpeg.exe is missing."
+                      }
+
+                      if (Test-Path -LiteralPath $stdoutPath) {
+                          Get-Content -LiteralPath $stdoutPath |
+                              ForEach-Object { Write-Host $_ }
+                      }
+
+                      Write-Host "FFmpeg installation verified."
+                      return
+                  }
+
+                  if ([DateTime]::UtcNow -ge $deadline) {
+                      Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+                      throw "FFmpeg installation timed out after 5 minutes."
+                  }
+
+                  $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
+
+                  if ($null -eq $process) {
+                      throw "FFmpeg installation process exited without successful completion."
+                  }
+
+                  Start-Sleep -Seconds 1
+              }
+          }
+          catch {
+              if (Test-Path -LiteralPath $stdoutPath) {
+                  Get-Content -LiteralPath $stdoutPath |
+                      ForEach-Object { Write-Host $_ }
+              }
+
+              if (Test-Path -LiteralPath $stderrPath) {
+                  Get-Content -LiteralPath $stderrPath |
+                      ForEach-Object { Write-Host $_ }
+              }
+
+              throw
+          }
+          finally {
+              $timer.Stop()
+              Write-Host (
+                  "[Timing] FFmpegInstall.Wait: {0:N2} ms" -f
+                  $timer.Elapsed.TotalMilliseconds
+              )
+              Write-Host (
+                  "[Timing] FFmpegInstall.Elapsed: {0:N2} ms" -f
+                  ([DateTime]::UtcNow - $startedAt).TotalMilliseconds
+              )
+          }
 
       - name: Verify binaries
         if: steps.selection.outputs.selected == 'true'
