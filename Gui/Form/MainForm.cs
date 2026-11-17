@@ -1,3 +1,4 @@
+using Gui.ControlSet;
 using Gui.Converter;
 using Gui.Definition;
 using Gui.Dialog;
@@ -5,9 +6,10 @@ using Gui.Factory;
 using Gui.Form.Applicator;
 using Gui.Form.Control;
 using Gui.Formatter;
+using Gui.Function;
 using Gui.Logging;
 using Gui.Model;
-using Gui.Resolver;
+using Gui.Operator;
 using Gui.ShikigamiData;
 using Gui.Validation;
 using SaveData.Access;
@@ -236,6 +238,10 @@ namespace Gui.Form
 		  フィールド・プロパティ
 		****************************************************************************************************/
 		private readonly PerformanceTracker mPerformanceTracker = new PerformanceTracker();
+
+		private ComboBoxOperator mComboBoxOperator = null;
+
+		private MitamaInputFunction mMitamaInputFunction = null;
 
 		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
 
@@ -534,6 +540,14 @@ namespace Gui.Form
 			{
 				mUniqueEffectComboBoxes = createUniqueEffectComboBoxes();
 			}
+
+			var controls = new MitamaInputControlSet(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+
+			mComboBoxOperator = new ComboBoxOperator(mPerformanceTracker);
+
+			var inputOperator = new MitamaInputOperator(controls, mComboBoxOperator, mPerformanceTracker);
+
+			mMitamaInputFunction = new MitamaInputFunction(inputOperator, mPerformanceTracker, markCalculationResultDirty, () => mOperationState == MainFormOperationState.LOADING);
 		}
 
 		private void initializeComboBoxes()
@@ -548,33 +562,16 @@ namespace Gui.Form
 				initializeShikigamiComboBox();
 			}
 
-			using (mPerformanceTracker.Track("MainForm.InitializeMainStatComboBoxes"))
-			{
-				initializeMainStatComboBoxes();
-			}
-
-			using (mPerformanceTracker.Track("MainForm.InitializeSubStatComboBoxes"))
-			{
-				initializeSubStatComboBoxes();
-			}
-
-			using (mPerformanceTracker.Track("MainForm.InitializeSetEffectComboBoxes"))
-			{
-				initializeSetEffectComboBoxes();
-			}
-
-			using (mPerformanceTracker.Track("MainForm.InitializeUniqueEffectComboBoxes"))
-			{
-				initializeUniqueEffectComboBoxes();
-			}
+			mMitamaInputFunction.InitializeComboBoxes();
 		}
 
 		private void initializeRarityFilterComboBox()
 		{
 			using (mPerformanceTracker.Track("RarityFilter.SetItems"))
 			{
-				setComboItems(
+				mComboBoxOperator.SetItems(
 					cmbRarityFilter,
+					"RarityFilter",
 					DisplayText.RARITY_ALL,
 					DisplayText.RARITY_UR,
 					DisplayText.RARITY_SP,
@@ -676,231 +673,9 @@ namespace Gui.Form
 			}
 		}
 
-		private void initializeMainStatComboBoxes()
-		{
-			setComboItems(cmbMainStat1,
-				DisplayText.ATTACK);
-
-			setComboItems(cmbMainStat2,
-				DisplayText.SPEED,
-				DisplayText.ADDITIONAL_ATTACK_RATE,
-				DisplayText.ADDITIONAL_HP_RATE,
-				DisplayText.ADDITIONAL_DEFENSE_RATE);
-
-			setComboItems(cmbMainStat3,
-				DisplayText.DEFENSE);
-
-			setComboItems(cmbMainStat4,
-				DisplayText.EFFECT_HIT,
-				DisplayText.EFFECT_RESIST,
-				DisplayText.ADDITIONAL_ATTACK_RATE,
-				DisplayText.ADDITIONAL_HP_RATE,
-				DisplayText.ADDITIONAL_DEFENSE_RATE);
-
-			setComboItems(cmbMainStat5,
-				DisplayText.HP);
-
-			setComboItems(cmbMainStat6,
-				DisplayText.CRITICAL_RATE,
-				DisplayText.CRITICAL_DAMAGE,
-				DisplayText.ADDITIONAL_ATTACK_RATE,
-				DisplayText.ADDITIONAL_HP_RATE,
-				DisplayText.ADDITIONAL_DEFENSE_RATE);
-		}
-
-		private void initializeSubStatComboBoxes()
-		{
-			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
-			{
-				foreach (SubStatInputControl subStat in slot.SubStats)
-				{
-					using (mPerformanceTracker.Track("SubStat.SetItems"))
-					{
-						setComboItems(subStat.TypeComboBox,
-							DisplayText.NONE,
-							DisplayText.SPEED,
-							DisplayText.ADDITIONAL_ATTACK_RATE,
-							DisplayText.ADDITIONAL_HP_RATE,
-							DisplayText.ADDITIONAL_DEFENSE_RATE,
-							DisplayText.CRITICAL_RATE,
-							DisplayText.CRITICAL_DAMAGE,
-							DisplayText.EFFECT_HIT,
-							DisplayText.EFFECT_RESIST,
-							DisplayText.ATTACK,
-							DisplayText.HP,
-							DisplayText.DEFENSE);
-					}
-				}
-			}
-		}
-
-		private void initializeSetEffectComboBoxes()
-		{
-			foreach (ComboBox comboBox in mSetEffectComboBoxes)
-			{
-				setComboItems(comboBox,
-					DisplayText.NONE,
-					DisplayText.CRITICAL_RATE,
-					DisplayText.CRITICAL_DAMAGE,
-					DisplayText.EFFECT_HIT,
-					DisplayText.EFFECT_RESIST,
-					DisplayText.ADDITIONAL_ATTACK_RATE,
-					DisplayText.ADDITIONAL_HP_RATE,
-					DisplayText.ADDITIONAL_DEFENSE_RATE);
-			}
-		}
-
-		private void initializeUniqueEffectComboBoxes()
-		{
-			foreach (ComboBox comboBox in mUniqueEffectComboBoxes)
-			{
-				setComboItems(comboBox,
-					DisplayText.NONE,
-					DisplayText.CRITICAL_RATE,
-					DisplayText.EFFECT_HIT,
-					DisplayText.EFFECT_RESIST,
-					DisplayText.ADDITIONAL_ATTACK_RATE,
-					DisplayText.ADDITIONAL_HP_RATE,
-					DisplayText.ADDITIONAL_DEFENSE_RATE);
-			}
-		}
-
-		private void setComboItems(ComboBox comboBox, params string[] items)
-		{
-			if (comboBox == null || items == null)
-			{
-				return;
-			}
-
-			bool isRarityFilter = comboBox == cmbRarityFilter;
-
-			bool isSubStat = mMitamaSlotInputControls != null &&
-				mMitamaSlotInputControls.Any(slot =>
-					slot.SubStats.Any(subStat => subStat.TypeComboBox == comboBox));
-
-			bool isSetEffect = mSetEffectComboBoxes != null &&
-				mSetEffectComboBoxes.Contains(comboBox);
-
-			bool isUniqueEffect = mUniqueEffectComboBoxes != null &&
-				mUniqueEffectComboBoxes.Contains(comboBox);
-
-			string targetPrefix = isRarityFilter ? "RarityFilter"
-				: isSubStat ? "SubStat"
-				: isSetEffect ? "SetEffect"
-				: isUniqueEffect ? "UniqueEffect"
-				: null;
-
-			using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.BeginUpdate") : null)
-			{
-				comboBox.BeginUpdate();
-			}
-
-			try
-			{
-				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.ClearItems") : null)
-				{
-					comboBox.Items.Clear();
-				}
-
-				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.AddRange") : null)
-				{
-					if (isSubStat)
-					{
-						string handleState = comboBox.IsHandleCreated ? "HandleCreated" : "HandleNotCreated";
-
-						using (mPerformanceTracker.Track($"SubStat.AddRange.{handleState}"))
-						{
-							string configuration = $"Sorted{comboBox.Sorted}.{comboBox.DropDownStyle}";
-
-							using (mPerformanceTracker.Track($"SubStat.AddRange.Configuration.{configuration}"))
-							{
-								comboBox.Items.AddRange(items);
-							}
-						}
-					}
-					else
-					{
-						comboBox.Items.AddRange(items);
-					}
-				}
-
-				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.ResetSelection") : null)
-				{
-					comboBox.SelectedIndex = -1;
-				}
-
-				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.ClearText") : null)
-				{
-					comboBox.Text = "";
-				}
-			}
-			finally
-			{
-				using (targetPrefix != null ? mPerformanceTracker.Track($"{targetPrefix}.EndUpdate") : null)
-				{
-					comboBox.EndUpdate();
-				}
-			}
-		}
-
-		private void resetComboBox(ComboBox comboBox)
-		{
-			if (comboBox == null)
-			{
-				return;
-			}
-
-			comboBox.SelectedIndex = -1;
-			comboBox.Text = "";
-		}
-
 		private void registerCalculationInputChangedEvents()
 		{
-			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
-			{
-				foreach (SubStatInputControl subStat in slot.SubStats)
-				{
-					subStat.TypeComboBox.SelectedIndexChanged += calculationInputChanged;
-					subStat.ValueTextBox.TextChanged += calculationInputChanged;
-				}
-			}
-
-			foreach (ComboBox comboBox in mSetEffectComboBoxes)
-			{
-				comboBox.SelectedIndexChanged += calculationInputChanged;
-			}
-
-			foreach (ComboBox comboBox in mUniqueEffectComboBoxes)
-			{
-				comboBox.SelectedIndexChanged += calculationInputChanged;
-			}
-		}
-
-		private void calculationInputChanged(object sender, EventArgs e)
-		{
-			string source = "Input.Other";
-
-			if (sender is System.Windows.Forms.Control control)
-			{
-				if (control.Name.StartsWith("cmbSubStat", StringComparison.Ordinal))
-				{
-					source = "Input.SubStatType";
-				}
-				else if (control.Name.StartsWith("txtSubVal", StringComparison.Ordinal))
-				{
-					source = "Input.SubStatValue";
-				}
-				else if (control.Name.StartsWith("cmbSetBonus", StringComparison.Ordinal))
-				{
-					source = "Input.SetEffect";
-				}
-				else if (control.Name.StartsWith("cmbUnique", StringComparison.Ordinal))
-				{
-					source = "Input.UniqueEffect";
-				}
-			}
-
-			markCalculationResultDirty(source);
+			mMitamaInputFunction.RegisterInputChangedEvents();
 		}
 
 		private void btnSave_EnabledChanged(object sender, EventArgs e)
@@ -923,75 +698,33 @@ namespace Gui.Form
 
 		private void cmbMainStat1_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			updateMainStatValue(cmbMainStat1, txtMainVal1, 1);
+			mMitamaInputFunction?.UpdateMainStatValue(1);
 		}
 
 		private void cmbMainStat2_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			updateMainStatValue(cmbMainStat2, txtMainVal2, 2);
+			mMitamaInputFunction?.UpdateMainStatValue(2);
 		}
 
 		private void cmbMainStat3_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			updateMainStatValue(cmbMainStat3, txtMainVal3, 3);
+			mMitamaInputFunction?.UpdateMainStatValue(3);
 		}
 
 		private void cmbMainStat4_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			updateMainStatValue(cmbMainStat4, txtMainVal4, 4);
+			mMitamaInputFunction?.UpdateMainStatValue(4);
 		}
 
 		private void cmbMainStat5_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			updateMainStatValue(cmbMainStat5, txtMainVal5, 5);
+			mMitamaInputFunction?.UpdateMainStatValue(5);
 		}
 
 		private void cmbMainStat6_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			updateMainStatValue(cmbMainStat6, txtMainVal6, 6);
+			mMitamaInputFunction?.UpdateMainStatValue(6);
 		}
-
-		private void updateMainStatValue(ComboBox comboBox, TextBox textBox, int slot)
-		{
-			using (mPerformanceTracker.Track("MainStat.UpdateValue"))
-			using (mPerformanceTracker.Track(mOperationState == MainFormOperationState.LOADING ? "MainStat.UpdateValue.Loading" : "MainStat.UpdateValue.Other"))
-			{
-				string statText;
-
-				using (mPerformanceTracker.Track("MainStat.GetSelectedItem"))
-				{
-					statText = comboBox.SelectedItem?.ToString();
-				}
-
-				if (string.IsNullOrEmpty(statText))
-				{
-					using (mPerformanceTracker.Track("MainStat.SetValueText"))
-					{
-						textBox.Text = "";
-					}
-				}
-				else
-				{
-					double value;
-
-					using (mPerformanceTracker.Track("MainStat.ResolveValue"))
-					{
-						value = MainStatValueResolver.Resolve(statText, slot);
-					}
-
-					using (mPerformanceTracker.Track("MainStat.SetValueText"))
-					{
-						textBox.Text = value.ToString();
-					}
-				}
-
-				using (mPerformanceTracker.Track("MainStat.MarkDirty"))
-				{
-					markCalculationResultDirty("Input.MainStat");
-				}
-			}
-		}
-
 		/****************************************************************************************************
 		  SaveData保存
 		****************************************************************************************************/
@@ -1554,8 +1287,7 @@ namespace Gui.Form
 			using (mPerformanceTracker.Track("MainForm.ClearInputs"))
 			{
 				clearShikigamiSelection();
-				clearMitamaInputs();
-				clearEffectInputs();
+				mMitamaInputFunction.Clear();
 				clearResultTexts();
 			}
 		}
@@ -1563,71 +1295,6 @@ namespace Gui.Form
 		private void clearShikigamiSelection()
 		{
 			cmbShikigami.SelectedIndex = -1;
-		}
-
-		private void clearMitamaInputs()
-		{
-			resetMainStatComboBoxes();
-			resetSubStatComboBoxes();
-
-			clearMainValueTextBoxes();
-			clearSubValueTextBoxes();
-		}
-
-		private void resetMainStatComboBoxes()
-		{
-			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
-			{
-				resetComboBox(slot.MainStatComboBox);
-			}
-		}
-
-		private void resetSubStatComboBoxes()
-		{
-			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
-			{
-				foreach (SubStatInputControl subStat in slot.SubStats)
-				{
-					resetComboBox(subStat.TypeComboBox);
-				}
-			}
-		}
-
-		private void clearMainValueTextBoxes()
-		{
-			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
-			{
-				slot.MainValueTextBox.Text = "";
-			}
-		}
-
-		private void clearSubValueTextBoxes()
-		{
-			foreach (MitamaSlotInputControl slot in mMitamaSlotInputControls)
-			{
-				foreach (SubStatInputControl subStat in slot.SubStats)
-				{
-					subStat.ValueTextBox.Text = "";
-				}
-			}
-		}
-
-		private void clearEffectInputs()
-		{
-			resetEffectComboBoxes();
-		}
-
-		private void resetEffectComboBoxes()
-		{
-			foreach (ComboBox comboBox in mSetEffectComboBoxes)
-			{
-				resetComboBox(comboBox);
-			}
-
-			foreach (ComboBox comboBox in mUniqueEffectComboBoxes)
-			{
-				resetComboBox(comboBox);
-			}
 		}
 
 		private void clearResultTexts()
