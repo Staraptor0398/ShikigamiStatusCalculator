@@ -1,7 +1,9 @@
 using Gui.ControlSet;
 using Gui.Definition;
+using Gui.Factory;
 using Gui.Form.Control;
 using Gui.Logging;
+using Gui.Model;
 using System;
 using System.Windows.Forms;
 
@@ -225,6 +227,11 @@ namespace Gui.Operator
 			{
 				mComboBoxOperator.Reset(comboBox);
 			}
+		}
+
+		public MitamaSetInputModel CreateInputModel()
+		{
+			return MitamaSetInputModelFactory.Create(mControls.Slots, mControls.SetEffects, mControls.UniqueEffects);
 		}
 
 		private MitamaSlotInputControl getSlot(int slot)

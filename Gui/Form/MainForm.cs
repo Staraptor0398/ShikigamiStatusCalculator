@@ -5,7 +5,6 @@ using Gui.Dialog;
 using Gui.Factory;
 using Gui.Form.Applicator;
 using Gui.Form.Control;
-using Gui.Formatter;
 using Gui.Function;
 using Gui.Logging;
 using Gui.Model;
@@ -139,13 +138,13 @@ namespace Gui.Form
 
 		private ShikigamiSelectionFunction mShikigamiSelectionFunction = null;
 
+		private CalculationResultFunction mCalculationResultFunction = null;
+
+		private SaveDataButtonFunction mSaveDataButtonFunction = null;
+
 		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
 
 		private MainFormOperationState mOperationState = MainFormOperationState.IDLE;
-
-		private CalculationResultDto mLastCalculationResult = null;
-
-		private bool mIsCalculationResultDirty = true;
 
 		private MitamaSlotInputControl[] mMitamaSlotInputControls = null;
 
@@ -293,7 +292,7 @@ namespace Gui.Form
 					return;
 				}
 
-				mLastCalculationResult = calculationResult;
+				mCalculationResultFunction.SetResult(calculationResult);
 
 #if DEBUG
 				mLastCalculationTestSource = calculationTestSource;
@@ -304,41 +303,21 @@ namespace Gui.Form
 					updateSaveButtonEnabled("Calculation");
 				}
 
-				if (cmbShikigami.SelectedItem != null)
+				if (mShikigamiSelectionOperator.GetSelectedShikigami() != null)
 				{
-					markCalculationResultClean();
+					mCalculationResultFunction.MarkClean();
 				}
 
 				using (mPerformanceTracker.Track("Calculation.ShowResult"))
 				{
-					showCalculationResult(mLastCalculationResult);
+					mCalculationResultFunction.ShowResult();
 				}
 			}
 		}
 
-		private void markCalculationResultClean()
-		{
-			mIsCalculationResultDirty = false;
-		}
-
 		private void markCalculationResultDirty(string source = "Other")
 		{
-			if (mOperationState == MainFormOperationState.LOADING
-				|| mOperationState == MainFormOperationState.CLEARING)
-			{
-				return;
-			}
-
-			updateSaveButtonEnabled(source);
-
-			if (mIsCalculationResultDirty)
-			{
-				return;
-			}
-
-			mIsCalculationResultDirty = true;
-
-			Logger.Info("Operation=ステータス計算結果状態変更 Message=入力内容が変更されたため、計算結果をDirty状態に変更しました。");
+			mCalculationResultFunction.MarkDirty(source);
 		}
 
 		private StatusDto getSelectedShikigamiStatus()
@@ -346,28 +325,6 @@ namespace Gui.Form
 			var selected = mShikigamiSelectionOperator.GetSelectedShikigami();
 
 			return selected?.Status ?? new StatusDto();
-		}
-
-		/****************************************************************************************************
-		  計算結果表示
-		****************************************************************************************************/
-		private void showCalculationResult(CalculationResultDto result)
-		{
-			if (result == null)
-			{
-				return;
-			}
-
-			txtMitamaOnly.Text = StatusFormatter.FormatMitamaSummary(result.MitamaOnlyStatus);
-
-			if (cmbShikigami.SelectedItem != null)
-			{
-				txtFinalStats.Text = StatusFormatter.FormatFinalSummary(result.FinalStatus);
-			}
-			else
-			{
-				txtFinalStats.Text = "";
-			}
 		}
 
 		/****************************************************************************************************
@@ -435,6 +392,18 @@ namespace Gui.Form
 			mShikigamiSelectionOperator = new ShikigamiSelectionOperator(shikigamiControls, mComboBoxOperator, mPerformanceTracker);
 
 			mShikigamiSelectionFunction = new ShikigamiSelectionFunction(mShikigamiSelectionOperator, mPerformanceTracker, markCalculationResultDirty);
+
+			var calculationResultControls = new CalculationResultControlSet(txtMitamaOnly, txtFinalStats);
+
+			var calculationResultOperator = new CalculationResultOperator(calculationResultControls);
+
+			mCalculationResultFunction = new CalculationResultFunction(calculationResultOperator, mShikigamiSelectionOperator, () => mOperationState == MainFormOperationState.LOADING || mOperationState == MainFormOperationState.CLEARING, updateSaveButtonEnabled);
+
+			var saveDataButtonControls = new SaveDataButtonControlSet(btnSave, btnLoad);
+
+			var saveDataButtonOperator = new SaveDataButtonOperator(saveDataButtonControls);
+
+			mSaveDataButtonFunction = new SaveDataButtonFunction(saveDataButtonOperator, inputOperator, mPerformanceTracker, () => mOperationState == MainFormOperationState.IDLE);
 		}
 
 		private void initializeComboBoxes()
@@ -509,7 +478,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void btnSave_Click(object sender, EventArgs e)
 		{
-			using (var dialog = new SaveDataSaveDialog(cmbShikigami.Text, getSaveDataSaveLevel()))
+			using (var dialog = new SaveDataSaveDialog(mShikigamiSelectionOperator.GetShikigamiText(), getSaveDataSaveLevel()))
 			{
 				if (dialog.ShowDialog(this) != DialogResult.OK)
 				{
@@ -527,7 +496,7 @@ namespace Gui.Form
 						BuildSaveData data = new BuildSaveData
 						{
 							MitamaSet = MitamaSetConverter.ToSaveData(inputModel),
-							ShikigamiName = cmbShikigami.Text
+							ShikigamiName = mShikigamiSelectionOperator.GetShikigamiText()
 						};
 
 						SaveDataAccess.SaveBuild(dialog.FilePath, data);
@@ -539,14 +508,16 @@ namespace Gui.Form
 					}
 					else if (dialog.SelectedSaveType == SaveDataSaveType.CalculationSnapshot)
 					{
+						CalculationResultDto calculationResult = mCalculationResultFunction.LastCalculationResult;
+
 						CalculationSnapshotSaveData data = new CalculationSnapshotSaveData
 						{
 							SnapshotName = createSnapshotNameFromFilePath(dialog.FilePath),
 							CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-							ShikigamiName = cmbShikigami.Text,
+							ShikigamiName = mShikigamiSelectionOperator.GetShikigamiText(),
 							MitamaSet = MitamaSetConverter.ToSaveData(inputModel),
-							MitamaStatus = StatusConverter.ToSaveData(mLastCalculationResult.MitamaOnlyStatus),
-							FinalStatus = StatusConverter.ToSaveData(mLastCalculationResult.FinalStatus)
+							MitamaStatus = StatusConverter.ToSaveData(calculationResult.MitamaOnlyStatus),
+							FinalStatus = StatusConverter.ToSaveData(calculationResult.FinalStatus)
 						};
 
 						SaveDataAccess.SaveSnapshot(dialog.FilePath, data);
@@ -561,12 +532,12 @@ namespace Gui.Form
 
 		private SaveDataSaveLevel getSaveDataSaveLevel()
 		{
-			if (canSaveCalculationSnapshot())
+			if (mCalculationResultFunction.CanSaveCalculationSnapshot())
 			{
 				return SaveDataSaveLevel.SNAPSHOT_AVAILABLE;
 			}
 
-			if (cmbShikigami.SelectedItem != null)
+			if (mShikigamiSelectionOperator.GetSelectedShikigami() != null)
 			{
 				return SaveDataSaveLevel.BUILD_AVAILABLE;
 			}
@@ -576,48 +547,7 @@ namespace Gui.Form
 
 		private void updateSaveButtonEnabled(string source = "Other")
 		{
-			using (mPerformanceTracker.Track("MainForm.UpdateSaveButtonEnabled"))
-			using (mPerformanceTracker.Track($"SaveButton.Update.Source.{source}"))
-			{
-				bool isIdle = mOperationState == MainFormOperationState.IDLE;
-
-				using (mPerformanceTracker.Track("SaveButton.SetLoadEnabled"))
-				{
-					btnLoad.Enabled = isIdle;
-				}
-
-				if (!isIdle)
-				{
-					using (mPerformanceTracker.Track("SaveButton.SetSaveEnabled"))
-					{
-						btnSave.Enabled = false;
-					}
-
-					return;
-				}
-
-				MitamaSetInputModel inputModel;
-
-				using (mPerformanceTracker.Track("SaveButton.CreateInputModel"))
-				{
-					inputModel = MitamaSetInputModelFactory.Create(
-						mMitamaSlotInputControls,
-						mSetEffectComboBoxes,
-						mUniqueEffectComboBoxes);
-				}
-
-				CalculationInputValidationOutcome validationOutcome;
-
-				using (mPerformanceTracker.Track("SaveButton.Validate"))
-				{
-					validationOutcome = CalculationInputValidator.Validate(inputModel);
-				}
-
-				using (mPerformanceTracker.Track("SaveButton.SetSaveEnabled"))
-				{
-					btnSave.Enabled = validationOutcome != CalculationInputValidationOutcome.NO_EQUIPPED_MITAMA;
-				}
-			}
+			mSaveDataButtonFunction.Update(source);
 		}
 
 		/****************************************************************************************************
@@ -831,11 +761,6 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  計算結果スナップショット保存
 		****************************************************************************************************/
-		private bool canSaveCalculationSnapshot()
-		{
-			return mLastCalculationResult != null && !mIsCalculationResultDirty;
-		}
-
 		private string createSnapshotNameFromFilePath(string filePath)
 		{
 			string fileName = Path.GetFileName(filePath);
@@ -1011,42 +936,37 @@ namespace Gui.Form
 			{
 				mShikigamiSelectionOperator.ClearShikigamiSelection();
 				mMitamaInputFunction.Clear();
-				clearResultTexts();
+				mCalculationResultFunction.ClearTexts();
 			}
-		}
-
-		private void clearResultTexts()
-		{
-			txtMitamaOnly.Text = "";
-			txtFinalStats.Text = "";
 		}
 
 		private void deleteLastCalculationResult()
 		{
-
-			mLastCalculationResult = null;
+			mCalculationResultFunction.DeleteResult();
 
 #if DEBUG
 			mLastCalculationTestSource = null;
 #endif
 		}
-
 		/****************************************************************************************************
 		  結果表示フォーム
 		****************************************************************************************************/
 		private void btnResultView_Click(object sender, EventArgs e)
 		{
-			if (mLastCalculationResult == null)
+			CalculationResultDto calculationResult = mCalculationResultFunction.LastCalculationResult;
+
+			if (calculationResult == null)
 			{
 				MessageBox.Show(
 					"先に計算を実行してください。",
 					"確認",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Information);
+
 				return;
 			}
 
-			using (var form = new ResultViewForm(mLastCalculationResult))
+			using (var form = new ResultViewForm(calculationResult))
 			{
 				form.ShowDialog(this);
 			}
