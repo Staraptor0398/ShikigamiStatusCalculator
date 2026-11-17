@@ -520,7 +520,11 @@ jobs:
           $timer = [System.Diagnostics.Stopwatch]::StartNew()
 
           try {
-              $ffmpegUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-gpl-9.0.zip"
+
+              $ffmpegUrl = "https://github.com/FFmpeg-Builds/FFmpeg-Builds/releases/download/autobuild-2026-11-15-12-40/ffmpeg-n9.0.2-57-gd838f9f9ae-win64-gpl-9.0.zip"
+
+              $expectedHash = "11b387a88ad24ee6d78bae7d24a2417834737e6ac00f0a36ca67fead1e924eff"
+
               $ffmpegDirectory = Join-Path $PWD "Tools\FFmpeg"
               $archivePath = Join-Path $env:RUNNER_TEMP "ffmpeg.zip"
               $extractDirectory = Join-Path $env:RUNNER_TEMP "ffmpeg-extracted"
@@ -528,6 +532,13 @@ jobs:
               New-Item -ItemType Directory -Force -Path $ffmpegDirectory | Out-Null
 
               Invoke-WebRequest -Uri $ffmpegUrl -OutFile $archivePath
+
+              $actualHash = (Get-FileHash -Path $archivePath -Algorithm SHA256).Hash
+
+              if ($actualHash -ne $expectedHash) {
+                  throw "FFmpeg archive SHA256 mismatch."
+              }
+
               Expand-Archive -Path $archivePath -DestinationPath $extractDirectory -Force
 
               $ffmpegExecutable = Get-ChildItem -Path $extractDirectory -Filter "ffmpeg.exe" -Recurse -File |
