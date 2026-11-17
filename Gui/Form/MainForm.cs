@@ -17,7 +17,6 @@ using SaveData.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 
 #if DEBUG
@@ -136,6 +135,10 @@ namespace Gui.Form
 
 		private MitamaInputFunction mMitamaInputFunction = null;
 
+		private ShikigamiSelectionOperator mShikigamiSelectionOperator = null;
+
+		private ShikigamiSelectionFunction mShikigamiSelectionFunction = null;
+
 		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
 
 		private MainFormOperationState mOperationState = MainFormOperationState.IDLE;
@@ -143,8 +146,6 @@ namespace Gui.Form
 		private CalculationResultDto mLastCalculationResult = null;
 
 		private bool mIsCalculationResultDirty = true;
-
-		private List<ShikigamiDto> mShikigamiList = null;
 
 		private MitamaSlotInputControl[] mMitamaSlotInputControls = null;
 
@@ -224,20 +225,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void cmbShikigami_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			using (mPerformanceTracker.Track("Shikigami.SelectedIndexChanged"))
-			{
-				ShikigamiDto selected = cmbShikigami.SelectedItem as ShikigamiDto;
-
-				using (mPerformanceTracker.Track("Shikigami.FormatBaseSummary"))
-				{
-					txtBaseStats.Text = StatusFormatter.FormatBaseSummary(selected?.Status);
-				}
-
-				using (mPerformanceTracker.Track("Shikigami.MarkCalculationResultDirty"))
-				{
-					markCalculationResultDirty("Input.Shikigami");
-				}
-			}
+			mShikigamiSelectionFunction?.HandleShikigamiSelectedIndexChanged();
 		}
 
 		/****************************************************************************************************
@@ -355,7 +343,7 @@ namespace Gui.Form
 
 		private StatusDto getSelectedShikigamiStatus()
 		{
-			var selected = cmbShikigami.SelectedItem as ShikigamiDto;
+			var selected = mShikigamiSelectionOperator.GetSelectedShikigami();
 
 			return selected?.Status ?? new StatusDto();
 		}
@@ -387,7 +375,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void btnReLoad_Click(object sender, EventArgs e)
 		{
-			initializeShikigamiComboBox();
+			mShikigamiSelectionFunction.InitializeShikigamiComboBox();
 			markCalculationResultDirty();
 		}
 
@@ -434,136 +422,34 @@ namespace Gui.Form
 				mUniqueEffectComboBoxes = createUniqueEffectComboBoxes();
 			}
 
-			var controls = new MitamaInputControlSet(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
+			var mitamaInputControls = new MitamaInputControlSet(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
 
 			mComboBoxOperator = new ComboBoxOperator(mPerformanceTracker);
 
-			var inputOperator = new MitamaInputOperator(controls, mComboBoxOperator, mPerformanceTracker);
+			var inputOperator = new MitamaInputOperator(mitamaInputControls, mComboBoxOperator, mPerformanceTracker);
 
 			mMitamaInputFunction = new MitamaInputFunction(inputOperator, mPerformanceTracker, markCalculationResultDirty, () => mOperationState == MainFormOperationState.LOADING);
+
+			var shikigamiControls = new ShikigamiSelectionControlSet(cmbShikigami, cmbRarityFilter, txtBaseStats);
+
+			mShikigamiSelectionOperator = new ShikigamiSelectionOperator(shikigamiControls, mComboBoxOperator, mPerformanceTracker);
+
+			mShikigamiSelectionFunction = new ShikigamiSelectionFunction(mShikigamiSelectionOperator, mPerformanceTracker, markCalculationResultDirty);
 		}
 
 		private void initializeComboBoxes()
 		{
 			using (mPerformanceTracker.Track("MainForm.InitializeRarityFilterComboBox"))
 			{
-				initializeRarityFilterComboBox();
+				mShikigamiSelectionFunction.InitializeRarityFilterComboBox(cmbRarityFilter_SelectedIndexChanged);
 			}
 
 			using (mPerformanceTracker.Track("MainForm.InitializeShikigamiComboBox"))
 			{
-				initializeShikigamiComboBox();
+				mShikigamiSelectionFunction.InitializeShikigamiComboBox();
 			}
 
 			mMitamaInputFunction.InitializeComboBoxes();
-		}
-
-		private void initializeRarityFilterComboBox()
-		{
-			using (mPerformanceTracker.Track("RarityFilter.SetItems"))
-			{
-				mComboBoxOperator.SetItems(
-					cmbRarityFilter,
-					"RarityFilter",
-					DisplayText.RARITY_ALL,
-					DisplayText.RARITY_UR,
-					DisplayText.RARITY_SP,
-					DisplayText.RARITY_SSR,
-					DisplayText.RARITY_SR);
-			}
-
-			cmbRarityFilter.SelectedIndexChanged -= cmbRarityFilter_SelectedIndexChanged;
-
-			try
-			{
-				using (mPerformanceTracker.Track("RarityFilter.SelectAllWithoutHandler"))
-				{
-					cmbRarityFilter.SelectedIndex = 0;
-				}
-			}
-			finally
-			{
-				cmbRarityFilter.SelectedIndexChanged += cmbRarityFilter_SelectedIndexChanged;
-			}
-
-			using (mPerformanceTracker.Track("RarityFilter.ApplyFilterExplicit"))
-			{
-				applyShikigamiFilter();
-			}
-		}
-
-		private void initializeShikigamiComboBox()
-		{
-			List<ShikigamiDto> shikigamiList;
-
-			try
-			{
-				using (mPerformanceTracker.Track("Shikigami.LoadData"))
-				{
-					var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
-
-					if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
-					{
-						ShikigamiDataFileManager.MoveBrokenFile();
-						ShikigamiDataFileManager.RestoreDefaultIfMissing();
-
-						outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
-
-						if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ復元後読み込み"))
-						{
-							shikigamiList = new List<ShikigamiDto>();
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				ShikigamiDataErrorHandler.Handle(ex, "式神データ読み込み");
-
-				if (mShikigamiList == null)
-				{
-					mShikigamiList = new List<ShikigamiDto>();
-				}
-
-				return;
-			}
-
-			mShikigamiList = shikigamiList;
-
-			using (mPerformanceTracker.Track("Shikigami.SetDisplayMember"))
-			{
-				cmbShikigami.DisplayMember = "Name";
-			}
-
-			using (mPerformanceTracker.Track("Shikigami.SetItems"))
-			{
-				setShikigamiComboBoxItems(mShikigamiList);
-			}
-
-			using (mPerformanceTracker.Track("Shikigami.ResetSelection"))
-			{
-				cmbShikigami.SelectedIndex = -1;
-				txtBaseStats.Text = "";
-			}
-		}
-
-		private void setShikigamiComboBoxItems(List<ShikigamiDto> shikigamiList)
-		{
-			cmbShikigami.BeginUpdate();
-
-			try
-			{
-				cmbShikigami.Items.Clear();
-
-				if (shikigamiList != null)
-				{
-					cmbShikigami.Items.AddRange(shikigamiList.ToArray());
-				}
-			}
-			finally
-			{
-				cmbShikigami.EndUpdate();
-			}
 		}
 
 		private void registerCalculationInputChangedEvents()
@@ -782,7 +668,7 @@ namespace Gui.Form
 
 							using (mPerformanceTracker.Track("SaveData.Validate"))
 							{
-								validateBuildShikigami(data.ShikigamiName);
+								mShikigamiSelectionFunction.ValidateBuildShikigami(data.ShikigamiName);
 
 								SaveDataInputModelValidator.Validate(
 									inputModel,
@@ -866,24 +752,11 @@ namespace Gui.Form
 			}
 		}
 
-		private void validateBuildShikigami(string shikigamiName)
-		{
-			if (string.IsNullOrEmpty(shikigamiName))
-			{
-				return;
-			}
-
-			if (mShikigamiList == null || !mShikigamiList.Any(x => x != null && x.Name == shikigamiName))
-			{
-				throw new InvalidOperationException($"Shikigami not found: {shikigamiName}");
-			}
-		}
-
 		private void applyBuildSaveDataToUI(string shikigamiName, MitamaSetInputModel inputModel)
 		{
 			using (mPerformanceTracker.Track("SaveData.ApplyBuild"))
 			{
-				applyShikigami(shikigamiName);
+				mShikigamiSelectionFunction.ApplyShikigami(shikigamiName);
 
 				MitamaSetInputModelApplicator.Apply(
 					inputModel,
@@ -930,7 +803,7 @@ namespace Gui.Form
 							{
 								cmbShikigami.SelectedIndex = -1;
 							}
-							else if (!trySelectShikigami(previousShikigamiName))
+							else if (!mShikigamiSelectionOperator.TrySelectShikigami(previousShikigamiName))
 							{
 								throw new InvalidOperationException($"Failed to restore Shikigami: {previousShikigamiName}");
 							}
@@ -953,49 +826,6 @@ namespace Gui.Form
 					throw;
 				}
 			}
-		}
-
-		private void applyShikigami(string name)
-		{
-			if (string.IsNullOrEmpty(name))
-			{
-				return;
-			}
-
-			if (trySelectShikigami(name))
-			{
-				return;
-			}
-
-			cmbRarityFilter.SelectedItem = DisplayText.RARITY_ALL;
-
-			if (trySelectShikigami(name))
-			{
-				return;
-			}
-
-			throw new InvalidOperationException($"Failed to select Shikigami: {name}");
-		}
-
-		private bool trySelectShikigami(string name)
-		{
-			if (string.IsNullOrEmpty(name))
-			{
-				return false;
-			}
-
-			foreach (var item in cmbShikigami.Items)
-			{
-				var shikigami = item as ShikigamiDto;
-
-				if (shikigami != null && shikigami.Name == name)
-				{
-					cmbShikigami.SelectedItem = shikigami;
-					return true;
-				}
-			}
-
-			return false;
 		}
 
 		/****************************************************************************************************
@@ -1098,11 +928,11 @@ namespace Gui.Form
 			{
 				if (form.ShowDialog(this) == DialogResult.OK)
 				{
-					initializeShikigamiComboBox();
+					mShikigamiSelectionFunction.InitializeShikigamiComboBox();
 
 					if (selectedShikigami != null)
 					{
-						applyShikigami(selectedShikigami.Name);
+						mShikigamiSelectionFunction.ApplyShikigami(selectedShikigami.Name);
 					}
 
 					markCalculationResultDirty();
@@ -1132,11 +962,11 @@ namespace Gui.Form
 			{
 				if (form.ShowDialog(this) == DialogResult.OK)
 				{
-					initializeShikigamiComboBox();
+					mShikigamiSelectionFunction.InitializeShikigamiComboBox();
 
 					if (form.EditedShikigami != null)
 					{
-						applyShikigami(form.EditedShikigami.Name);
+						mShikigamiSelectionFunction.ApplyShikigami(form.EditedShikigami.Name);
 						markCalculationResultDirty();
 					}
 				}
@@ -1179,15 +1009,10 @@ namespace Gui.Form
 		{
 			using (mPerformanceTracker.Track("MainForm.ClearInputs"))
 			{
-				clearShikigamiSelection();
+				mShikigamiSelectionOperator.ClearShikigamiSelection();
 				mMitamaInputFunction.Clear();
 				clearResultTexts();
 			}
-		}
-
-		private void clearShikigamiSelection()
-		{
-			cmbShikigami.SelectedIndex = -1;
 		}
 
 		private void clearResultTexts()
@@ -1232,7 +1057,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void btnClearShikigami_Click(object sender, EventArgs e)
 		{
-			clearShikigamiSelection();
+			mShikigamiSelectionOperator.ClearShikigamiSelection();
 		}
 
 		/****************************************************************************************************
@@ -1240,40 +1065,7 @@ namespace Gui.Form
 		****************************************************************************************************/
 		private void cmbRarityFilter_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			using (mPerformanceTracker.Track("RarityFilter.SelectedIndexChanged"))
-			{
-				applyShikigamiFilter();
-			}
-		}
-
-		private void applyShikigamiFilter()
-		{
-			using (mPerformanceTracker.Track("RarityFilter.ApplyFilter"))
-			{
-				var selectedShikigami = cmbShikigami.SelectedItem as ShikigamiDto;
-				string selectedShikigamiName = selectedShikigami?.Name;
-
-				string selectedRarity = cmbRarityFilter.Text;
-
-				var filteredList = mShikigamiList;
-
-				if (selectedRarity != DisplayText.RARITY_ALL)
-				{
-					filteredList = mShikigamiList.Where(x => x.Rarity == selectedRarity).ToList();
-				}
-
-				using (mPerformanceTracker.Track("RarityFilter.SetShikigamiItems"))
-				{
-					setShikigamiComboBoxItems(filteredList);
-				}
-
-				cmbShikigami.SelectedIndex = -1;
-
-				if (!string.IsNullOrEmpty(selectedShikigamiName))
-				{
-					trySelectShikigami(selectedShikigamiName);
-				}
-			}
+			mShikigamiSelectionFunction?.HandleRarityFilterSelectedIndexChanged();
 		}
 
 		/****************************************************************************************************
@@ -1359,7 +1151,7 @@ namespace Gui.Form
 
 					Logger.Info(message);
 
-					initializeShikigamiComboBox();
+					mShikigamiSelectionFunction.InitializeShikigamiComboBox();
 					markCalculationResultDirty();
 				}
 			}
