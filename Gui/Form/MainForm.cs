@@ -35,179 +35,72 @@ namespace Gui.Form
 		{
 			return new MitamaSlotInputControl[]
 			{
-				new MitamaSlotInputControl
-				{
-					MainStatComboBox = cmbMainStat1,
-					MainValueTextBox = txtMainVal1,
-					SubStats = new SubStatInputControl[]
-					{
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat11,
-							ValueTextBox = txtSubVal11,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat21,
-							ValueTextBox = txtSubVal21,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat31,
-							ValueTextBox = txtSubVal31,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat41,
-							ValueTextBox = txtSubVal41,
-						}
-					}
-				},
+				createMitamaSlotInputControl(
+					cmbMainStat1, txtMainVal1,
+					createSubStatInputControl(cmbSubStat11, txtSubVal11),
+					createSubStatInputControl(cmbSubStat21, txtSubVal21),
+					createSubStatInputControl(cmbSubStat31, txtSubVal31),
+					createSubStatInputControl(cmbSubStat41, txtSubVal41)),
 
-				new MitamaSlotInputControl
-				{
-					MainStatComboBox = cmbMainStat2,
-					MainValueTextBox = txtMainVal2,
-					SubStats = new SubStatInputControl[]
-					{
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat12,
-							ValueTextBox = txtSubVal12,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat22,
-							ValueTextBox = txtSubVal22,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat32,
-							ValueTextBox = txtSubVal32,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat42,
-							ValueTextBox = txtSubVal42,
-						}
-					}
-				},
+				createMitamaSlotInputControl(
+					cmbMainStat2, txtMainVal2,
+					createSubStatInputControl(cmbSubStat12, txtSubVal12),
+					createSubStatInputControl(cmbSubStat22, txtSubVal22),
+					createSubStatInputControl(cmbSubStat32, txtSubVal32),
+					createSubStatInputControl(cmbSubStat42, txtSubVal42)),
 
-				new MitamaSlotInputControl
-				{
-					MainStatComboBox = cmbMainStat3,
-					MainValueTextBox = txtMainVal3,
-					SubStats = new SubStatInputControl[]
-					{
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat13,
-							ValueTextBox = txtSubVal13,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat23,
-							ValueTextBox = txtSubVal23,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat33,
-							ValueTextBox = txtSubVal33,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat43,
-							ValueTextBox = txtSubVal43,
-						}
-					}
-				},
+				createMitamaSlotInputControl(
+					cmbMainStat3, txtMainVal3,
+					createSubStatInputControl(cmbSubStat13, txtSubVal13),
+					createSubStatInputControl(cmbSubStat23, txtSubVal23),
+					createSubStatInputControl(cmbSubStat33, txtSubVal33),
+					createSubStatInputControl(cmbSubStat43, txtSubVal43)),
 
-				new MitamaSlotInputControl
-				{
-					MainStatComboBox = cmbMainStat4,
-					MainValueTextBox = txtMainVal4,
-					SubStats = new SubStatInputControl[]
-					{
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat14,
-							ValueTextBox = txtSubVal14,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat24,
-							ValueTextBox = txtSubVal24,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat34,
-							ValueTextBox = txtSubVal34,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat44,
-							ValueTextBox = txtSubVal44,
-						}
-					}
-				},
+				createMitamaSlotInputControl(
+					cmbMainStat4, txtMainVal4,
+					createSubStatInputControl(cmbSubStat14, txtSubVal14),
+					createSubStatInputControl(cmbSubStat24, txtSubVal24),
+					createSubStatInputControl(cmbSubStat34, txtSubVal34),
+					createSubStatInputControl(cmbSubStat44, txtSubVal44)),
 
-				new MitamaSlotInputControl
-				{
-					MainStatComboBox = cmbMainStat5,
-					MainValueTextBox = txtMainVal5,
-					SubStats = new SubStatInputControl[]
-					{
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat15,
-							ValueTextBox = txtSubVal15,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat25,
-							ValueTextBox = txtSubVal25,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat35,
-							ValueTextBox = txtSubVal35,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat45,
-							ValueTextBox = txtSubVal45,
-						}
-					}
-				},
+				createMitamaSlotInputControl(
+					cmbMainStat5, txtMainVal5,
+					createSubStatInputControl(cmbSubStat15, txtSubVal15),
+					createSubStatInputControl(cmbSubStat25, txtSubVal25),
+					createSubStatInputControl(cmbSubStat35, txtSubVal35),
+					createSubStatInputControl(cmbSubStat45, txtSubVal45)),
 
-				new MitamaSlotInputControl
+				createMitamaSlotInputControl(
+					cmbMainStat6, txtMainVal6,
+					createSubStatInputControl(cmbSubStat16, txtSubVal16),
+					createSubStatInputControl(cmbSubStat26, txtSubVal26),
+					createSubStatInputControl(cmbSubStat36, txtSubVal36),
+					createSubStatInputControl(cmbSubStat46, txtSubVal46))
+			};
+		}
+
+		private static MitamaSlotInputControl createMitamaSlotInputControl(ComboBox mainStatComboBox, TextBox mainValueTextBox, SubStatInputControl subStat1, SubStatInputControl subStat2, SubStatInputControl subStat3, SubStatInputControl subStat4)
+		{
+			return new MitamaSlotInputControl
+			{
+				MainStatComboBox = mainStatComboBox,
+				MainValueTextBox = mainValueTextBox,
+				SubStats = new SubStatInputControl[]
 				{
-					MainStatComboBox = cmbMainStat6,
-					MainValueTextBox = txtMainVal6,
-					SubStats = new SubStatInputControl[]
-					{
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat16,
-							ValueTextBox = txtSubVal16,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat26,
-							ValueTextBox = txtSubVal26,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat36,
-							ValueTextBox = txtSubVal36,
-						},
-						new SubStatInputControl
-						{
-							TypeComboBox = cmbSubStat46,
-							ValueTextBox = txtSubVal46,
-						}
-					}
+					subStat1,
+					subStat2,
+					subStat3,
+					subStat4
 				}
+			};
+		}
+
+		private static SubStatInputControl createSubStatInputControl(ComboBox typeComboBox, TextBox valueTextBox)
+		{
+			return new SubStatInputControl
+			{
+				TypeComboBox = typeComboBox,
+				ValueTextBox = valueTextBox
 			};
 		}
 
