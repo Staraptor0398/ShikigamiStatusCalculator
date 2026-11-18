@@ -94,7 +94,7 @@ namespace Gui.Function
 
 			using (mPerformanceTracker.Track("Shikigami.SetItems"))
 			{
-				mOperator.SetShikigamiItems(mShikigamiList);
+				mOperator.SetShikigamiItems(getFilteredShikigamiList());
 			}
 
 			using (mPerformanceTracker.Track("Shikigami.ResetSelection"))
@@ -137,18 +137,9 @@ namespace Gui.Function
 				var selectedShikigami = mOperator.GetSelectedShikigami();
 				string selectedShikigamiName = selectedShikigami?.Name;
 
-				string selectedRarity = mOperator.GetRarityFilterText();
-
-				var filteredList = mShikigamiList;
-
-				if (selectedRarity != DisplayText.RARITY_ALL)
-				{
-					filteredList = mShikigamiList.Where(x => x.Rarity == selectedRarity).ToList();
-				}
-
 				using (mPerformanceTracker.Track("RarityFilter.SetShikigamiItems"))
 				{
-					mOperator.SetShikigamiItems(filteredList);
+					mOperator.SetShikigamiItems(getFilteredShikigamiList());
 				}
 
 				mOperator.ClearShikigamiSelection();
@@ -158,6 +149,18 @@ namespace Gui.Function
 					mOperator.TrySelectShikigami(selectedShikigamiName);
 				}
 			}
+		}
+
+		private List<ShikigamiDto> getFilteredShikigamiList()
+		{
+			string selectedRarity = mOperator.GetRarityFilterText();
+
+			if (mShikigamiList == null || selectedRarity == DisplayText.RARITY_ALL)
+			{
+				return mShikigamiList;
+			}
+
+			return mShikigamiList.Where(x => x.Rarity == selectedRarity).ToList();
 		}
 
 		public void ApplyShikigami(string name)
