@@ -2,8 +2,6 @@ using Gui.ControlSet;
 using Gui.Converter;
 using Gui.Definition;
 using Gui.Dialog;
-using Gui.Factory;
-using Gui.Form.Applicator;
 using Gui.Form.Control;
 using Gui.Function;
 using Gui.Logging;
@@ -147,6 +145,8 @@ namespace Gui.Form
 		private SaveDataSaveFunction mSaveDataSaveFunction = null;
 
 		private SaveDataLoadFunction mSaveDataLoadFunction = null;
+
+		private SaveDataApplyFunction mSaveDataApplyFunction = null;
 
 		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
 
@@ -385,6 +385,8 @@ namespace Gui.Form
 			mSaveDataSaveFunction = new SaveDataSaveFunction(inputOperator, mShikigamiSelectionOperator, mCalculationResultFunction);
 
 			mSaveDataLoadFunction = new SaveDataLoadFunction(inputOperator, mShikigamiSelectionFunction, mPerformanceTracker);
+
+			mSaveDataApplyFunction = new SaveDataApplyFunction(inputOperator, mShikigamiSelectionOperator, mShikigamiSelectionFunction, mPerformanceTracker);
 		}
 
 		private void initializeComboBoxes()
@@ -507,30 +509,9 @@ namespace Gui.Form
 					{
 						string shikigamiName;
 
-						MitamaSetInputModel inputModel = mSaveDataLoadFunction.Load(
-							dialog.SelectedLoadType,
-							dialog.FilePath,
-							out shikigamiName);
+						MitamaSetInputModel inputModel = mSaveDataLoadFunction.Load(dialog.SelectedLoadType, dialog.FilePath, out shikigamiName);
 
-						if (dialog.SelectedLoadType == SaveDataLoadType.Build)
-						{
-							applySaveDataWithRollback(() => applyBuildSaveDataToUI(shikigamiName, inputModel));
-						}
-						else if (dialog.SelectedLoadType == SaveDataLoadType.MitamaSet)
-						{
-							applySaveDataWithRollback(() =>
-							{
-								using (mPerformanceTracker.Track("SaveData.ApplyMitamaSet"))
-								{
-									MitamaSetInputModelApplicator.Apply(
-										inputModel,
-										mMitamaSlotInputControls,
-										mSetEffectComboBoxes,
-										mUniqueEffectComboBoxes,
-										mPerformanceTracker);
-								}
-							});
-						}
+						mSaveDataApplyFunction.Apply(dialog.SelectedLoadType, shikigamiName, inputModel);
 
 						loadSucceeded = true;
 					}
@@ -556,83 +537,6 @@ namespace Gui.Form
 				}
 			}
 		}
-
-		private void applyBuildSaveDataToUI(string shikigamiName, MitamaSetInputModel inputModel)
-		{
-			using (mPerformanceTracker.Track("SaveData.ApplyBuild"))
-			{
-				mShikigamiSelectionFunction.ApplyShikigami(shikigamiName);
-
-				MitamaSetInputModelApplicator.Apply(
-					inputModel,
-					mMitamaSlotInputControls,
-					mSetEffectComboBoxes,
-					mUniqueEffectComboBoxes,
-					mPerformanceTracker);
-			}
-		}
-
-		private void applySaveDataWithRollback(Action apply)
-		{
-			using (mPerformanceTracker.Track("SaveData.ApplyWithRollback"))
-			{
-				MitamaSetInputModel previousInputModel;
-
-				using (mPerformanceTracker.Track("SaveData.RollbackSnapshot"))
-				{
-					previousInputModel = MitamaSetInputModelFactory.Create(
-						mMitamaSlotInputControls,
-						mSetEffectComboBoxes,
-						mUniqueEffectComboBoxes);
-				}
-
-				string previousShikigamiName = (cmbShikigami.SelectedItem as ShikigamiDto)?.Name;
-				object previousRarity = cmbRarityFilter.SelectedItem;
-
-				try
-				{
-					using (mPerformanceTracker.Track("SaveData.ApplyUI"))
-					{
-						apply();
-					}
-				}
-				catch
-				{
-					try
-					{
-						using (mPerformanceTracker.Track("SaveData.RollbackRestore"))
-						{
-							cmbRarityFilter.SelectedItem = previousRarity;
-
-							if (string.IsNullOrEmpty(previousShikigamiName))
-							{
-								cmbShikigami.SelectedIndex = -1;
-							}
-							else if (!mShikigamiSelectionOperator.TrySelectShikigami(previousShikigamiName))
-							{
-								throw new InvalidOperationException($"Failed to restore Shikigami: {previousShikigamiName}");
-							}
-
-							MitamaSetInputModelApplicator.Apply(
-								previousInputModel,
-								mMitamaSlotInputControls,
-								mSetEffectComboBoxes,
-								mUniqueEffectComboBoxes,
-								mPerformanceTracker);
-
-							Logger.Info("Operation=SaveDataロールバック Message=UI状態を復元しました。");
-						}
-					}
-					catch (Exception rollbackEx)
-					{
-						Logger.Error($"Operation=SaveDataロールバック Message={rollbackEx}");
-					}
-
-					throw;
-				}
-			}
-		}
-
 		/****************************************************************************************************
 		  計算結果比較
 		****************************************************************************************************/

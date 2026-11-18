@@ -1,6 +1,7 @@
 using Gui.ControlSet;
 using Gui.Definition;
 using Gui.Factory;
+using Gui.Form.Applicator;
 using Gui.Form.Control;
 using Gui.Logging;
 using Gui.Model;
@@ -238,6 +239,11 @@ namespace Gui.Operator
 		public void ValidateInputModel(MitamaSetInputModel inputModel)
 		{
 			SaveDataInputModelValidator.Validate(inputModel, mControls.Slots, mControls.SetEffects, mControls.UniqueEffects);
+		}
+
+		public void ApplyInputModel(MitamaSetInputModel inputModel)
+		{
+			MitamaSetInputModelApplicator.Apply(inputModel, mControls.Slots, mControls.SetEffects, mControls.UniqueEffects, mPerformanceTracker);
 		}
 
 		private MitamaSlotInputControl getSlot(int slot)
