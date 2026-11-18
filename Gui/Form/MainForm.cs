@@ -146,6 +146,8 @@ namespace Gui.Form
 
 		private SaveDataSaveFunction mSaveDataSaveFunction = null;
 
+		private SaveDataLoadFunction mSaveDataLoadFunction = null;
+
 		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
 
 		private MainFormOperationState mOperationState = MainFormOperationState.IDLE;
@@ -381,6 +383,8 @@ namespace Gui.Form
 			mSaveDataButtonFunction = new SaveDataButtonFunction(saveDataButtonOperator, inputOperator, mPerformanceTracker, () => mOperationState == MainFormOperationState.IDLE);
 
 			mSaveDataSaveFunction = new SaveDataSaveFunction(inputOperator, mShikigamiSelectionOperator, mCalculationResultFunction);
+
+			mSaveDataLoadFunction = new SaveDataLoadFunction(inputOperator, mShikigamiSelectionFunction, mPerformanceTracker);
 		}
 
 		private void initializeComboBoxes()
@@ -501,75 +505,19 @@ namespace Gui.Form
 				{
 					using (mPerformanceTracker.Track("SaveData.Load"))
 					{
+						string shikigamiName;
+
+						MitamaSetInputModel inputModel = mSaveDataLoadFunction.Load(
+							dialog.SelectedLoadType,
+							dialog.FilePath,
+							out shikigamiName);
+
 						if (dialog.SelectedLoadType == SaveDataLoadType.Build)
 						{
-							BuildSaveData data;
-
-							using (mPerformanceTracker.Track("SaveData.LoadFile"))
-							{
-								data = SaveDataAccess.LoadBuild(dialog.FilePath, mPerformanceTracker.Track);
-							}
-
-							if (data == null)
-							{
-								throw new InvalidOperationException("Build save data is null.");
-							}
-
-							MitamaSetInputModel inputModel;
-
-							using (mPerformanceTracker.Track("SaveData.Convert"))
-							{
-								inputModel = MitamaSetConverter.ToInputModel(data.MitamaSet);
-							}
-
-							if (inputModel == null)
-							{
-								throw new InvalidOperationException("MitamaSet input model is null.");
-							}
-
-							using (mPerformanceTracker.Track("SaveData.Validate"))
-							{
-								mShikigamiSelectionFunction.ValidateBuildShikigami(data.ShikigamiName);
-
-								SaveDataInputModelValidator.Validate(
-									inputModel,
-									mMitamaSlotInputControls,
-									mSetEffectComboBoxes,
-									mUniqueEffectComboBoxes);
-							}
-
-							applySaveDataWithRollback(() => applyBuildSaveDataToUI(data.ShikigamiName, inputModel));
+							applySaveDataWithRollback(() => applyBuildSaveDataToUI(shikigamiName, inputModel));
 						}
 						else if (dialog.SelectedLoadType == SaveDataLoadType.MitamaSet)
 						{
-							MitamaSetSaveData data;
-
-							using (mPerformanceTracker.Track("SaveData.LoadFile"))
-							{
-								data = SaveDataAccess.LoadMitamaSet(dialog.FilePath, mPerformanceTracker.Track);
-							}
-
-							MitamaSetInputModel inputModel;
-
-							using (mPerformanceTracker.Track("SaveData.Convert"))
-							{
-								inputModel = MitamaSetConverter.ToInputModel(data);
-							}
-
-							if (inputModel == null)
-							{
-								throw new InvalidOperationException("MitamaSet input model is null.");
-							}
-
-							using (mPerformanceTracker.Track("SaveData.Validate"))
-							{
-								SaveDataInputModelValidator.Validate(
-									inputModel,
-									mMitamaSlotInputControls,
-									mSetEffectComboBoxes,
-									mUniqueEffectComboBoxes);
-							}
-
 							applySaveDataWithRollback(() =>
 							{
 								using (mPerformanceTracker.Track("SaveData.ApplyMitamaSet"))
@@ -582,10 +530,6 @@ namespace Gui.Form
 										mPerformanceTracker);
 								}
 							});
-						}
-						else
-						{
-							throw new InvalidOperationException($"Unsupported SaveData load type: {dialog.SelectedLoadType}");
 						}
 
 						loadSucceeded = true;

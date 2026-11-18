@@ -4,6 +4,7 @@ using Gui.Factory;
 using Gui.Form.Control;
 using Gui.Logging;
 using Gui.Model;
+using Gui.Validation;
 using System;
 using System.Windows.Forms;
 
@@ -232,6 +233,11 @@ namespace Gui.Operator
 		public MitamaSetInputModel CreateInputModel()
 		{
 			return MitamaSetInputModelFactory.Create(mControls.Slots, mControls.SetEffects, mControls.UniqueEffects);
+		}
+
+		public void ValidateInputModel(MitamaSetInputModel inputModel)
+		{
+			SaveDataInputModelValidator.Validate(inputModel, mControls.Slots, mControls.SetEffects, mControls.UniqueEffects);
 		}
 
 		private MitamaSlotInputControl getSlot(int slot)

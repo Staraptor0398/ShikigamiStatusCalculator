@@ -131,6 +131,7 @@
     <Compile Include="Function\CalculationResultFunction.cs" />
     <Compile Include="Function\MitamaInputFunction.cs" />
     <Compile Include="Function\SaveDataButtonFunction.cs" />
+    <Compile Include="Function\SaveDataLoadFunction.cs" />
     <Compile Include="Function\SaveDataSaveFunction.cs" />
     <Compile Include="Function\ShikigamiSelectionFunction.cs" />
     <Compile Include="Logging\LogFileDefinition.cs" />
