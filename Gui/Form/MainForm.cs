@@ -144,6 +144,8 @@ namespace Gui.Form
 
 		private SaveDataButtonFunction mSaveDataButtonFunction = null;
 
+		private SaveDataSaveFunction mSaveDataSaveFunction = null;
+
 		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
 
 		private MainFormOperationState mOperationState = MainFormOperationState.IDLE;
@@ -377,6 +379,8 @@ namespace Gui.Form
 			var saveDataButtonOperator = new SaveDataButtonOperator(saveDataButtonControls);
 
 			mSaveDataButtonFunction = new SaveDataButtonFunction(saveDataButtonOperator, inputOperator, mPerformanceTracker, () => mOperationState == MainFormOperationState.IDLE);
+
+			mSaveDataSaveFunction = new SaveDataSaveFunction(inputOperator, mShikigamiSelectionOperator, mCalculationResultFunction);
 		}
 
 		private void initializeComboBoxes()
@@ -449,9 +453,10 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  SaveData保存
 		****************************************************************************************************/
+
 		private void btnSave_Click(object sender, EventArgs e)
 		{
-			using (var dialog = new SaveDataSaveDialog(mShikigamiSelectionOperator.GetShikigamiText(), getSaveDataSaveLevel()))
+			using (var dialog = new SaveDataSaveDialog(mShikigamiSelectionOperator.GetShikigamiText(), mSaveDataSaveFunction.GetSaveLevel()))
 			{
 				if (dialog.ShowDialog(this) != DialogResult.OK)
 				{
@@ -462,60 +467,13 @@ namespace Gui.Form
 
 				try
 				{
-					var inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
-
-					if (dialog.SelectedSaveType == SaveDataSaveType.Build)
-					{
-						BuildSaveData data = new BuildSaveData
-						{
-							MitamaSet = MitamaSetConverter.ToSaveData(inputModel),
-							ShikigamiName = mShikigamiSelectionOperator.GetShikigamiText()
-						};
-
-						SaveDataAccess.SaveBuild(dialog.FilePath, data);
-					}
-					else if (dialog.SelectedSaveType == SaveDataSaveType.MitamaSet)
-					{
-						var data = MitamaSetConverter.ToSaveData(inputModel);
-						SaveDataAccess.SaveMitamaSet(dialog.FilePath, data);
-					}
-					else if (dialog.SelectedSaveType == SaveDataSaveType.CalculationSnapshot)
-					{
-						CalculationResultDto calculationResult = mCalculationResultFunction.LastCalculationResult;
-
-						CalculationSnapshotSaveData data = new CalculationSnapshotSaveData
-						{
-							SnapshotName = createSnapshotNameFromFilePath(dialog.FilePath),
-							CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-							ShikigamiName = mShikigamiSelectionOperator.GetShikigamiText(),
-							MitamaSet = MitamaSetConverter.ToSaveData(inputModel),
-							MitamaStatus = StatusConverter.ToSaveData(calculationResult.MitamaOnlyStatus),
-							FinalStatus = StatusConverter.ToSaveData(calculationResult.FinalStatus)
-						};
-
-						SaveDataAccess.SaveSnapshot(dialog.FilePath, data);
-					}
+					mSaveDataSaveFunction.Save(dialog.SelectedSaveType, dialog.FilePath);
 				}
 				finally
 				{
 					setOperationState(MainFormOperationState.IDLE);
 				}
 			}
-		}
-
-		private SaveDataSaveLevel getSaveDataSaveLevel()
-		{
-			if (mCalculationResultFunction.CanSaveCalculationSnapshot())
-			{
-				return SaveDataSaveLevel.SNAPSHOT_AVAILABLE;
-			}
-
-			if (mShikigamiSelectionOperator.GetSelectedShikigami() != null)
-			{
-				return SaveDataSaveLevel.BUILD_AVAILABLE;
-			}
-
-			return SaveDataSaveLevel.MITAMA_SET_ONLY;
 		}
 
 		private void updateSaveButtonEnabled(string source = "Other")
@@ -729,21 +687,6 @@ namespace Gui.Form
 					throw;
 				}
 			}
-		}
-
-		/****************************************************************************************************
-		  計算結果スナップショット保存
-		****************************************************************************************************/
-		private string createSnapshotNameFromFilePath(string filePath)
-		{
-			string fileName = Path.GetFileName(filePath);
-
-			if (fileName.EndsWith(SaveDataFileDefinition.SNAPSHOT_EXTENSION))
-			{
-				return fileName.Substring(0, fileName.Length - SaveDataFileDefinition.SNAPSHOT_EXTENSION.Length);
-			}
-
-			return Path.GetFileNameWithoutExtension(filePath);
 		}
 
 		/****************************************************************************************************
