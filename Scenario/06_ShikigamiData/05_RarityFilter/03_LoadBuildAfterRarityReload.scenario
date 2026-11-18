@@ -1,0 +1,34 @@
+# LoadBuildAfterRarityReload.scenario
+#
+# レアリティフィルタを維持したまま再読み込みした後、
+# 異なるレアリティのBuildを読み込んだ場合に、
+# 全件表示へ切り替わって式神が選択されることを確認する。
+
+START
+
+OPEN GUI
+
+# SSRフィルタに変更する
+SEL RARITY "SSR"
+CHECK RARITY "SSR"
+CHECK SHIKIGAMI LIST "SSR"
+
+# SSRフィルタを維持して再読み込みする
+RELOAD SHIKIGAMI
+
+CHECK RARITY "SSR"
+CHECK SHIKIGAMI LIST "SSR"
+CHECK SHIKIGAMI SELECTION NONE
+
+# SP式神「願紡縁結神」のBuildを読み込む
+LOAD BUILD "../../02_Calculation/TestData/Valid.build.json"
+
+# 対象式神がSSRフィルタに含まれないため、
+# 全件表示へ切り替わることを確認する
+CHECK RARITY "すべて"
+CHECK SHIKIGAMI LIST "すべて"
+CHECK SHIKIGAMI SELECTION "願紡縁結神"
+
+CLOSE GUI
+
+END

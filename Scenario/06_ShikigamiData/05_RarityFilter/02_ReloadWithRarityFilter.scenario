@@ -1,0 +1,52 @@
+# ReloadWithRarityFilter.scenario
+#
+# レアリティフィルタ選択中に式神データを再読み込みしても、
+# フィルタ表示と式神候補一覧が一致することを確認する。
+# 再読み込み後の式神選択解除も確認する。
+
+START
+
+OPEN GUI
+
+# SPフィルタを選択する
+SEL RARITY "SP"
+CHECK RARITY "SP"
+CHECK SHIKIGAMI LIST "SP"
+
+# SP式神を選択する
+SEL SHIKIGAMI "願紡縁結神"
+CHECK SHIKIGAMI SELECTION "願紡縁結神"
+
+# SPフィルタを維持したまま再読み込みする
+RELOAD SHIKIGAMI
+
+CHECK RARITY "SP"
+CHECK SHIKIGAMI LIST "SP"
+CHECK SHIKIGAMI SELECTION NONE
+
+# 再読み込み後もSP式神を選択できることを確認する
+SEL SHIKIGAMI "願紡縁結神"
+CHECK SHIKIGAMI SELECTION "願紡縁結神"
+
+# SSRフィルタに変更する
+SEL RARITY "SSR"
+CHECK RARITY "SSR"
+CHECK SHIKIGAMI LIST "SSR"
+CHECK SHIKIGAMI SELECTION NONE
+
+# SSRフィルタでも再読み込み後の整合性を確認する
+RELOAD SHIKIGAMI
+
+CHECK RARITY "SSR"
+CHECK SHIKIGAMI LIST "SSR"
+CHECK SHIKIGAMI SELECTION NONE
+
+# 全件表示へ戻す
+SEL RARITY "すべて"
+CHECK RARITY "すべて"
+CHECK SHIKIGAMI LIST "すべて"
+CHECK SHIKIGAMI SELECTION NONE
+
+CLOSE GUI
+
+END
