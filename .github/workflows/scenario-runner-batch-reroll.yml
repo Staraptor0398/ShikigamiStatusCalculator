@@ -589,6 +589,8 @@ jobs:
           $pollIntervalSeconds = 2
           $maximumWaitSeconds = 15
           $minimumBuildElapsedSeconds = 25
+          $maximumDownloadAttempts = 5
+          $downloadRetryIntervalSeconds = 3
 
           try {
               $jobs = gh api `
@@ -655,16 +657,53 @@ jobs:
                       Select-Object -First 1
 
                   if ($null -ne $artifact) {
-                      New-Item -ItemType Directory -Force `
-                          -Path $stagingDirectory | Out-Null
+                      Write-Host "Build artifact found: $($artifact.id)"
 
-                      gh run download $runId `
-                          --repo $repository `
-                          --name "scenario-runner-build" `
-                          --dir $stagingDirectory
+                      $downloadSucceeded = $false
 
-                      if ($LASTEXITCODE -ne 0) {
-                          throw "Build artifact download failed."
+                      for ($attempt = 1; $attempt -le $maximumDownloadAttempts; $attempt++) {
+                          if (Test-Path -LiteralPath $stagingDirectory) {
+                              Remove-Item -LiteralPath $stagingDirectory -Recurse -Force
+                          }
+
+                          New-Item -ItemType Directory -Force `
+                              -Path $stagingDirectory | Out-Null
+
+                          Write-Host "Build artifact download attempt: $attempt/$maximumDownloadAttempts"
+
+                          $exitCode = 1
+
+                          try {
+                              gh run download $runId `
+                                  --repo $repository `
+                                  --name "scenario-runner-build" `
+                                  --dir $stagingDirectory
+
+                              $exitCode = $LASTEXITCODE
+                          }
+                          catch {
+                              Write-Warning "Build artifact download error: $($_.Exception.Message)"
+                          }
+
+                          if ($exitCode -eq 0) {
+                              $downloadSucceeded = $true
+                              Write-Host "Build artifact download succeeded."
+                              break
+                          }
+
+                          Write-Warning "Build artifact download failed (exit code: $exitCode)."
+
+                          # Do not propagate an expected download failure into the step status.
+                          $global:LASTEXITCODE = 0
+                          $LASTEXITCODE = 0
+
+                          if ($attempt -lt $maximumDownloadAttempts) {
+                              Start-Sleep -Seconds $downloadRetryIntervalSeconds
+                          }
+                      }
+
+                      if (-not $downloadSucceeded) {
+                          throw "Build artifact download failed after $maximumDownloadAttempts attempts."
                       }
 
                       $manifestPath = Join-Path `
@@ -737,8 +776,12 @@ jobs:
           }
           catch {
               Write-Warning "Build artifact unavailable: $($_.Exception.Message)"
+              $downloaded = $false
           }
           finally {
+              # Intentional download failure is handled by the local-build fallback.
+              $global:LASTEXITCODE = 0
+              $LASTEXITCODE = 0
               $timer.Stop()
 
               Write-Host (
