@@ -140,6 +140,8 @@ namespace Gui.Form
 
 		private CalculationResultFunction mCalculationResultFunction = null;
 
+		private CalculationFunction mCalculationFunction = null;
+
 		private SaveDataButtonFunction mSaveDataButtonFunction = null;
 
 		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
@@ -242,42 +244,18 @@ namespace Gui.Form
 
 				try
 				{
-					MitamaSetInputModel inputModel;
+					bool calculationSucceeded;
 
-					using (mPerformanceTracker.Track("Calculation.CreateInputModel"))
-					{
-						inputModel = MitamaSetInputModelFactory.Create(mMitamaSlotInputControls, mSetEffectComboBoxes, mUniqueEffectComboBoxes);
-					}
+#if DEBUG
+					calculationSucceeded = mCalculationFunction.TryExecute(out calculationResult, out calculationTestSource);
+#else
+					calculationSucceeded = mCalculationFunction.TryExecute(out calculationResult);
+#endif
 
-					CalculationInputValidationOutcome validationOutcome;
-
-					using (mPerformanceTracker.Track("Calculation.Validate"))
-					{
-						validationOutcome = CalculationInputValidator.Validate(inputModel);
-					}
-
-					if (CalculationInputValidationErrorHandler.Handle(validationOutcome))
+					if (!calculationSucceeded)
 					{
 						return;
 					}
-
-					StatusDto baseStatus;
-					MitamaSetDto mitamaSet;
-
-					using (mPerformanceTracker.Track("Calculation.ConvertInput"))
-					{
-						baseStatus = getSelectedShikigamiStatus();
-						mitamaSet = MitamaSetConverter.ToDto(inputModel);
-					}
-
-					using (mPerformanceTracker.Track("Calculation.Gateway"))
-					{
-						calculationResult = CalculationGateway.Calculate(baseStatus, mitamaSet);
-					}
-
-#if DEBUG
-					calculationTestSource = CalculationTestSourceConverter.ToSaveData(baseStatus, mitamaSet, calculationResult);
-#endif
 				}
 				catch (Exception ex)
 				{
@@ -318,13 +296,6 @@ namespace Gui.Form
 		private void markCalculationResultDirty(string source = "Other")
 		{
 			mCalculationResultFunction.MarkDirty(source);
-		}
-
-		private StatusDto getSelectedShikigamiStatus()
-		{
-			var selected = mShikigamiSelectionOperator.GetSelectedShikigami();
-
-			return selected?.Status ?? new StatusDto();
 		}
 
 		/****************************************************************************************************
@@ -392,6 +363,8 @@ namespace Gui.Form
 			mShikigamiSelectionOperator = new ShikigamiSelectionOperator(shikigamiControls, mComboBoxOperator, mPerformanceTracker);
 
 			mShikigamiSelectionFunction = new ShikigamiSelectionFunction(mShikigamiSelectionOperator, mPerformanceTracker, markCalculationResultDirty);
+
+			mCalculationFunction = new CalculationFunction(inputOperator, mShikigamiSelectionOperator, mPerformanceTracker, CalculationInputValidationErrorHandler.Handle);
 
 			var calculationResultControls = new CalculationResultControlSet(txtMitamaOnly, txtFinalStats);
 

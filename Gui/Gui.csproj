@@ -127,6 +127,7 @@
     <Compile Include="Form\StatusComparisonResultForm.Designer.cs">
       <DependentUpon>StatusComparisonResultForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Function\CalculationFunction.cs" />
     <Compile Include="Function\CalculationResultFunction.cs" />
     <Compile Include="Function\MitamaInputFunction.cs" />
     <Compile Include="Function\SaveDataButtonFunction.cs" />
