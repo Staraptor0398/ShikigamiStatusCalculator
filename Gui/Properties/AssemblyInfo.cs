@@ -1,5 +1,9 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
+// GuiTestからinternal型へアクセスできるようにす
+[assembly: InternalsVisibleTo("GuiTest")]
 
 // アセンブリに関する一般的な情報は、次の方法で制御されます
 // 制御されます。アセンブリに関連付けられている情報を変更するには、

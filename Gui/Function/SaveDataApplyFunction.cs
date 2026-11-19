@@ -6,14 +6,22 @@ using System;
 
 namespace Gui.Function
 {
+	internal enum SaveDataApplyCheckpoint
+	{
+		AfterShikigamiSelection,
+		AfterApply,
+		BeforeRollbackRestore
+	}
+
 	internal sealed class SaveDataApplyFunction
 	{
 		private readonly MitamaInputOperator mMitamaInputOperator;
 		private readonly ShikigamiSelectionOperator mShikigamiSelectionOperator;
 		private readonly ShikigamiSelectionFunction mShikigamiSelectionFunction;
 		private readonly PerformanceTracker mPerformanceTracker;
+		private readonly Action<SaveDataApplyCheckpoint> mCheckpoint;
 
-		public SaveDataApplyFunction(MitamaInputOperator mitamaInputOperator, ShikigamiSelectionOperator shikigamiSelectionOperator, ShikigamiSelectionFunction shikigamiSelectionFunction, PerformanceTracker performanceTracker)
+		public SaveDataApplyFunction(MitamaInputOperator mitamaInputOperator, ShikigamiSelectionOperator shikigamiSelectionOperator, ShikigamiSelectionFunction shikigamiSelectionFunction, PerformanceTracker performanceTracker, Action<SaveDataApplyCheckpoint> checkpoint = null)
 		{
 			if (mitamaInputOperator == null)
 			{
@@ -39,6 +47,7 @@ namespace Gui.Function
 			mShikigamiSelectionOperator = shikigamiSelectionOperator;
 			mShikigamiSelectionFunction = shikigamiSelectionFunction;
 			mPerformanceTracker = performanceTracker;
+			mCheckpoint = checkpoint;
 		}
 
 		public void Apply(SaveDataLoadType loadType, string shikigamiName, MitamaSetInputModel inputModel)
@@ -62,6 +71,8 @@ namespace Gui.Function
 			using (mPerformanceTracker.Track("SaveData.ApplyBuild"))
 			{
 				mShikigamiSelectionFunction.ApplyShikigami(shikigamiName);
+
+				mCheckpoint?.Invoke(SaveDataApplyCheckpoint.AfterShikigamiSelection);
 
 				mMitamaInputOperator.ApplyInputModel(inputModel);
 			}
@@ -94,6 +105,8 @@ namespace Gui.Function
 					using (mPerformanceTracker.Track("SaveData.ApplyUI"))
 					{
 						apply();
+
+						mCheckpoint?.Invoke(SaveDataApplyCheckpoint.AfterApply);
 					}
 				}
 				catch (Exception applyEx)
@@ -102,6 +115,8 @@ namespace Gui.Function
 					{
 						using (mPerformanceTracker.Track("SaveData.RollbackRestore"))
 						{
+							mCheckpoint?.Invoke(SaveDataApplyCheckpoint.BeforeRollbackRestore);
+
 							mShikigamiSelectionOperator.SetSelectedRarity(previousRarity);
 
 							if (string.IsNullOrEmpty(previousShikigamiName))
