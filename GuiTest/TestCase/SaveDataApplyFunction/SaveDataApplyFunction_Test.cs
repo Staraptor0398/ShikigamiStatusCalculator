@@ -42,25 +42,58 @@ namespace GuiTest.TestCase
 			{
 				ApplyFixture fixture = null;
 				MitamaSetInputModel appliedInput = null;
+				string appliedShikigamiName = null;
 				bool afterApplyReached = false;
+				bool rollbackReached = false;
 
 				fixture = new ApplyFixture(checkpoint =>
 				{
-					if (checkpoint != SaveDataApplyCheckpoint.AfterApply)
+					if (checkpoint == SaveDataApplyCheckpoint.AfterApply)
 					{
-						return;
+						afterApplyReached = true;
+
+						appliedShikigamiName = fixture.ShikigamiOperator.GetSelectedShikigami()?.Name;
+						appliedInput = fixture.MitamaOperator.CreateInputModel();
+
+						throw new InvalidOperationException("Injected apply failure.");
 					}
 
-					afterApplyReached = true;
-					appliedInput = fixture.MitamaOperator.CreateInputModel();
-
-					throw new InvalidOperationException("Injected apply failure.");
+					if (checkpoint == SaveDataApplyCheckpoint.BeforeRollbackRestore)
+					{
+						rollbackReached = true;
+					}
 				});
 
 				using (fixture)
 				{
+					// 適用前の御魂データAを実際のコントロールへ設定
+					MitamaSetInputModel originalInput = loadValidInputModel();
+
+					fixture.MitamaOperator.ApplyInputModel(originalInput);
+
 					MitamaSetInputModel previousInput = fixture.MitamaOperator.CreateInputModel();
+
+					assertInputEqual(originalInput, previousInput);
+
+					Assert.AreEqual("Before", fixture.ShikigamiOperator.GetSelectedShikigami()?.Name);
+
+					// 御魂データAとは異なるデータBを作成
 					MitamaSetInputModel target = loadValidInputModel();
+
+					target.Mitamas[0].MainStat.ValueText = "555";
+
+					target.Mitamas[0].SubStat[0].Type = DisplayText.SPEED;
+					target.Mitamas[0].SubStat[0].ValueText = "9";
+
+					target.Mitamas[1].MainStat.Type = DisplayText.ADDITIONAL_ATTACK_RATE;
+					target.Mitamas[1].MainStat.ValueText = "55";
+
+					target.SetEffects[0].Stat.Type = DisplayText.EFFECT_RESIST;
+
+					// AとBが異なることを確認
+					Assert.AreNotEqual(previousInput.Mitamas[0].MainStat.ValueText, target.Mitamas[0].MainStat.ValueText);
+
+					Assert.AreNotEqual(previousInput.SetEffects[0].Stat.Type, target.SetEffects[0].Stat.Type);
 
 					try
 					{
@@ -74,11 +107,14 @@ namespace GuiTest.TestCase
 					}
 
 					Assert.IsTrue(afterApplyReached);
+					Assert.IsTrue(rollbackReached);
 
-					// 適用時点では、本物のコントロールが変更されていたことを確認
+					// 例外発生時点ではデータBが適用されていたことを確認
+					Assert.AreEqual("After", appliedShikigamiName);
+
 					assertInputEqual(target, appliedInput);
 
-					// ロールバック後は、元の式神と全御魂入力に戻ることを確認
+					// ロールバック後はデータAに完全復元されていることを確認
 					Assert.AreEqual("Before", fixture.ShikigamiOperator.GetSelectedShikigami()?.Name);
 
 					assertInputEqual(previousInput, fixture.MitamaOperator.CreateInputModel());
