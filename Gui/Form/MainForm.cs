@@ -1,5 +1,4 @@
 using Gui.ControlSet;
-using Gui.Converter;
 using Gui.Definition;
 using Gui.Dialog;
 using Gui.Form.Control;
@@ -9,8 +8,6 @@ using Gui.Model;
 using Gui.Operator;
 using Gui.ShikigamiData;
 using Gui.Validation;
-using SaveData.Access;
-using SaveData.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -147,6 +144,8 @@ namespace Gui.Form
 		private SaveDataLoadFunction mSaveDataLoadFunction = null;
 
 		private SaveDataApplyFunction mSaveDataApplyFunction = null;
+
+		private SnapshotComparisonFunction mSnapshotComparisonFunction = null;
 
 		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
 
@@ -388,6 +387,8 @@ namespace Gui.Form
 			mSaveDataLoadFunction = new SaveDataLoadFunction(inputOperator, mShikigamiSelectionFunction, mPerformanceTracker);
 
 			mSaveDataApplyFunction = new SaveDataApplyFunction(inputOperator, mShikigamiSelectionOperator, mShikigamiSelectionFunction, mPerformanceTracker);
+
+			mSnapshotComparisonFunction = new SnapshotComparisonFunction();
 		}
 
 		private void initializeComboBoxes()
@@ -571,18 +572,15 @@ namespace Gui.Form
 					return;
 				}
 
-				CalculationSnapshotSaveData baseSnapshot;
-				CalculationSnapshotSaveData targetSnapshot;
-
+				string baseSnapshotName;
+				string targetSnapshotName;
 				StatusComparisonResultDto comparisonResult;
 
 				try
 				{
+					SnapshotComparisonOutcome outcome = mSnapshotComparisonFunction.TryCompare(dialog.BaseSnapshotFilePath, dialog.TargetSnapshotFilePath, out baseSnapshotName, out targetSnapshotName, out comparisonResult);
 
-					baseSnapshot = SaveDataAccess.LoadSnapshot(dialog.BaseSnapshotFilePath);
-					targetSnapshot = SaveDataAccess.LoadSnapshot(dialog.TargetSnapshotFilePath);
-
-					if (baseSnapshot == null || targetSnapshot == null)
+					if (outcome == SnapshotComparisonOutcome.SNAPSHOT_NULL)
 					{
 						Logger.Error("Operation=計算結果比較 Message=スナップショットデータの読み込み結果がnullでした。");
 
@@ -595,15 +593,10 @@ namespace Gui.Form
 						return;
 					}
 
-					StatusDto baseStatus = StatusConverter.ToDto(baseSnapshot.FinalStatus);
-					StatusDto targetStatus = StatusConverter.ToDto(targetSnapshot.FinalStatus);
-
-					if (baseStatus == null || targetStatus == null)
+					if (outcome == SnapshotComparisonOutcome.STATUS_NULL)
 					{
 						return;
 					}
-
-					comparisonResult = ComparisonGateway.CompareStatus(baseStatus, targetStatus);
 				}
 				catch (Exception ex)
 				{
@@ -617,9 +610,6 @@ namespace Gui.Form
 
 					return;
 				}
-
-				string baseSnapshotName = baseSnapshot.SnapshotName;
-				string targetSnapshotName = targetSnapshot.SnapshotName;
 
 				using (var form = new StatusComparisonResultForm(baseSnapshotName, targetSnapshotName, comparisonResult))
 				{
