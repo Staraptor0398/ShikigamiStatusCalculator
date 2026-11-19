@@ -96,7 +96,7 @@ namespace Gui.Function
 						apply();
 					}
 				}
-				catch
+				catch (Exception applyEx)
 				{
 					try
 					{
@@ -114,14 +114,14 @@ namespace Gui.Function
 							}
 
 							mMitamaInputOperator.ApplyInputModel(previousInputModel);
-
-							Logger.Info("Operation=SaveDataロールバック Message=UI状態を復元しました。");
 						}
 					}
 					catch (Exception rollbackEx)
 					{
-						Logger.Error($"Operation=SaveDataロールバック Message={rollbackEx}");
+						throw new SaveDataRollbackException(applyEx, rollbackEx);
 					}
+
+					Logger.Info("Operation=SaveDataロールバック Message=UI状態を復元しました。");
 
 					throw;
 				}

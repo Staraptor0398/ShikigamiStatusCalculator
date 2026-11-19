@@ -17,7 +17,7 @@ namespace Gui.Function
 
 		public CalculationResultDto LastCalculationResult => mLastCalculationResult;
 
-		public CalculationResultFunction(			CalculationResultOperator resultOperator,			ShikigamiSelectionOperator shikigamiSelectionOperator,			Func<bool> isDirtyChangeSuppressed,			Action<string> updateSaveButtonEnabled)
+		public CalculationResultFunction(CalculationResultOperator resultOperator, ShikigamiSelectionOperator shikigamiSelectionOperator, Func<bool> isDirtyChangeSuppressed, Action<string> updateSaveButtonEnabled)
 		{
 			if (resultOperator == null)
 			{
@@ -86,11 +86,11 @@ namespace Gui.Function
 				return;
 			}
 
-			mOperator.SetMitamaOnlyText(				StatusFormatter.FormatMitamaSummary(mLastCalculationResult.MitamaOnlyStatus));
+			mOperator.SetMitamaOnlyText(StatusFormatter.FormatMitamaSummary(mLastCalculationResult.MitamaOnlyStatus));
 
 			if (mShikigamiSelectionOperator.GetSelectedShikigami() != null)
 			{
-				mOperator.SetFinalStatsText(					StatusFormatter.FormatFinalSummary(mLastCalculationResult.FinalStatus));
+				mOperator.SetFinalStatsText(StatusFormatter.FormatFinalSummary(mLastCalculationResult.FinalStatus));
 			}
 			else
 			{
@@ -106,6 +106,14 @@ namespace Gui.Function
 		public void DeleteResult()
 		{
 			mLastCalculationResult = null;
+		}
+
+		public void Invalidate()
+		{
+			mIsCalculationResultDirty = true;
+			mLastCalculationResult = null;
+
+			mOperator.Clear();
 		}
 	}
 }

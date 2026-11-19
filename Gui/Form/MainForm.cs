@@ -518,6 +518,15 @@ namespace Gui.Form
 				}
 				catch (Exception ex)
 				{
+					if (ex is SaveDataRollbackException)
+					{
+						mCalculationResultFunction.Invalidate();
+
+#if DEBUG
+						mLastCalculationTestSource = null;
+#endif
+					}
+
 					Logger.Error($"Operation=SaveData読み込み Message={ex}");
 
 					MessageBox.Show(
