@@ -137,6 +137,7 @@
     <Compile Include="Function\SaveDataLoadFunction.cs" />
     <Compile Include="Function\SaveDataRollbackException.cs" />
     <Compile Include="Function\SaveDataSaveFunction.cs" />
+    <Compile Include="Function\ShikigamiRecoveryFunction.cs" />
     <Compile Include="Function\ShikigamiSelectionFunction.cs" />
     <Compile Include="Function\SnapshotComparisonFunction.cs" />
     <Compile Include="Logging\LogFileDefinition.cs" />

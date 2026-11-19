@@ -147,6 +147,8 @@ namespace Gui.Form
 
 		private SnapshotComparisonFunction mSnapshotComparisonFunction = null;
 
+		private ShikigamiRecoveryFunction mShikigamiRecoveryFunction = null;
+
 		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
 
 		private MainFormOperationState mOperationState = MainFormOperationState.IDLE;
@@ -389,6 +391,8 @@ namespace Gui.Form
 			mSaveDataApplyFunction = new SaveDataApplyFunction(inputOperator, mShikigamiSelectionOperator, mShikigamiSelectionFunction, mPerformanceTracker);
 
 			mSnapshotComparisonFunction = new SnapshotComparisonFunction();
+
+			mShikigamiRecoveryFunction = new ShikigamiRecoveryFunction(AppPath.ShikigamiDataCsvPath, ShikigamiDataFileManager.CreateBackup);
 		}
 
 		private void initializeComboBoxes()
@@ -785,7 +789,7 @@ namespace Gui.Form
 
 				try
 				{
-					ShikigamiDataOutcomeDto outcome = ShikigamiGateway.GetRecoveryCandidateShikigamiList(AppPath.ShikigamiDataCsvPath, dialog.FileName, out recoveryShikigamiList);
+					ShikigamiDataOutcomeDto outcome = mShikigamiRecoveryFunction.GetRecoveryCandidates(dialog.FileName, out recoveryShikigamiList);
 
 					if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧候補読み込み"))
 					{
@@ -823,9 +827,7 @@ namespace Gui.Form
 
 					try
 					{
-						ShikigamiDataFileManager.CreateBackup();
-
-						ShikigamiDataOutcomeDto outcome = ShikigamiGateway.RecoveryShikigami(AppPath.ShikigamiDataCsvPath, shikigamiRecoveryDialog.SelectedRecoveryCandidates);
+						ShikigamiDataOutcomeDto outcome = mShikigamiRecoveryFunction.Recover(shikigamiRecoveryDialog.SelectedRecoveryCandidates);
 
 						if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧"))
 						{
