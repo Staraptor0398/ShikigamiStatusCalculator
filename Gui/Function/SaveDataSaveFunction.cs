@@ -39,21 +39,43 @@ namespace Gui.Function
 
 		public SaveDataSaveLevel GetSaveLevel()
 		{
+			if (mShikigamiSelectionOperator.GetSelectedShikigami() == null)
+			{
+				return SaveDataSaveLevel.MITAMA_SET_ONLY;
+			}
+
 			if (mCalculationResultFunction.CanSaveCalculationSnapshot())
 			{
 				return SaveDataSaveLevel.SNAPSHOT_AVAILABLE;
 			}
 
-			if (mShikigamiSelectionOperator.GetSelectedShikigami() != null)
-			{
-				return SaveDataSaveLevel.BUILD_AVAILABLE;
-			}
-
-			return SaveDataSaveLevel.MITAMA_SET_ONLY;
+			return SaveDataSaveLevel.BUILD_AVAILABLE;
 		}
 
 		public void Save(SaveDataSaveType saveType, string filePath)
 		{
+			if (string.IsNullOrWhiteSpace(filePath))
+			{
+				throw new ArgumentException("SaveData file path is empty.", nameof(filePath));
+			}
+
+			if (saveType != SaveDataSaveType.Build && saveType != SaveDataSaveType.MitamaSet && saveType != SaveDataSaveType.CalculationSnapshot)
+			{
+				throw new InvalidOperationException($"Unsupported SaveData save type: {saveType}");
+			}
+
+			var selectedShikigami = mShikigamiSelectionOperator.GetSelectedShikigami();
+
+			if (saveType != SaveDataSaveType.MitamaSet && selectedShikigami == null)
+			{
+				throw new InvalidOperationException("Shikigami is not selected.");
+			}
+
+			if (saveType == SaveDataSaveType.CalculationSnapshot && !mCalculationResultFunction.CanSaveCalculationSnapshot())
+			{
+				throw new InvalidOperationException("Calculation snapshot is not available.");
+			}
+
 			var inputModel = mMitamaInputOperator.CreateInputModel();
 
 			if (saveType == SaveDataSaveType.Build)
@@ -61,7 +83,7 @@ namespace Gui.Function
 				BuildSaveData data = new BuildSaveData
 				{
 					MitamaSet = MitamaSetConverter.ToSaveData(inputModel),
-					ShikigamiName = mShikigamiSelectionOperator.GetShikigamiText()
+					ShikigamiName = selectedShikigami.Name
 				};
 
 				SaveDataAccess.SaveBuild(filePath, data);
@@ -69,6 +91,7 @@ namespace Gui.Function
 			else if (saveType == SaveDataSaveType.MitamaSet)
 			{
 				var data = MitamaSetConverter.ToSaveData(inputModel);
+
 				SaveDataAccess.SaveMitamaSet(filePath, data);
 			}
 			else if (saveType == SaveDataSaveType.CalculationSnapshot)
@@ -79,7 +102,7 @@ namespace Gui.Function
 				{
 					SnapshotName = createSnapshotNameFromFilePath(filePath),
 					CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-					ShikigamiName = mShikigamiSelectionOperator.GetShikigamiText(),
+					ShikigamiName = selectedShikigami.Name,
 					MitamaSet = MitamaSetConverter.ToSaveData(inputModel),
 					MitamaStatus = StatusConverter.ToSaveData(calculationResult.MitamaOnlyStatus),
 					FinalStatus = StatusConverter.ToSaveData(calculationResult.FinalStatus)
