@@ -51,7 +51,16 @@ namespace Gui.Function
 
 		public bool InitializeShikigamiComboBox()
 		{
+			bool autoRestored;
+
+			return InitializeShikigamiComboBox(out autoRestored);
+		}
+
+		public bool InitializeShikigamiComboBox(out bool autoRestored)
+		{
 			Logger.Info("Shikigami.Reload", "Started");
+
+			autoRestored = false;
 
 			List<ShikigamiDto> shikigamiList;
 			bool loadSucceeded = true;
@@ -64,6 +73,8 @@ namespace Gui.Function
 
 					if (ShikigamiDataErrorHandler.HandleInitialLoadRejected(outcome, "式神データ読み込み"))
 					{
+						autoRestored = true;
+
 						ShikigamiDataFileManager.MoveBrokenFile();
 						ShikigamiDataFileManager.RestoreDefaultIfMissing();
 

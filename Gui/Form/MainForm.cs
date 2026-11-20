@@ -909,13 +909,20 @@ namespace Gui.Form
 							return;
 						}
 
-						bool reloadSucceeded = mShikigamiSelectionFunction.InitializeShikigamiComboBox();
+						bool autoRestored;
+						bool reloadSucceeded = mShikigamiSelectionFunction.InitializeShikigamiComboBox(out autoRestored);
 
 						markCalculationResultDirty();
 
 						if (!reloadSucceeded)
 						{
 							Logger.Error("Shikigami.Recovery", "Failed", "Outcome=GuiReloadFailed");
+							return;
+						}
+
+						if (autoRestored)
+						{
+							Logger.Error("Shikigami.Recovery", "Failed", "Outcome=RecoveryDataReplaced");
 							return;
 						}
 
