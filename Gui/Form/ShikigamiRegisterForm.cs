@@ -137,6 +137,8 @@ namespace Gui.Form
 					return;
 				}
 
+				Logger.Info("Shikigami.Register", "Started");
+
 				ShikigamiDataFileManager.CreateBackup();
 
 				var outcome = ShikigamiGateway.AddShikigami(AppPath.ShikigamiDataCsvPath, dto);
@@ -145,6 +147,8 @@ namespace Gui.Form
 				{
 					return;
 				}
+
+				Logger.Info("Shikigami.Register", "Completed");
 			}
 			catch (Exception ex)
 			{
@@ -180,6 +184,8 @@ namespace Gui.Form
 					return;
 				}
 
+				Logger.Info("Shikigami.Edit", "Started");
+
 				ShikigamiDataFileManager.CreateBackup();
 
 				var outcome = ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, mEditTarget, newDto);
@@ -188,6 +194,8 @@ namespace Gui.Form
 				{
 					return;
 				}
+
+				Logger.Info("Shikigami.Edit", "Completed");
 			}
 			catch (Exception ex)
 			{

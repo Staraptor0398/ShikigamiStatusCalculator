@@ -622,17 +622,19 @@ namespace Gui.Form
 					return;
 				}
 
-				string baseSnapshotName;
-				string targetSnapshotName;
-				StatusComparisonResultDto comparisonResult;
-
 				try
 				{
+					Logger.Info("Snapshot.Compare", "Started");
+
+					string baseSnapshotName;
+					string targetSnapshotName;
+					StatusComparisonResultDto comparisonResult;
+
 					SnapshotComparisonOutcome outcome = mSnapshotComparisonFunction.TryCompare(dialog.BaseSnapshotFilePath, dialog.TargetSnapshotFilePath, out baseSnapshotName, out targetSnapshotName, out comparisonResult);
 
 					if (outcome == SnapshotComparisonOutcome.SNAPSHOT_NULL)
 					{
-						Logger.Error("Snapshot.Compare", "Failed", $"Outcome={SnapshotComparisonOutcome.SNAPSHOT_NULL}");
+						Logger.Error("Snapshot.Compare", "Failed", $"Outcome={outcome}");
 
 						MessageBox.Show(
 							"スナップショットデータの読み込みに失敗しました。",
@@ -645,8 +647,17 @@ namespace Gui.Form
 
 					if (outcome == SnapshotComparisonOutcome.STATUS_NULL)
 					{
+						Logger.Error("Snapshot.Compare", "Failed", $"Outcome={outcome}");
+
 						return;
 					}
+
+					using (var form = new StatusComparisonResultForm(baseSnapshotName, targetSnapshotName, comparisonResult))
+					{
+						form.ShowDialog(this);
+					}
+
+					Logger.Info("Snapshot.Compare", "Completed");
 				}
 				catch (Exception ex)
 				{
@@ -657,13 +668,6 @@ namespace Gui.Form
 						"計算結果比較",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error);
-
-					return;
-				}
-
-				using (var form = new StatusComparisonResultForm(baseSnapshotName, targetSnapshotName, comparisonResult))
-				{
-					form.ShowDialog(this);
 				}
 			}
 		}
@@ -743,19 +747,32 @@ namespace Gui.Form
 				return;
 			}
 
-			setOperationState(MainFormOperationState.CLEARING);
+			Logger.Info("MainForm.Clear", "Started");
 
 			try
 			{
-				clearInputs();
-				deleteLastCalculationResult();
-			}
-			finally
-			{
-				setOperationState(MainFormOperationState.IDLE);
-			}
+				try
+				{
+					setOperationState(MainFormOperationState.CLEARING);
 
-			markCalculationResultDirty();
+					clearInputs();
+					deleteLastCalculationResult();
+				}
+				finally
+				{
+					setOperationState(MainFormOperationState.IDLE);
+				}
+
+				markCalculationResultDirty();
+
+				Logger.Info("MainForm.Clear", "Completed");
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("MainForm.Clear", "Failed", ex);
+
+				throw;
+			}
 		}
 
 		// 起動直後と同じ入力状態に戻す
