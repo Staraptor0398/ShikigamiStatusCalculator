@@ -576,9 +576,14 @@ namespace Gui.Form
 				{
 					if (ex is SaveDataRollbackException)
 					{
+						bool hasCalculationResult = mCalculationResultFunction.LastCalculationResult != null;
+
 						mCalculationResultFunction.Invalidate();
 
-						Logger.Warning("Calculation.Result", "Invalidated", "Reason=SaveDataRollbackFailed");
+						if (hasCalculationResult)
+						{
+							Logger.Warning("Calculation.Result", "Invalidated", "Reason=SaveDataRollbackFailed");
+						}
 
 #if DEBUG
 						mLastCalculationTestSource = null;
