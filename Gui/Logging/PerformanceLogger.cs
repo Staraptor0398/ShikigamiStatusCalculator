@@ -15,16 +15,33 @@ namespace Gui.Logging
 				throw new ArgumentNullException(nameof(statistics));
 			}
 
+			Write(sessionId, statistics, DateTime.Now, AppPath.PerformanceLogFilePath);
+		}
+
+		internal static void Write(Guid sessionId, IReadOnlyList<PerformanceStatistics> statistics, DateTime timestamp, string filePath)
+		{
+			string content = Format(sessionId, statistics, timestamp);
+
+			File.AppendAllText(filePath, content, Encoding.UTF8);
+		}
+
+		internal static string Format(Guid sessionId, IReadOnlyList<PerformanceStatistics> statistics, DateTime timestamp)
+		{
+			if (statistics == null)
+			{
+				throw new ArgumentNullException(nameof(statistics));
+			}
+
 			var builder = new StringBuilder();
 
-			string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+			string timestampText = timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
-			builder.AppendLine($"{timestamp} Session={sessionId:N} Event=Begin");
+			builder.AppendLine($"{timestampText} Session={sessionId:N} Event=Begin");
 
 			foreach (PerformanceStatistics item in statistics)
 			{
 				builder.AppendLine(
-					$"{timestamp} Session={sessionId:N} " +
+					$"{timestampText} Session={sessionId:N} " +
 					$"Target={item.Target} " +
 					$"Count={item.Count} " +
 					$"TotalMs={item.TotalMilliseconds:F3} " +
@@ -32,9 +49,9 @@ namespace Gui.Logging
 					$"MaxMs={item.MaxMilliseconds:F3}");
 			}
 
-			builder.AppendLine($"{timestamp} Session={sessionId:N} Event=End");
+			builder.AppendLine($"{timestampText} Session={sessionId:N} Event=End");
 
-			File.AppendAllText(AppPath.PerformanceLogFilePath, builder.ToString(), Encoding.UTF8);
+			return builder.ToString();
 		}
 	}
 }
