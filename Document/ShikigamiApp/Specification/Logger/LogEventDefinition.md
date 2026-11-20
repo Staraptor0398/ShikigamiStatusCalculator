@@ -158,7 +158,7 @@ Base.OnFormClosed.End
 | `Shikigami.Recovery` | `CandidatesEmpty` | INFO | 復旧候補を正常に読み込んだ結果、候補が0件だったとき | なし |
 | `Shikigami.Recovery` | `Started` | INFO | 候補を選択して確定し、手動復旧を開始するとき | `SelectedCount` |
 | `Shikigami.Recovery` | `BackupCompleted` | INFO | 復旧前データのバックアップ作成が完了したとき | なし |
-| `Shikigami.Recovery` | `Completed` | INFO | 復旧データの反映と後続のGui候補一覧更新が完了したとき | `RecoveredCount` |
+| `Shikigami.Recovery` | `Completed` | INFO | 復旧データの反映と後続のGui候補一覧更新が完了したとき | `SelectedCount` |
 | `Shikigami.Recovery` | `Failed` | ERROR | 候補の取得・バックアップ作成・復旧・Gui更新が失敗したとき | `Outcome`または`Exception` |
 
 式神データの初回読み込みが失敗しても、自動復元により再読み込みが成功した場合は`Shikigami.Reload.Completed`を記録する。初回失敗は`InitialLoadRejected`で区別し、最終失敗の`Failed`と混同しない。
@@ -166,6 +166,8 @@ Base.OnFormClosed.End
 `Shikigami.AutoRestore.Completed`および`Shikigami.BrokenFile.Moved`は、それぞれのファイル操作が実際に完了した後に記録する。復旧候補一覧の個々の要素を全件ログへ出力しない。
 
 `Shikigami.Recovery.CandidatesEmpty`は復旧操作開始前の結果であり、`Started`を伴わない。手動復旧の`Completed`は、CSV更新だけではなく後続のGui候補一覧更新の成功確認後に出力する。
+
+`Shikigami.Recovery.Completed`の`SelectedCount`は復旧対象として選択された件数を示し、実際にCSVへ追加された件数を保証しない。復旧実行時に既存データとの重複が再判定されるため、両者は一致しない場合がある。
 
 ## 12. CLEAR
 
