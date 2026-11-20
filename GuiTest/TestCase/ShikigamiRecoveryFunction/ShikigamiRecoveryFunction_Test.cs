@@ -160,6 +160,31 @@ namespace GuiTest.TestCase
 			}
 		}
 
+		[TestMethod]
+		public void RecoveryCurrentFileNotFound()
+		{
+			using (var fixture = new RecoveryFixture())
+			{
+				var function = fixture.CreateFunction();
+
+				List<ShikigamiDto> candidates;
+
+				ShikigamiDataOutcomeDto outcome = function.GetRecoveryCandidates(fixture.SourceFilePath, out candidates);
+
+				Assert.AreEqual(ShikigamiDataOutcomeDto.SUCCESS, outcome);
+
+				File.Delete(fixture.CurrentFilePath);
+
+				FileNotFoundException ex = Assert.ThrowsExactly<FileNotFoundException>(() =>
+				{
+					function.Recover(new List<ShikigamiDto> { candidates[0] });
+				});
+
+				Assert.AreEqual(fixture.CurrentFilePath, ex.FileName);
+				Assert.IsFalse(File.Exists(fixture.BackupFilePath));
+			}
+		}
+
 		private static string createCsv(params string[] records)
 		{
 			return CSV_HEADER + "\n" + string.Join("\n", records) + "\n";
