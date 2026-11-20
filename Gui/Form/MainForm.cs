@@ -958,6 +958,11 @@ namespace Gui.Form
 			{
 				logShutdownEvent("OnFormClosing.End");
 			}
+
+			if (!e.Cancel)
+			{
+				Logger.Info("Application", "Closing");
+			}
 		}
 
 		/****************************************************************************************************
