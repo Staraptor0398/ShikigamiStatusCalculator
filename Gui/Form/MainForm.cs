@@ -939,7 +939,7 @@ namespace Gui.Form
 							MessageBoxButtons.OK,
 							MessageBoxIcon.Information);
 
-						Logger.Info("Shikigami.Recovery", "Completed", $"RecoveredCount={selectedCount}");
+						Logger.Info("Shikigami.Recovery", "Completed", $"SelectedCount={selectedCount}");
 					}
 					catch (Exception ex)
 					{
