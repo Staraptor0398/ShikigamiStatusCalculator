@@ -24,21 +24,29 @@ namespace Gui.ShikigamiData
 				return;
 			}
 
-			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(RESOURCE_NAME))
+			try
 			{
-				if (stream == null)
+				using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(RESOURCE_NAME))
 				{
-					Logger.Error("Shikigami.AutoRestore", "Failed", $"Outcome=ResourceNotFound Resource={RESOURCE_NAME}");
-					return;
-				}
+					if (stream == null)
+					{
+						Logger.Error("Shikigami.AutoRestore", "Failed", $"Outcome=ResourceNotFound Resource={RESOURCE_NAME}");
+						return;
+					}
 
-				using (var reader = new StreamReader(stream, mUtf8WithoutBom))
-				{
-					File.WriteAllText(
-						AppPath.ShikigamiDataCsvPath,
-						reader.ReadToEnd(),
-						mUtf8WithoutBom);
+					using (var reader = new StreamReader(stream, mUtf8WithoutBom))
+					{
+						File.WriteAllText(
+							AppPath.ShikigamiDataCsvPath,
+							reader.ReadToEnd(),
+							mUtf8WithoutBom);
+					}
 				}
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("Shikigami.AutoRestore", "Failed", $"Outcome=UnexpectedException ExceptionType={ex.GetType().FullName}");
+				throw;
 			}
 
 			Logger.Info("Shikigami.AutoRestore", "Completed");
