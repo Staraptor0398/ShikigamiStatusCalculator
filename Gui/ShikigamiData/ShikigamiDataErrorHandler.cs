@@ -48,6 +48,24 @@ namespace Gui.ShikigamiData
 			return true;
 		}
 
+		public static bool HandleInitialLoadRejected(ShikigamiDataOutcomeDto outcome, string operationName)
+		{
+			if (outcome == ShikigamiDataOutcomeDto.SUCCESS)
+			{
+				return false;
+			}
+
+			Logger.Warning("Shikigami.Reload", "InitialLoadRejected", $"Outcome={outcome}");
+
+			MessageBox.Show(
+				createMessage(outcome, operationName),
+				operationName,
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Error);
+
+			return true;
+		}
+
 		private static string createMessage(ShikigamiDataOutcomeDto outcome, string operationName)
 		{
 			switch (outcome)

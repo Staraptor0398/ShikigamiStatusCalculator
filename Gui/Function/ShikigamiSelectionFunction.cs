@@ -49,9 +49,12 @@ namespace Gui.Function
 			}
 		}
 
-		public void InitializeShikigamiComboBox()
+		public bool InitializeShikigamiComboBox()
 		{
+			Logger.Info("Shikigami.Reload", "Started");
+
 			List<ShikigamiDto> shikigamiList;
+			bool loadSucceeded = true;
 
 			try
 			{
@@ -59,7 +62,7 @@ namespace Gui.Function
 				{
 					var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
 
-					if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み", "Shikigami.Reload"))
+					if (ShikigamiDataErrorHandler.HandleInitialLoadRejected(outcome, "式神データ読み込み"))
 					{
 						ShikigamiDataFileManager.MoveBrokenFile();
 						ShikigamiDataFileManager.RestoreDefaultIfMissing();
@@ -69,8 +72,32 @@ namespace Gui.Function
 						if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ復元後読み込み", "Shikigami.Reload"))
 						{
 							shikigamiList = new List<ShikigamiDto>();
+							loadSucceeded = false;
 						}
 					}
+				}
+
+				if (loadSucceeded && shikigamiList == null)
+				{
+					throw new InvalidOperationException("Shikigami list is null.");
+				}
+
+				mShikigamiList = shikigamiList;
+
+				using (mPerformanceTracker.Track("Shikigami.SetDisplayMember"))
+				{
+					mOperator.SetShikigamiDisplayMember("Name");
+				}
+
+				using (mPerformanceTracker.Track("Shikigami.SetItems"))
+				{
+					mOperator.SetShikigamiItems(getFilteredShikigamiList());
+				}
+
+				using (mPerformanceTracker.Track("Shikigami.ResetSelection"))
+				{
+					mOperator.ClearShikigamiSelection();
+					mOperator.SetBaseStatsText("");
 				}
 			}
 			catch (Exception ex)
@@ -82,26 +109,15 @@ namespace Gui.Function
 					mShikigamiList = new List<ShikigamiDto>();
 				}
 
-				return;
+				return false;
 			}
 
-			mShikigamiList = shikigamiList;
-
-			using (mPerformanceTracker.Track("Shikigami.SetDisplayMember"))
+			if (loadSucceeded)
 			{
-				mOperator.SetShikigamiDisplayMember("Name");
+				Logger.Info("Shikigami.Reload", "Completed");
 			}
 
-			using (mPerformanceTracker.Track("Shikigami.SetItems"))
-			{
-				mOperator.SetShikigamiItems(getFilteredShikigamiList());
-			}
-
-			using (mPerformanceTracker.Track("Shikigami.ResetSelection"))
-			{
-				mOperator.ClearShikigamiSelection();
-				mOperator.SetBaseStatsText("");
-			}
+			return loadSucceeded;
 		}
 
 		public void HandleShikigamiSelectedIndexChanged()
