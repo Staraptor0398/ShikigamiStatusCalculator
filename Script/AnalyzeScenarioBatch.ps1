@@ -1,7 +1,7 @@
 ﻿param(
     [string]$RunIdFile = (Join-Path $PSScriptRoot 'Result/RunIds.txt'),
     [string]$OutputDirectory = (Join-Path $PSScriptRoot 'Result/Analysis'),
-    [int]$ExpectedScenarioCount = 48,
+    [int]$ExpectedScenarioCount = 50,
     [switch]$SkipDownload
 )
 

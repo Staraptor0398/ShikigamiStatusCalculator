@@ -6,7 +6,7 @@
 $ErrorActionPreference = 'Stop'
 
 $repository = 'Staraptor0398/ShikigamiStatusCalculator'
-$workflow = 'scenario-runner-batch.yml'
+$workflow = 'scenario-runner-batch-reroll.yml'
 $root = Split-Path -Parent $PSScriptRoot
 $resultDirectory = Join-Path $PSScriptRoot 'Result'
 $runIdFile = Join-Path $resultDirectory 'RunIds.txt'
@@ -41,7 +41,7 @@ Write-Host "Run ID file: $runIdFile"
 for ($i = 1; $i -le $RunCount; $i++) {
     Write-Host "Starting Scenario Runner Batch ($i/$RunCount)..."
 
-    $output = @(& gh workflow run $workflow --repo $repository --ref master -f "ref=$commitSha" -f 'enable_live_stream=false' 2>&1)
+    $output = @(& gh workflow run $workflow --repo $repository --ref master -f "ref=$commitSha" -f 'selection_mode=Fastest' -f 'enable_live_stream=false' 2>&1)
     if ($LASTEXITCODE -ne 0) {
         $output | ForEach-Object { Write-Host $_ }
         throw "Failed to dispatch run $i. Run IDs dispatched so far are saved in $runIdFile."

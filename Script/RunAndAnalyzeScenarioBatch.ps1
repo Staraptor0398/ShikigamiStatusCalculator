@@ -9,7 +9,7 @@
     [int]$TimeoutMinutes = 20,
 
     [ValidateRange(1, [int]::MaxValue)]
-    [int]$ExpectedScenarioCount = 48
+    [int]$ExpectedScenarioCount = 50
 )
 
 $ErrorActionPreference = 'Stop'
