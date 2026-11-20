@@ -74,7 +74,7 @@ namespace Gui.ShikigamiData
 		{
 			if (!File.Exists(AppPath.ShikigamiDataCsvPath))
 			{
-				return;
+				throw new FileNotFoundException("Current Shikigami data file was not found.", AppPath.ShikigamiDataCsvPath);
 			}
 
 			string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
