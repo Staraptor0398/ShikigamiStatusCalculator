@@ -7,6 +7,7 @@
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Analysis/SessionMatcher.ps1')
+. (Join-Path $PSScriptRoot 'Analysis/ScenarioSessionParser.ps1')
 $repo = 'Staraptor0398/ShikigamiStatusCalculator'
 $artifactName = 'scenario-runner-batch-logs'
 $culture = [System.Globalization.CultureInfo]::InvariantCulture
@@ -25,24 +26,6 @@ New-Item -ItemType Directory -Force -Path $downloadRoot | Out-Null
 
 function Parse-Time([string]$value) {
     return [datetime]::ParseExact($value, 'yyyy-MM-dd HH:mm:ss.fff', $culture)
-}
-function Parse-ScenarioTime([string]$day, [string]$clock) {
-    if ($clock -notmatch '^(\d{2}):(\d{2}):(\d{2})(?:\.(\d{3}))?$') {
-        throw "Invalid Scenario Runner timestamp: day=$day clock=$clock"
-    }
-
-    $hour = [int]$Matches[1]
-    $minute = [int]$Matches[2]
-    $second = [int]$Matches[3]
-    $millisecond = if ($Matches[4]) { [int]$Matches[4] } else { 0 }
-
-    try {
-        $datePart = [datetime]::ParseExact($day, 'yyyyMMdd', $culture)
-        return [datetime]::new($datePart.Year, $datePart.Month, $datePart.Day, $hour, $minute, $second, $millisecond)
-    }
-    catch {
-        throw "Invalid Scenario Runner timestamp: day=$day clock=$clock. $($_.Exception.Message)"
-    }
 }
 function Export-Rows([object[]]$rows, [string]$path) {
     if ($rows.Count -gt 0) { $rows | Export-Csv -Path $path -NoTypeInformation -Encoding UTF8 }
@@ -157,52 +140,26 @@ foreach ($runId in $runIds) {
         $declaredName = $nameMatch.Groups[3].Value
         $end = $start
         $stepFailures = 0
-        $guiIntervals = [System.Collections.Generic.List[object]]::new()
-        $pendingOpen = $null
         foreach ($line in $textLines) {
             if ($line -match '^\[(\d{2}:\d{2}:\d{2}(?:\.\d{3})?)\]') {
                 $time = Parse-ScenarioTime $date $Matches[1]
                 if ($time -lt $start.AddHours(-12)) { $time = $time.AddDays(1) }
                 if ($time -gt $end) { $end = $time }
             }
-            # Build Gui lifetime windows from Runner commands, not the whole Scenario interval.
-            # Old Runner logs have second precision; new logs have millisecond precision.
-            if ($line -match '^\[(\d{2}:\d{2}:\d{2}(?:\.\d{3})?)\] \[([0-9]+)\] (OPEN GUI|LAUNCH GUI|CLOSE GUI)\s+(START|PASS|FAIL)\s*$') {
-                $stepTime = Parse-ScenarioTime $date $Matches[1]
-                if ($stepTime -lt $start.AddHours(-12)) { $stepTime = $stepTime.AddDays(1) }
-                $stepLine = [int]$Matches[2]
-                $command = $Matches[3]
-                $stepResult = $Matches[4]
-                $preciseTime = $Matches[1].Contains('.')
-                if (($command -eq 'OPEN GUI' -or $command -eq 'LAUNCH GUI') -and $stepResult -eq 'START') {
-                    if ($null -ne $pendingOpen) {
-                        $validationIssues.Add("Unclosed Gui window before another launch in $runId / $($file.Name)")
-                    }
-                    $pendingOpen = [pscustomobject]@{Start=$stepTime; StartLine=$stepLine; Command=$command; Passed=$false; PreciseTime=$preciseTime}
-                }
-                elseif (($command -eq 'OPEN GUI' -or $command -eq 'LAUNCH GUI') -and $stepResult -eq 'PASS') {
-                    if ($null -ne $pendingOpen -and $pendingOpen.StartLine -eq $stepLine) { $pendingOpen.Passed = $true }
-                }
-                elseif ($command -eq 'CLOSE GUI' -and $stepResult -eq 'PASS') {
-                    if ($null -eq $pendingOpen) {
-                        $validationIssues.Add("CLOSE GUI without OPEN/LAUNCH GUI in $runId / $($file.Name)")
-                    }
-                    else {
-                        $window = [pscustomobject]@{
-                            RunId=$runId; Scenario=$declaredName; FileName=$file.Name;
-                            WindowOrder=($guiIntervals.Count+1); OpenCommand=$pendingOpen.Command;
-                            OpenLine=$pendingOpen.StartLine; CloseLine=$stepLine;
-                            Start=$pendingOpen.Start; End=$stepTime;
-                            OpenPassed=$pendingOpen.Passed; PreciseTime=($pendingOpen.PreciseTime -and $preciseTime); SessionId=''; MatchQuality='unmatched'
-                        }
-                        $guiIntervals.Add($window)
-                        $pendingOpen = $null
-                    }
-                }
-            }
             if ($line -match '^\[\d{2}:\d{2}:\d{2}(?:\.\d{3})?\] Scenario: (.+)$') { $declaredName = $Matches[1] }
             if ($line -match '^\[\d{2}:\d{2}:\d{2}(?:\.\d{3})?\] Scenario Result: (PASS|FAIL)') { $status = $Matches[1] }
             if ($line -match '^\[\d{2}:\d{2}:\d{2}:\d{2}(?:\.\d{3})?\] \[\d+\] .*\sFAIL\s*$') { $stepFailures++ }
+        }
+        $guiResult = Get-ScenarioGuiWindows `
+            -RunId $runId `
+            -FileName $file.Name `
+            -Date $date `
+            -Start $start `
+            -Scenario $declaredName `
+            -Lines $textLines
+        $guiIntervals = @($guiResult.GuiWindows)
+        foreach ($issue in $guiResult.ValidationIssues) {
+            $validationIssues.Add($issue)
         }
         # Additional command timing pass; existing Gui/session analysis remains unchanged.
         $pendingSteps = @{}
@@ -434,7 +391,7 @@ foreach ($runId in $runIds) {
                 Start=$pending.Time;End=$null;DurationMs=$null;PreciseTime=$pending.Precise
             })
         }
-        if ($null -ne $pendingOpen) { $validationIssues.Add("Gui open without successful close in $runId / $($file.Name)") }
+        if ($guiResult.HasPendingOpen) { $validationIssues.Add("Gui open without successful close in $runId / $($file.Name)") }
         foreach ($window in $guiIntervals) {
             $window.Scenario = $declaredName
             $allGuiIntervals.Add($window)
