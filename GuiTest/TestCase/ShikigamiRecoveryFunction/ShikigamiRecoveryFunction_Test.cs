@@ -1,4 +1,5 @@
 using Gui.Function;
+using GuiTest.TestUtil;
 using System.Text;
 
 namespace GuiTest.TestCase
@@ -166,7 +167,7 @@ namespace GuiTest.TestCase
 
 		private sealed class RecoveryFixture : IDisposable
 		{
-			private readonly string mDirectoryPath;
+			private readonly TemporaryDirectory mDirectory = new TemporaryDirectory("ShikigamiRecovery");
 
 			public string CurrentFilePath { get; }
 			public string SourceFilePath { get; }
@@ -174,17 +175,9 @@ namespace GuiTest.TestCase
 
 			public RecoveryFixture()
 			{
-				mDirectoryPath = Path.Combine(
-					Path.GetTempPath(),
-					"GuiTest",
-					"ShikigamiRecovery",
-					Guid.NewGuid().ToString("N"));
-
-				Directory.CreateDirectory(mDirectoryPath);
-
-				CurrentFilePath = Path.Combine(mDirectoryPath, "Current.csv");
-				SourceFilePath = Path.Combine(mDirectoryPath, "Source.csv");
-				BackupFilePath = Path.Combine(mDirectoryPath, "Backup.csv");
+				CurrentFilePath = Path.Combine(mDirectory.DirectoryPath, "Current.csv");
+				SourceFilePath = Path.Combine(mDirectory.DirectoryPath, "Source.csv");
+				BackupFilePath = Path.Combine(mDirectory.DirectoryPath, "Backup.csv");
 
 				File.WriteAllText(CurrentFilePath, createCsv(EXISTING), new UTF8Encoding(false));
 
@@ -198,7 +191,7 @@ namespace GuiTest.TestCase
 
 			public void Dispose()
 			{
-				Directory.Delete(mDirectoryPath, true);
+				mDirectory.Dispose();
 			}
 		}
 	}

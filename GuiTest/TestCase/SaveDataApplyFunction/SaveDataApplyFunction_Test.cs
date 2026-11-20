@@ -7,8 +7,8 @@ using Gui.Function;
 using Gui.Logging;
 using Gui.Model;
 using Gui.Operator;
-using GuiTest.TestCommon;
-using System.Runtime.ExceptionServices;
+using GuiTest.TestData;
+using GuiTest.TestUtil;
 using System.Windows.Forms;
 
 namespace GuiTest.TestCase
@@ -20,7 +20,7 @@ namespace GuiTest.TestCase
 		[TestMethod]
 		public void ApplyBuildSuccess()
 		{
-			runOnSta(() =>
+			StaTestRunner.Run(() =>
 			{
 				using (var fixture = new ApplyFixture(null))
 				{
@@ -38,7 +38,7 @@ namespace GuiTest.TestCase
 		[TestMethod]
 		public void ApplyFailureRollbackSuccess()
 		{
-			runOnSta(() =>
+			StaTestRunner.Run(() =>
 			{
 				ApplyFixture fixture = null;
 				MitamaSetInputModel appliedInput = null;
@@ -125,7 +125,7 @@ namespace GuiTest.TestCase
 		[TestMethod]
 		public void ApplyFailureRollbackFailure()
 		{
-			runOnSta(() =>
+			StaTestRunner.Run(() =>
 			{
 				bool applyFailureReached = false;
 				bool rollbackFailureReached = false;
@@ -218,32 +218,6 @@ namespace GuiTest.TestCase
 		{
 			Assert.AreEqual(expected.Type, actual.Type);
 			Assert.AreEqual(expected.ValueText, actual.ValueText);
-		}
-
-		private static void runOnSta(Action action)
-		{
-			Exception failure = null;
-
-			Thread thread = new Thread(() =>
-			{
-				try
-				{
-					action();
-				}
-				catch (Exception ex)
-				{
-					failure = ex;
-				}
-			});
-
-			thread.SetApartmentState(ApartmentState.STA);
-			thread.Start();
-			thread.Join();
-
-			if (failure != null)
-			{
-				ExceptionDispatchInfo.Capture(failure).Throw();
-			}
 		}
 
 		private sealed class ApplyFixture : IDisposable

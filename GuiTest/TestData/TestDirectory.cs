@@ -1,4 +1,4 @@
-namespace GuiTest.TestCommon
+namespace GuiTest.TestData
 {
 	public static class TestDirectory
 	{

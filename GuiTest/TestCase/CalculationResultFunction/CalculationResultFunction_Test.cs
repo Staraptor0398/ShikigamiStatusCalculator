@@ -1,9 +1,8 @@
-
 using Gui.ControlSet;
 using Gui.Function;
 using Gui.Logging;
 using Gui.Operator;
-using System.Runtime.ExceptionServices;
+using GuiTest.TestUtil;
 using System.Windows.Forms;
 
 namespace GuiTest.TestCase
@@ -12,10 +11,11 @@ namespace GuiTest.TestCase
 	[DoNotParallelize]
 	public class CalculationResultFunction_Test
 	{
+
 		[TestMethod]
 		public void InvalidateWhileDirtyChangeSuppressed()
 		{
-			runOnSta(() =>
+			StaTestRunner.Run(() =>
 			{
 				using (var mitamaTextBox = new TextBox())
 				using (var finalTextBox = new TextBox())
@@ -78,32 +78,6 @@ namespace GuiTest.TestCase
 					Assert.IsFalse(function.CanSaveCalculationSnapshot());
 				}
 			});
-		}
-
-		private static void runOnSta(Action action)
-		{
-			Exception failure = null;
-
-			Thread thread = new Thread(() =>
-			{
-				try
-				{
-					action();
-				}
-				catch (Exception ex)
-				{
-					failure = ex;
-				}
-			});
-
-			thread.SetApartmentState(ApartmentState.STA);
-			thread.Start();
-			thread.Join();
-
-			if (failure != null)
-			{
-				ExceptionDispatchInfo.Capture(failure).Throw();
-			}
 		}
 	}
 }

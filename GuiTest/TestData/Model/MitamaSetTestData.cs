@@ -1,4 +1,4 @@
-namespace GuiTest.TestCommon.Model
+namespace GuiTest.TestData.Model
 {
 	public class MitamaSetTestData
 	{

@@ -1,9 +1,9 @@
 using Gui.Converter;
 using Gui.Model;
-using GuiTest.TestCommon.Model;
+using GuiTest.TestData.Model;
 using SaveData.Model;
 
-namespace GuiTest.TestCommon.Converter
+namespace GuiTest.TestData.Converter
 {
 	public static class GuiTestDataConverter
 	{

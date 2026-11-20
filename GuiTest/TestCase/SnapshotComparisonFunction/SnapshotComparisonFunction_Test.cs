@@ -1,5 +1,5 @@
-
 using Gui.Function;
+using GuiTest.TestUtil;
 using SaveData.Access;
 using SaveData.Model;
 
@@ -146,23 +146,15 @@ namespace GuiTest.TestCase
 
 		private sealed class SnapshotFixture : IDisposable
 		{
-			private readonly string mDirectoryPath;
+			private readonly TemporaryDirectory mDirectory = new TemporaryDirectory("SnapshotComparison");
 
 			public string BaseFilePath { get; }
 			public string TargetFilePath { get; }
 
 			public SnapshotFixture()
 			{
-				mDirectoryPath = Path.Combine(
-					Path.GetTempPath(),
-					"GuiTest",
-					"SnapshotComparison",
-					Guid.NewGuid().ToString("N"));
-
-				Directory.CreateDirectory(mDirectoryPath);
-
-				BaseFilePath = Path.Combine(mDirectoryPath, "Base.snapshot.json");
-				TargetFilePath = Path.Combine(mDirectoryPath, "Target.snapshot.json");
+				BaseFilePath = Path.Combine(mDirectory.DirectoryPath, "Base.snapshot.json");
+				TargetFilePath = Path.Combine(mDirectory.DirectoryPath, "Target.snapshot.json");
 
 				SaveBase(createSnapshot("Base", new StatusSaveData
 				{
@@ -201,8 +193,10 @@ namespace GuiTest.TestCase
 
 			public void Dispose()
 			{
-				Directory.Delete(mDirectoryPath, true);
+				mDirectory.Dispose();
 			}
 		}
+
+
 	}
 }

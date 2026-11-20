@@ -1,8 +1,9 @@
 using Gui.Converter;
 using Gui.Model;
 using GuiTest.TestCommon;
-using GuiTest.TestCommon.Converter;
-using GuiTest.TestCommon.Model;
+using GuiTest.TestData;
+using GuiTest.TestData.Converter;
+using GuiTest.TestData.Model;
 using SaveData.Model;
 
 namespace GuiTest.TestCase

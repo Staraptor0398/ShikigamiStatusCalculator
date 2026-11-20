@@ -1,4 +1,4 @@
-using GuiTest.TestCommon.Model;
+using GuiTest.TestData.Model;
 
 namespace GuiTest.TestCommon
 {
