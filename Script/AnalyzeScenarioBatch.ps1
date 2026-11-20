@@ -877,44 +877,88 @@ if($warnings.Count -gt 0) {
 
 # Runner performance comparison.
 $runnerPerformanceRows = [System.Collections.Generic.List[object]]::new()
-$performanceArtifactName = 'scenario-runner-performance'
 
 foreach ($runId in $runIds) {
     $performanceDirectory = Join-Path $downloadRoot "$runId/RunnerPerformance"
+    $selectionDirectory = Join-Path $downloadRoot "$runId/RunnerSelection"
+    $selectionPath = Join-Path $selectionDirectory 'selection.json'
+    $selectedCandidateId = $null
 
     if (-not $SkipDownload) {
-        New-Item -ItemType Directory -Path $performanceDirectory -Force | Out-Null
+        if (Test-Path -LiteralPath $selectionDirectory) {
+            Remove-Item -LiteralPath $selectionDirectory -Recurse -Force
+        }
+        New-Item -ItemType Directory -Force -Path $selectionDirectory | Out-Null
 
-        & gh run download $runId `
+        # Determine whether this is a Reroll run without intentionally failing a download.
+        $artifactNames = @(& gh api "repos/$repo/actions/runs/$runId/artifacts" `
+            --jq '.artifacts[].name')
+        if ($LASTEXITCODE -ne 0) {
+            $warnings.Add("Could not list runner artifacts for run $runId")
+            continue
+        }
+
+        if ($artifactNames -contains 'runner-selection') {
+            & gh run download $runId `
+                --repo $repo `
+                --name 'runner-selection' `
+                --dir $selectionDirectory
+            if ($LASTEXITCODE -ne 0) {
+                $warnings.Add("Runner selection artifact download failed: $runId")
+                continue
+            }
+        }
+    }
+
+    if (Test-Path -LiteralPath $selectionPath -PathType Leaf) {
+        $selection = Get-Content -LiteralPath $selectionPath -Raw | ConvertFrom-Json
+        if ($null -eq $selection.SelectedCandidateId -or
+            [string]$selection.SelectedCandidateId -notmatch '^[1-5]$') {
+            $warnings.Add("Invalid runner selection for run $runId")
+            continue
+        }
+        $selectedCandidateId = [int]$selection.SelectedCandidateId
+        $performanceArtifactName = "scenario-runner-performance-$selectedCandidateId"
+    }
+    else {
+        $performanceArtifactName = 'scenario-runner-performance'
+    }
+
+    if (-not $SkipDownload) {
+        if (Test-Path -LiteralPath $performanceDirectory) {
+            Remove-Item -LiteralPath $performanceDirectory -Recurse -Force
+        }
+        New-Item -ItemType Directory -Force -Path $performanceDirectory | Out-Null
+
+        $performanceOutput = @(& gh run download $runId `
             --repo $repo `
             --name $performanceArtifactName `
-            --dir $performanceDirectory
-
+            --dir $performanceDirectory 2>&1)
         if ($LASTEXITCODE -ne 0) {
-            $warnings.Add("Runner performance artifact missing: $runId")
+            $warnings.Add("Runner performance artifact missing: $runId / $performanceArtifactName")
             continue
         }
     }
 
-    $environmentPath = Join-Path $performanceDirectory "Environment.json"
-    $benchmarkPath = Join-Path $performanceDirectory "Benchmark.json"
+    $environmentPath = Join-Path $performanceDirectory 'Environment.json'
+    $benchmarkPath = Join-Path $performanceDirectory 'Benchmark.json'
 
-    if (-not (Test-Path -LiteralPath $environmentPath) -or
-        -not (Test-Path -LiteralPath $benchmarkPath)) {
-        $warnings.Add("Runner performance data incomplete: $runId")
+    if (-not (Test-Path -LiteralPath $environmentPath -PathType Leaf) -or
+        -not (Test-Path -LiteralPath $benchmarkPath -PathType Leaf)) {
+        $warnings.Add("Runner performance data incomplete: $runId / $performanceArtifactName")
         continue
     }
 
-    $environment = Get-Content -LiteralPath $environmentPath -Raw |
-        ConvertFrom-Json
+    $environment = Get-Content -LiteralPath $environmentPath -Raw | ConvertFrom-Json
+    $benchmark = Get-Content -LiteralPath $benchmarkPath -Raw | ConvertFrom-Json
 
-    $benchmark = Get-Content -LiteralPath $benchmarkPath -Raw |
-        ConvertFrom-Json
+    if ($null -ne $selectedCandidateId -and $selection.RunnerName -and
+        $selection.RunnerName -ne $environment.RunnerName) {
+        $warnings.Add("Runner selection and performance metadata disagree: $runId")
+        continue
+    }
 
-    $runScenarios = @(
-        $allScenarios | Where-Object { $_.RunId -eq $runId }
-    )
-
+    $runScenarios = @($allScenarios | Where-Object { $_.RunId -eq $runId })
     if ($runScenarios.Count -eq 0) {
         $warnings.Add("No scenarios for Runner comparison: $runId")
         continue
@@ -922,11 +966,8 @@ foreach ($runId in $runIds) {
 
     $firstStart = ($runScenarios | Measure-Object Start -Minimum).Minimum
     $lastEnd = ($runScenarios | Measure-Object End -Maximum).Maximum
-
     $elapsedSeconds = ($lastEnd - $firstStart).TotalSeconds
-    $passedCount = @($runScenarios | Where-Object {
-        $_.Result -eq 'PASS'
-    }).Count
+    $passedCount = @($runScenarios | Where-Object { $_.Result -eq 'PASS' }).Count
 
     $runnerPerformanceRows.Add([pscustomobject]@{
         RunId = $runId
@@ -947,11 +988,8 @@ foreach ($runId in $runIds) {
 }
 
 $comparisonPath = Join-Path $OutputDirectory 'RunnerPerformanceComparison.csv'
-
 Export-Rows @($runnerPerformanceRows | Sort-Object RunId) $comparisonPath
-
 Write-Host "Runner performance records: $($runnerPerformanceRows.Count)"
-
 
 # Package only the analysis outputs for ChatGPT. Raw artifacts and previously
 # generated ZIPs are deliberately excluded.
