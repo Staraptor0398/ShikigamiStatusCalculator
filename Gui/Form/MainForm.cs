@@ -896,6 +896,10 @@ namespace Gui.Form
 						return;
 					}
 
+					int selectedCount = shikigamiRecoveryDialog.SelectedRecoveryCandidates.Count;
+
+					Logger.Info("Shikigami.Recovery", "Started", $"SelectedCount={selectedCount}");
+
 					try
 					{
 						ShikigamiDataOutcomeDto outcome = mShikigamiRecoveryFunction.Recover(shikigamiRecoveryDialog.SelectedRecoveryCandidates);
@@ -904,25 +908,31 @@ namespace Gui.Form
 						{
 							return;
 						}
+
+						bool reloadSucceeded = mShikigamiSelectionFunction.InitializeShikigamiComboBox();
+
+						markCalculationResultDirty();
+
+						if (!reloadSucceeded)
+						{
+							Logger.Error("Shikigami.Recovery", "Failed", "Outcome=GuiReloadFailed");
+							return;
+						}
+
+						string message = "式神の復旧に成功しました。";
+
+						MessageBox.Show(
+							message,
+							"式神復旧",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Information);
+
+						Logger.Info("Shikigami.Recovery", "Completed", $"RecoveredCount={selectedCount}");
 					}
 					catch (Exception ex)
 					{
 						ShikigamiDataErrorHandler.Handle(ex, "式神復旧", "Shikigami.Recovery");
-						return;
 					}
-
-					string message = "式神の復旧に成功しました。";
-
-					mShikigamiSelectionFunction.InitializeShikigamiComboBox();
-					markCalculationResultDirty();
-
-					MessageBox.Show(
-						message,
-						"式神復旧",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Information);
-
-					Logger.Info("Shikigami.Recovery", "Completed", $"RecoveredCount={shikigamiRecoveryDialog.SelectedRecoveryCandidates.Count}");
 				}
 			}
 		}

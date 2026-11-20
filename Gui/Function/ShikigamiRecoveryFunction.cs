@@ -1,5 +1,7 @@
+using Gui.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Gui.Function
 {
@@ -31,7 +33,14 @@ namespace Gui.Function
 
 		public ShikigamiDataOutcomeDto Recover(List<ShikigamiDto> selectedShikigamiList)
 		{
+			if (!File.Exists(mCurrentFilePath))
+			{
+				throw new FileNotFoundException("Current Shikigami data file was not found.", mCurrentFilePath);
+			}
+
 			mCreateBackup();
+
+			Logger.Info("Shikigami.Recovery", "BackupCompleted");
 
 			return ShikigamiGateway.RecoveryShikigami(mCurrentFilePath, selectedShikigamiList);
 		}
