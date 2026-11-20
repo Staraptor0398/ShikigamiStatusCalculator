@@ -6,6 +6,7 @@
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'Analysis/SessionMatcher.ps1')
 $repo = 'Staraptor0398/ShikigamiStatusCalculator'
 $artifactName = 'scenario-runner-batch-logs'
 $culture = [System.Globalization.CultureInfo]::InvariantCulture
@@ -472,62 +473,17 @@ foreach ($runId in $runIds) {
 
     $orderedSessions = @($sessionBlocks | Sort-Object EndTime)
     $runWindows = @($allGuiIntervals | Where-Object { $_.RunId -eq $runId } | Sort-Object Start,End)
-    $usedWindows = @{}
-    for ($i = 0; $i -lt $orderedSessions.Count; $i++) {
-        $session = $orderedSessions[$i]
-        # Performance is written at Gui process exit. Match against the CLOSE GUI
-        # command of a concrete OPEN/LAUNCH -> CLOSE window. Windows and sessions
-        # must be one-to-one. Preserve wider bounds for legacy second-precision logs.
-        $candidates = @($runWindows | Where-Object {
-            -not $usedWindows.ContainsKey("$($_.FileName):$($_.WindowOrder)") -and
-            $session.EndTime -ge $_.Start.AddSeconds($(if ($_.PreciseTime) { -0.25 } else { -1 })) -and
-            $session.EndTime -le $_.End.AddSeconds($(if ($_.PreciseTime) { 0.5 } else { 2 }))
-        })
-        $scenarioName = ''
-        $matchQuality = 'unmatched'
-        $matchedWindow = $null
-        if ($candidates.Count -eq 1) {
-            $matchedWindow = $candidates[0]
-            $matchQuality = 'window-time'
-        }
-        elseif ($candidates.Count -gt 1) {
-            # Prefer a single closest CLOSE timestamp. If timestamps are tied
-            # within the log precision tolerance, preserve ambiguity rather than guess.
-            $ranked = @($candidates | Sort-Object @{Expression={ [math]::Abs(($_.End - $session.EndTime).TotalMilliseconds) }})
-            $firstDistance = [math]::Abs(($ranked[0].End - $session.EndTime).TotalMilliseconds)
-            $secondDistance = [math]::Abs(($ranked[1].End - $session.EndTime).TotalMilliseconds)
-            if (($secondDistance - $firstDistance) -ge $(if ($ranked[0].PreciseTime -and $ranked[1].PreciseTime) { 100 } else { 1000 })) {
-                $matchedWindow = $ranked[0]
-                $matchQuality = 'window-time'
-            }
-            else {
-                $matchQuality = 'ambiguous'
-                $warnings.Add("Multiple Gui windows match performance session $($session.Id) in $runId")
-            }
-        }
-        if ($null -ne $matchedWindow) {
-            $scenarioName = $matchedWindow.Scenario
-            $matchedWindow.SessionId = $session.Id
-            $matchedWindow.MatchQuality = $matchQuality
-            $usedWindows["$($matchedWindow.FileName):$($matchedWindow.WindowOrder)"] = $true
-        }
-        elseif ($matchQuality -eq 'unmatched') {
-            $warnings.Add("No Gui window matches performance session $($session.Id) in $runId")
-        }
-        $sessionRow = [pscustomobject]@{
-            RunId=$runId; SessionOrder=($i+1); SessionId=$session.Id;
-            EndTime=$session.EndTime.ToString('yyyy-MM-dd HH:mm:ss.fff');
-            Scenario=$scenarioName; MatchQuality=$matchQuality;
-            ScenarioFile=if($matchedWindow){$matchedWindow.FileName}else{''};
-            WindowOrder=if($matchedWindow){$matchedWindow.WindowOrder}else{$null}
-        }
-        $allSessions.Add($sessionRow)
-        foreach ($sample in $session.Samples) {
-            $allSamples.Add([pscustomobject]@{
-                RunId=$runId; SessionOrder=($i+1); SessionId=$session.Id; Scenario=$scenarioName; MatchQuality=$matchQuality;
-                Target=$sample.Target; Count=$sample.Count; TotalMs=$sample.TotalMs; AverageMs=$sample.AverageMs; MaxMs=$sample.MaxMs
-            })
-        }
+
+    $matchResult = Match-GuiSessions -RunId $runId -Sessions $orderedSessions -GuiWindows $runWindows
+
+    foreach ($row in $matchResult.SessionRows) {
+        $allSessions.Add($row)
+    }
+    foreach ($row in $matchResult.SampleRows) {
+        $allSamples.Add($row)
+    }
+    foreach ($warning in $matchResult.Warnings) {
+        $warnings.Add($warning)
     }
     $unmatchedWindows = @($runWindows | Where-Object { -not $_.SessionId })
     if ($unmatchedWindows.Count -gt 0) { $warnings.Add("Run ${runId}: $($unmatchedWindows.Count) Gui open/close windows have no Performance session (not necessarily an error).") }
