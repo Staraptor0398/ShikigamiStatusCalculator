@@ -8,6 +8,7 @@
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Analysis/SessionMatcher.ps1')
 . (Join-Path $PSScriptRoot 'Analysis/ScenarioSessionParser.ps1')
+. (Join-Path $PSScriptRoot 'Analysis/PerformanceSessionParser.ps1')
 $repo = 'Staraptor0398/ShikigamiStatusCalculator'
 $artifactName = 'scenario-runner-batch-logs'
 $culture = [System.Globalization.CultureInfo]::InvariantCulture
@@ -24,9 +25,6 @@ New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 $downloadRoot = Join-Path $OutputDirectory 'Artifacts'
 New-Item -ItemType Directory -Force -Path $downloadRoot | Out-Null
 
-function Parse-Time([string]$value) {
-    return [datetime]::ParseExact($value, 'yyyy-MM-dd HH:mm:ss.fff', $culture)
-}
 function Export-Rows([object[]]$rows, [string]$path) {
     if ($rows.Count -gt 0) { $rows | Export-Csv -Path $path -NoTypeInformation -Encoding UTF8 }
     else { [System.IO.File]::WriteAllText($path, '', [System.Text.UTF8Encoding]::new($false)) }
@@ -401,31 +399,10 @@ foreach ($runId in $runIds) {
         $allScenarios.Add($s)
     }
 
-    # The performance log is a set of session blocks. Every target in one block
-    # holds an aggregate over the lifetime of one Gui.exe process.
-    $sessionBlocks = [System.Collections.Generic.List[object]]::new()
-    $current = $null
-    foreach ($line in (Get-Content -LiteralPath $performanceFiles[0].FullName -Encoding UTF8)) {
-        if ($line -match '^(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{3}) Session=([0-9a-f]{32}) Event=Begin$') {
-            if ($null -ne $current) { $warnings.Add("Unclosed performance session in $runId") }
-            $current = [pscustomobject]@{Id=$Matches[2]; EndTime=(Parse-Time $Matches[1]); Samples=[System.Collections.Generic.List[object]]::new()}
-            continue
-        }
-        if ($line -match '^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{3} Session=([0-9a-f]{32}) Target=(\S+) Count=(\d+) TotalMs=([\d.]+) AverageMs=([\d.]+) MaxMs=([\d.]+)$') {
-            if ($null -eq $current -or $current.Id -ne $Matches[1]) {
-                $warnings.Add("Orphan performance target in run $runId")
-                continue
-            }
-            $current.Samples.Add([pscustomobject]@{Target=$Matches[2]; Count=[long]$Matches[3]; TotalMs=[double]::Parse($Matches[4],$culture); AverageMs=[double]::Parse($Matches[5],$culture); MaxMs=[double]::Parse($Matches[6],$culture)})
-            continue
-        }
-        if ($line -match '^(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d\.\d{3}) Session=([0-9a-f]{32}) Event=End$') {
-            if ($null -ne $current -and $current.Id -eq $Matches[2]) {
-                $current.EndTime = Parse-Time $Matches[1]
-                $sessionBlocks.Add($current)
-            } else { $warnings.Add("Unmatched session end in run $runId") }
-            $current = $null
-        }
+    $performanceResult = Get-PerformanceSessions -RunId $runId -Path $performanceFiles[0].FullName
+    $sessionBlocks = $performanceResult.Sessions
+    foreach ($warning in $performanceResult.Warnings) {
+        $warnings.Add($warning)
     }
 
     $orderedSessions = @($sessionBlocks | Sort-Object EndTime)
