@@ -71,7 +71,7 @@ namespace Gui.Function
 
 			mIsCalculationResultDirty = true;
 
-			Logger.Info("Operation=ステータス計算結果状態変更 Message=入力内容が変更されたため、計算結果をDirty状態に変更しました。");
+			Logger.Info("Calculation.Result", "DirtyChanged", "Current=Dirty");
 		}
 
 		public bool CanSaveCalculationSnapshot()

@@ -132,7 +132,7 @@ namespace Gui.Form
 			{
 				var duplicateOutcome = validateDuplicateForRegister(dto);
 
-				if (ShikigamiDataErrorHandler.Handle(duplicateOutcome, "式神データ登録"))
+				if (ShikigamiDataErrorHandler.Handle(duplicateOutcome, "式神データ登録", "Shikigami.Register"))
 				{
 					return;
 				}
@@ -141,14 +141,14 @@ namespace Gui.Form
 
 				var outcome = ShikigamiGateway.AddShikigami(AppPath.ShikigamiDataCsvPath, dto);
 
-				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ登録"))
+				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ登録", "Shikigami.Register"))
 				{
 					return;
 				}
 			}
 			catch (Exception ex)
 			{
-				ShikigamiDataErrorHandler.Handle(ex, "式神データ登録");
+				ShikigamiDataErrorHandler.Handle(ex, "式神データ登録", "Shikigami.Register");
 				return;
 			}
 
@@ -160,7 +160,7 @@ namespace Gui.Form
 		{
 			if (mEditTarget == null)
 			{
-				Logger.Error("式神データ編集に失敗しました。編集対象の式神データがnullです。");
+				Logger.Error("Shikigami.Edit", "Failed", "Outcome=EditTargetNull");
 
 				MessageBox.Show(
 					"編集対象の式神データが取得できませんでした。",
@@ -175,7 +175,7 @@ namespace Gui.Form
 			{
 				var duplicateOutcome = validateDuplicateForEdit(mEditTarget, newDto);
 
-				if (ShikigamiDataErrorHandler.Handle(duplicateOutcome, "式神データ編集"))
+				if (ShikigamiDataErrorHandler.Handle(duplicateOutcome, "式神データ編集", "Shikigami.Edit"))
 				{
 					return;
 				}
@@ -184,14 +184,14 @@ namespace Gui.Form
 
 				var outcome = ShikigamiGateway.UpdateShikigami(AppPath.ShikigamiDataCsvPath, mEditTarget, newDto);
 
-				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ編集"))
+				if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ編集", "Shikigami.Edit"))
 				{
 					return;
 				}
 			}
 			catch (Exception ex)
 			{
-				ShikigamiDataErrorHandler.Handle(ex, "式神データ編集");
+				ShikigamiDataErrorHandler.Handle(ex, "式神データ編集", "Shikigami.Edit");
 				return;
 			}
 
@@ -308,7 +308,9 @@ namespace Gui.Form
 
 		private void showInputWarning(string message, System.Windows.Forms.Control focusControl)
 		{
-			Logger.Warning($"Operation=式神データ入力検証 Message={message}");
+			string operation = mMode == ShikigamiFormMode.Register ? "Shikigami.Register" : "Shikigami.Edit";
+
+			Logger.Warning(operation, "ValidationRejected", $"Reason={message}");
 
 			MessageBox.Show(
 				message,

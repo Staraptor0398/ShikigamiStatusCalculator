@@ -59,14 +59,14 @@ namespace Gui.Function
 				{
 					var outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
 
-					if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み"))
+					if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ読み込み", "Shikigami.Reload"))
 					{
 						ShikigamiDataFileManager.MoveBrokenFile();
 						ShikigamiDataFileManager.RestoreDefaultIfMissing();
 
 						outcome = ShikigamiGateway.GetShikigamiList(AppPath.ShikigamiDataCsvPath, out shikigamiList);
 
-						if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ復元後読み込み"))
+						if (ShikigamiDataErrorHandler.Handle(outcome, "式神データ復元後読み込み", "Shikigami.Reload"))
 						{
 							shikigamiList = new List<ShikigamiDto>();
 						}
@@ -75,7 +75,7 @@ namespace Gui.Function
 			}
 			catch (Exception ex)
 			{
-				ShikigamiDataErrorHandler.Handle(ex, "式神データ読み込み");
+				ShikigamiDataErrorHandler.Handle(ex, "式神データ読み込み", "Shikigami.Reload");
 
 				if (mShikigamiList == null)
 				{

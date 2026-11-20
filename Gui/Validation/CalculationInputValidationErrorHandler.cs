@@ -15,7 +15,7 @@ namespace Gui.Validation
 			string message = createMessage(outcome);
 			string logMessage = message.Replace("\n\n", " ");
 
-			Logger.Warning($"Operation=ステータス計算入力検証 Outcome={outcome} Message={logMessage}");
+			Logger.Warning("Calculation", "ValidationRejected", $"Outcome={outcome}");
 
 			MessageBox.Show(
 				message,

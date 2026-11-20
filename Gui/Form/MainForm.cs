@@ -24,6 +24,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  UI入力コントロール生成
 		****************************************************************************************************/
+
 		private MitamaSlotInputControl[] createMitamaSlotInputControls()
 		{
 			return new MitamaSlotInputControl[]
@@ -123,6 +124,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  フィールド・プロパティ
 		****************************************************************************************************/
+
 		private readonly PerformanceTracker mPerformanceTracker = new PerformanceTracker();
 
 		private ComboBoxOperator mComboBoxOperator = null;
@@ -149,7 +151,7 @@ namespace Gui.Form
 
 		private ShikigamiRecoveryFunction mShikigamiRecoveryFunction = null;
 
-		private readonly Guid mPerformanceSessionId = Guid.NewGuid();
+		private readonly Guid mPerformanceSessionId = Logger.SessionId;
 
 		private MainFormOperationState mOperationState = MainFormOperationState.IDLE;
 
@@ -166,6 +168,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  コンストラクタ
 		****************************************************************************************************/
+
 		public MainForm()
 		{
 			using (mPerformanceTracker.Track("MainForm.Constructor"))
@@ -199,6 +202,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  バージョン表示
 		****************************************************************************************************/
+
 		private string loadAppVersion()
 		{
 			if (!File.Exists(AppPath.AppVersionFilePath))
@@ -212,6 +216,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  MainForm状態遷移
 		****************************************************************************************************/
+
 		private void setOperationState(MainFormOperationState state)
 		{
 			if (mOperationState == state)
@@ -222,14 +227,15 @@ namespace Gui.Form
 			MainFormOperationState previousState = mOperationState;
 			mOperationState = state;
 
-			Logger.Info($"Operation=MainForm状態遷移 Previous={previousState} Current={state}");
-
 			updateSaveButtonEnabled("OperationState");
+
+			Logger.Info("MainForm.State", "Changed", $"Previous={previousState} Current={state}");
 		}
 
 		/****************************************************************************************************
 		  式神ステータス表示
 		****************************************************************************************************/
+
 		private void cmbShikigami_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			mShikigamiSelectionFunction?.HandleShikigamiSelectedIndexChanged();
@@ -238,6 +244,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  ステータス計算
 		****************************************************************************************************/
+
 		private void btnCalc_Click(object sender, EventArgs e)
 		{
 			using (mPerformanceTracker.Track("Calculation.Execute"))
@@ -265,7 +272,7 @@ namespace Gui.Form
 				}
 				catch (Exception ex)
 				{
-					Logger.Error($"Operation=ステータス計算 Message={ex}");
+					Logger.Error("Calculation", "Failed", ex);
 
 					MessageBox.Show(
 						"ステータス計算中に予期しないエラーが発生しました。",
@@ -307,6 +314,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  式神データ再読み込み
 		****************************************************************************************************/
+
 		private void btnReLoad_Click(object sender, EventArgs e)
 		{
 			mShikigamiSelectionFunction.InitializeShikigamiComboBox();
@@ -316,26 +324,37 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  初期化
 		****************************************************************************************************/
+
 		private void MainForm_Load(object sender, EventArgs e)
 		{
-			using (mPerformanceTracker.Track("MainForm.Load"))
+			try
 			{
-				using (mPerformanceTracker.Track("MainForm.InitializeInputControls"))
+				using (mPerformanceTracker.Track("MainForm.Load"))
 				{
-					initializeInputControls();
+					using (mPerformanceTracker.Track("MainForm.InitializeInputControls"))
+					{
+						initializeInputControls();
+					}
+
+					using (mPerformanceTracker.Track("MainForm.InitializeComboBoxes"))
+					{
+						initializeComboBoxes();
+					}
+
+					using (mPerformanceTracker.Track("MainForm.RegisterCalculationInputChangedEvents"))
+					{
+						registerCalculationInputChangedEvents();
+					}
+
+					updateSaveButtonEnabled("Startup");
 				}
 
-				using (mPerformanceTracker.Track("MainForm.InitializeComboBoxes"))
-				{
-					initializeComboBoxes();
-				}
-
-				using (mPerformanceTracker.Track("MainForm.RegisterCalculationInputChangedEvents"))
-				{
-					registerCalculationInputChangedEvents();
-				}
-
-				updateSaveButtonEnabled("Startup");
+				Logger.Info("Application", "Initialized");
+			}
+			catch (Exception ex)
+			{
+				Logger.Error("Application", "InitializationFailed", ex);
+				throw;
 			}
 		}
 
@@ -476,15 +495,19 @@ namespace Gui.Form
 					return;
 				}
 
-				setOperationState(MainFormOperationState.SAVING);
-
 				try
 				{
+					setOperationState(MainFormOperationState.SAVING);
+
+					Logger.Info("SaveData.Save", "Started", $"SaveType={dialog.SelectedSaveType}");
+
 					mSaveDataSaveFunction.Save(dialog.SelectedSaveType, dialog.FilePath);
+
+					Logger.Info("SaveData.Save", "Completed", $"SaveType={dialog.SelectedSaveType} FileName={Path.GetFileName(dialog.FilePath)}");
 				}
 				catch (Exception ex)
 				{
-					Logger.Error($"Operation=SaveData保存 Message={ex}");
+					Logger.Error("SaveData.Save", "Failed", ex, $"SaveType={dialog.SelectedSaveType}");
 
 					MessageBox.Show(
 						"SaveDataの保存中にエラーが発生しました。",
@@ -507,6 +530,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  SaveData適用
 		****************************************************************************************************/
+
 		private void btnLoad_Click(object sender, EventArgs e)
 		{
 			using (var dialog = new SaveDataLoadDialog())
@@ -544,7 +568,7 @@ namespace Gui.Form
 #endif
 					}
 
-					Logger.Error($"Operation=SaveData読み込み Message={ex}");
+					Logger.Error("SaveData.Load", "Failed", ex, $"LoadType={dialog.SelectedLoadType}");
 
 					MessageBox.Show(
 						"SaveDataの読み込み中にエラーが発生しました。",
@@ -567,6 +591,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  計算結果比較
 		****************************************************************************************************/
+
 		private void btnCompareResult_Click(object sender, EventArgs e)
 		{
 			using (var dialog = new SnapshotCompareFileSelectDialog())
@@ -586,7 +611,7 @@ namespace Gui.Form
 
 					if (outcome == SnapshotComparisonOutcome.SNAPSHOT_NULL)
 					{
-						Logger.Error("Operation=計算結果比較 Message=スナップショットデータの読み込み結果がnullでした。");
+						Logger.Error("Snapshot.Compare", "Failed", $"Outcome={SnapshotComparisonOutcome.SNAPSHOT_NULL}");
 
 						MessageBox.Show(
 							"スナップショットデータの読み込みに失敗しました。",
@@ -604,7 +629,7 @@ namespace Gui.Form
 				}
 				catch (Exception ex)
 				{
-					Logger.Error($"Operation=計算結果比較 Message={ex}");
+					Logger.Error("Snapshot.Compare", "Failed", ex);
 
 					MessageBox.Show(
 						"計算結果比較中に予期しないエラーが発生しました。",
@@ -625,6 +650,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  式神登録
 		****************************************************************************************************/
+
 		private void btnAddShikigami_Click(object sender, EventArgs e)
 		{
 			var selectedShikigami = cmbShikigami.SelectedItem as ShikigamiDto;
@@ -648,6 +674,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  式神編集
 		****************************************************************************************************/
+
 		private void btnEditShikigami_Click(object sender, EventArgs e)
 		{
 			var selectedShikigami = cmbShikigami.SelectedItem as ShikigamiDto;
@@ -681,6 +708,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  入力クリア
 		****************************************************************************************************/
+
 		private void btnClear_Click(object sender, EventArgs e)
 		{
 			var result = MessageBox.Show(
@@ -732,6 +760,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  結果表示フォーム
 		****************************************************************************************************/
+
 		private void btnResultView_Click(object sender, EventArgs e)
 		{
 			CalculationResultDto calculationResult = mCalculationResultFunction.LastCalculationResult;
@@ -756,6 +785,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  式神選択解除
 		****************************************************************************************************/
+
 		private void btnClearShikigami_Click(object sender, EventArgs e)
 		{
 			mShikigamiSelectionOperator.ClearShikigamiSelection();
@@ -764,6 +794,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  式神フィルター
 		****************************************************************************************************/
+
 		private void cmbRarityFilter_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			mShikigamiSelectionFunction?.HandleRarityFilterSelectedIndexChanged();
@@ -772,6 +803,7 @@ namespace Gui.Form
 		/****************************************************************************************************
 		  式神復旧
 		****************************************************************************************************/
+
 		private void btnRecoveryShikigami_Click(object sender, EventArgs e)
 		{
 			using (var dialog = new OpenFileDialog())
@@ -791,14 +823,14 @@ namespace Gui.Form
 				{
 					ShikigamiDataOutcomeDto outcome = mShikigamiRecoveryFunction.GetRecoveryCandidates(dialog.FileName, out recoveryShikigamiList);
 
-					if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧候補読み込み"))
+					if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧候補読み込み", "Shikigami.Recovery"))
 					{
 						return;
 					}
 				}
 				catch (Exception ex)
 				{
-					ShikigamiDataErrorHandler.Handle(ex, "式神復旧候補読み込み");
+					ShikigamiDataErrorHandler.Handle(ex, "式神復旧候補読み込み", "Shikigami.Recovery");
 					return;
 				}
 
@@ -812,7 +844,8 @@ namespace Gui.Form
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Information);
 
-					Logger.Info(message);
+					Logger.Info("Shikigami.Recovery", "CandidatesEmpty");
+
 					return;
 				}
 
@@ -829,18 +862,21 @@ namespace Gui.Form
 					{
 						ShikigamiDataOutcomeDto outcome = mShikigamiRecoveryFunction.Recover(shikigamiRecoveryDialog.SelectedRecoveryCandidates);
 
-						if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧"))
+						if (ShikigamiDataErrorHandler.Handle(outcome, "式神復旧", "Shikigami.Recovery"))
 						{
 							return;
 						}
 					}
 					catch (Exception ex)
 					{
-						ShikigamiDataErrorHandler.Handle(ex, "式神復旧");
+						ShikigamiDataErrorHandler.Handle(ex, "式神復旧", "Shikigami.Recovery");
 						return;
 					}
 
 					string message = "式神の復旧に成功しました。";
+
+					mShikigamiSelectionFunction.InitializeShikigamiComboBox();
+					markCalculationResultDirty();
 
 					MessageBox.Show(
 						message,
@@ -848,10 +884,7 @@ namespace Gui.Form
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Information);
 
-					Logger.Info(message);
-
-					mShikigamiSelectionFunction.InitializeShikigamiComboBox();
-					markCalculationResultDirty();
+					Logger.Info("Shikigami.Recovery", "Completed", $"RecoveredCount={shikigamiRecoveryDialog.SelectedRecoveryCandidates.Count}");
 				}
 			}
 		}
@@ -862,14 +895,7 @@ namespace Gui.Form
 
 		private void logShutdownEvent(string eventName)
 		{
-			try
-			{
-				Logger.Info($"Operation=Shutdown Event={eventName}");
-			}
-			catch
-			{
-				// 調査ログの出力失敗でフォーム終了を妨げない。
-			}
+			Logger.Info("Application", "ShutdownCheckpoint", $"Phase={eventName}");
 		}
 
 		protected override void OnFormClosing(FormClosingEventArgs e)
@@ -906,7 +932,7 @@ namespace Gui.Form
 			{
 				try
 				{
-					Logger.Error($"Operation=性能ログ出力 Message={ex}");
+					Logger.Error("PerformanceLog", "Failed", ex);
 				}
 				catch
 				{

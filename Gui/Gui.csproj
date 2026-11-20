@@ -107,9 +107,7 @@
     <Compile Include="Form\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form\MainForm.Development.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Form\MainForm.Development.cs" />
     <Compile Include="Form\MainFormOperationState.cs" />
     <Compile Include="Form\ResultViewForm.cs">
       <SubType>Form</SubType>
@@ -142,6 +140,7 @@
     <Compile Include="Function\SnapshotComparisonFunction.cs" />
     <Compile Include="Logging\LogFileDefinition.cs" />
     <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Logging\LogWriter.cs" />
     <Compile Include="Logging\PerformanceLogger.cs" />
     <Compile Include="Logging\PerformanceStatistics.cs" />
     <Compile Include="Logging\PerformanceTracker.cs" />

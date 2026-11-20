@@ -56,7 +56,7 @@ namespace Gui.Form
 				}
 				catch (Exception ex)
 				{
-					Logger.Error($"Operation=計算テストソース出力 Message={ex}");
+					Logger.Error("Calculation.TestSource", "Failed", ex);
 
 					MessageBox.Show(
 						"テストソースの出力中に予期しないエラーが発生しました。",

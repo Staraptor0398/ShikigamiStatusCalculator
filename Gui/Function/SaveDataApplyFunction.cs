@@ -136,7 +136,7 @@ namespace Gui.Function
 						throw new SaveDataRollbackException(applyEx, rollbackEx);
 					}
 
-					Logger.Info("Operation=SaveDataロールバック Message=UI状態を復元しました。");
+					Logger.Info("SaveData.Rollback", "Completed");
 
 					throw;
 				}

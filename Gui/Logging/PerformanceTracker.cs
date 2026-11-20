@@ -7,8 +7,7 @@ namespace Gui.Logging
 {
 	public sealed class PerformanceTracker
 	{
-		private readonly Dictionary<string, PerformanceStatistics> mStatistics =
-			new Dictionary<string, PerformanceStatistics>();
+		private readonly Dictionary<string, PerformanceStatistics> mStatistics = new Dictionary<string, PerformanceStatistics>();
 
 		private readonly object mSyncRoot = new object();
 

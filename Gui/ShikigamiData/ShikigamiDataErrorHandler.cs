@@ -6,9 +6,9 @@ namespace Gui.ShikigamiData
 {
 	public static class ShikigamiDataErrorHandler
 	{
-		public static void Handle(Exception exception, string operationName)
+		public static void Handle(Exception exception, string operationName, string logOperation)
 		{
-			Logger.Error($"Operation={operationName} Exception={exception}");
+			Logger.Error(logOperation, "Failed", exception);
 
 			MessageBox.Show(
 				$"{operationName}中に予期しないエラーが発生しました。",
@@ -17,7 +17,7 @@ namespace Gui.ShikigamiData
 				MessageBoxIcon.Error);
 		}
 
-		public static bool Handle(ShikigamiDataOutcomeDto outcome, string operationName)
+		public static bool Handle(ShikigamiDataOutcomeDto outcome, string operationName, string logOperation)
 		{
 			if (outcome == ShikigamiDataOutcomeDto.SUCCESS)
 			{
@@ -25,9 +25,19 @@ namespace Gui.ShikigamiData
 			}
 
 			string message = createMessage(outcome, operationName);
-			string logMessage = message.Replace("\n\n", " ");
 
-			Logger.Error($"Operation={operationName} Outcome={outcome} Message={logMessage}");
+			bool isDataEditing = logOperation == "Shikigami.Register" || logOperation == "Shikigami.Edit";
+
+			bool isValidationRejected = isDataEditing && (outcome == ShikigamiDataOutcomeDto.DUPLICATE || outcome == ShikigamiDataOutcomeDto.INVALID_ARGUMENT);
+
+			if (isValidationRejected)
+			{
+				Logger.Warning(logOperation, "ValidationRejected", $"Outcome={outcome}");
+			}
+			else
+			{
+				Logger.Error(logOperation, "Failed", $"Outcome={outcome}");
+			}
 
 			MessageBox.Show(
 				message,

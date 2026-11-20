@@ -14,22 +14,29 @@ namespace Gui
 		[STAThread]
 		static void Main()
 		{
-			Application.EnableVisualStyles();
-			Application.SetCompatibleTextRenderingDefault(false);
+			Logger.Info("Application", "Started");
 
-			ApplicationDirectoryInitializer.Initialize();
-			ShikigamiDataFileManager.RestoreDefaultIfMissing();
-
-			Application.Run(new MainForm());
+			MainForm mainForm;
 
 			try
 			{
-				Logger.Info("Operation=Shutdown Event=Application.Run.End");
+				Application.EnableVisualStyles();
+				Application.SetCompatibleTextRenderingDefault(false);
+
+				ApplicationDirectoryInitializer.Initialize();
+				ShikigamiDataFileManager.RestoreDefaultIfMissing();
+
+				mainForm = new MainForm();
 			}
-			catch
+			catch (Exception ex)
 			{
-				// 調査ログの出力失敗でアプリケーション終了を妨げない。
+				Logger.Error("Application", "InitializationFailed", ex);
+				throw;
 			}
+
+			Application.Run(mainForm);
+
+			Logger.Info("Application", "Closed");
 		}
 	}
 }

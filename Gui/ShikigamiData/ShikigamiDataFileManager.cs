@@ -28,7 +28,7 @@ namespace Gui.ShikigamiData
 			{
 				if (stream == null)
 				{
-					Logger.Error($"Operation=式神データ復元 Message=埋め込みリソースが見つかりません。 Resource={RESOURCE_NAME}");
+					Logger.Error("Shikigami.AutoRestore", "Failed", $"Outcome=ResourceNotFound Resource={RESOURCE_NAME}");
 					return;
 				}
 
@@ -41,7 +41,7 @@ namespace Gui.ShikigamiData
 				}
 			}
 
-			Logger.Info("Operation=式神データ復元 Message=式神データCSVを埋め込みリソースから復元しました。");
+			Logger.Info("Shikigami.AutoRestore", "Completed");
 		}
 
 		public static void MoveBrokenFile()
@@ -57,7 +57,7 @@ namespace Gui.ShikigamiData
 
 			File.Move(AppPath.ShikigamiDataCsvPath, brokenFilePath);
 
-			Logger.Info($"Operation=式神データ退避 Message=破損した式神データCSVを退避しました。 Path={brokenFilePath}");
+			Logger.Info("Shikigami.BrokenFile", "Moved", $"FileName={Path.GetFileName(brokenFilePath)}");
 
 			deleteOldBrokens();
 		}
