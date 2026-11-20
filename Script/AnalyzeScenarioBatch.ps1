@@ -9,6 +9,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Analysis/SessionMatcher.ps1')
 . (Join-Path $PSScriptRoot 'Analysis/ScenarioSessionParser.ps1')
 . (Join-Path $PSScriptRoot 'Analysis/PerformanceSessionParser.ps1')
+. (Join-Path $PSScriptRoot 'Analysis/ScenarioCommandParser.ps1')
 $repo = 'Staraptor0398/ShikigamiStatusCalculator'
 $artifactName = 'scenario-runner-batch-logs'
 $culture = [System.Globalization.CultureInfo]::InvariantCulture
@@ -30,72 +31,6 @@ function Export-Rows([object[]]$rows, [string]$path) {
     else { [System.IO.File]::WriteAllText($path, '', [System.Text.UTF8Encoding]::new($false)) }
 }
 
-
-# Scenario command timing. Command names match ScenarioCommandType; longest names first.
-$scenarioCommandNames = @(
-    'CHECK SHIKIGAMI SELECTION',
-    'CHECK CALC DETAIL UNCHANGED',
-    'WAIT SHIKIGAMI AUTO REPAIR',
-    'CHECK SNAPSHOT COMPARISON',
-    'OPEN SHIKIGAMI REGISTER',
-    'CREATE SHIKIGAMI BACKUP',
-    'CHECK SHIKIGAMI LIST',
-    'COMPARE SAVED SNAPSHOT',
-    'BREAK SHIKIGAMI HEADER',
-    'CHECK INPUT UNCHANGED',
-    'CHECK SAVEDATA LEVEL',
-    'OPEN SHIKIGAMI EDIT',
-    'CAPTURE CALC DETAIL',
-    'REGISTER SHIKIGAMI',
-    'OPEN CLEAR DIALOG',
-    'CLOSE CALC DETAIL',
-    'LOAD SAVED MITAMA',
-    'RECOVER SHIKIGAMI',
-    'CHECK CALCULATION',
-    'CHECK CALC DETAIL',
-    'OPEN CALC DETAIL',
-    'SELECT SHIKIGAMI',
-    'COMPARE SNAPSHOT',
-    'LOAD SAVED BUILD',
-    'RELOAD SHIKIGAMI',
-    'REMOVE SHIKIGAMI',
-    'TRY LOAD MITAMA',
-    'CLEAR SHIKIGAMI',
-    'CHECK SHIKIGAMI',
-    'CONFIRM DIALOG',
-    'EDIT SHIKIGAMI',
-    'TRY LOAD BUILD',
-    'CANCEL DIALOG',
-    'SAVE SNAPSHOT',
-    'CAPTURE INPUT',
-    'CHECK CLEARED',
-    'CLOSE DIALOG',
-    'EQUIP MITAMA',
-    'CHECK DIALOG',
-    'LOAD MITAMA',
-    'SAVE MITAMA',
-    'SEL SHIKIGAMI',
-    'CHECK RARITY',
-    'SEL RARITY',
-    'LAUNCH GUI',
-    'LOAD BUILD',
-    'SAVE BUILD',
-    'CLOSE GUI',
-    'CHECK CALC',
-    'OPEN GUI',
-    'CALCULATE',
-    'CALC',
-    'CLEAR'
-)
-
-function Get-ScenarioCommandType([string]$rawText) {
-    foreach ($name in $scenarioCommandNames) {
-        if ($rawText -eq $name -or $rawText.StartsWith($name + ' ', [System.StringComparison]::Ordinal)) {
-            return $name
-        }
-    }
-    return 'UNKNOWN'
-}
 
 $allCommandDetails = [System.Collections.Generic.List[object]]::new()
 $allLoadOperations = [System.Collections.Generic.List[object]]::new()
@@ -160,8 +95,9 @@ foreach ($runId in $runIds) {
             $validationIssues.Add($issue)
         }
         # Additional command timing pass; existing Gui/session analysis remains unchanged.
-        $pendingSteps = @{}
-        $activeCommand = $null
+        $commandState = New-ScenarioCommandState -RunId $runId -FileName $file.Name -Date $date -Start $start -Scenario $declaredName -CommandDetails $allCommandDetails -ValidationIssues $validationIssues
+        $pendingSteps = $commandState.PendingSteps
+        $activeCommand = $commandState.ActiveCommand
         foreach ($line in $textLines) {
             # Detailed instrumentation is recorded separately from the parent timings.
             # Each line belongs to the active scenario command; the method name
@@ -342,53 +278,10 @@ foreach ($runId in $runIds) {
                 }
                 continue
             }
-            if ($line -notmatch '^\[(\d{2}:\d{2}:\d{2}(?:\.\d{3})?)\] \[(\d+)\] (.*?)\s{4}(START|PASS|FAIL)\s*$') { continue }
-            $clock = $Matches[1]
-            $lineNumber = [int]$Matches[2]
-            $rawCommand = $Matches[3]
-            $result = $Matches[4]
-            $stepTime = Parse-ScenarioTime $date $clock
-            if ($stepTime -lt $start.AddHours(-12)) { $stepTime = $stepTime.AddDays(1) }
-            $commandType = Get-ScenarioCommandType $rawCommand
-            $key = [string]$lineNumber
-            if ($result -eq 'START') {
-                if ($pendingSteps.ContainsKey($key)) {
-                    $validationIssues.Add("Duplicate START for command line $lineNumber in $runId / $($file.Name)")
-                }
-                $pendingSteps[$key] = [pscustomobject]@{Time=$stepTime;RawText=$rawCommand;Type=$commandType;Precise=$clock.Contains('.')}
-                $activeCommand = $key
-                continue
-            }
-            if (-not $pendingSteps.ContainsKey($key)) {
-                $validationIssues.Add("$result without START for command line $lineNumber in $runId / $($file.Name)")
-                continue
-            }
-            $pending = $pendingSteps[$key]
-            $pendingSteps.Remove($key)
-            if ($activeCommand -eq $key) { $activeCommand = $null }
-            if ($pending.RawText -ne $rawCommand) {
-                $validationIssues.Add("Command text mismatch at line $lineNumber in $runId / $($file.Name)")
-            }
-            $elapsedMs = ($stepTime - $pending.Time).TotalMilliseconds
-            if ($elapsedMs -lt 0) {
-                $validationIssues.Add("Negative command duration at line $lineNumber in $runId / $($file.Name)")
-                continue
-            }
-            $allCommandDetails.Add([pscustomobject]@{
-                RunId=$runId;Scenario=$declaredName;FileName=$file.Name;LineNumber=$lineNumber;
-                CommandType=$pending.Type;CommandText=$rawCommand;Result=$result;
-                Start=$pending.Time;End=$stepTime;DurationMs=[math]::Round($elapsedMs,3);
-                PreciseTime=($pending.Precise -and $clock.Contains('.'))
-            })
+            Update-ScenarioCommandState -State $commandState -Line $line
+            $activeCommand = $commandState.ActiveCommand
         }
-        foreach ($key in $pendingSteps.Keys) {
-            $pending = $pendingSteps[$key]
-            $allCommandDetails.Add([pscustomobject]@{
-                RunId=$runId;Scenario=$declaredName;FileName=$file.Name;LineNumber=[int]$key;
-                CommandType=$pending.Type;CommandText=$pending.RawText;Result='INCOMPLETE';
-                Start=$pending.Time;End=$null;DurationMs=$null;PreciseTime=$pending.Precise
-            })
-        }
+        Complete-ScenarioCommandState -State $commandState
         if ($guiResult.HasPendingOpen) { $validationIssues.Add("Gui open without successful close in $runId / $($file.Name)") }
         foreach ($window in $guiIntervals) {
             $window.Scenario = $declaredName
