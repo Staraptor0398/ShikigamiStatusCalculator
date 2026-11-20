@@ -111,6 +111,8 @@ namespace Gui.Function
 				}
 				catch (Exception applyEx)
 				{
+					Logger.Warning("SaveData.Rollback", "Started");
+
 					try
 					{
 						using (mPerformanceTracker.Track("SaveData.RollbackRestore"))
@@ -133,6 +135,8 @@ namespace Gui.Function
 					}
 					catch (Exception rollbackEx)
 					{
+						Logger.Error("SaveData.Rollback", "Failed", rollbackEx);
+
 						throw new SaveDataRollbackException(applyEx, rollbackEx);
 					}
 

@@ -249,14 +249,18 @@ namespace Gui.Form
 		{
 			using (mPerformanceTracker.Track("Calculation.Execute"))
 			{
-				CalculationResultDto calculationResult;
-
-#if DEBUG
-				CalculationTestSource calculationTestSource;
-#endif
-
 				try
 				{
+					bool shikigamiSelected = mShikigamiSelectionOperator.GetSelectedShikigami() != null;
+
+					Logger.Info("Calculation", "Started", $"ShikigamiSelected={shikigamiSelected}");
+
+					CalculationResultDto calculationResult;
+
+#if DEBUG
+					CalculationTestSource calculationTestSource;
+#endif
+
 					bool calculationSucceeded;
 
 #if DEBUG
@@ -269,6 +273,29 @@ namespace Gui.Form
 					{
 						return;
 					}
+
+					mCalculationResultFunction.SetResult(calculationResult);
+
+#if DEBUG
+					mLastCalculationTestSource = calculationTestSource;
+#endif
+
+					using (mPerformanceTracker.Track("Calculation.UpdateSaveButton"))
+					{
+						updateSaveButtonEnabled("Calculation");
+					}
+
+					if (shikigamiSelected)
+					{
+						mCalculationResultFunction.MarkClean();
+					}
+
+					using (mPerformanceTracker.Track("Calculation.ShowResult"))
+					{
+						mCalculationResultFunction.ShowResult();
+					}
+
+					Logger.Info("Calculation", "Completed", $"ShikigamiSelected={shikigamiSelected}");
 				}
 				catch (Exception ex)
 				{
@@ -279,29 +306,6 @@ namespace Gui.Form
 						"ステータス計算",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error);
-
-					return;
-				}
-
-				mCalculationResultFunction.SetResult(calculationResult);
-
-#if DEBUG
-				mLastCalculationTestSource = calculationTestSource;
-#endif
-
-				using (mPerformanceTracker.Track("Calculation.UpdateSaveButton"))
-				{
-					updateSaveButtonEnabled("Calculation");
-				}
-
-				if (mShikigamiSelectionOperator.GetSelectedShikigami() != null)
-				{
-					mCalculationResultFunction.MarkClean();
-				}
-
-				using (mPerformanceTracker.Track("Calculation.ShowResult"))
-				{
-					mCalculationResultFunction.ShowResult();
 				}
 			}
 		}
@@ -540,22 +544,33 @@ namespace Gui.Form
 					return;
 				}
 
-				setOperationState(MainFormOperationState.LOADING);
-
-				bool loadSucceeded = false;
-
 				try
 				{
-					using (mPerformanceTracker.Track("SaveData.Load"))
+					try
 					{
-						string shikigamiName;
+						setOperationState(MainFormOperationState.LOADING);
 
-						MitamaSetInputModel inputModel = mSaveDataLoadFunction.Load(dialog.SelectedLoadType, dialog.FilePath, out shikigamiName);
+						Logger.Info("SaveData.Load", "Started", $"LoadType={dialog.SelectedLoadType}");
 
-						mSaveDataApplyFunction.Apply(dialog.SelectedLoadType, shikigamiName, inputModel);
+						using (mPerformanceTracker.Track("SaveData.Load"))
+						{
+							string shikigamiName;
 
-						loadSucceeded = true;
+							MitamaSetInputModel inputModel = mSaveDataLoadFunction.Load(dialog.SelectedLoadType, dialog.FilePath, out shikigamiName);
+
+							Logger.Info("SaveData.Load", "Validated", $"LoadType={dialog.SelectedLoadType}");
+
+							mSaveDataApplyFunction.Apply(dialog.SelectedLoadType, shikigamiName, inputModel);
+						}
 					}
+					finally
+					{
+						setOperationState(MainFormOperationState.IDLE);
+					}
+
+					markCalculationResultDirty();
+
+					Logger.Info("SaveData.Load", "Completed", $"LoadType={dialog.SelectedLoadType}");
 				}
 				catch (Exception ex)
 				{
@@ -563,27 +578,33 @@ namespace Gui.Form
 					{
 						mCalculationResultFunction.Invalidate();
 
+						Logger.Warning("Calculation.Result", "Invalidated", "Reason=SaveDataRollbackFailed");
+
 #if DEBUG
 						mLastCalculationTestSource = null;
 #endif
-					}
 
-					Logger.Error("SaveData.Load", "Failed", ex, $"LoadType={dialog.SelectedLoadType}");
+						var aggregateException = ex.InnerException as AggregateException;
+
+						if (aggregateException != null && aggregateException.InnerExceptions.Count > 0)
+						{
+							Logger.Error("SaveData.Load", "Failed", aggregateException.InnerExceptions[0], $"LoadType={dialog.SelectedLoadType} Outcome=RollbackFailed");
+						}
+						else
+						{
+							Logger.Error("SaveData.Load", "Failed", $"LoadType={dialog.SelectedLoadType} Outcome=RollbackFailed");
+						}
+					}
+					else
+					{
+						Logger.Error("SaveData.Load", "Failed", ex, $"LoadType={dialog.SelectedLoadType}");
+					}
 
 					MessageBox.Show(
 						"SaveDataの読み込み中にエラーが発生しました。",
 						"SaveData読み込み",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error);
-				}
-				finally
-				{
-					setOperationState(MainFormOperationState.IDLE);
-				}
-
-				if (loadSucceeded)
-				{
-					markCalculationResultDirty();
 				}
 			}
 		}
