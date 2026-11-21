@@ -183,5 +183,101 @@ namespace DiagnosticLogAnalyzerTest.TestCase
 		{
 			Assert.ThrowsExactly<ArgumentNullException>(() => new DiagnosticSessionCorrelator().Correlate(CreateInput(), null));
 		}
+		private static GuiWindowRecord CreateUnmatchedWindow(string start, string end)
+		{
+			return new GuiWindowRecord { WindowOrder = 2, Start = start, End = end, SessionId = null };
+		}
+
+		private static DiagnosticEvent CreateTimedEvent(string sessionId, int millisecond)
+		{
+			DiagnosticEvent result = CreateEvent(sessionId);
+			result.Timestamp = new DateTime(2026, 11, 20, 15, 27, 46, millisecond);
+			return result;
+		}
+
+		[TestMethod]
+		public void UnmatchedEventReceivesSingleWindowCandidate()
+		{
+			AnalysisInput input = CreateInput();
+			GuiWindowRecord window = CreateUnmatchedWindow("2026-11-20T15:27:46.100", "2026-11-20T15:27:46.400");
+			input.Scenarios[0].GuiWindows.Add(window);
+			DiagnosticEventCorrelation item = new DiagnosticSessionCorrelator().Correlate(input, new[] { CreateTimedEvent(SessionB, 200) }).Events[0];
+			Assert.AreEqual(DiagnosticSessionMatchStatus.Unmatched, item.Status);
+			Assert.IsNull(item.Scenario);
+			Assert.IsNull(item.Window);
+			Assert.AreEqual(1, item.WindowCandidates.Count);
+			Assert.AreSame(window, item.WindowCandidates[0].Window);
+			Assert.AreSame(input.Scenarios[0], item.WindowCandidates[0].Scenario);
+		}
+
+		[TestMethod]
+		public void EventsOutsideWindowHaveNoCandidate()
+		{
+			AnalysisInput input = CreateInput();
+			input.Scenarios[0].GuiWindows.Add(CreateUnmatchedWindow("2026-11-20T15:27:46.100", "2026-11-20T15:27:46.200"));
+			DiagnosticEventCorrelation item = new DiagnosticSessionCorrelator().Correlate(input, new[] { CreateTimedEvent(SessionB, 300) }).Events[0];
+			Assert.AreEqual(0, item.WindowCandidates.Count);
+		}
+
+		[TestMethod]
+		public void MatchedEventsDoNotReceiveWindowCandidates()
+		{
+			AnalysisInput input = CreateInput();
+			input.Scenarios[0].GuiWindows.Add(CreateUnmatchedWindow("2026-11-20T15:27:46.100", "2026-11-20T15:27:46.400"));
+			DiagnosticEventCorrelation item = new DiagnosticSessionCorrelator().Correlate(input, new[] { CreateTimedEvent(SessionA, 200) }).Events[0];
+			Assert.AreEqual(DiagnosticSessionMatchStatus.WindowMatched, item.Status);
+			Assert.AreEqual(0, item.WindowCandidates.Count);
+		}
+
+		[TestMethod]
+		public void KnownSessionWindowIsNotAReferenceCandidate()
+		{
+			AnalysisInput input = CreateInput();
+			input.Scenarios[0].GuiWindows[0].Start = "2026-11-20T15:27:46.100";
+			input.Scenarios[0].GuiWindows[0].End = "2026-11-20T15:27:46.400";
+			DiagnosticEventCorrelation item = new DiagnosticSessionCorrelator().Correlate(input, new[] { CreateTimedEvent(SessionB, 200) }).Events[0];
+			Assert.AreEqual(0, item.WindowCandidates.Count);
+		}
+
+		[TestMethod]
+		public void OverlappingWindowsRemainMultipleCandidates()
+		{
+			AnalysisInput input = CreateInput();
+			input.Scenarios[0].GuiWindows.Add(CreateUnmatchedWindow("2026-11-20T15:27:46.100", "2026-11-20T15:27:46.400"));
+			input.Scenarios[0].GuiWindows.Add(CreateUnmatchedWindow("2026-11-20T15:27:46.150", "2026-11-20T15:27:46.300"));
+			DiagnosticEventCorrelation item = new DiagnosticSessionCorrelator().Correlate(input, new[] { CreateTimedEvent(SessionB, 200) }).Events[0];
+			Assert.AreEqual(DiagnosticSessionMatchStatus.Unmatched, item.Status);
+			Assert.AreEqual(2, item.WindowCandidates.Count);
+		}
+
+		[TestMethod]
+		public void InvalidWindowTimestampIsIgnored()
+		{
+			AnalysisInput input = CreateInput();
+			input.Scenarios[0].GuiWindows.Add(CreateUnmatchedWindow("invalid", "2026-11-20T15:27:46.400"));
+			DiagnosticEventCorrelation item = new DiagnosticSessionCorrelator().Correlate(input, new[] { CreateTimedEvent(SessionB, 200) }).Events[0];
+			Assert.AreEqual(0, item.WindowCandidates.Count);
+		}
+
+		[TestMethod]
+		public void ReversedWindowIntervalIsIgnored()
+		{
+			AnalysisInput input = CreateInput();
+			input.Scenarios[0].GuiWindows.Add(CreateUnmatchedWindow("2026-11-20T15:27:46.400", "2026-11-20T15:27:46.100"));
+			DiagnosticEventCorrelation item = new DiagnosticSessionCorrelator().Correlate(input, new[] { CreateTimedEvent(SessionB, 200) }).Events[0];
+			Assert.AreEqual(0, item.WindowCandidates.Count);
+		}
+
+		[TestMethod]
+		public void WindowBoundariesAreIncluded()
+		{
+			AnalysisInput input = CreateInput();
+			input.Scenarios[0].GuiWindows.Add(CreateUnmatchedWindow("2026-11-20T15:27:46.100", "2026-11-20T15:27:46.400"));
+			DiagnosticSessionCorrelationResult result = new DiagnosticSessionCorrelator().Correlate(input, new[] {
+				CreateTimedEvent(SessionB, 100), CreateTimedEvent(SessionB, 400) });
+			Assert.AreEqual(1, result.Events[0].WindowCandidates.Count);
+			Assert.AreEqual(1, result.Events[1].WindowCandidates.Count);
+		}
+
 	}
 }
