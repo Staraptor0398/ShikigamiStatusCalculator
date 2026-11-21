@@ -107,9 +107,51 @@ namespace DiagnosticLogAnalyzerTest.TestCase
 		}
 
 		[TestMethod]
-		public void CalculationMixedRejectionAndStartIsInconclusive()
+		public void CalculationStartedValidationRejectedPasses()
 		{
-			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationCalculation, ("Started", 10), ("ValidationRejected", 20)));
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Pass, Verdict(OperationCalculation, ("Started", 10), ("ValidationRejected", 20)));
+		}
+
+		[TestMethod]
+		public void CalculationStartedValidationRejectedAtSameMillisecondPasses()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Pass, Verdict(OperationCalculation, ("Started", 10), ("ValidationRejected", 10)));
+		}
+
+		[TestMethod]
+		public void CalculationValidationRejectedBeforeStartedIsInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationCalculation, ("ValidationRejected", 10), ("Started", 20)));
+		}
+
+		[TestMethod]
+		public void CalculationStartedCompletedThenRejectedIsInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationCalculation, ("Started", 10), ("Completed", 20), ("ValidationRejected", 30)));
+		}
+
+		[TestMethod]
+		public void CalculationStartedRejectedThenCompletedIsInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationCalculation, ("Started", 10), ("ValidationRejected", 20), ("Completed", 30)));
+		}
+
+		[TestMethod]
+		public void CalculationStartedFailedThenRejectedIsInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationCalculation, ("Started", 10), ("Failed", 20), ("ValidationRejected", 30)));
+		}
+
+		[TestMethod]
+		public void CalculationDuplicateRejectedIsInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationCalculation, ("Started", 10), ("ValidationRejected", 20), ("ValidationRejected", 30)));
+		}
+
+		[TestMethod]
+		public void CalculationStartedRejectedWithValidatedIsInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationCalculation, ("Started", 10), ("Validated", 15), ("ValidationRejected", 20)));
 		}
 
 		[TestMethod]
