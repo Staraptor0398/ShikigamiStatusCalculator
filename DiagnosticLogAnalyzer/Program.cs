@@ -93,6 +93,20 @@ namespace DiagnosticLogAnalyzer
 						$"line {lifecycle.Command.LineNumber}, {lifecycle.Operation}: {lifecycle.Reason}");
 				}
 
+				// 継続相関は元のコマンド相関・判定を書き換えず、独立した根拠として集計する。
+				DiagnosticModalContinuationResult modal = new SnapshotCompareModalContinuationValidator().Validate(lifecycles, commandCorrelations, contexts);
+				Console.WriteLine($"Snapshot.Compare modal continuation: resolved={modal.Items.Count(x => x.Status == DiagnosticModalContinuationStatus.Resolved)}; " +
+					$"unresolved={modal.Items.Count(x => x.Status == DiagnosticModalContinuationStatus.Unresolved)}; " +
+					$"ambiguous={modal.Items.Count(x => x.Status == DiagnosticModalContinuationStatus.Ambiguous)}");
+				Console.WriteLine($"Snapshot.Compare lifecycle evidence: direct-pass={lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Pass)}; " +
+					$"modal-resolved={modal.Items.Count(x => x.Status == DiagnosticModalContinuationStatus.Resolved)}; " +
+					$"remaining-inconclusive={lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Inconclusive) - modal.Items.Count(x => x.Status == DiagnosticModalContinuationStatus.Resolved)}");
+				foreach (DiagnosticModalContinuation item in modal.Items)
+				{
+					Console.WriteLine($"  {item.Status}: {item.Lifecycle.Scenario.Scenario} (window {item.Lifecycle.Window.WindowOrder}), " +
+						$"line {item.Lifecycle.Command.LineNumber}: {item.Reason}");
+				}
+
 				// 未対応・曖昧な相関は構文解析エラーではなく、後続の検証対象とする。
 				return issueCount == 0 ? 0 : 1;
 			}
