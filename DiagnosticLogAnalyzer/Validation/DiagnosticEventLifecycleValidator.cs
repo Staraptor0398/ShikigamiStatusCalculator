@@ -96,13 +96,24 @@ namespace DiagnosticLogAnalyzer.Validation
 
 			if (item.Operation == "Calculation" && rejected.Count == 1)
 			{
-				if (started.Count == 0 && validated.Count == 0)
+				// Guiでは計算ボタン押下時にStartedを記録し、その後の入力検証で拒否する。
+				// Startedが欠落しても、ValidationRejected単独ならログ不足を許容する。
+				if (validated.Count != 0)
 				{
-					setVerdict(item, DiagnosticLifecycleVerdict.Pass, "ValidationRejected is a valid pre-start outcome.");
+					setVerdict(item, DiagnosticLifecycleVerdict.Inconclusive, "ValidationRejected is mixed with an unexpected Validated event.");
+				}
+				else if (started.Count == 0)
+				{
+					setVerdict(item, DiagnosticLifecycleVerdict.Pass, "ValidationRejected is observed without Started.");
+				}
+				else if (isStrictlyReversed(started[0], rejected[0]))
+				{
+					// 拒否が先に記録された場合、別試行やログ欠落の可能性を否定できない。
+					setVerdict(item, DiagnosticLifecycleVerdict.Inconclusive, "ValidationRejected precedes Started; attempt boundaries are unknown.");
 				}
 				else
 				{
-					setVerdict(item, DiagnosticLifecycleVerdict.Inconclusive, "Pre-start rejection and other lifecycle events are mixed.");
+					setVerdict(item, DiagnosticLifecycleVerdict.Pass, "ValidationRejected follows Started in the same Calculation command.");
 				}
 				return;
 			}
@@ -116,27 +127,27 @@ namespace DiagnosticLogAnalyzer.Validation
 			DiagnosticEvent terminal = completed.Count == 1 ? completed[0] : failed[0];
 			if (isStrictlyReversed(started[0], terminal))
 			{
-					setVerdict(item, DiagnosticLifecycleVerdict.Fail, "Terminal event timestamp precedes Started.");
-					return;
+				setVerdict(item, DiagnosticLifecycleVerdict.Fail, "Terminal event timestamp precedes Started.");
+				return;
 			}
 
 			if (item.Operation == "SaveData.Load")
 			{
-					if (validated.Count == 1 && isStrictlyReversed(started[0], validated[0]))
-					{
-						setVerdict(item, DiagnosticLifecycleVerdict.Fail, "Validated timestamp precedes Started.");
-						return;
-					}
-					if (completed.Count == 1 && validated.Count == 1 && isStrictlyReversed(validated[0], completed[0]))
-					{
-						setVerdict(item, DiagnosticLifecycleVerdict.Fail, "Completed timestamp precedes Validated.");
-						return;
-					}
-					if (completed.Count == 1 && validated.Count == 0)
-					{
-						setVerdict(item, DiagnosticLifecycleVerdict.Inconclusive, "Validated is not observed before successful completion.");
-						return;
-					}
+				if (validated.Count == 1 && isStrictlyReversed(started[0], validated[0]))
+				{
+					setVerdict(item, DiagnosticLifecycleVerdict.Fail, "Validated timestamp precedes Started.");
+					return;
+				}
+				if (completed.Count == 1 && validated.Count == 1 && isStrictlyReversed(validated[0], completed[0]))
+				{
+					setVerdict(item, DiagnosticLifecycleVerdict.Fail, "Completed timestamp precedes Validated.");
+					return;
+				}
+				if (completed.Count == 1 && validated.Count == 0)
+				{
+					setVerdict(item, DiagnosticLifecycleVerdict.Inconclusive, "Validated is not observed before successful completion.");
+					return;
+				}
 			}
 
 			// FailedはGui操作の失敗を示すが、ライフサイクルの記録としては整合している。
