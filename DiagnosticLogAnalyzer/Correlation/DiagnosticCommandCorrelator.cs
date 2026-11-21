@@ -1,5 +1,6 @@
 using DiagnosticLogAnalyzer.Model;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -18,6 +19,7 @@ namespace DiagnosticLogAnalyzer.Correlation
 		private static readonly string[] RegisterCommands = { "REGISTER SHIKIGAMI" };
 		private static readonly string[] EditCommands = { "EDIT SHIKIGAMI" };
 		private static readonly string[] RecoveryCommands = { "RECOVER SHIKIGAMI", "WAIT SHIKIGAMI AUTO REPAIR", "RELOAD SHIKIGAMI" };
+		private static readonly string[] InputChangeCommands = { "EQUIP MITAMA", "CLEAR", "CLEAR SHIKIGAMI" };
 
 		public DiagnosticCommandCorrelationResult Correlate(DiagnosticSessionCorrelationResult sessions)
 		{
@@ -43,7 +45,7 @@ namespace DiagnosticLogAnalyzer.Correlation
 					continue;
 				}
 
-				string[] commandTypes = getCommandTypes(session.Event.Operation, session.Event.EventName);
+				string[] commandTypes = getCommandTypes(session.Event.Operation, session.Event.EventName, session.Event.Details);
 				if (commandTypes == null)
 				{
 					item.Status = DiagnosticCommandMatchStatus.NotMappedOperation;
@@ -88,13 +90,42 @@ namespace DiagnosticLogAnalyzer.Correlation
 			return result;
 		}
 
-		private static string[] getCommandTypes(string operation, string eventName)
+		private static string[] getStateCommandTypes(string eventName, string details)
+		{
+			if (eventName != "Changed") { return null; }
+
+			// 遷移前後の両方を確認し、IDLEへの復帰だけで操作種別を推測しない。
+			switch (details)
+			{
+				case "Previous=IDLE Current=LOADING":
+				case "Previous=LOADING Current=IDLE":
+					return LoadCommands;
+				case "Previous=IDLE Current=SAVING":
+				case "Previous=SAVING Current=IDLE":
+					return SaveCommands;
+				case "Previous=IDLE Current=CLEARING":
+				case "Previous=CLEARING Current=IDLE":
+					return ClearCommands;
+				default:
+					return null;
+			}
+		}
+
+		private static string[] getCommandTypes(string operation, string eventName, string details)
 		{
 			switch (operation)
 			{
 				case "Application":
 					if (eventName == "Started" || eventName == "Initialized") { return OpenCommands; }
 					if (eventName == "Closing" || eventName == "Closed" || eventName == "ShutdownCheckpoint") { return CloseCommands; }
+					return null;
+				case "MainForm.State":
+					return getStateCommandTypes(eventName, details);
+				case "Calculation.Result":
+					if (eventName == "DirtyChanged" && details == "Current=Dirty")
+					{
+						return InputChangeCommands;
+					}
 					return null;
 				case "Shikigami.Reload": return ReloadCommands;
 				case "SaveData.Load": return LoadCommands;
