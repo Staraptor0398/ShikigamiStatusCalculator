@@ -45,12 +45,21 @@ try {
     $buildTimer = Start-DiagnosticStage 'AnalyzerBuild'
     $build = Start-Process -FilePath 'dotnet' `
         -ArgumentList @('build', 'DiagnosticLogAnalyzer/DiagnosticLogAnalyzer.csproj', '-c', 'Release', '-p:Platform=x64') `
-        -WorkingDirectory $repositoryRoot -NoNewWindow -Wait -PassThru `
+        -WorkingDirectory $repositoryRoot -NoNewWindow -PassThru `
         -RedirectStandardOutput $buildOutput -RedirectStandardError $buildError
+
+    # Start-Process -Waitは子孫プロセスの終了も待つため、起動したdotnet自身だけを待機する。
+    try {
+        $build.WaitForExit()
+        $buildExitCode = $build.ExitCode
+    }
+    finally {
+        $build.Dispose()
+    }
     Write-DiagnosticTiming 'AnalyzerBuild' $buildTimer
 
-    if ($build.ExitCode -ne 0) {
-        throw "DiagnosticLogAnalyzer build failed with exit code $($build.ExitCode)."
+    if ($buildExitCode -ne 0) {
+        throw "DiagnosticLogAnalyzer build failed with exit code $buildExitCode."
     }
 
     # ディレクトリ構成はPrepareDiagnosticAnalysis.ps1が想定する相対パスに合わせる。
