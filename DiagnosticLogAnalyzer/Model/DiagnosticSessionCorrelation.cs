@@ -18,6 +18,14 @@ namespace DiagnosticLogAnalyzer.Model
 		public GuiWindowRecord Window { get; set; }
 		public PerformanceSessionRecord PerformanceSession { get; set; }
 		public string Reason { get; set; }
+		public List<DiagnosticWindowCandidate> WindowCandidates { get; } = new List<DiagnosticWindowCandidate>();
+	}
+
+	// SessionIdで確定できなかったイベントに対する時刻ベースの参考候補。
+	public sealed class DiagnosticWindowCandidate
+	{
+		public ScenarioRecord Scenario { get; set; }
+		public GuiWindowRecord Window { get; set; }
 	}
 
 	public sealed class DiagnosticSessionCorrelationResult

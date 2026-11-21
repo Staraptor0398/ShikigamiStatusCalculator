@@ -49,15 +49,24 @@ namespace DiagnosticLogAnalyzer
 					$"performance-only={correlations.Events.Count(x => x.Status == DiagnosticSessionMatchStatus.PerformanceOnly)}; " +
 					$"unmatched={correlations.Events.Count(x => x.Status == DiagnosticSessionMatchStatus.Unmatched)}; " +
 					$"ambiguous={correlations.Events.Count(x => x.Status == DiagnosticSessionMatchStatus.Ambiguous)}");
-
-				foreach (string issue in correlations.Issues)
+				int unmatchedWithCandidate = correlations.Events.Count(x =>
+					x.Status == DiagnosticSessionMatchStatus.Unmatched && x.WindowCandidates.Count > 0);
+				int multipleCandidates = correlations.Events.Count(x =>
+					x.Status == DiagnosticSessionMatchStatus.Unmatched && x.WindowCandidates.Count > 1);
+				Console.WriteLine($"Unmatched event window candidates: found={unmatchedWithCandidate}; multiple={multipleCandidates}; " +
+					$"none={correlations.Events.Count(x => x.Status == DiagnosticSessionMatchStatus.Unmatched && x.WindowCandidates.Count == 0)}");
+				foreach (var group in correlations.Events.Where(x => x.Status == DiagnosticSessionMatchStatus.Unmatched)
+					.GroupBy(x => x.Event.SessionId, StringComparer.OrdinalIgnoreCase))
 				{
-					Console.WriteLine("  " + issue);
+					string description = string.Join(", ", group.SelectMany(x => x.WindowCandidates)
+						.Select(x => $"{x.Scenario.Scenario} (window {x.Window.WindowOrder})").Distinct());
+					Console.WriteLine($"  Unmatched SessionId={group.Key}: events={group.Count()}; " +
+						$"candidate windows={(description.Length == 0 ? "none" : description)}");
 				}
-
+				foreach (string issue in correlations.Issues) { Console.WriteLine("  " + issue); }
 				Console.WriteLine("Command correlation and rule validation are not implemented in this milestone.");
 
-				// Missing or ambiguous correlations are not parse failures: they require later validation.
+				// 未対応・曖昧な相関は構文解析エラーではなく、後続の検証対象とする。
 				return issueCount == 0 ? 0 : 1;
 			}
 			catch (Exception exception)

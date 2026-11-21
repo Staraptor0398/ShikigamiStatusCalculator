@@ -2,6 +2,7 @@ using DiagnosticLogAnalyzer.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Globalization;
 
 namespace DiagnosticLogAnalyzer.Correlation
 {
@@ -15,14 +16,8 @@ namespace DiagnosticLogAnalyzer.Correlation
 
 		public DiagnosticSessionCorrelationResult Correlate(AnalysisInput input, IEnumerable<DiagnosticEvent> events)
 		{
-			if (input == null)
-			{
-				throw new ArgumentNullException(nameof(input));
-			}
-			if (events == null)
-			{
-				throw new ArgumentNullException(nameof(events));
-			}
+			if (input == null) { throw new ArgumentNullException(nameof(input)); }
+			if (events == null) { throw new ArgumentNullException(nameof(events)); }
 			if (input.Scenarios == null || input.PerformanceSessions == null)
 			{
 				throw new ArgumentException("Input sessions and scenarios are required.", nameof(input));
@@ -38,70 +33,50 @@ namespace DiagnosticLogAnalyzer.Correlation
 				{
 					throw new ArgumentException("Invalid scenario windows.", nameof(input));
 				}
-
 				foreach (GuiWindowRecord window in scenario.GuiWindows)
 				{
-					if (window == null)
-					{
-						throw new ArgumentException("Null Gui window.", nameof(input));
-					}
-
+					if (window == null) { throw new ArgumentException("Null Gui window.", nameof(input)); }
 					string id = normalizeSessionId(window.SessionId);
-
-					if (id == null)
-					{
-						continue;
-					}
+					if (id == null) { continue; }
 					if (!windowsBySession.TryGetValue(id, out List<WindowLink> links))
 					{
 						links = new List<WindowLink>();
 						windowsBySession.Add(id, links);
 					}
-
 					links.Add(new WindowLink { Scenario = scenario, Window = window });
 				}
 			}
 
 			foreach (PerformanceSessionRecord session in input.PerformanceSessions)
 			{
-				if (session == null)
-				{
-					throw new ArgumentException("Null Performance Session.", nameof(input));
-				}
-
+				if (session == null) { throw new ArgumentException("Null Performance Session.", nameof(input)); }
 				string id = normalizeSessionId(session.SessionId);
-				if (id == null)
-				{
-					continue;
-				}
-
+				if (id == null) { continue; }
 				if (!performanceBySession.TryGetValue(id, out List<PerformanceSessionRecord> sessions))
 				{
 					sessions = new List<PerformanceSessionRecord>();
 					performanceBySession.Add(id, sessions);
 				}
-
 				sessions.Add(session);
 			}
 
+			// SessionIdが紐付いていないGui起動区間だけを参考候補の対象とする。
+			List<WindowLink> candidateWindows = input.Scenarios
+				.SelectMany(s => s.GuiWindows.Select(w => new WindowLink { Scenario = s, Window = w }))
+				.Where(x => string.IsNullOrWhiteSpace(x.Window.SessionId))
+				.ToList();
+
 			foreach (DiagnosticEvent diagnosticEvent in events)
 			{
-				if (diagnosticEvent == null)
-				{
-					throw new ArgumentException("Null diagnostic event.", nameof(events));
-				}
-
+				if (diagnosticEvent == null) { throw new ArgumentException("Null diagnostic event.", nameof(events)); }
 				string id = normalizeSessionId(diagnosticEvent.SessionId);
-
 				List<WindowLink> links = null;
 				List<PerformanceSessionRecord> sessions = null;
-
 				if (id != null)
 				{
 					windowsBySession.TryGetValue(id, out links);
 					performanceBySession.TryGetValue(id, out sessions);
 				}
-
 				int windowCount = links?.Count ?? 0;
 				int performanceCount = sessions?.Count ?? 0;
 				DiagnosticEventCorrelation item = new DiagnosticEventCorrelation { Event = diagnosticEvent };
@@ -114,9 +89,7 @@ namespace DiagnosticLogAnalyzer.Correlation
 				else if (windowCount == 1)
 				{
 					WindowLink link = links[0];
-
 					PerformanceSessionRecord session = performanceCount == 1 ? sessions[0] : null;
-
 					if (session != null && !referencesWindow(session, link))
 					{
 						item.Status = DiagnosticSessionMatchStatus.Ambiguous;
@@ -141,17 +114,43 @@ namespace DiagnosticLogAnalyzer.Correlation
 				{
 					item.Status = DiagnosticSessionMatchStatus.Unmatched;
 					item.Reason = "SessionId does not match a known Gui window or Performance Session.";
+					// 時刻による一致は確定したSession相関へ昇格させない。
+					foreach (WindowLink candidate in candidateWindows)
+					{
+						if (containsTimestamp(candidate.Window, diagnosticEvent.Timestamp))
+						{
+							item.WindowCandidates.Add(new DiagnosticWindowCandidate
+							{
+								Scenario = candidate.Scenario,
+								Window = candidate.Window
+							});
+						}
+					}
 				}
 
 				result.Events.Add(item);
 			}
 
-			foreach (IGrouping<string, DiagnosticEventCorrelation> group in result.Events.Where(x => x.Status == DiagnosticSessionMatchStatus.Ambiguous).GroupBy(x => x.Event.SessionId ?? "", StringComparer.OrdinalIgnoreCase))
+			foreach (IGrouping<string, DiagnosticEventCorrelation> group in result.Events
+				.Where(x => x.Status == DiagnosticSessionMatchStatus.Ambiguous)
+				.GroupBy(x => x.Event.SessionId ?? "", StringComparer.OrdinalIgnoreCase))
 			{
 				result.Issues.Add($"Ambiguous SessionId={group.Key}: {group.First().Reason} ({group.Count()} events)");
 			}
-
 			return result;
+		}
+
+		private static bool containsTimestamp(GuiWindowRecord window, DateTime timestamp)
+		{
+			// 不正な区間は候補にしない。境界で重複した場合は候補を複数残す。
+			if (!DateTime.TryParseExact(window.Start, "yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture,
+				DateTimeStyles.None, out DateTime start) ||
+				!DateTime.TryParseExact(window.End, "yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture,
+				DateTimeStyles.None, out DateTime end) || end < start)
+			{
+				return false;
+			}
+			return start <= timestamp && timestamp <= end;
 		}
 
 		private static string normalizeSessionId(string value)
@@ -163,12 +162,9 @@ namespace DiagnosticLogAnalyzer.Correlation
 		private static bool referencesWindow(PerformanceSessionRecord session, WindowLink link)
 		{
 			// 対応付けられていないPerformance Sessionからは、Gui起動区間を確定できない。
-			if (string.IsNullOrEmpty(session.ScenarioFile) || !session.WindowOrder.HasValue)
-			{
-				return true;
-			}
-
-			return string.Equals(session.ScenarioFile, link.Scenario.SourceFile, StringComparison.OrdinalIgnoreCase) && session.WindowOrder.Value == link.Window.WindowOrder;
+			if (string.IsNullOrEmpty(session.ScenarioFile) || !session.WindowOrder.HasValue) { return true; }
+			return string.Equals(session.ScenarioFile, link.Scenario.SourceFile, StringComparison.OrdinalIgnoreCase)
+				&& session.WindowOrder.Value == link.Window.WindowOrder;
 		}
 	}
 }
