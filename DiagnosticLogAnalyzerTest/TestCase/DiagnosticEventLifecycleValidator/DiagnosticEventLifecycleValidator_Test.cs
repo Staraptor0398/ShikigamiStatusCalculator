@@ -8,6 +8,7 @@ namespace DiagnosticLogAnalyzerTest.TestCase
 	{
 		private const string OperationCalculation = "Calculation";
 		private const string OperationLoad = "SaveData.Load";
+		private const string OperationSave = "SaveData.Save";
 		private static readonly DateTime BaseTime = new DateTime(2026, 11, 20, 15, 27, 46);
 
 		private static DiagnosticCommandCorrelation CreateEvent(string operation, string eventName, int millis,
@@ -194,6 +195,66 @@ namespace DiagnosticLogAnalyzerTest.TestCase
 		public void LoadCompletedBeforeValidatedFails()
 		{
 			Assert.AreEqual(DiagnosticLifecycleVerdict.Fail, Verdict(OperationLoad, ("Started", 10), ("Completed", 20), ("Validated", 30)));
+		}
+
+		[TestMethod]
+		public void SaveStartedCompletedPasses()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Pass, Verdict(OperationSave, ("Started", 10), ("Completed", 20)));
+		}
+
+		[TestMethod]
+		public void SaveStartedFailedIsConsistent()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Pass, Verdict(OperationSave, ("Started", 10), ("Failed", 20)));
+		}
+
+		[TestMethod]
+		public void SaveMissingStartedIsInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationSave, ("Completed", 20)));
+		}
+
+		[TestMethod]
+		public void SaveMissingTerminalIsInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationSave, ("Started", 10)));
+		}
+
+		[TestMethod]
+		public void SaveTerminalBeforeStartedFails()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Fail, Verdict(OperationSave, ("Completed", 10), ("Started", 20)));
+		}
+
+		[TestMethod]
+		public void SaveSameMillisecondPasses()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Pass, Verdict(OperationSave, ("Started", 10), ("Completed", 10)));
+		}
+
+		[TestMethod]
+		public void SaveMixedTerminalOutcomesAreInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationSave, ("Started", 10), ("Failed", 20), ("Completed", 30)));
+		}
+
+		[TestMethod]
+		public void SaveDuplicateStartedIsInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationSave, ("Started", 10), ("Started", 15), ("Completed", 20)));
+		}
+
+		[TestMethod]
+		public void SaveValidatedIsNotTreatedAsLoad()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationSave, ("Started", 10), ("Validated", 15), ("Completed", 20)));
+		}
+
+		[TestMethod]
+		public void SaveValidationRejectedIsInconclusive()
+		{
+			Assert.AreEqual(DiagnosticLifecycleVerdict.Inconclusive, Verdict(OperationSave, ("Started", 10), ("ValidationRejected", 20)));
 		}
 
 		[TestMethod]
