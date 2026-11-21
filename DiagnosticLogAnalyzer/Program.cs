@@ -64,7 +64,14 @@ namespace DiagnosticLogAnalyzer
 						$"candidate windows={(description.Length == 0 ? "none" : description)}");
 				}
 				foreach (string issue in correlations.Issues) { Console.WriteLine("  " + issue); }
-				Console.WriteLine("Command correlation and rule validation are not implemented in this milestone.");
+
+				DiagnosticCommandCorrelationResult commands = new DiagnosticCommandCorrelator().Correlate(correlations);
+				Console.WriteLine($"Command correlation: matched={commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.Matched)}; " +
+					$"no-confirmed-window={commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NoConfirmedWindow)}; " +
+					$"no-matching-command={commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NoMatchingCommand)}; " +
+					$"ambiguous={commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.Ambiguous)}; " +
+					$"not-mapped-operation={commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NotMappedOperation)}");
+				Console.WriteLine("Diagnostic event rule validation is not implemented in this milestone.");
 
 				// 未対応・曖昧な相関は構文解析エラーではなく、後続の検証対象とする。
 				return issueCount == 0 ? 0 : 1;
