@@ -14,6 +14,20 @@ $outputRoot = [System.IO.Path]::GetFullPath($OutputDirectory)
 $runRoot = Join-Path $outputRoot 'Run'
 $reportPath = Join-Path $outputRoot 'DiagnosticAnalysis.txt'
 $errorPath = Join-Path $outputRoot 'DiagnosticAnalysisError.txt'
+$timingPath = Join-Path $outputRoot 'DiagnosticTiming.log'
+$totalTimer = [System.Diagnostics.Stopwatch]::StartNew()
+
+function Write-DiagnosticTiming([string]$name, [System.Diagnostics.Stopwatch]$timer) {
+    $timer.Stop()
+    $message = '[Timing] {0}: {1:N2} ms' -f $name, $timer.Elapsed.TotalMilliseconds
+    Write-Host $message
+    Add-Content -LiteralPath $timingPath -Value $message -Encoding utf8
+}
+
+function Start-DiagnosticStage([string]$name) {
+    Write-Host "[Timing] Starting $name"
+    return [System.Diagnostics.Stopwatch]::StartNew()
+}
 
 New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 
@@ -28,10 +42,12 @@ try {
 
     $buildOutput = Join-Path $outputRoot 'AnalyzerBuild.stdout.log'
     $buildError = Join-Path $outputRoot 'AnalyzerBuild.stderr.log'
+    $buildTimer = Start-DiagnosticStage 'AnalyzerBuild'
     $build = Start-Process -FilePath 'dotnet' `
         -ArgumentList @('build', 'DiagnosticLogAnalyzer/DiagnosticLogAnalyzer.csproj', '-c', 'Release', '-p:Platform=x64') `
         -WorkingDirectory $repositoryRoot -NoNewWindow -Wait -PassThru `
         -RedirectStandardOutput $buildOutput -RedirectStandardError $buildError
+    Write-DiagnosticTiming 'AnalyzerBuild' $buildTimer
 
     if ($build.ExitCode -ne 0) {
         throw "DiagnosticLogAnalyzer build failed with exit code $($build.ExitCode)."
@@ -42,6 +58,7 @@ try {
         'ScenarioRunnerCli\bin\x64\Release\Log',
         'Gui\bin\x64\Release\Log'
     )
+    $collectionTimer = Start-DiagnosticStage 'LogCollection'
     foreach ($relative in $logDirectories) {
         $source = Join-Path $repositoryRoot $relative
         if (-not (Test-Path -LiteralPath $source -PathType Container)) {
@@ -55,13 +72,18 @@ try {
             Copy-Item -Destination $destination -Force
     }
 
+    Write-DiagnosticTiming 'LogCollection' $collectionTimer
+
     $preparationScript = Join-Path $repositoryRoot 'Script\PrepareDiagnosticAnalysis.ps1'
     $inputPath = Join-Path $runRoot 'DiagnosticAnalysisInput.json'
     if (-not (Test-Path -LiteralPath $preparationScript -PathType Leaf)) {
         throw 'PrepareDiagnosticAnalysis.ps1 was not found.'
     }
 
-    & $preparationScript -RunId $RunId -RunDirectory $runRoot -OutputPath $inputPath
+    $preparationTimer = Start-DiagnosticStage 'PrepareDiagnosticAnalysis'
+    $preparationTimingPath = Join-Path $outputRoot 'PreparationTiming.log'
+    & $preparationScript -RunId $RunId -RunDirectory $runRoot -OutputPath $inputPath -TimingLogPath $preparationTimingPath
+    Write-DiagnosticTiming 'PrepareDiagnosticAnalysis' $preparationTimer
     if (-not (Test-Path -LiteralPath $inputPath -PathType Leaf)) {
         throw 'DiagnosticAnalysisInput.json was not generated.'
     }
@@ -73,12 +95,12 @@ try {
 
     $stdout = Join-Path $outputRoot 'Analyzer.stdout.txt'
     $stderr = Join-Path $outputRoot 'Analyzer.stderr.txt'
-    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    $timer = Start-DiagnosticStage 'DiagnosticLogAnalyzer'
     $analysis = Start-Process -FilePath $analyzerPath `
         -ArgumentList ('"' + $inputPath + '"') `
         -NoNewWindow -Wait -PassThru `
         -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-    $timer.Stop()
+    Write-DiagnosticTiming 'DiagnosticLogAnalyzer' $timer
 
     $report = @(
         "RunId: $RunId"
@@ -105,6 +127,7 @@ catch {
     Write-Warning "Diagnostic analysis failed: $($_.Exception.Message)"
 }
 finally {
+    Write-DiagnosticTiming 'DiagnosticAnalysisTotal' $totalTimer
     # 捕捉済みの解析例外によってScenarioRunnerの成功/失敗を上書きしない。
     $global:LASTEXITCODE = 0
 }

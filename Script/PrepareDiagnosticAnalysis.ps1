@@ -5,7 +5,9 @@
     [Parameter(Mandatory)]
     [string]$RunDirectory,
 
-    [string]$OutputPath
+    [string]$OutputPath,
+
+    [string]$TimingLogPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -16,6 +18,16 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'Analysis/SessionMatcher.ps1')
 
 $culture = [System.Globalization.CultureInfo]::InvariantCulture
+$totalTimer = [System.Diagnostics.Stopwatch]::StartNew()
+
+function Write-PreparationTiming([string]$name, [System.Diagnostics.Stopwatch]$timer) {
+    $timer.Stop()
+    $message = '[Timing] {0}: {1:N2} ms' -f $name, $timer.Elapsed.TotalMilliseconds
+    Write-Host $message
+    if (-not [string]::IsNullOrWhiteSpace($TimingLogPath)) {
+        Add-Content -LiteralPath $TimingLogPath -Value $message -Encoding utf8
+    }
+}
 
 if ($RunId -notmatch '^\d+$') { throw "RunId must be numeric: $RunId" }
 if (-not (Test-Path -LiteralPath $RunDirectory -PathType Container)) {
@@ -46,10 +58,13 @@ function Format-LocalTime([datetime]$value) {
     return $value.ToString('yyyy-MM-ddTHH:mm:ss.fff', $culture)
 }
 
+$discoveryTimer = [System.Diagnostics.Stopwatch]::StartNew()
 $scenarioFiles = @(Get-ChildItem -LiteralPath $runRoot -Recurse -File -Filter 'ScenarioRunner_*.log' | Sort-Object FullName)
 $performanceFiles = @(Get-ChildItem -LiteralPath $runRoot -Recurse -File -Filter 'ShikigamiApp_Performance_*.log' | Sort-Object FullName)
 $diagnosticFiles = @(Get-ChildItem -LiteralPath $runRoot -Recurse -File -Filter 'ShikigamiApp_*.log' |
     Where-Object { $_.Name -notlike 'ShikigamiApp_Performance_*' } | Sort-Object FullName)
+
+Write-PreparationTiming 'LogDiscovery' $discoveryTimer
 
 if ($scenarioFiles.Count -eq 0) { throw "No ScenarioRunner logs in $runRoot" }
 if ($performanceFiles.Count -gt 1) { throw "Expected at most one Performance log, found $($performanceFiles.Count)." }
@@ -58,10 +73,13 @@ $issues = [System.Collections.Generic.List[string]]::new()
 $windows = [System.Collections.Generic.List[object]]::new()
 $scenarioResults = [System.Collections.Generic.List[object]]::new()
 
+$scenarioTimer = [System.Diagnostics.Stopwatch]::StartNew()
 foreach ($file in $scenarioFiles) {
+    $fileTimer = [System.Diagnostics.Stopwatch]::StartNew()
     $match = [regex]::Match($file.Name, '^ScenarioRunner_(\d{8})_(\d{6})_(.+)\.log$')
     if (-not $match.Success) {
         $issues.Add("Unknown ScenarioRunner log filename: $($file.Name)")
+        Write-PreparationTiming "ScenarioFile/$($file.Name)" $fileTimer
         continue
     }
 
@@ -124,8 +142,11 @@ foreach ($file in $scenarioFiles) {
         commands = $commands
         guiWindows = @()
     })
+    Write-PreparationTiming "ScenarioFile/$($file.Name)" $fileTimer
 }
+Write-PreparationTiming 'ScenarioFilesTotal' $scenarioTimer
 
+$performanceTimer = [System.Diagnostics.Stopwatch]::StartNew()
 $sessionBlocks = @()
 if ($performanceFiles.Count -eq 1) {
     $performance = Get-PerformanceSessions -RunId $RunId -Path $performanceFiles[0].FullName
@@ -137,8 +158,14 @@ if ($diagnosticFiles.Count -eq 0) {
     $issues.Add("No Gui diagnostic log in $RunId (diagnostic event validation will be inconclusive)")
 }
 
+Write-PreparationTiming 'PerformanceLogParsing' $performanceTimer
+
+$matchTimer = [System.Diagnostics.Stopwatch]::StartNew()
 $matchResult = Match-GuiSessions -RunId $RunId -Sessions $sessionBlocks -GuiWindows @($windows.ToArray())
 foreach ($warning in $matchResult.Warnings) { $issues.Add($warning) }
+Write-PreparationTiming 'MatchGuiSessions' $matchTimer
+
+$serializationTimer = [System.Diagnostics.Stopwatch]::StartNew()
 
 # The matcher fills SessionId and MatchQuality on the existing window objects.
 foreach ($scenario in $scenarioResults) {
@@ -186,6 +213,8 @@ $document = [ordered]@{
 
 $json = ConvertTo-Json -InputObject $document -Depth 15
 [System.IO.File]::WriteAllText($OutputPath, $json + [Environment]::NewLine, [System.Text.UTF8Encoding]::new($false))
+Write-PreparationTiming 'ResultAssemblyAndJson' $serializationTimer
+Write-PreparationTiming 'PreparationTotal' $totalTimer
 
 Write-Host "Diagnostic preparation complete: $OutputPath"
 Write-Host "  Scenarios: $($scenarioResults.Count); Windows: $($windows.Count); Performance sessions: $($sessionRows.Count)"
