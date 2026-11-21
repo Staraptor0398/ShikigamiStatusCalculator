@@ -104,9 +104,10 @@ try {
 
     $stdout = Join-Path $outputRoot 'Analyzer.stdout.txt'
     $stderr = Join-Path $outputRoot 'Analyzer.stderr.txt'
+    $resultPath = Join-Path $outputRoot 'DiagnosticAnalysisResult.json'
     $timer = Start-DiagnosticStage 'DiagnosticLogAnalyzer'
     $analysis = Start-Process -FilePath $analyzerPath `
-        -ArgumentList ('"' + $inputPath + '"') `
+        -ArgumentList @('"' + $inputPath + '"', '"' + $resultPath + '"') `
         -NoNewWindow -Wait -PassThru `
         -RedirectStandardOutput $stdout -RedirectStandardError $stderr
     Write-DiagnosticTiming 'DiagnosticLogAnalyzer' $timer
@@ -128,6 +129,20 @@ try {
 
     if ($analysis.ExitCode -ne 0) {
         Write-Warning "DiagnosticLogAnalyzer exited with code $($analysis.ExitCode)."
+    }
+
+    # 解析結果の可視化はベストエフォート。失敗しても既存レポートを維持する。
+    if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
+        try {
+            $summaryScript = Join-Path $repositoryRoot 'Script\WriteDiagnosticSummary.ps1'
+            & $summaryScript -ReportPath $resultPath -OutputPath (Join-Path $outputRoot 'DiagnosticSummary.md')
+        }
+        catch {
+            Write-Warning "Diagnostic summary generation failed: $($_.Exception.Message)"
+        }
+    }
+    else {
+        Write-Warning 'Structured diagnostic report was not generated.'
     }
 }
 catch {

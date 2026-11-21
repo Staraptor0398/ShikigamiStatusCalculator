@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Web.Script.Serialization;
 
 namespace DiagnosticLogAnalyzer
 {
@@ -14,9 +15,9 @@ namespace DiagnosticLogAnalyzer
 	{
 		private static int Main(string[] args)
 		{
-			if (args.Length != 1)
+			if (args.Length < 1 || args.Length > 2)
 			{
-				Console.Error.WriteLine("Usage: DiagnosticLogAnalyzer.exe <DiagnosticAnalysisInput.json>");
+				Console.Error.WriteLine("Usage: DiagnosticLogAnalyzer.exe <DiagnosticAnalysisInput.json> [DiagnosticAnalysisResult.json]");
 				return 2;
 			}
 
@@ -107,6 +108,11 @@ namespace DiagnosticLogAnalyzer
 						$"line {item.Lifecycle.Command.LineNumber}: {item.Reason}");
 				}
 
+				if (args.Length == 2)
+				{
+					WriteReport(args[1], input, events.Count, issueCount, correlations, commandCorrelations, lifecycles, modal);
+				}
+
 				// 未対応・曖昧な相関は構文解析エラーではなく、後続の検証対象とする。
 				return issueCount == 0 ? 0 : 1;
 			}
@@ -115,6 +121,75 @@ namespace DiagnosticLogAnalyzer
 				Console.Error.WriteLine(exception.Message);
 				return 2;
 			}
+		}
+
+		private static void WriteReport(string path, AnalysisInput input, int eventCount, int issueCount,
+			DiagnosticSessionCorrelationResult sessions, DiagnosticCommandCorrelationResult commands,
+			DiagnosticEventLifecycleValidationResult lifecycles, DiagnosticModalContinuationResult modal)
+		{
+			var items = lifecycles.Lifecycles.Select(lifecycle =>
+			{
+				DiagnosticModalContinuation continuation = modal.Items.FirstOrDefault(x => ReferenceEquals(x.Lifecycle, lifecycle));
+				string status = lifecycle.Verdict.ToString();
+				if (continuation != null && continuation.Status == DiagnosticModalContinuationStatus.Resolved)
+				{
+					status = "Resolved";
+				}
+				return new
+				{
+					scenario = lifecycle.Scenario.Scenario,
+					windowOrder = lifecycle.Window.WindowOrder,
+					lineNumber = lifecycle.Command.LineNumber,
+					operation = lifecycle.Operation.ToString(),
+					directVerdict = lifecycle.Verdict.ToString(),
+					effectiveStatus = status,
+					reason = lifecycle.Reason,
+					modalStatus = continuation == null ? null : continuation.Status.ToString(),
+					modalReason = continuation == null ? null : continuation.Reason
+				};
+			}).ToArray();
+
+			var result = new
+			{
+				schemaVersion = 1,
+				runId = input.RunId,
+				scenarios = input.Scenarios.Count,
+				performanceSessions = input.PerformanceSessions.Count,
+				diagnosticEvents = eventCount,
+				parseIssues = issueCount,
+				sessionCorrelation = new
+				{
+					windowMatched = sessions.Events.Count(x => x.Status == DiagnosticSessionMatchStatus.WindowMatched),
+					performanceOnly = sessions.Events.Count(x => x.Status == DiagnosticSessionMatchStatus.PerformanceOnly),
+					unmatched = sessions.Events.Count(x => x.Status == DiagnosticSessionMatchStatus.Unmatched),
+					ambiguous = sessions.Events.Count(x => x.Status == DiagnosticSessionMatchStatus.Ambiguous)
+				},
+				commandCorrelation = new
+				{
+					matched = commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.Matched),
+					noConfirmedWindow = commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NoConfirmedWindow),
+					noMatchingCommand = commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NoMatchingCommand),
+					ambiguous = commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.Ambiguous),
+					notMappedOperation = commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NotMappedOperation)
+				},
+				lifecycle = new
+				{
+					directPass = lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Pass),
+					fail = lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Fail),
+					directInconclusive = lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Inconclusive),
+					modalResolved = modal.Items.Count(x => x.Status == DiagnosticModalContinuationStatus.Resolved),
+					remainingInconclusive = items.Count(x => x.effectiveStatus == "Inconclusive"),
+					excludedEvents = lifecycles.ExcludedEvents,
+					items = items
+				}
+			};
+
+			string outputPath = Path.GetFullPath(path);
+			string directory = Path.GetDirectoryName(outputPath);
+			Directory.CreateDirectory(directory);
+			string json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.Serialize(result);
+			File.WriteAllText(outputPath, json + Environment.NewLine, new System.Text.UTF8Encoding(false));
+			Console.WriteLine($"Structured diagnostic report: {outputPath}");
 		}
 	}
 }
