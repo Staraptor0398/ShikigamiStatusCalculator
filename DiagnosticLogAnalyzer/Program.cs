@@ -65,12 +65,22 @@ namespace DiagnosticLogAnalyzer
 				}
 				foreach (string issue in correlations.Issues) { Console.WriteLine("  " + issue); }
 
-				DiagnosticCommandCorrelationResult commands = new DiagnosticCommandCorrelator().Correlate(correlations);
-				Console.WriteLine($"Command correlation: matched={commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.Matched)}; " +
-					$"no-confirmed-window={commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NoConfirmedWindow)}; " +
-					$"no-matching-command={commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NoMatchingCommand)}; " +
-					$"ambiguous={commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.Ambiguous)}; " +
-					$"not-mapped-operation={commands.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NotMappedOperation)}");
+				DiagnosticCommandCorrelationResult commandCorrelations = new DiagnosticCommandCorrelator().Correlate(correlations);
+				Console.WriteLine($"Command correlation: matched={commandCorrelations.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.Matched)}; " +
+					$"no-confirmed-window={commandCorrelations.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NoConfirmedWindow)}; " +
+					$"no-matching-command={commandCorrelations.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NoMatchingCommand)}; " +
+					$"ambiguous={commandCorrelations.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.Ambiguous)}; " +
+					$"not-mapped-operation={commandCorrelations.Events.Count(x => x.Status == DiagnosticCommandMatchStatus.NotMappedOperation)}");
+
+				DiagnosticCommandExecutionContextResult contexts = new DiagnosticCommandContextAnalyzer().Analyze(commandCorrelations);
+				Console.WriteLine($"NoMatchingCommand execution context: observed-during-command={contexts.Events.Count(x => x.Status == DiagnosticCommandContextStatus.ObservedDuringCommand)}; " +
+					$"outside-command={contexts.Events.Count(x => x.Status == DiagnosticCommandContextStatus.NoActiveCommand)}; " +
+					$"multiple-active-commands={contexts.Events.Count(x => x.Status == DiagnosticCommandContextStatus.MultipleActiveCommands)}");
+				foreach (var group in contexts.Events.Where(x => x.Status == DiagnosticCommandContextStatus.ObservedDuringCommand)
+					.GroupBy(x => x.ActiveCommand.Type).OrderByDescending(x => x.Count()).ThenBy(x => x.Key))
+				{
+					Console.WriteLine($"  Observed during {group.Key}: {group.Count()} events");
+				}
 				Console.WriteLine("Diagnostic event rule validation is not implemented in this milestone.");
 
 				// 未対応・曖昧な相関は構文解析エラーではなく、後続の検証対象とする。
