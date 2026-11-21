@@ -61,7 +61,8 @@ namespace DiagnosticLogAnalyzer.Validation
 
 		private static bool isTarget(string operation)
 		{
-			return operation == "Calculation" || operation == "SaveData.Load" || operation == "SaveData.Save";
+			return operation == "Calculation" || operation == "SaveData.Load" || operation == "SaveData.Save" ||
+				operation == "MainForm.Clear" || operation == "Snapshot.Compare";
 		}
 
 		private static void setVerdict(DiagnosticEventLifecycle item, DiagnosticLifecycleVerdict verdict, string reason)
@@ -150,11 +151,12 @@ namespace DiagnosticLogAnalyzer.Validation
 				}
 			}
 
-			if (item.Operation == "SaveData.Save" && (validated.Count != 0 || rejected.Count != 0))
+			if ((item.Operation == "SaveData.Save" || item.Operation == "MainForm.Clear" || item.Operation == "Snapshot.Compare") &&
+				events.Any(x => x.EventName != "Started" && x.EventName != "Completed" && x.EventName != "Failed"))
 			{
-				// 保存操作にはValidatedやValidationRejectedの記録規則がない。
-				// 別の試行や記録の混在を否定できないため判定を保留する。
-				setVerdict(item, DiagnosticLifecycleVerdict.Inconclusive, "Unexpected lifecycle events are observed for SaveData.Save.");
+				// 保存・クリア・比較はStartedと終端イベントのみを定義する。
+				// 未定義イベントを無視してPASSにしない。
+				setVerdict(item, DiagnosticLifecycleVerdict.Inconclusive, "Unexpected lifecycle events are observed for this operation.");
 				return;
 			}
 
