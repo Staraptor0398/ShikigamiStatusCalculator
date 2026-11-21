@@ -83,7 +83,7 @@ namespace DiagnosticLogAnalyzer
 					Console.WriteLine($"  Observed during {group.Key}: {group.Count()} events");
 				}
 				DiagnosticEventLifecycleValidationResult lifecycles = new DiagnosticEventLifecycleValidator().Validate(commandCorrelations);
-				Console.WriteLine($"Diagnostic lifecycle validation (Calculation, SaveData.Load): pass={lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Pass)}; " +
+				Console.WriteLine($"Diagnostic lifecycle validation (Calculation, SaveData.Load, SaveData.Save): pass={lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Pass)}; " +
 					$"fail={lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Fail)}; " +
 					$"inconclusive={lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Inconclusive)}; " +
 					$"excluded-events={lifecycles.ExcludedEvents}");

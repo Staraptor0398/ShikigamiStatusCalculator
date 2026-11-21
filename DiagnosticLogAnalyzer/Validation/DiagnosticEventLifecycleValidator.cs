@@ -61,7 +61,7 @@ namespace DiagnosticLogAnalyzer.Validation
 
 		private static bool isTarget(string operation)
 		{
-			return operation == "Calculation" || operation == "SaveData.Load";
+			return operation == "Calculation" || operation == "SaveData.Load" || operation == "SaveData.Save";
 		}
 
 		private static void setVerdict(DiagnosticEventLifecycle item, DiagnosticLifecycleVerdict verdict, string reason)
@@ -148,6 +148,14 @@ namespace DiagnosticLogAnalyzer.Validation
 					setVerdict(item, DiagnosticLifecycleVerdict.Inconclusive, "Validated is not observed before successful completion.");
 					return;
 				}
+			}
+
+			if (item.Operation == "SaveData.Save" && (validated.Count != 0 || rejected.Count != 0))
+			{
+				// 保存操作にはValidatedやValidationRejectedの記録規則がない。
+				// 別の試行や記録の混在を否定できないため判定を保留する。
+				setVerdict(item, DiagnosticLifecycleVerdict.Inconclusive, "Unexpected lifecycle events are observed for SaveData.Save.");
+				return;
 			}
 
 			// FailedはGui操作の失敗を示すが、ライフサイクルの記録としては整合している。
