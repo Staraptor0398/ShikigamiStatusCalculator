@@ -2,6 +2,7 @@ using DiagnosticLogAnalyzer.Correlation;
 using DiagnosticLogAnalyzer.Model;
 using DiagnosticLogAnalyzer.Parser;
 using DiagnosticLogAnalyzer.Reader;
+using DiagnosticLogAnalyzer.Validation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -81,7 +82,16 @@ namespace DiagnosticLogAnalyzer
 				{
 					Console.WriteLine($"  Observed during {group.Key}: {group.Count()} events");
 				}
-				Console.WriteLine("Diagnostic event rule validation is not implemented in this milestone.");
+				DiagnosticEventLifecycleValidationResult lifecycles = new DiagnosticEventLifecycleValidator().Validate(commandCorrelations);
+				Console.WriteLine($"Diagnostic lifecycle validation (Calculation, SaveData.Load): pass={lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Pass)}; " +
+					$"fail={lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Fail)}; " +
+					$"inconclusive={lifecycles.Lifecycles.Count(x => x.Verdict == DiagnosticLifecycleVerdict.Inconclusive)}; " +
+					$"excluded-events={lifecycles.ExcludedEvents}");
+				foreach (DiagnosticEventLifecycle lifecycle in lifecycles.Lifecycles.Where(x => x.Verdict != DiagnosticLifecycleVerdict.Pass))
+				{
+					Console.WriteLine($"  {lifecycle.Verdict}: {lifecycle.Scenario.Scenario} (window {lifecycle.Window.WindowOrder}), " +
+						$"line {lifecycle.Command.LineNumber}, {lifecycle.Operation}: {lifecycle.Reason}");
+				}
 
 				// 未対応・曖昧な相関は構文解析エラーではなく、後続の検証対象とする。
 				return issueCount == 0 ? 0 : 1;
