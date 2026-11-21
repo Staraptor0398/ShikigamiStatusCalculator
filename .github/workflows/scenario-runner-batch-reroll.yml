@@ -1189,6 +1189,23 @@ jobs:
 
           Write-Host "Scenario Runner Batch and recording completed."
 
+      - name: Analyze diagnostic logs
+        if: always() && steps.selection.outputs.selected == 'true'
+        shell: pwsh
+        run: |
+          ./Script/RunDiagnosticAnalysis.ps1 `
+              -RunId $env:GITHUB_RUN_ID `
+              -OutputDirectory 'DiagnosticAnalysis'
+
+      - name: Upload diagnostic analysis
+        if: always() && steps.selection.outputs.selected == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-diagnostic-analysis
+          path: DiagnosticAnalysis/
+          retention-days: 90
+          if-no-files-found: warn
+
       - name: Upload Runner performance
         if: always()
         uses: actions/upload-artifact@v4
