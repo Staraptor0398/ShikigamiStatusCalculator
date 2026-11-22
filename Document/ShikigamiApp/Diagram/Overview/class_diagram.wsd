@@ -17,9 +17,50 @@ package "Gui" {
    class ResultViewForm <<Form>>
    class StatusComparisonResultForm <<Form>>
 
+   package "Function" {
+       class MitamaInputFunction <<Function>>
+       class ShikigamiSelectionFunction <<Function>>
+       class CalculationFunction <<Function>>
+       class CalculationResultFunction <<Function>>
+       class SaveDataLoadFunction <<Function>>
+       class SaveDataApplyFunction <<Function>>
+       class SaveDataSaveFunction <<Function>>
+       class SnapshotComparisonFunction <<Function>>
+   }
+
+   package "Operator" {
+       class MitamaInputOperator <<Operator>>
+       class ShikigamiSelectionOperator <<Operator>>
+       class CalculationResultOperator <<Operator>>
+   }
+
    MainForm ..> ShikigamiRegisterForm : 式神データ編集
    MainForm ..> ResultViewForm : 計算結果表示
    MainForm ..> StatusComparisonResultForm : 比較結果表示
+
+   MainForm --> MitamaInputFunction
+   MainForm --> ShikigamiSelectionFunction
+   MainForm --> CalculationFunction
+   MainForm --> CalculationResultFunction
+   MainForm --> SaveDataLoadFunction
+   MainForm --> SaveDataApplyFunction
+   MainForm --> SaveDataSaveFunction
+   MainForm --> SnapshotComparisonFunction
+
+   MitamaInputFunction --> MitamaInputOperator
+   ShikigamiSelectionFunction --> ShikigamiSelectionOperator
+   CalculationFunction --> MitamaInputOperator
+   CalculationFunction --> ShikigamiSelectionOperator
+   CalculationResultFunction --> CalculationResultOperator
+   CalculationResultFunction --> ShikigamiSelectionOperator
+   SaveDataLoadFunction --> MitamaInputOperator
+   SaveDataLoadFunction --> ShikigamiSelectionFunction
+   SaveDataApplyFunction --> MitamaInputOperator
+   SaveDataApplyFunction --> ShikigamiSelectionOperator
+   SaveDataApplyFunction --> ShikigamiSelectionFunction
+   SaveDataSaveFunction --> MitamaInputOperator
+   SaveDataSaveFunction --> ShikigamiSelectionOperator
+   SaveDataSaveFunction --> CalculationResultFunction
 }
 
 ' ============================================================
@@ -116,11 +157,11 @@ package "Core" {
 ' ============================================================
 ' Gui -> Gateway
 ' ============================================================
-MainForm ..> CalculationGateway : 計算
-MainForm ..> ComparisonGateway : 比較
-MainForm ..> ShikigamiGateway : 式神取得
+CalculationFunction ..> CalculationGateway : 計算
+SnapshotComparisonFunction ..> ComparisonGateway : 比較
+ShikigamiSelectionFunction ..> ShikigamiGateway : 式神一覧取得
 
-ShikigamiRegisterForm ..> ShikigamiGateway : 追加・更新
+ShikigamiRegisterForm ..> ShikigamiGateway : 追加・更新・取得
 
 ' ============================================================
 ' Gateway -> Core
