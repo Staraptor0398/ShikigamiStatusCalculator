@@ -6,9 +6,10 @@ hide footbox
 actor "ユーザー" as User
 
 participant "MainForm" as MainForm
+participant "SaveDataSaveFunction" as SaveDataSaveFunction
 participant "SaveDataSaveDialog" as SaveDialog
 
-participant "MitamaSetInputModelFactory" as InputModelFactory
+participant "MitamaInputOperator" as InputOperator
 participant "MitamaSetConverter" as MitamaSetConverter
 participant "StatusConverter" as StatusConverter
 
@@ -20,7 +21,8 @@ database "JSONファイル" as JsonFile
 
 User -> MainForm : 保存ボタン押下
 
-MainForm -> MainForm : getSaveDataSaveLevel()
+MainForm -> SaveDataSaveFunction : GetSaveLevel()
+SaveDataSaveFunction --> MainForm : SaveDataSaveLevel
 MainForm -> SaveDialog : new(式神名, 保存可能レベル)
 MainForm -> SaveDialog : ShowDialog()
 
@@ -28,40 +30,43 @@ alt キャンセル
    SaveDialog --> MainForm : Cancel
    MainForm --> User : 保存せず終了
 else OK
-   SaveDialog --> MainForm : 保存形式 / ファイルパス
-   MainForm -> MainForm : 保存・読込ボタン無効化
+   SaveDialog --> MainForm : 保存種別 / ファイルパス
+   MainForm -> MainForm : setOperationState(SAVING)\n(保存・読込ボタン更新)
 
-   MainForm -> InputModelFactory : Create(...)
-   InputModelFactory --> MainForm : MitamaSetInputModel
+   MainForm -> SaveDataSaveFunction : Save(保存種別, ファイルパス)
+
+   SaveDataSaveFunction -> SaveDataSaveFunction : 前提条件チェック\n(ファイルパス・保存種別・\n選択式神・スナップショット可否)
+   SaveDataSaveFunction -> InputOperator : CreateInputModel()
+   InputOperator --> SaveDataSaveFunction : MitamaSetInputModel
 
    alt Build
-       MainForm -> MitamaSetConverter : ToSaveData(inputModel)
-       MitamaSetConverter --> MainForm : MitamaSetSaveData
+       SaveDataSaveFunction -> MitamaSetConverter : ToSaveData(inputModel)
+       MitamaSetConverter --> SaveDataSaveFunction : MitamaSetSaveData
 
-       MainForm -> MainForm : BuildSaveData生成\nShikigamiName + MitamaSet
-       MainForm -> SaveDataAccess : SaveBuild(path, data)
+       SaveDataSaveFunction -> SaveDataSaveFunction : BuildSaveData生成\nShikigamiName + MitamaSet
+       SaveDataSaveFunction -> SaveDataAccess : SaveBuild(path, data)
 
    else MitamaSet
-       MainForm -> MitamaSetConverter : ToSaveData(inputModel)
-       MitamaSetConverter --> MainForm : MitamaSetSaveData
+       SaveDataSaveFunction -> MitamaSetConverter : ToSaveData(inputModel)
+       MitamaSetConverter --> SaveDataSaveFunction : MitamaSetSaveData
 
-       MainForm -> SaveDataAccess : SaveMitamaSet(path, data)
+       SaveDataSaveFunction -> SaveDataAccess : SaveMitamaSet(path, data)
 
    else CalculationSnapshot
-       MainForm -> MainForm : createSnapshotNameFromFilePath(path)
+       SaveDataSaveFunction -> SaveDataSaveFunction : createSnapshotNameFromFilePath(path)
 
-       MainForm -> MitamaSetConverter : ToSaveData(inputModel)
-       MitamaSetConverter --> MainForm : MitamaSetSaveData
+       SaveDataSaveFunction -> MitamaSetConverter : ToSaveData(inputModel)
+       MitamaSetConverter --> SaveDataSaveFunction : MitamaSetSaveData
 
-       MainForm -> StatusConverter : ToSaveData(MitamaOnlyStatus)
-       StatusConverter --> MainForm : StatusSaveData
+       SaveDataSaveFunction -> StatusConverter : ToSaveData(MitamaOnlyStatus)
+       StatusConverter --> SaveDataSaveFunction : StatusSaveData
 
-       MainForm -> StatusConverter : ToSaveData(FinalStatus)
-       StatusConverter --> MainForm : StatusSaveData
+       SaveDataSaveFunction -> StatusConverter : ToSaveData(FinalStatus)
+       StatusConverter --> SaveDataSaveFunction : StatusSaveData
 
-       MainForm -> MainForm : CalculationSnapshotSaveData生成\nSnapshotName + CreatedAt +\nShikigamiName + MitamaSet +\nMitamaStatus + FinalStatus
+       SaveDataSaveFunction -> SaveDataSaveFunction : CalculationSnapshotSaveData生成\nSnapshotName + CreatedAt +\nShikigamiName + MitamaSet +\nMitamaStatus + FinalStatus
 
-       MainForm -> SaveDataAccess : SaveSnapshot(path, data)
+       SaveDataSaveFunction -> SaveDataAccess : SaveSnapshot(path, data)
    end
 
    SaveDataAccess -> SaveDataAccess : SaveDataFile<T>生成\nVersion + Data
@@ -73,10 +78,17 @@ else OK
    JsonDataAccess -> JsonFile : UTF-8で書込
    JsonFile --> JsonDataAccess : 完了
    JsonDataAccess --> SaveDataAccess : 完了
-   SaveDataAccess --> MainForm : 完了
+   SaveDataAccess --> SaveDataSaveFunction : 完了
 
-   MainForm -> MainForm : 保存・読込ボタン有効化
-   MainForm --> User : 保存完了
+   alt 保存成功
+       SaveDataSaveFunction --> MainForm : 完了
+       MainForm -> MainForm : 保存成功ログ
+   else 保存失敗
+       SaveDataSaveFunction --> MainForm : 例外（発生地点から伝播）
+       MainForm -> MainForm : 保存失敗ログ\nエラーメッセージ表示
+   end
+
+   MainForm -> MainForm : finally\nsetOperationState(IDLE)\n(保存・読込ボタン更新)
 end
 
 @enduml
