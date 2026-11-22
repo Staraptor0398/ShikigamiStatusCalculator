@@ -6,6 +6,9 @@ hide footbox
 actor "ユーザー" as User
 participant "MainForm" as MainForm
 participant "SaveDataLoadDialog" as LoadDialog
+participant "SaveDataLoadFunction" as LoadFunction
+participant "SaveDataApplyFunction" as ApplyFunction
+participant "MitamaInputOperator" as MitamaInputOperator
 participant "SaveDataAccess" as SaveDataAccess
 participant "JsonDataAccess" as JsonDataAccess
 participant "JsonParser" as JsonParser
@@ -13,6 +16,7 @@ participant "JsonObjectConverter" as JsonObjectConverter
 participant "SaveDataMigrator" as Migrator
 participant "JsonMigrationWriter" as MigrationWriter
 participant "MitamaSetConverter" as MitamaSetConverter
+participant "ShikigamiSelectionFunction" as ShikigamiSelectionFunction
 participant "SaveDataInputModelValidator" as InputValidator
 participant "MitamaSetInputModelApplicator" as InputModelApplicator
 database "JSONファイル" as JsonFile
@@ -30,96 +34,148 @@ else OK
         LOADING中は保存・読込ボタンを無効化し、
         入力変更イベントによるDirty化を抑制する。
     end note
+    MainForm -> MainForm : Logger.Info("SaveData.Load", "Started")
 
-    group ファイル読込・Version確認
-        alt Build
-            MainForm -> SaveDataAccess : LoadBuild(path, track)
-        else MitamaSet
-            MainForm -> SaveDataAccess : LoadMitamaSet(path, track)
-        end
+    group try 読込・適用
+        MainForm -> LoadFunction : Load(loadType, filePath)
 
-        SaveDataAccess -> JsonDataAccess : ReadText(path)
-        JsonDataAccess -> JsonFile : UTF-8で読込
-        JsonFile --> JsonDataAccess : JSON文字列
-        JsonDataAccess --> SaveDataAccess : json
+        group ファイル読込・Version確認
+            alt Build
+                LoadFunction -> SaveDataAccess : LoadBuild(path, track)
+            else MitamaSet
+                LoadFunction -> SaveDataAccess : LoadMitamaSet(path, track)
+            end
 
-        SaveDataAccess -> JsonDataAccess : GetVersion(json)
-        JsonDataAccess -> JsonParser : Parse(json)
-        JsonParser --> JsonDataAccess : Dictionary<string, object>
+            SaveDataAccess -> JsonDataAccess : ReadText(path)
+            JsonDataAccess -> JsonFile : UTF-8で読込
+            JsonFile --> JsonDataAccess : JSON文字列
+            JsonDataAccess --> SaveDataAccess : json
 
-        opt Versionプロパティあり
-            JsonDataAccess -> JsonObjectConverter : ConvertTo(value, typeof(int))
-            JsonObjectConverter --> JsonDataAccess : Version
-        end
-
-        JsonDataAccess --> SaveDataAccess : sourceVersion（未指定時は1）
-
-        alt 保存Version > 現行Version
-            SaveDataAccess --> MainForm : NotSupportedException
-        else 保存Version < 現行Version
-            SaveDataAccess -> Migrator : Migrate(json, currentVersion, sourceVersion)
-            Migrator -> JsonParser : Parse(json)
-            JsonParser --> Migrator : Dictionary<string, object>
-            Migrator -> Migrator : Versionに応じたデータ構造の変換
-            Migrator -> MigrationWriter : Write(root)
-            MigrationWriter --> Migrator : 移行後JSON文字列
-            Migrator --> SaveDataAccess : 移行後JSON文字列
-        end
-
-        opt Version確認・移行が成功
-            SaveDataAccess -> JsonDataAccess : Deserialize<SaveDataFile<T>>(json)
+            SaveDataAccess -> JsonDataAccess : GetVersion(json)
             JsonDataAccess -> JsonParser : Parse(json)
-            JsonParser --> JsonDataAccess : JSON解析結果
-            JsonDataAccess -> JsonObjectConverter : ConvertTo(value, typeof(SaveDataFile<T>))
-            JsonObjectConverter --> JsonDataAccess : SaveDataFile<T>
-            JsonDataAccess --> SaveDataAccess : SaveDataFile<T>
-            SaveDataAccess --> MainForm : file.Data
-        end
-    end
+            JsonParser --> JsonDataAccess : Dictionary<string, object>
 
-    group InputModel生成・適用前検証
-        alt Build
-            MainForm -> MainForm : data != null を確認
-            MainForm -> MitamaSetConverter : ToInputModel(data.MitamaSet)
-            MitamaSetConverter --> MainForm : MitamaSetInputModel
-            MainForm -> MainForm : validateBuildShikigami(ShikigamiName)
-        else MitamaSet
-            MainForm -> MitamaSetConverter : ToInputModel(data)
-            MitamaSetConverter --> MainForm : MitamaSetInputModel
-        end
-        MainForm -> MainForm : inputModel != null を確認
-        MainForm -> InputValidator : Validate(inputModel, controls...)
-        InputValidator --> MainForm : 検証完了
-    end
+            opt Versionプロパティあり
+                JsonDataAccess -> JsonObjectConverter : ConvertTo(value, typeof(int))
+                JsonObjectConverter --> JsonDataAccess : Version
+            end
 
-    group UI適用（applySaveDataWithRollback）
-        MainForm -> MainForm : 現在のInputModel・式神・レア度を退避
-        alt Build
-            MainForm -> MainForm : applyShikigami(ShikigamiName)
+            JsonDataAccess --> SaveDataAccess : sourceVersion（未指定時は1）
+
+            alt 保存Version > 現行Version
+                SaveDataAccess --> LoadFunction : NotSupportedException
+            else 保存Version < 現行Version
+                SaveDataAccess -> Migrator : Migrate(json, currentVersion, sourceVersion)
+                Migrator -> JsonParser : Parse(json)
+                JsonParser --> Migrator : Dictionary<string, object>
+                Migrator -> Migrator : Versionに応じたデータ構造の変換
+                Migrator -> MigrationWriter : Write(root)
+                MigrationWriter --> Migrator : 移行後JSON文字列
+                Migrator --> SaveDataAccess : 移行後JSON文字列
+            else 保存Version == 現行Version
+                SaveDataAccess -> SaveDataAccess : マイグレーション不要
+            end
+
+            opt Version確認・移行が成功
+                SaveDataAccess -> JsonDataAccess : Deserialize<SaveDataFile<T>>(json)
+                JsonDataAccess -> JsonParser : Parse(json)
+                JsonParser --> JsonDataAccess : JSON解析結果
+                JsonDataAccess -> JsonObjectConverter : ConvertTo(value, typeof(SaveDataFile<T>))
+                JsonObjectConverter --> JsonDataAccess : SaveDataFile<T>
+                JsonDataAccess --> SaveDataAccess : SaveDataFile<T>
+                SaveDataAccess --> LoadFunction : file.Data
+            end
         end
-        MainForm -> InputModelApplicator : Apply(inputModel, controls...)
-        alt UI適用成功
-            InputModelApplicator --> MainForm : 完了
-        else UI適用中に例外
-            MainForm -> MainForm : 式神・レア度・InputModelの復元を試行
-            note right of MainForm
-                復元失敗時はエラーをログに記録する。
-                元の適用例外は再送出する。
+
+        group InputModel生成・適用前検証
+            alt Build
+                LoadFunction -> LoadFunction : data != null を確認
+                LoadFunction -> MitamaSetConverter : ToInputModel(data.MitamaSet)
+                MitamaSetConverter --> LoadFunction : MitamaSetInputModel
+                LoadFunction -> LoadFunction : inputModel != null を確認
+                LoadFunction -> ShikigamiSelectionFunction : ValidateBuildShikigami(ShikigamiName)
+                ShikigamiSelectionFunction --> LoadFunction : 検証完了
+                LoadFunction -> MitamaInputOperator : ValidateInputModel(inputModel)
+                MitamaInputOperator -> InputValidator : Validate(inputModel, controls...)
+                InputValidator --> MitamaInputOperator : 検証完了
+                MitamaInputOperator --> LoadFunction : 検証完了
+            else MitamaSet
+                LoadFunction -> MitamaSetConverter : ToInputModel(data)
+                MitamaSetConverter --> LoadFunction : MitamaSetInputModel
+                LoadFunction -> LoadFunction : inputModel != null を確認
+                LoadFunction -> MitamaInputOperator : ValidateInputModel(inputModel)
+                MitamaInputOperator -> InputValidator : Validate(inputModel, controls...)
+                InputValidator --> MitamaInputOperator : 検証完了
+                MitamaInputOperator --> LoadFunction : 検証完了
+            end
+        end
+
+        LoadFunction --> MainForm : inputModel（Build時はshikigamiNameも）
+        MainForm -> MainForm : Logger.Info("SaveData.Load", "Validated")
+        MainForm -> ApplyFunction : Apply(loadType, shikigamiName, inputModel)
+
+        group applyWithRollback
+            ApplyFunction -> ApplyFunction : 現在のInputModel・式神・レア度を退避
+
+            note over ApplyFunction
+                Buildの場合は式神選択適用後に御魂入力を適用する。
+                MitamaSetの場合は御魂入力のみ適用する。
+                UI適用中に例外が発生した場合、後続の正常処理は実行されず
+                ロールバックを試行する。
             end note
-        end
-    end
 
-    alt 読込処理成功
-        MainForm -> MainForm : loadSucceeded = true
-    else 読込処理で例外
-        MainForm -> MainForm : エラーログ出力 / MessageBox表示
+            group try UI適用
+                opt Build
+                    ApplyFunction -> ShikigamiSelectionFunction : ApplyShikigami(shikigamiName)
+                    ShikigamiSelectionFunction --> ApplyFunction : 完了
+                end
+                ApplyFunction -> MitamaInputOperator : ApplyInputModel(inputModel)
+                MitamaInputOperator -> InputModelApplicator : Apply(inputModel, controls...)
+                InputModelApplicator --> MitamaInputOperator : 完了
+                MitamaInputOperator --> ApplyFunction : 完了
+            end
+
+            alt UI適用中に例外
+                note over ApplyFunction
+                    ApplyShikigamiまたはApplyInputModelの例外を捕捉する。
+                    例外発生時点以降の正常処理は実行されない。
+                end note
+                ApplyFunction -> ApplyFunction : 式神・レア度・InputModelの復元を試行
+                alt ロールバック成功
+                    ApplyFunction -> ApplyFunction : ロールバック完了ログ出力
+                    ApplyFunction --> MainForm : 元の適用例外を再送出
+                else ロールバック失敗
+                    ApplyFunction -> ApplyFunction : ロールバック失敗ログ出力
+                    ApplyFunction --> MainForm : SaveDataRollbackExceptionを送出
+                end
+            else 例外なし
+                ApplyFunction --> MainForm : 完了
+            end
+        end
     end
 
     MainForm -> MainForm : setOperationState(IDLE)（finally）
-    opt loadSucceeded == true
+    note right of MainForm
+        正常終了・例外終了の両方で実行される。
+    end note
+
+    alt 正常終了（Load/Applyの例外なし）
         MainForm -> MainForm : markCalculationResultDirty()
+        MainForm -> MainForm : Logger.Info("SaveData.Load", "Completed")
+        MainForm --> User : 読込処理終了
+    else 例外発生（Load/Applyから伝播）
+        alt SaveDataRollbackException（ロールバック失敗）
+            MainForm -> MainForm : CalculationResultFunction.Invalidate()
+            opt 計算結果が存在した
+                MainForm -> MainForm : Logger.Warning("Calculation.Result", "Invalidated")
+            end
+            MainForm -> MainForm : Logger.Error("SaveData.Load", "Failed", Outcome=RollbackFailed)
+        else その他の例外
+            MainForm -> MainForm : Logger.Error("SaveData.Load", "Failed")
+        end
+        MainForm -> MainForm : MessageBox表示
+        MainForm --> User : 読込処理終了
     end
-    MainForm --> User : 読込処理終了
 end
 
 @enduml
