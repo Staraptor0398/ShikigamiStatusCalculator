@@ -2,212 +2,240 @@
 
 ## 1. 目的と適用範囲
 
-本書は、ShikigamiAppのGuiにおけるステータス計算結果の生成、保持、破棄、Dirty / Clean状態、計算結果詳細表示、およびCalculationSnapshot保存可否を定義する。
+本書は、ShikigamiAppのGuiにおける計算結果の生成・保持・破棄、Dirty / Clean状態、結果詳細表示、およびCalculationSnapshot保存可否を定義する。
 
-対象は主に`MainForm`の計算・入力変更・CLEAR・結果表示・保存機能である。計算アルゴリズム自体やSaveDataのファイル形式は対象外とする。
+計算処理は`MainForm`から`CalculationFunction`へ、結果・Dirty状態の管理は`CalculationResultFunction`へ分離されている。対象は、これらのFunction、関連Operator、MainFormのイベント処理、およびSaveDataとの接点である。計算式そのもの、SaveDataのファイル形式、一般的な画面配置は対象外とする。
+
+**照合基準：** 2026-11-21時点のmaster `8e494fe76974ba4ae6d3b65d7a70dc393e8c76ec`。
 
 ## 2. 基本方針
 
-- 計算は計算ボタンの押下時に実行する。入力変更による自動再計算は行わない。
-- MainFormは直近に正常終了した計算結果を保持する。
-- 入力変更時には、保持している計算結果と画面に表示済みの結果を消去しない。
-- 次の計算が正常終了すると、保持している結果を新しい結果で置き換える。
-- CLEARを確定した場合は、入力内容、画面上の計算結果、保持している計算結果を消去する。
-- Dirty / Clean状態は、計算結果の存在有無とは独立して管理する。
+- 計算は計算ボタン押下時に実行する。入力変更時に自動再計算は行わない。
+- 直近の計算結果とDirty / Clean状態は`CalculationResultFunction`が保持する。
+- 通常の入力変更では、前回結果と表示済みの結果を破棄しない。Dirty化によりSnapshot保存可否のみを変更する。
+- 新しい計算が成功すると保持結果を置き換える。式神選択時の計算成功でClean化する。
+- 式神未選択でも御魂のみの計算は可能であり、成功時にもDirty / Clean状態は変更しない。
+- CLEAR確定時は入力・結果表示・保持結果を消去し、Dirty状態にする。
+- SaveData読込の適用失敗でロールバックが成功した場合は前回結果を保持する。ロールバック自体が失敗した場合は保持結果を無効化する。
 
 ## 3. 管理状態
 
-### 3.1 計算結果の保持
+### 3.1 計算結果
 
-`MainForm.mLastCalculationResult`で直近の計算結果を管理する。
+`CalculationResultFunction.mLastCalculationResult`で直近の計算結果を保持し、`LastCalculationResult`で参照する。
 
 | 値 | 意味 |
 |---|---|
-| `null` | 保持している計算結果が存在しない |
+| `null` | 保持中の計算結果が存在しない |
 | `null`以外 | 直近の計算結果が存在する |
 
-結果詳細表示の可否は、この値の有無で判定する。
+MainFormは保持結果を直接フィールドとして管理しない。`btnResultView_Click()`は`LastCalculationResult`を参照し、結果の有無だけで詳細表示可否を判定する。
 
-### 3.2 Dirty / Clean状態
+DEBUGビルドの`MainForm.mLastCalculationTestSource`はテストソース出力用の別状態であり、通常の計算結果保持状態とは区別する。
 
-`MainForm.mIsCalculationResultDirty`で管理する。
+### 3.2 Dirty / Clean
+
+`CalculationResultFunction.mIsCalculationResultDirty`で管理する。
 
 | 状態 | 値 | 意味 |
 |---|---|---|
-| Dirty | `true` | CalculationSnapshot保存に使用できない状態 |
-| Clean | `false` | 計算結果が存在する場合にCalculationSnapshot保存へ使用できる状態 |
+| Dirty | `true` | 保持結果をCalculationSnapshot保存に使用できない |
+| Clean | `false` | 保持結果が存在すればCalculationSnapshot保存が可能 |
 
-Dirtyは単純に「計算結果が古い」ことを意味しない。御魂のみの計算では、新しい計算結果を生成してもClean化しないためである。
+Dirtyは単純に「表示結果が古い」ことを意味しない。御魂のみの計算では結果が更新されてもClean化されない。Dirty状態で入力を元へ戻しても自動的にCleanに復帰しない。
 
-入力変更後に値を元へ戻しても、自動的にCleanへ復帰しない。Clean化するのは、式神が選択された状態で計算が正常終了した場合である。
+`CalculationResultFunction.MarkDirty(source)`は、抑止条件が成立した場合は何も行わない。抑止されなければSaveボタンの有効状態を更新し、CleanからDirtyへ変わるときだけ状態を変更して`Calculation.Result.DirtyChanged`を記録する。すでにDirtyなら状態変更ログは重複出力しない。
+
+`MarkClean()`はDirtyフラグを`false`にする。`Invalidate()`はDirty化・保持結果破棄・表示消去をまとめて実行する。
 
 ### 3.3 初期状態
 
 | 項目 | 状態 |
 |---|---|
-| `mLastCalculationResult` | `null` |
-| `mIsCalculationResultDirty` | `true` |
+| `CalculationResultFunction.LastCalculationResult` | `null` |
+| Dirty状態 | `true` |
 | 計算結果表示 | 空 |
 | 計算結果詳細表示 | 不可 |
 | CalculationSnapshot保存 | 不可 |
 
 ## 4. 計算実行
 
-### 4.1 入力検証
+### 4.1 責務と入力検証
 
-計算ボタン押下時、御魂入力からInputModelを作成して検証する。検証エラーの場合は計算せず、エラー処理を行う。保持している前回の計算結果は破棄しない。
+`MainForm.btnCalc_Click()`は操作の開始・終了ログ、`CalculationFunction.TryExecute()`の呼び出し、計算結果の反映、例外通知を担当する。
+
+`CalculationFunction.TryExecute()`は、`MitamaInputOperator.CreateInputModel()`、`CalculationInputValidator.Validate()`、`CalculationInputValidationErrorHandler.Handle()`、DTOへの変換、`CalculationGateway.Calculate()`を順に実行する。式神未選択時の基礎ステータスには新規`StatusDto`を使用する。DEBUGビルドでは`CalculationTestSourceConverter`でテストソースも作成する。
+
+入力検証で拒否された場合、`TryExecute()`は`false`を返す。`MainForm`はそのまま終了し、保持中の前回結果を置き換えない。`Calculation.ValidationRejected`が記録され、`Calculation.Completed`は記録されない。
 
 ### 4.2 計算成功時
 
-入力検証を通過した場合、選択中の式神の基礎ステータスと御魂セットを使用して計算する。式神未選択時は空の`StatusDto`を基礎ステータスとして使用する。
+`TryExecute()`が成功した場合、`MainForm`は次の順に実行する。
 
-計算が正常終了した場合は次の処理を行う。
+1. `CalculationResultFunction.SetResult()`で計算結果を保持する。
+2. DEBUGビルドでは`mLastCalculationTestSource`を更新する。
+3. `updateSaveButtonEnabled("Calculation")`でSaveボタンを再評価する。
+4. 式神が選択されていた場合に限り`CalculationResultFunction.MarkClean()`を呼び出す。
+5. `CalculationResultFunction.ShowResult()`で計算結果を画面へ反映する。
+6. `Calculation.Completed`を記録する。
 
-1. `mLastCalculationResult`を新しい計算結果に更新する。
-2. Saveボタンの有効状態を更新する。
-3. 式神が選択されている場合のみ、`markCalculationResultClean()`でClean化する。
-4. 計算結果をMainFormに表示する。
+`ShowResult()`は`CalculationResultOperator`を通じて御魂のみの集計欄を更新し、式神選択中は最終ステータスも表示する。式神未選択時の最終ステータス欄は空にする。
+
+**実装上の順序に注意：** Saveボタンの有効状態更新は`MarkClean()`より前に呼び出される。SaveボタンのEnabled状態とSnapshot保存可否を同一の判定として扱わない。
 
 ### 4.3 御魂のみの計算
 
-式神未選択でも、入力が有効なら計算を実行できる。計算結果は保持・表示され、結果詳細表示にも使用できる。ただし、Dirty状態は変更せず、CalculationSnapshot保存は可能にしない。
+式神未選択でも、有効な御魂入力があれば計算結果を生成・保持・表示できる。結果詳細表示も可能である。`MarkClean()`は実行されないため、Dirty状態は変更されず、通常の初期Dirty状態からの操作ではSnapshot保存不可のままである。
 
-### 4.4 計算中の例外
+### 4.4 例外と保持結果
 
-入力モデル生成、検証、DTO変換、Gatewayによる計算、およびDEBUGビルドでの`CalculationTestSource`生成は同じ`try`ブロック内で実行する。これらの処理で例外が発生した場合、エラーをログ出力してメッセージを表示し、後続の通常完了処理は実行しない。
+現行`btnCalc_Click()`では、`TryExecute()`だけでなく、その後の`SetResult()`、Saveボタン更新、Clean化、結果表示も同じ`try`内で実行し、例外は`Calculation.Failed`として記録してエラーダイアログを表示する。
 
-`mLastCalculationResult`およびDEBUGビルドの`mLastCalculationTestSource`への代入は、`try`ブロックを正常に抜けた後に行う。そのため、上記の例外発生時には、保持中の前回計算結果を置き換えない。
+- `TryExecute()`の途中で例外が発生した場合、`SetResult()`へ到達しないため、通常は前回結果を保持する。
+- `SetResult()`実行後にSaveボタン更新や結果表示などで例外が発生した場合、すでに保持結果が更新されている可能性がある。
+- 後続処理を含めた一括ロールバックは実装していない。例外発生時に前回結果を必ず保持すると解釈してはならない。
 
-一方、代入後に行うSaveボタン更新、Clean化、結果表示はこの`try`ブロックの外側にある。これらの後続処理まで含めた一括ロールバックは実装していない。
+## 5. 入力変更と状態遷移
 
-## 5. 入力変更
+### 5.1 Dirty化の契機
 
-### 5.1 基本動作
+入力変更は`MitamaInputFunction`や`ShikigamiSelectionFunction`からMainFormの`markCalculationResultDirty(source)`を経由し、`CalculationResultFunction.MarkDirty(source)`に通知される。
 
-計算に関係する入力が変更された場合、`markCalculationResultDirty()`を呼び出す。入力変更だけを理由に、次の処理は行わない。
-
-- 自動再計算
-- 保持中の計算結果の破棄
-- MainFormの前回計算結果表示の消去
-- 結果詳細表示の禁止
-
-### 5.2 主なDirty化契機
+主な契機：
 
 - 式神の選択変更・選択解除
-- 御魂のメイン・サブステータス変更
-- 2セット効果・固有効果の変更
-- 式神データの再読み込みや編集など、入力へ影響する操作
-- Build / MitamaSetの読み込み処理
-- CLEAR
+- 御魂メイン／サブステータスとセット効果・固有効果の変更
+- 式神データの再読み込み・登録／編集後の選択反映
+- Build／MitamaSetの読込成功
+- CLEAR確定
 
-Dirty化は、計算時と現在の入力値を比較する方式ではなく、入力変更イベントや各操作から明示的に呼び出す方式である。
+入力変更だけで自動再計算、保持結果破棄、表示消去、結果詳細表示禁止は行わない。
 
-すでにDirtyの場合は状態を維持する。CleanからDirtyへ遷移した場合は状態変更ログを出力する。
+### 5.2 操作中のDirty化抑止
+
+MainFormは`MainFormOperationState`で`IDLE`、`LOADING`、`SAVING`、`CLEARING`等の操作状態を扱う。`CalculationResultFunction`へ渡す抑止条件は`LOADING`または`CLEARING`である。
+
+これによりLoad／CLEARのUI適用中に発火する入力変更イベントではDirty化を抑え、**操作終了後**にMainFormから明示的にDirty化する。Saveボタンの更新も別途操作状態によって制御する。
+
+### 5.3 状態遷移の一覧
+
+| 操作・状況 | 保持結果 | Dirty / Clean | 詳細表示 | Snapshot保存 |
+|---|---|---|---|---|
+| 起動直後 | なし | Dirty | 不可 | 不可 |
+| 式神ありで計算成功 | 新結果あり | Clean | 可 | 可 |
+| 御魂のみで計算成功（通常状態） | 新結果あり | Dirty維持 | 可 | 不可 |
+| Cleanから入力変更 | 前回結果を保持 | Dirty | 可 | 不可 |
+| Dirtyから入力を元に戻す | 前回結果を保持 | Dirty維持 | 可 | 不可 |
+| 式神ありで再計算成功 | 新結果あり | Clean | 可 | 可 |
+| SaveData読込成功 | 前回結果を保持 | Dirty | 結果があれば可 | 不可 |
+| SaveData適用失敗・ロールバック成功 | 前回結果を保持 | 直前の状態を維持 | 結果があれば可 | 直前の状態による |
+| SaveData適用失敗・ロールバック失敗 | 破棄 | Dirty | 不可 | 不可 |
+| CLEAR確定 | 破棄 | Dirty | 不可 | 不可 |
+
+※ 例外発生時の一部状態が更新済みとなる可能性は4.4節に従う。上表はそれぞれの記載条件における通常の制御経路を表す。
 
 ## 6. 計算結果詳細表示
 
-`btnResultView_Click()`は`mLastCalculationResult`の有無のみで表示可否を判定する。Dirty / Clean状態は参照しない。
+`MainForm.btnResultView_Click()`は`CalculationResultFunction.LastCalculationResult`を取得する。
 
-- 結果がある場合：保持している計算結果を使用して`ResultViewForm`を開く。
-- 結果がない場合：`先に計算を実行してください。`と表示し、結果詳細画面は開かない。
+- 結果あり：`ResultViewForm`へ渡してモーダル表示する。
+- 結果なし：`先に計算を実行してください。`と通知して開かない。
 
-入力変更後でも、前回の計算結果を詳細表示できる。
+Dirty / Cleanの状態は詳細表示の判定には使わない。入力変更後でも、前回結果を閲覧できる。
 
 ## 7. CLEAR
 
-### 7.1 実行確認
+### 7.1 キャンセル
 
-CLEARボタン押下時、`入力内容と計算結果をクリアします。よろしいですか？`と確認する。「いいえ」の場合は何も変更しない。
+CLEARボタン押下時に`入力内容と計算結果をクリアします。よろしいですか？`と確認する。`Yes`以外では状態を変更しない。
 
-### 7.2 確定時の処理
+### 7.2 確定
 
-1. `clearInputs()`で式神選択・御魂・セット効果・固有効果・結果表示欄を初期化する。
-2. `deleteLastCalculationResult()`で`mLastCalculationResult`を`null`にする。DEBUGビルドでは`mLastCalculationTestSource`も`null`にする。
-3. `markCalculationResultDirty()`でDirty状態にする。
+`MainForm.btnClear_Click()`は`MainForm.Clear.Started`を記録し、操作状態を`CLEARING`に変更して以下を実行する。
 
-入力初期化と保持中の計算結果の破棄は責務を分離し、CLEARイベントハンドラからそれぞれ明示的に実行する。
+1. `clearInputs()`で式神選択、御魂・効果入力、結果表示欄を初期化する。内部では`ShikigamiSelectionOperator.ClearShikigamiSelection()`、`MitamaInputFunction.Clear()`、`CalculationResultFunction.ClearTexts()`を呼び出す。
+2. `deleteLastCalculationResult()`から`CalculationResultFunction.DeleteResult()`を呼び出し、保持結果を破棄する。DEBUGビルドではテストソースも破棄する。
+3. 操作状態を`IDLE`に戻した後、`markCalculationResultDirty()`でDirty化する。
+4. `MainForm.Clear.Completed`を記録する。
 
-### 7.3 CLEAR後の状態
+失敗時は`MainForm.Clear.Failed`を記録し、例外を再送出する。CLEAR全工程を元に戻すロールバックはない。
 
-| 項目 | 状態 |
-|---|---|
-| 式神選択 | なし |
-| 御魂・効果入力 | 初期状態 |
-| 計算結果表示 | 空 |
-| `mLastCalculationResult` | `null` |
-| `mIsCalculationResultDirty` | `true` |
-| 計算結果詳細表示 | 不可 |
-| CalculationSnapshot保存 | 不可 |
-
-## 8. SaveData保存との関係
+## 8. SaveDataとの関係
 
 ### 8.1 CalculationSnapshot保存条件
 
-`canSaveCalculationSnapshot()`は次の条件を返す。
+`CalculationResultFunction.CanSaveCalculationSnapshot()`は次の条件を判定する。
 
 ```csharp
 return mLastCalculationResult != null && !mIsCalculationResultDirty;
 ```
 
-計算結果が存在し、かつCleanである場合に限りSnapshot保存を選択可能とする。
+ただし、実際の保存可否には式神選択と保存種別の前提条件も必要である。`SaveDataSaveFunction.Save()`はSnapshot保存時に式神が選択されていることと`CanSaveCalculationSnapshot()`を再検証する。
 
-### 8.2 Saveボタンの有効状態
+### 8.2 保存レベル
 
-Saveボタンの有効状態はSnapshot保存可否とは別に判定する。現行実装では、`CalculationInputValidator.Validate(inputModel)`の結果が`NO_EQUIPPED_MITAMA`でなければSaveボタンを有効にする。
+`SaveDataSaveFunction.GetSaveLevel()`は**最初に式神選択状態**を確認する。
 
-### 8.3 保存可能レベル
+| 条件 | 保存レベル | 選択可能な対象 |
+|---|---|---|
+| 式神未選択 | `MITAMA_SET_ONLY` | MitamaSet |
+| 式神選択済みかつSnapshot保存可能 | `SNAPSHOT_AVAILABLE` | MitamaSet、Build、CalculationSnapshot |
+| 式神選択済み・上記以外 | `BUILD_AVAILABLE` | MitamaSet、Build |
 
-| 保存レベル | 選択可能な保存対象 |
+この順序により、式神未選択時にSnapshot保存レベルを返さない。
+
+### 8.3 SaveボタンとLoadボタンの有効状態
+
+`SaveDataButtonFunction.Update()`が操作状態と入力検証結果に基づいてボタンを制御する。
+
+- `IDLE`以外：LoadボタンとSaveボタンを無効化する。
+- `IDLE`：Loadボタンを有効化し、Saveボタンは`CalculationInputValidator.Validate()`の結果が`NO_EQUIPPED_MITAMA`でなければ有効化する。
+
+SaveボタンのEnabled状態は、特定の保存形式（特にCalculationSnapshot）が保存可能であることを保証しない。
+
+### 8.4 SaveData読込成功・失敗時の計算結果
+
+`MainForm.btnLoad_Click()`は、`SaveDataLoadFunction.Load()`による読込・検証後、`SaveDataApplyFunction.Apply()`で入力を画面へ適用する。適用中は`LOADING`でDirty化を抑止し、成功後に`IDLE`へ戻して明示的にDirty化する。通常の成功経路では前回の計算結果を保持したまま、Snapshot保存不可となる。
+
+適用失敗時、`SaveDataApplyFunction`は直前の入力モデル・式神選択・レアリティ条件の復元を試みる。
+
+- **ロールバック成功：** 読込全体は失敗として報告するが、保持計算結果を`Invalidate()`しない。通常、操作前の計算結果状態を保つ。
+- **ロールバック失敗：** `SaveDataRollbackException`を受けたMainFormが`CalculationResultFunction.Invalidate()`を呼び、Dirty化、保持結果破棄、表示消去を行う。結果が存在した場合には`Calculation.Result.Invalidated`を記録する。DEBUGテストソースも破棄する。
+
+## 9. 関連実装と責務
+
+| 対象 | 責務・API |
 |---|---|
-| `MITAMA_SET_ONLY` | MitamaSet |
-| `BUILD_AVAILABLE` | MitamaSet、Build |
-| `SNAPSHOT_AVAILABLE` | MitamaSet、Build、CalculationSnapshot |
+| `Gui/Form/MainForm.cs` | `btnCalc_Click()`、`btnResultView_Click()`、`btnClear_Click()`、SaveData操作境界、ログ・エラー通知 |
+| `Gui/Function/CalculationFunction.cs` | `TryExecute()`：入力モデル作成・検証・変換・計算 |
+| `Gui/Function/CalculationResultFunction.cs` | `LastCalculationResult`、`SetResult()`、`MarkDirty()`、`MarkClean()`、`CanSaveCalculationSnapshot()`、`ShowResult()`、`ClearTexts()`、`DeleteResult()`、`Invalidate()` |
+| `Gui/Operator/CalculationResultOperator.cs` | 計算結果のTextBox表示・クリア |
+| `Gui/Function/MitamaInputFunction.cs` | 御魂入力イベントのDirty通知と入力クリア |
+| `Gui/Function/ShikigamiSelectionFunction.cs` | 式神選択・再読み込みとDirty通知 |
+| `Gui/Function/SaveDataButtonFunction.cs` | Save / LoadボタンのEnabled制御 |
+| `Gui/Function/SaveDataSaveFunction.cs` | 保存レベル判定・保存種別前提条件の検証 |
+| `Gui/Function/SaveDataApplyFunction.cs` | 読込入力のGui適用、失敗時のロールバック |
 
-`getSaveDataSaveLevel()`は以下の優先順で判定する。
+## 10. テスト観点
 
-1. `canSaveCalculationSnapshot()`が真なら`SNAPSHOT_AVAILABLE`。
-2. それ以外で式神が選択されていれば`BUILD_AVAILABLE`。
-3. それ以外は`MITAMA_SET_ONLY`。
+- 計算成功後に結果を保持・表示し、詳細画面を開けること。
+- 入力変更後も保持結果と画面表示が維持され、Snapshot保存だけが不可になること。
+- 入力を元に戻すだけではCleanに復帰しないこと。
+- 式神選択時の計算成功でClean化し、Snapshot保存可能となること。
+- 式神未選択時の御魂のみ計算ではDirtyを変更せず、結果詳細表示は可能であること。
+- 入力検証拒否時に前回結果を破棄せず、`ValidationRejected`として記録すること。
+- CLEARキャンセル時に入力・結果を維持し、確定時は入力・結果表示・保持結果・DEBUGテストソースを破棄すること。
+- SaveData読込成功時に前回結果を保持したままDirty化すること。
+- SaveData適用失敗時のロールバック成功では計算結果を維持すること。
+- SaveDataロールバック失敗では計算結果を破棄し、結果詳細表示・Snapshot保存が不可になること。
+- SaveボタンのEnabled状態とSnapshot保存条件が別々に判定されること。
 
-## 9. 状態遷移
+上記は現行実装の契約から抽出したテスト観点であり、すべてのケースについて個別テストの存在やPASSを保証するものではない。
 
-| 操作・状況 | 計算結果 | Dirty / Clean | 詳細表示 | Snapshot保存 |
-|---|---|---|---|---|
-| 起動直後 | なし | Dirty | 不可 | 不可 |
-| 式神ありで計算成功 | 新結果あり | Clean | 可 | 可 |
-| 御魂のみで計算成功 | 新結果あり | Dirty維持 | 可 | 不可 |
-| Clean状態から入力変更 | 前回結果を保持 | Dirty | 可 | 不可 |
-| Dirty状態から入力を元に戻す | 前回結果を保持 | Dirty維持 | 可 | 不可 |
-| 入力変更後に式神ありで再計算成功 | 新結果あり | Clean | 可 | 可 |
-| CLEAR確定 | なし | Dirty | 不可 | 不可 |
+## 11. 関連資料
 
-※「御魂のみで計算成功」のDirty維持は、通常の画面操作による状態を前提とする。実装上、御魂のみの計算処理自体はDirty状態を変更しない。
-
-## 10. 関連実装
-
-| 機能 | 主な実装 |
-|---|---|
-| 計算実行 | `MainForm.btnCalc_Click()` |
-| Clean化 | `MainForm.markCalculationResultClean()` |
-| Dirty化 | `MainForm.markCalculationResultDirty()` |
-| 結果破棄 | `MainForm.deleteLastCalculationResult()` |
-| CLEAR | `MainForm.btnClear_Click()` |
-| 入力初期化 | `MainForm.clearInputs()` |
-| 結果詳細表示 | `MainForm.btnResultView_Click()` |
-| Snapshot保存可否 | `MainForm.canSaveCalculationSnapshot()` |
-| 保存レベル判定 | `MainForm.getSaveDataSaveLevel()` |
-| Saveボタン有効判定 | `MainForm.updateSaveButtonEnabled()` |
-| 保存種別の表示 | `SaveDataSaveDialog.initializeSaveTypeComboBox()` |
-
-## 11. テスト観点
-
-- 計算成功後に結果詳細を表示できること。
-- 入力変更後も前回の計算結果を詳細表示できること。
-- 入力変更後はSnapshot保存対象から除外されること。
-- 入力を元へ戻しただけではClean化されないこと。
-- 式神ありの再計算成功後にSnapshot保存が可能になること。
-- 御魂のみの計算成功後に結果詳細を表示でき、Snapshot保存はできないこと。
-- CLEAR確定後に結果詳細を開こうとすると`先に計算を実行してください。`が表示されること。
-- CLEARキャンセル時は入力・結果が維持されること。
-
-関連するScenario Runnerのシナリオとして、`10_CalculationDetailAfterClear.scenario`および`CHECK SAVEDATA LEVEL`を利用するテストがある。その他のケースは既存シナリオの確認または追加が必要である。
+- `../Logger/LoggerSpecification.md`：Gui診断ログの共通仕様
+- `../Logger/LogEventDefinition.md`：Calculation、Calculation.Result、SaveData、MainForm.Clearのイベント定義
+- `../../Diagram/Calculation/calculation_sequence.wsd`：計算処理シーケンス図（図の実装同期は別途確認）
+- `../../Diagram/SaveData/load_sequence.wsd`：SaveData読込シーケンス図
+- `../../Diagram/SaveData/save_sequence.wsd`：SaveData保存シーケンス図
