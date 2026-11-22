@@ -7,6 +7,12 @@ actor ユーザー as User
 
 participant MainForm
 
+box "Gui"
+   participant CalculationFunction
+   participant CalculationResultFunction
+   participant CalculationResultOperator
+end box
+
 box "Gateway"
    participant CalculationGateway
    participant CalculationResultConverter
@@ -17,21 +23,27 @@ box "Core"
 end box
 
 User -> MainForm : 計算ボタン押下
+activate MainForm
 
-MainForm -> MainForm : MitamaSetInputModelFactory.Create(...)
-MainForm -> MainForm : CalculationInputValidator.Validate(inputModel)
+MainForm -> CalculationFunction : TryExecute()
+activate CalculationFunction
+
+CalculationFunction -> CalculationFunction : 入力モデル作成
+CalculationFunction -> CalculationFunction : 入力検証
 
 alt 入力不正
-   MainForm -> MainForm : Validationエラー表示
+   CalculationFunction -> CalculationFunction : Validationエラー表示/ログ記録
+   CalculationFunction --> MainForm : false
+   deactivate CalculationFunction
    MainForm --> User : 計算せず終了
+   deactivate MainForm
 else 入力正常
-   MainForm -> MainForm : getSelectedShikigamiStatus()
-   note right of MainForm
+   CalculationFunction -> CalculationFunction : 基礎ステータス取得/御魂DTO変換
+   note right of CalculationFunction
        式神未選択時は空のStatusDtoを使用する。
    end note
-   MainForm -> MainForm : MitamaSetConverter.ToDto(inputModel)
 
-   MainForm -> CalculationGateway : Calculate(baseStatus, mitamaSet)
+   CalculationFunction -> CalculationGateway : Calculate(baseStatus, mitamaSet)
    activate CalculationGateway
 
    note right of CalculationGateway
@@ -55,26 +67,40 @@ else 入力正常
    CalculationResultConverter --> CalculationGateway : CalculationResultDto
    deactivate CalculationResultConverter
 
-   CalculationGateway --> MainForm : CalculationResultDto
+   CalculationGateway --> CalculationFunction : CalculationResultDto
    deactivate CalculationGateway
 
-   MainForm -> MainForm : mLastCalculationResultを更新
-   MainForm -> MainForm : updateSaveButtonEnabled()
+   CalculationFunction --> MainForm : true, calculationResult
+   deactivate CalculationFunction
+
+   MainForm -> CalculationResultFunction : SetResult(calculationResult)
+   MainForm -> MainForm : updateSaveButtonEnabled("Calculation")
 
    opt 式神選択済み
-       MainForm -> MainForm : markCalculationResultClean()
+       MainForm -> CalculationResultFunction : MarkClean()
    end
+
+   MainForm -> CalculationResultFunction : ShowResult()
+   activate CalculationResultFunction
+   CalculationResultFunction -> CalculationResultOperator : SetMitamaOnlyText(...)
+   alt 式神選択済み
+       CalculationResultFunction -> CalculationResultOperator : SetFinalStatsText(...)
+   else 式神未選択
+       CalculationResultFunction -> CalculationResultOperator : SetFinalStatsText("")
+   end
+   CalculationResultFunction --> MainForm
+   deactivate CalculationResultFunction
 
    note right of MainForm
        式神未選択時はDirty状態を変更しない。
        結果は保持・表示できるが、
        CalculationSnapshotは保存不可。
-       計算処理中に例外が発生した場合は、
+       計算処理中または結果反映中に例外が発生した場合は、
        エラーを表示して後続処理を行わない。
    end note
 
-   MainForm -> MainForm : showCalculationResult(mLastCalculationResult)
    MainForm --> User : 計算結果を表示
+   deactivate MainForm
 end
 
 @enduml
