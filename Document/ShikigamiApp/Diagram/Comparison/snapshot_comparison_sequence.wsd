@@ -1,0 +1,191 @@
+@startuml
+title ShikigamiApp Snapshot比較 シーケンス
+
+hide footbox
+
+actor ユーザー as User
+
+participant MainForm
+
+participant SnapshotCompareFileSelectDialog as CompareDialog
+
+box "Gui"
+    participant SnapshotComparisonFunction
+    participant "Gui.Converter.StatusConverter" as GuiStatusConverter
+    participant StatusComparisonResultForm
+end box
+
+participant SaveDataAccess
+
+box "Gateway"
+    participant ComparisonGateway
+    participant "Gateway.Converter.Model.StatusConverter" as GatewayStatusConverter
+    participant StatusComparisonResultMapper
+end box
+
+box "Core"
+    participant ComparisonService
+    participant StatusComparator
+end box
+
+User -> MainForm : 比較ボタン押下
+activate MainForm
+
+MainForm -> CompareDialog : ShowDialog(this)
+activate CompareDialog
+
+note right of CompareDialog
+    比較元・比較先のSnapshotファイルを選択する。
+    OpenFileDialog表示や参照ボタンの詳細操作は省略。
+    両パスが空白でない場合のみ比較ボタンを有効化する。
+end note
+
+alt ダイアログ結果がOKでない（キャンセル等）
+    CompareDialog --> MainForm : Cancel等
+    deactivate CompareDialog
+    MainForm --> User : 比較処理を開始しない
+    deactivate MainForm
+
+else 異なるパスでOK確定
+    note right of CompareDialog
+        比較押下時に同一パス（string.Equals）なら
+        警告を表示してダイアログを継続する（OK確定しない）。
+        異なるパスを指定した場合のみ
+        BaseSnapshotFilePath / TargetSnapshotFilePathを設定してOK確定。
+        ファイル実体の同一性は判定しない。
+    end note
+
+    CompareDialog --> MainForm : OK（比較元/比較先パス）
+    deactivate CompareDialog
+
+    group try Snapshot比較（MainForm.btnCompareResult_Click）
+        MainForm -> MainForm : Logger.Info("Snapshot.Compare", "Started")
+
+        MainForm -> SnapshotComparisonFunction : TryCompare(basePath, targetPath)
+        activate SnapshotComparisonFunction
+
+        SnapshotComparisonFunction -> SnapshotComparisonFunction : outパラメータをnull初期化
+
+        note right of SaveDataAccess
+            LoadSnapshotではJSON読込、Version確認、
+            必要時のマイグレーション、デシリアライズを行い
+            CalculationSnapshotSaveDataを取得する。
+            （JsonDataAccess/JsonParser/SaveDataMigrator等の詳細は省略）
+        end note
+
+        SnapshotComparisonFunction -> SaveDataAccess : LoadSnapshot(basePath)
+        activate SaveDataAccess
+        SaveDataAccess --> SnapshotComparisonFunction : baseSnapshot
+        deactivate SaveDataAccess
+
+        SnapshotComparisonFunction -> SaveDataAccess : LoadSnapshot(targetPath)
+        activate SaveDataAccess
+        SaveDataAccess --> SnapshotComparisonFunction : targetSnapshot
+        deactivate SaveDataAccess
+
+        alt baseSnapshot == null || targetSnapshot == null
+            SnapshotComparisonFunction --> MainForm : SNAPSHOT_NULL
+            deactivate SnapshotComparisonFunction
+
+            MainForm -> MainForm : Logger.Error("Snapshot.Compare", "Failed", "Outcome=SNAPSHOT_NULL")
+            MainForm -> MainForm : エラーメッセージ表示\n「スナップショットデータの読み込みに失敗しました。」
+            MainForm --> User : 比較処理終了
+
+        else 両Snapshotあり
+            SnapshotComparisonFunction -> GuiStatusConverter : ToDto(baseSnapshot.FinalStatus)
+            activate GuiStatusConverter
+            GuiStatusConverter --> SnapshotComparisonFunction : baseStatus
+            deactivate GuiStatusConverter
+
+            SnapshotComparisonFunction -> GuiStatusConverter : ToDto(targetSnapshot.FinalStatus)
+            activate GuiStatusConverter
+            GuiStatusConverter --> SnapshotComparisonFunction : targetStatus
+            deactivate GuiStatusConverter
+
+            alt baseStatus == null || targetStatus == null
+                SnapshotComparisonFunction --> MainForm : STATUS_NULL
+                deactivate SnapshotComparisonFunction
+
+                MainForm -> MainForm : Logger.Error("Snapshot.Compare", "Failed", "Outcome=STATUS_NULL")
+                MainForm --> User : 比較処理終了（MessageBoxなし）
+
+            else 両Status DTOあり
+                SnapshotComparisonFunction -> ComparisonGateway : CompareStatus(baseStatus, targetStatus)
+                activate ComparisonGateway
+
+                ComparisonGateway -> GatewayStatusConverter : toNative(baseStatus)
+                activate GatewayStatusConverter
+                GatewayStatusConverter --> ComparisonGateway : baseNative
+                deactivate GatewayStatusConverter
+
+                ComparisonGateway -> GatewayStatusConverter : toNative(targetStatus)
+                activate GatewayStatusConverter
+                GatewayStatusConverter --> ComparisonGateway : targetNative
+                deactivate GatewayStatusConverter
+
+                ComparisonGateway -> ComparisonService : CompareStatus(baseNative, targetNative)
+                activate ComparisonService
+
+                ComparisonService -> StatusComparator : compare(baseStatus, targetStatus)
+                activate StatusComparator
+
+                note right of StatusComparator
+                    差分は一貫して「比較先 − 比較元」。
+                    対象: 攻撃力, HP, 防御力, 素早さ,
+                    会心率, 会心DMG, 効果命中, 効果抵抗（8項目）。
+                    Additional*は差分計算対象外。
+                end note
+
+                StatusComparator --> ComparisonService : StatusComparisonResult
+                deactivate StatusComparator
+
+                ComparisonService --> ComparisonGateway : StatusComparisonResult
+                deactivate ComparisonService
+
+                ComparisonGateway -> StatusComparisonResultMapper : toDto(result)
+                activate StatusComparisonResultMapper
+                StatusComparisonResultMapper --> ComparisonGateway : StatusComparisonResultDto
+                deactivate StatusComparisonResultMapper
+
+                ComparisonGateway --> SnapshotComparisonFunction : comparisonResult
+                deactivate ComparisonGateway
+
+                SnapshotComparisonFunction -> SnapshotComparisonFunction : base/target SnapshotNameと結果を設定
+                SnapshotComparisonFunction --> MainForm : SUCCESS（baseSnapshotName, targetSnapshotName, comparisonResult）
+                deactivate SnapshotComparisonFunction
+
+                MainForm -> StatusComparisonResultForm : 生成・ShowDialog(this)\n（baseSnapshotName, targetSnapshotName, comparisonResult）
+                activate StatusComparisonResultForm
+
+                StatusComparisonResultForm -> StatusComparisonResultForm : 比較元名・比較先名と8項目差分を表示
+                note right of StatusComparisonResultForm
+                    正の差分は"+"付与、0および負の差分は
+                    通常のToString()表示。
+                    DataGridView構築の詳細は省略。
+                end note
+
+                User -> StatusComparisonResultForm : 閉じる
+                StatusComparisonResultForm --> MainForm : 閉じる（ShowDialog復帰）
+                deactivate StatusComparisonResultForm
+
+                MainForm -> MainForm : Logger.Info("Snapshot.Compare", "Completed")
+                MainForm --> User : 比較結果確認完了
+            end
+        end
+    end
+
+    note over MainForm,SnapshotComparisonFunction
+        MainFormのtry範囲にはStartedログ出力、
+        Snapshot読込、Version確認、マイグレーション、
+        DTO変換、比較計算、結果フォーム表示、
+        Completedログ出力が含まれる。
+        例外発生時はその地点以降の正常処理を中断し、
+        MainFormのcatchでFailedログと汎用エラーメッセージを表示する。
+        比較元読込で例外が発生した場合は比較先読込を実行しない。
+        現行実装にfinallyによる状態復帰処理はない。
+    end note
+
+    deactivate MainForm
+end
+
+@enduml
