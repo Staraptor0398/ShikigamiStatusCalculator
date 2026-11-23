@@ -23,6 +23,13 @@ User -> MainForm : 保存ボタン押下
 
 MainForm -> SaveDataSaveFunction : GetSaveLevel()
 SaveDataSaveFunction --> MainForm : SaveDataSaveLevel
+note right of SaveDataSaveFunction
+  保存可能レベル:
+  式神未選択→MitamaSetのみ
+  式神選択→Build可
+  CanSaveCalculationSnapshot()がtrue→Snapshot可
+end note
+
 MainForm -> SaveDialog : new(式神名, 保存可能レベル)
 MainForm -> SaveDialog : ShowDialog()
 
@@ -31,64 +38,99 @@ alt キャンセル
    MainForm --> User : 保存せず終了
 else OK
    SaveDialog --> MainForm : 保存種別 / ファイルパス
-   MainForm -> MainForm : setOperationState(SAVING)\n(保存・読込ボタン更新)
+   note right of SaveDialog
+     ダイアログ内で保存先未指定の場合はOK確定しない
+     （警告表示して入力継続）
+     既定ファイル名/保存先/フィルタ等の詳細は
+     Markdown仕様書に委ねる
+   end note
 
-   MainForm -> SaveDataSaveFunction : Save(保存種別, ファイルパス)
+   group try [SaveData保存]
+      MainForm -> MainForm : setOperationState(SAVING)\n(保存・読込ボタン更新、状態変更ログ)
 
-   SaveDataSaveFunction -> SaveDataSaveFunction : 前提条件チェック\n(ファイルパス・保存種別・\n選択式神・スナップショット可否)
-   SaveDataSaveFunction -> InputOperator : CreateInputModel()
-   InputOperator --> SaveDataSaveFunction : MitamaSetInputModel
+      MainForm -> MainForm : Logger.Info("SaveData.Save", "Started", ...)
 
-   alt Build
-       SaveDataSaveFunction -> MitamaSetConverter : ToSaveData(inputModel)
-       MitamaSetConverter --> SaveDataSaveFunction : MitamaSetSaveData
+      MainForm -> SaveDataSaveFunction : Save(保存種別, ファイルパス)
 
-       SaveDataSaveFunction -> SaveDataSaveFunction : BuildSaveData生成\nShikigamiName + MitamaSet
-       SaveDataSaveFunction -> SaveDataAccess : SaveBuild(path, data)
+      SaveDataSaveFunction -> SaveDataSaveFunction : 前提条件チェック\n(ファイルパス・保存種別・\n選択式神・スナップショット可否)
+      SaveDataSaveFunction -> InputOperator : CreateInputModel()
+      InputOperator --> SaveDataSaveFunction : MitamaSetInputModel
 
-   else MitamaSet
-       SaveDataSaveFunction -> MitamaSetConverter : ToSaveData(inputModel)
-       MitamaSetConverter --> SaveDataSaveFunction : MitamaSetSaveData
+      alt Build
+          SaveDataSaveFunction -> MitamaSetConverter : ToSaveData(inputModel)
+          MitamaSetConverter --> SaveDataSaveFunction : MitamaSetSaveData
 
-       SaveDataSaveFunction -> SaveDataAccess : SaveMitamaSet(path, data)
+          SaveDataSaveFunction -> SaveDataSaveFunction : BuildSaveData生成\nShikigamiName + MitamaSet
+          SaveDataSaveFunction -> SaveDataAccess : SaveBuild(path, data)
 
-   else CalculationSnapshot
-       SaveDataSaveFunction -> SaveDataSaveFunction : createSnapshotNameFromFilePath(path)
+      else MitamaSet
+          SaveDataSaveFunction -> MitamaSetConverter : ToSaveData(inputModel)
+          MitamaSetConverter --> SaveDataSaveFunction : MitamaSetSaveData
 
-       SaveDataSaveFunction -> MitamaSetConverter : ToSaveData(inputModel)
-       MitamaSetConverter --> SaveDataSaveFunction : MitamaSetSaveData
+          SaveDataSaveFunction -> SaveDataAccess : SaveMitamaSet(path, data)
 
-       SaveDataSaveFunction -> StatusConverter : ToSaveData(MitamaOnlyStatus)
-       StatusConverter --> SaveDataSaveFunction : StatusSaveData
+      else CalculationSnapshot
+          SaveDataSaveFunction -> SaveDataSaveFunction : createSnapshotNameFromFilePath(path)\n(SnapshotNameを決定)
+          note right of SaveDataSaveFunction
+            CanSaveCalculationSnapshot()は
+            LastCalculationResult保持とDirty状態に依存
+            LastCalculationResultから
+            MitamaStatus/FinalStatusを取得
+            CreatedAtは保存時点の日時
+          end note
 
-       SaveDataSaveFunction -> StatusConverter : ToSaveData(FinalStatus)
-       StatusConverter --> SaveDataSaveFunction : StatusSaveData
+          SaveDataSaveFunction -> MitamaSetConverter : ToSaveData(inputModel)
+          MitamaSetConverter --> SaveDataSaveFunction : MitamaSetSaveData
 
-       SaveDataSaveFunction -> SaveDataSaveFunction : CalculationSnapshotSaveData生成\nSnapshotName + CreatedAt +\nShikigamiName + MitamaSet +\nMitamaStatus + FinalStatus
+          SaveDataSaveFunction -> StatusConverter : ToSaveData(MitamaOnlyStatus)
+          StatusConverter --> SaveDataSaveFunction : StatusSaveData
 
-       SaveDataSaveFunction -> SaveDataAccess : SaveSnapshot(path, data)
+          SaveDataSaveFunction -> StatusConverter : ToSaveData(FinalStatus)
+          StatusConverter --> SaveDataSaveFunction : StatusSaveData
+
+          SaveDataSaveFunction -> SaveDataSaveFunction : CalculationSnapshotSaveData生成\nSnapshotName + CreatedAt +\nShikigamiName + MitamaSet +\nMitamaStatus + FinalStatus
+
+          SaveDataSaveFunction -> SaveDataAccess : SaveSnapshot(path, data)
+      end
+
+      SaveDataAccess -> SaveDataAccess : SaveDataFile<T>生成\nVersion + Data
+      SaveDataAccess -> JsonDataAccess : Save(path, SaveDataFile<T>)
+
+      JsonDataAccess -> JsonSerializer : Write(SaveDataFile<T>)
+      JsonSerializer --> JsonDataAccess : JSON文字列
+
+      JsonDataAccess -> JsonFile : UTF-8(BOMなし)で書込\n(File.WriteAllText)
+      note right of JsonDataAccess
+        JsonSerializer.Write()結果を直接書込
+        式神CSVのReplaceFileW方式とは異なり
+        一時ファイル置換や明示的ロールバックは行わない
+        保存失敗時のファイル状態（破損有無/旧内容残存等）は
+        実装上保証しない
+      end note
+      JsonFile --> JsonDataAccess : 完了
+      JsonDataAccess --> SaveDataAccess : 完了
+      SaveDataAccess --> SaveDataSaveFunction : 完了
+      SaveDataSaveFunction --> MainForm : 正常復帰
+
+      MainForm -> MainForm : Logger.Info("SaveData.Save", "Completed", ...)
    end
 
-   SaveDataAccess -> SaveDataAccess : SaveDataFile<T>生成\nVersion + Data
-   SaveDataAccess -> JsonDataAccess : Save(path, SaveDataFile<T>)
-
-   JsonDataAccess -> JsonSerializer : Write(SaveDataFile<T>)
-   JsonSerializer --> JsonDataAccess : JSON文字列
-
-   JsonDataAccess -> JsonFile : UTF-8で書込
-   JsonFile --> JsonDataAccess : 完了
-   JsonDataAccess --> SaveDataAccess : 完了
-   SaveDataAccess --> SaveDataSaveFunction : 完了
-
-   alt 保存成功
-       SaveDataSaveFunction --> MainForm : 完了
-       MainForm -> MainForm : 保存成功ログ
-   else 保存失敗
-       SaveDataSaveFunction --> MainForm : 例外（発生地点から伝播）
-       MainForm -> MainForm : 保存失敗ログ\nエラーメッセージ表示
-   end
+   note over MainForm,SaveDataSaveFunction
+     例外処理（抽象化）:
+     try範囲内の状態変更、ログ出力、Save呼出、
+     事前条件チェック、入力モデル生成/変換、
+     JSONシリアライズ、ファイル書込等で例外が発生し得る。
+     例外発生時はその地点以降の正常処理を中断し、
+     MainFormのcatchでFailedログとエラーメッセージ表示を行う。
+     finallyでは正常・異常を問わずIDLE復帰処理を実行する。
+   end note
 
    MainForm -> MainForm : finally\nsetOperationState(IDLE)\n(保存・読込ボタン更新)
+   note right of MainForm
+     finallyは正常・異常の両経路で実行される
+     （IDLE復帰処理を試行するが、
+     その処理自体の正常完了はここでは保証しない）
+   end note
 end
 
 @enduml
