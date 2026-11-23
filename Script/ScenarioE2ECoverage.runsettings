@@ -6,11 +6,14 @@
         <Configuration>
           <CodeCoverage>
             <CollectFromChildProcesses>True</CollectFromChildProcesses>
+            <EnableStaticNativeInstrumentation>False</EnableStaticNativeInstrumentation>
+            <EnableDynamicNativeInstrumentation>True</EnableDynamicNativeInstrumentation>
             <ModulePaths>
               <Include>
                 <ModulePath>.*[\\/]ScenarioRunner\.Engine\.dll$</ModulePath>
                 <ModulePath>.*[\\/]Gui\.exe$</ModulePath>
                 <ModulePath>.*[\\/]SaveData\.dll$</ModulePath>
+                <ModulePath>.*[\\/]Gateway\.dll$</ModulePath>
               </Include>
             </ModulePaths>
             <Sources>
@@ -18,6 +21,8 @@
                 <Source>.*[\\/]ScenarioRunner\.Engine[\\/].*</Source>
                 <Source>.*[\\/]Gui[\\/].*</Source>
                 <Source>.*[\\/]SaveData[\\/].*</Source>
+                <Source>.*[\\/]Gateway[\\/].*</Source>
+                <Source>.*[\\/]Core[\\/].*</Source>
               </Include>
               <Exclude>
                 <Source>.*[\\/]GuiTest[\\/].*</Source>

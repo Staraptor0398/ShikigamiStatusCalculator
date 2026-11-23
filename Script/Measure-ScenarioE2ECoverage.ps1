@@ -52,6 +52,8 @@ function Get-ModuleCoverageSummary {
         'ScenarioRunner.Engine' = @{}
         'Gui' = @{}
         'SaveData' = @{}
+        'Gateway' = @{}
+        'Core' = @{}
     }
     $unexpected = @()
 
@@ -68,6 +70,15 @@ function Get-ModuleCoverageSummary {
         }
         elseif ($name -match '(?i)(^|\\)SaveData\\') {
             $moduleName = 'SaveData'
+        }
+        elseif ($name -match '(?i)(^|\\)Gateway\\') {
+            $moduleName = 'Gateway'
+        }
+        elseif ($name -match '(?i)(^|\\)Core\\') {
+            $moduleName = 'Core'
+        }
+        elseif ($name -match '(?i)^[A-Z]:\\Program Files\\Microsoft Visual Studio\\.*\\VC\\Tools\\MSVC\\.*\\include\\') {
+            continue
         }
         else {
             $unexpected += $name
@@ -98,7 +109,7 @@ function Get-ModuleCoverageSummary {
     }
 
     $summary = @('=== Scenario E2E Coverage Summary ===', '')
-    foreach ($moduleName in @('ScenarioRunner.Engine', 'Gui', 'SaveData')) {
+    foreach ($moduleName in @('ScenarioRunner.Engine', 'Gui', 'SaveData', 'Gateway', 'Core')) {
         $valid = 0
         $covered = 0
         $lines = @()
@@ -128,7 +139,7 @@ function Get-ModuleCoverageSummary {
     $summary | ForEach-Object { Write-Host $_ }
 
     # Missing either module is a PoC finding, not a false successful measurement.
-    foreach ($moduleName in @('ScenarioRunner.Engine', 'Gui', 'SaveData')) {
+    foreach ($moduleName in @('ScenarioRunner.Engine', 'Gui', 'SaveData', 'Gateway', 'Core')) {
         if ($modules[$moduleName].Count -eq 0) {
             throw "Target module was not captured: $moduleName"
         }
@@ -211,7 +222,7 @@ try {
     if ($collectExit -ne 0) {
         throw "Scenario CLI or coverage collection failed with exit code $collectExit. Check scenario-execution.log."
     }
-    Write-Host 'Result: E2E coverage collection succeeded for Engine, Gui, and SaveData.'
+    Write-Host 'Result: E2E coverage collection succeeded for Engine, Gui, SaveData, Gateway, and Core.'
     exit 0
 }
 catch {

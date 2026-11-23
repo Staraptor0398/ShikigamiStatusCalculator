@@ -57,10 +57,12 @@ jobs:
         run: |
           $required = @(
               'Script/Measure-ScenarioE2ECoverage.ps1',
+              'Script/ScenarioE2ECoverage.runsettings',
               'Gui/bin/x64/Release/Gui.exe',
               'Gui/bin/x64/Release/Gui.pdb',
               'Gui/bin/x64/Release/SaveData.dll',
               'Gui/bin/x64/Release/SaveData.pdb',
+              'Gui/bin/x64/Release/Gateway.dll',
               'ScenarioRunnerCli/bin/x64/Release/ScenarioRunnerCli.exe',
               'ScenarioRunnerCli/bin/x64/Release/ScenarioRunner.Engine.dll',
               'ScenarioRunnerCli/bin/x64/Release/ScenarioRunner.Engine.pdb',
@@ -127,7 +129,9 @@ jobs:
           }
 
           $summary = Get-Content -LiteralPath (Join-Path $directory 'ScenarioE2ECoverageSummary.txt') -Raw
-          foreach ($module in @('ScenarioRunner.Engine', 'Gui', 'SaveData')) {
+          $modules = @('ScenarioRunner.Engine', 'Gui', 'SaveData', 'Gateway', 'Core')
+
+          foreach ($module in $modules) {
               $pattern = '(?ms)^Module:\s*' + [regex]::Escape($module) + '\s*\r?\n' +
                          'Source files:\s*(\d+)\s*\r?\n' +
                          'Lines valid:\s*(\d+)\s*\r?\n' +
@@ -136,12 +140,15 @@ jobs:
               if (-not $match.Success) {
                   throw "Coverage summary is missing totals for $module."
               }
+
               $files = [int]$match.Groups[1].Value
               $valid = [int]$match.Groups[2].Value
               $covered = [int]$match.Groups[3].Value
+
               if ($files -le 0 -or $valid -le 0 -or $covered -le 0 -or $covered -gt $valid) {
                   throw "Invalid coverage totals for ${module}: files=$files valid=$valid covered=$covered"
               }
+
               $rate = [math]::Round(100 * $covered / $valid, 2)
               Write-Host "${module}: $rate% ($covered/$valid)"
           }
@@ -152,11 +159,22 @@ jobs:
               throw 'Cobertura report contains no source classes.'
           }
 
+          foreach ($module in @('Gateway', 'Core')) {
+              $sourceClasses = @($classes | Where-Object {
+                  ([string]$_.GetAttribute('filename')).Replace('/', '\') -match
+                      ('(?i)(^|\\)' + [regex]::Escape($module) + '\\')
+              })
+
+              if ($sourceClasses.Count -eq 0) {
+                  throw "Cobertura report does not contain source files for $module."
+              }
+          }
+
           @(
               '## Scenario E2E Coverage',
               '',
               "- Scenarios passed: $executed/$executed",
-              '- Coverage modules: ScenarioRunner.Engine, Gui, SaveData',
+              "- Coverage modules: $($modules -join ', ')",
               '',
               '```text',
               $summary.TrimEnd(),
