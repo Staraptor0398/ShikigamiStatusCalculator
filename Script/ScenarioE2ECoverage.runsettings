@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <CodeCoverage>
+            <CollectFromChildProcesses>True</CollectFromChildProcesses>
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*[\\/]ScenarioRunner\.Engine\.dll$</ModulePath>
+                <ModulePath>.*[\\/]Gui\.exe$</ModulePath>
+              </Include>
+            </ModulePaths>
+            <Sources>
+              <Include>
+                <Source>.*[\\/]ScenarioRunner\.Engine[\\/].*</Source>
+                <Source>.*[\\/]Gui[\\/].*</Source>
+              </Include>
+              <Exclude>
+                <Source>.*[\\/]GuiTest[\\/].*</Source>
+                <Source>.*[\\/]ScenarioRunnerTest[\\/].*</Source>
+                <Source>.*[\\/]packages[\\/].*</Source>
+                <Source>.*[\\/]ThirdParty[\\/].*</Source>
+              </Exclude>
+            </Sources>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

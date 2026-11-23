@@ -1,0 +1,183 @@
+name: Scenario E2E Coverage
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scenario-e2e-coverage:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v3
+        with:
+          nuget-version: latest
+
+      - name: Restore SaveData packages
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (Test-Path 'SaveData/packages.config') {
+              nuget restore SaveData/packages.config -PackagesDirectory packages
+              if ($LASTEXITCODE -ne 0) {
+                  throw "SaveData package restore failed with exit code $LASTEXITCODE."
+              }
+          }
+
+      - name: Build ShikigamiApp
+        shell: pwsh
+        run: |
+          msbuild ShikigamiApp.slnx /m /p:Configuration=Release /p:Platform=x64
+          if ($LASTEXITCODE -ne 0) {
+              throw "ShikigamiApp build failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Build ScenarioRunner CLI
+        shell: pwsh
+        run: |
+          msbuild ScenarioRunner.slnx /restore /m /p:Configuration=ReleaseCli /p:Platform=x64
+          if ($LASTEXITCODE -ne 0) {
+              throw "ScenarioRunner CLI build failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Verify coverage inputs
+        shell: pwsh
+        run: |
+          $required = @(
+              'Script/Measure-ScenarioE2ECoverage.ps1',
+              'Gui/bin/x64/Release/Gui.exe',
+              'Gui/bin/x64/Release/Gui.pdb',
+              'ScenarioRunnerCli/bin/x64/Release/ScenarioRunnerCli.exe',
+              'ScenarioRunnerCli/bin/x64/Release/ScenarioRunner.Engine.dll',
+              'ScenarioRunnerCli/bin/x64/Release/ScenarioRunner.Engine.pdb',
+              'Scenario'
+          )
+          foreach ($path in $required) {
+              if (-not (Test-Path -LiteralPath $path)) {
+                  throw "Required coverage input was not found: $path"
+              }
+          }
+
+          $codeCoverageTools = @(
+              Get-ChildItem -Path 'C:\Program Files\Microsoft Visual Studio' `
+                  -Filter Microsoft.CodeCoverage.Console.exe -Recurse -File `
+                  -ErrorAction SilentlyContinue
+          )
+          if ($codeCoverageTools.Count -eq 0) {
+              throw 'Microsoft.CodeCoverage.Console.exe was not found on the runner.'
+          }
+          Write-Host "Coverage tool: $($codeCoverageTools[0].FullName)"
+
+      - name: Measure E2E coverage for all scenarios
+        shell: pwsh
+        run: |
+          & .\Script\Measure-ScenarioE2ECoverage.ps1 -Mode Batch
+          if ($LASTEXITCODE -ne 0) {
+              throw "E2E coverage script failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Verify E2E coverage results
+        shell: pwsh
+        run: |
+          $directory = 'TestResults/ScenarioE2ECoveragePoC'
+          $required = @(
+              'ScenarioE2E.coverage',
+              'ScenarioE2E.cobertura.xml',
+              'ScenarioE2E.coverage.xml',
+              'ScenarioE2ECoverageSummary.txt',
+              'scenario-execution.log'
+          )
+          foreach ($file in $required) {
+              $path = Join-Path $directory $file
+              if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                  throw "Required result file was not produced: $path"
+              }
+              if ((Get-Item -LiteralPath $path).Length -eq 0) {
+                  throw "Result file is empty: $path"
+              }
+          }
+
+          $execution = Get-Content -LiteralPath (Join-Path $directory 'scenario-execution.log') -Raw
+          if ($execution -notmatch '(?m)^Batch Result:\s*PASS\s*$') {
+              throw 'Scenario batch did not report PASS.'
+          }
+          if ($execution -notmatch '(?m)^Failed:\s*0\s*$') {
+              throw 'Scenario batch reported failures or no failure count.'
+          }
+          if ($execution -notmatch '(?m)^Executed:\s*(\d+)\s*$' -or [int]$Matches[1] -le 0) {
+              throw 'Scenario batch did not report a positive executed scenario count.'
+          }
+          $executed = [int]$Matches[1]
+          if ($execution -notmatch '(?m)^Passed:\s*(\d+)\s*$' -or [int]$Matches[1] -ne $executed) {
+              throw 'Executed and passed scenario counts do not match.'
+          }
+
+          $summary = Get-Content -LiteralPath (Join-Path $directory 'ScenarioE2ECoverageSummary.txt') -Raw
+          foreach ($module in @('ScenarioRunner.Engine', 'Gui')) {
+              $pattern = '(?ms)^Module:\s*' + [regex]::Escape($module) + '\s*\r?\n' +
+                         'Source files:\s*(\d+)\s*\r?\n' +
+                         'Lines valid:\s*(\d+)\s*\r?\n' +
+                         'Lines covered:\s*(\d+)'
+              $match = [regex]::Match($summary, $pattern)
+              if (-not $match.Success) {
+                  throw "Coverage summary is missing totals for $module."
+              }
+              $files = [int]$match.Groups[1].Value
+              $valid = [int]$match.Groups[2].Value
+              $covered = [int]$match.Groups[3].Value
+              if ($files -le 0 -or $valid -le 0 -or $covered -le 0 -or $covered -gt $valid) {
+                  throw "Invalid coverage totals for ${module}: files=$files valid=$valid covered=$covered"
+              }
+              $rate = [math]::Round(100 * $covered / $valid, 2)
+              Write-Host "${module}: $rate% ($covered/$valid)"
+          }
+
+          [xml]$cobertura = Get-Content -LiteralPath (Join-Path $directory 'ScenarioE2E.cobertura.xml') -Raw
+          $classes = @($cobertura.SelectNodes('//class'))
+          if ($classes.Count -eq 0) {
+              throw 'Cobertura report contains no source classes.'
+          }
+
+          @(
+              '## Scenario E2E Coverage',
+              '',
+              "- Scenarios passed: $executed/$executed",
+              '- Coverage modules: ScenarioRunner.Engine, Gui',
+              '',
+              '```text',
+              $summary.TrimEnd(),
+              '```'
+          ) | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+
+      - name: Upload E2E coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-e2e-coverage
+          path: TestResults/ScenarioE2ECoveragePoC/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload failure captures and application logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-e2e-coverage-diagnostics
+          path: |
+            ScenarioRunnerCli/bin/x64/Release/Capture/
+            ScenarioRunnerCli/bin/x64/Release/Log/
+            Gui/bin/x64/Release/Log/
+          if-no-files-found: ignore
+          retention-days: 14
