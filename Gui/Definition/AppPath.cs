@@ -21,10 +21,10 @@ namespace Gui.Definition
 
 		public static string BaseDirectory
 		{
-			get
-			{
-				return AppDomain.CurrentDomain.BaseDirectory;
-			}
+		    get
+		    {
+		        return Path.GetDirectoryName(typeof(AppPath).Assembly.Location);
+		    }
 		}
 
 		public static string DataDirectoryPath
