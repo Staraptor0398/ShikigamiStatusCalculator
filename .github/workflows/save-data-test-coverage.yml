@@ -111,30 +111,37 @@ jobs:
           $classes = @($coverage.SelectNodes('//class'))
           $unexpected = @($classes | Where-Object {
               $path = ([string]$_.GetAttribute('filename')) -replace '/', '\'
-              $path -notmatch '(?i)(^|\)SaveData\' -or $path -match '(?i)(^|\)SaveDataTest\'
+              $path -notmatch '(?i)(^|\\)SaveData\\' -or
+              $path -match '(?i)(^|\\)SaveDataTest\\'
           })
+
           if ($classes.Count -eq 0 -or $unexpected.Count -ne 0) {
               throw "Cobertura must contain SaveData source files only; classes=$($classes.Count), unexpected=$($unexpected.Count)."
           }
 
           $valid = [int]$coverage.coverage.'lines-valid'
           $covered = [int]$coverage.coverage.'lines-covered'
+
           if ($valid -le 0 -or $covered -gt $valid) {
               throw "Invalid Cobertura totals: covered=$covered, valid=$valid."
           }
 
           $summary = Get-Content -LiteralPath $summaryPath -Raw
+
           if ($summary -notmatch 'SaveData lines valid:\s*(\d+)' -or [int]$Matches[1] -ne $valid) {
               throw "Coverage summary and Cobertura valid line count do not match."
           }
+
           if ($summary -notmatch 'SaveData lines covered:\s*(\d+)' -or [int]$Matches[1] -ne $covered) {
               throw "Coverage summary and Cobertura covered line count do not match."
           }
+
           if ($summary -notmatch 'SaveDataTest/third-party filename refs in report:\s*0\b') {
               throw "Unexpected test/third-party source files are present in the report."
           }
 
           $rate = [math]::Round(100 * $covered / $valid, 2)
+
           Write-Host "SaveDataTest: $passed/$total passed. SaveData line coverage: $rate% ($covered/$valid)."
           Write-Host $summary
 
