@@ -1,0 +1,156 @@
+name: CoreTest Coverage
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-test-coverage:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v3
+        with:
+          nuget-version: latest
+
+      - name: Restore CoreTest packages
+        shell: pwsh
+        run: nuget restore CoreTest\packages.config -PackagesDirectory packages
+
+      - name: Install nlohmann/json
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "ThirdParty\nlohmann" | Out-Null
+
+          Invoke-WebRequest `
+            -Uri "https://raw.githubusercontent.com/nlohmann/json/v3.11.3/single_include/nlohmann/json.hpp" `
+            -OutFile "ThirdParty\nlohmann\json.hpp"
+
+      - name: Build CoreTest
+        shell: pwsh
+        run: |
+          $includeDirectory = (Resolve-Path "ThirdParty").Path
+          $env:CL = "/I`"$includeDirectory`""
+
+          msbuild Core_Test.slnx /m /p:Configuration=Debug /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "CoreTest build failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Verify coverage inputs
+        shell: pwsh
+        run: |
+          $required = @(
+              ".\x64\Debug\CoreTest.exe",
+              ".\Script\Measure-CoreTestCoverage.ps1",
+              ".\Script\CoreTestCoverage.runsettings"
+          )
+
+          foreach ($path in $required) {
+              if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                  throw "Required coverage input was not found: $path"
+              }
+          }
+
+      - name: Measure CoreTest coverage
+        shell: pwsh
+        run: |
+          & .\Script\Measure-CoreTestCoverage.ps1 `
+              -Configuration Debug `
+              -Platform x64 `
+              -TestExePath ".\x64\Debug\CoreTest.exe" `
+              -TestArgument ".\CoreTest" `
+              -RunSettingsPath ".\Script\CoreTestCoverage.runsettings" `
+              -OutputDirectory ".\TestResults\CoreTestCoverage"
+
+          $exitCode = $LASTEXITCODE
+          if ($exitCode -ne 0) {
+              throw "CoreTest coverage script failed with exit code $exitCode (1=test, 2=measurement)."
+          }
+
+      - name: Verify tests and coverage report
+        shell: pwsh
+        run: |
+          $logPath = ".\TestLog\CoreTestResult.txt"
+          $coverageDirectory = ".\TestResults\CoreTestCoverage"
+          $coveragePath = Join-Path $coverageDirectory "CoreTest.coverage"
+          $coberturaPath = Join-Path $coverageDirectory "CoreTest.cobertura.xml"
+          $summaryPath = Join-Path $coverageDirectory "CoreCoverageSummary.txt"
+
+          foreach ($path in @($logPath, $coveragePath, $coberturaPath, $summaryPath)) {
+              if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                  throw "Required result file was not produced: $path"
+              }
+              if ((Get-Item -LiteralPath $path).Length -eq 0) {
+                  throw "Result file is empty: $path"
+              }
+          }
+
+          $testLog = Get-Content -LiteralPath $logPath -Raw
+          if ($testLog -notmatch 'Test count:\s*(\d+)') {
+              throw "CoreTest result log does not contain the test count."
+          }
+          $testCount = [int]$Matches[1]
+          if ($testCount -le 0) {
+              throw "No CoreTest cases were executed."
+          }
+
+          [xml]$coverage = Get-Content -LiteralPath $coberturaPath -Raw
+          $coreClasses = @($coverage.SelectNodes('//class') | Where-Object {
+              $path = [string]$_.GetAttribute('filename')
+              $path -match '(?i)(^|[\\/])Core[\\/]'
+          })
+          if ($coreClasses.Count -eq 0) {
+              throw "Cobertura does not contain any Core source files."
+          }
+
+          $summary = Get-Content -LiteralPath $summaryPath -Raw
+          if ($summary -notmatch 'Core lines valid:\s*(\d+)') {
+              throw "Coverage summary does not contain the total line count."
+          }
+          $validLines = [int]$Matches[1]
+          if ($validLines -le 0) {
+              throw "Coverage report has zero measurable Core lines."
+          }
+          if ($summary -notmatch 'CoreTest filename refs in report:\s*0\b' -or
+              $summary -notmatch 'ThirdParty/gtest/nlohmann filename refs in report:\s*0\b') {
+              throw "Coverage report contains unexpected non-Core source files."
+          }
+
+          Write-Host "CoreTest executed cases: $testCount"
+          Write-Host $summary
+          @(
+              '## CoreTest Coverage',
+              '',
+              "- Test cases: $testCount",
+              "- Core source files: $($coreClasses.Count) class entries",
+              "- Measurable Core lines: $validLines",
+              '',
+              '```text',
+              $summary.TrimEnd(),
+              '```'
+          ) | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+
+      - name: Upload CoreTest coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-test-coverage
+          path: |
+            TestResults/CoreTestCoverage/
+            TestLog/CoreTestResult.txt
+          if-no-files-found: warn
+          retention-days: 14

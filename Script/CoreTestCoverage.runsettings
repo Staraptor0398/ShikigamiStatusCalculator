@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <CodeCoverage>
+            <!-- PoC: measure CoreTest.exe module only -->
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*[\\/]CoreTest\.exe$</ModulePath>
+              </Include>
+            </ModulePaths>
+            <!-- PoC: include Core source files, exclude tests and third-party -->
+            <Sources>
+              <Include>
+                <Source>.*[\\/]Core[\\/].*</Source>
+              </Include>
+              <Exclude>
+                <Source>.*[\\/]CoreTest[\\/].*</Source>
+                <Source>.*[\\/]ThirdParty[\\/].*</Source>
+                <Source>.*[\\/]packages[\\/].*</Source>
+                <Source>.*googletest.*</Source>
+                <Source>.*gtest.*</Source>
+                <Source>.*nlohmann.*</Source>
+              </Exclude>
+            </Sources>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
