@@ -59,6 +59,8 @@ jobs:
               'Script/Measure-ScenarioE2ECoverage.ps1',
               'Gui/bin/x64/Release/Gui.exe',
               'Gui/bin/x64/Release/Gui.pdb',
+              'Gui/bin/x64/Release/SaveData.dll',
+              'Gui/bin/x64/Release/SaveData.pdb',
               'ScenarioRunnerCli/bin/x64/Release/ScenarioRunnerCli.exe',
               'ScenarioRunnerCli/bin/x64/Release/ScenarioRunner.Engine.dll',
               'ScenarioRunnerCli/bin/x64/Release/ScenarioRunner.Engine.pdb',
@@ -125,7 +127,7 @@ jobs:
           }
 
           $summary = Get-Content -LiteralPath (Join-Path $directory 'ScenarioE2ECoverageSummary.txt') -Raw
-          foreach ($module in @('ScenarioRunner.Engine', 'Gui')) {
+          foreach ($module in @('ScenarioRunner.Engine', 'Gui', 'SaveData')) {
               $pattern = '(?ms)^Module:\s*' + [regex]::Escape($module) + '\s*\r?\n' +
                          'Source files:\s*(\d+)\s*\r?\n' +
                          'Lines valid:\s*(\d+)\s*\r?\n' +
@@ -154,7 +156,7 @@ jobs:
               '## Scenario E2E Coverage',
               '',
               "- Scenarios passed: $executed/$executed",
-              '- Coverage modules: ScenarioRunner.Engine, Gui',
+              '- Coverage modules: ScenarioRunner.Engine, Gui, SaveData',
               '',
               '```text',
               $summary.TrimEnd(),

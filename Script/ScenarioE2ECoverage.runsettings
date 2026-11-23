@@ -10,12 +10,14 @@
               <Include>
                 <ModulePath>.*[\\/]ScenarioRunner\.Engine\.dll$</ModulePath>
                 <ModulePath>.*[\\/]Gui\.exe$</ModulePath>
+                <ModulePath>.*[\\/]SaveData\.dll$</ModulePath>
               </Include>
             </ModulePaths>
             <Sources>
               <Include>
                 <Source>.*[\\/]ScenarioRunner\.Engine[\\/].*</Source>
                 <Source>.*[\\/]Gui[\\/].*</Source>
+                <Source>.*[\\/]SaveData[\\/].*</Source>
               </Include>
               <Exclude>
                 <Source>.*[\\/]GuiTest[\\/].*</Source>

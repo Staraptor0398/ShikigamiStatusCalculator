@@ -51,6 +51,7 @@ function Get-ModuleCoverageSummary {
     $modules = @{
         'ScenarioRunner.Engine' = @{}
         'Gui' = @{}
+        'SaveData' = @{}
     }
     $unexpected = @()
 
@@ -64,6 +65,9 @@ function Get-ModuleCoverageSummary {
         }
         elseif ($name -match '(?i)(^|\\)Gui\\') {
             $moduleName = 'Gui'
+        }
+        elseif ($name -match '(?i)(^|\\)SaveData\\') {
+            $moduleName = 'SaveData'
         }
         else {
             $unexpected += $name
@@ -94,7 +98,7 @@ function Get-ModuleCoverageSummary {
     }
 
     $summary = @('=== Scenario E2E Coverage Summary ===', '')
-    foreach ($moduleName in @('ScenarioRunner.Engine', 'Gui')) {
+    foreach ($moduleName in @('ScenarioRunner.Engine', 'Gui', 'SaveData')) {
         $valid = 0
         $covered = 0
         $lines = @()
@@ -124,8 +128,10 @@ function Get-ModuleCoverageSummary {
     $summary | ForEach-Object { Write-Host $_ }
 
     # Missing either module is a PoC finding, not a false successful measurement.
-    if ($modules['ScenarioRunner.Engine'].Count -eq 0 -or $modules['Gui'].Count -eq 0) {
-        throw 'One or both target modules were not captured. Inspect collect.log for child process instrumentation.'
+    foreach ($moduleName in @('ScenarioRunner.Engine', 'Gui', 'SaveData')) {
+        if ($modules[$moduleName].Count -eq 0) {
+            throw "Target module was not captured: $moduleName"
+        }
     }
 }
 
@@ -205,7 +211,7 @@ try {
     if ($collectExit -ne 0) {
         throw "Scenario CLI or coverage collection failed with exit code $collectExit. Check scenario-execution.log."
     }
-    Write-Host 'Result: E2E coverage collection succeeded for both Engine and Gui.'
+    Write-Host 'Result: E2E coverage collection succeeded for Engine, Gui, and SaveData.'
     exit 0
 }
 catch {
