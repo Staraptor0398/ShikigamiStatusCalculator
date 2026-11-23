@@ -1,0 +1,167 @@
+name: ScenarioRunnerTest Coverage
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scenario-runner-test-coverage:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Restore ScenarioRunnerTest packages
+        shell: pwsh
+        run: |
+          msbuild ScenarioRunner_Test.slnx /t:Restore /p:Configuration=Debug /p:Platform=x64
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "ScenarioRunnerTest package restore failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Build ScenarioRunnerTest
+        shell: pwsh
+        run: |
+          msbuild ScenarioRunner_Test.slnx /m /p:Configuration=Debug /p:Platform=x64
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "ScenarioRunnerTest build failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Verify coverage inputs
+        shell: pwsh
+        run: |
+          foreach ($path in @(
+              '.\Script\Measure-ScenarioRunnerTestCoverage.ps1',
+              '.\Script\ScenarioRunnerTestCoverage.runsettings'
+          )) {
+              if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                  throw "Required coverage input was not found: $path"
+              }
+          }
+
+          $assemblies = @(Get-ChildItem 'ScenarioRunnerTest\bin' -Recurse -Filter 'ScenarioRunnerTest.dll' -File)
+          if ($assemblies.Count -ne 1) {
+              throw "Expected exactly one ScenarioRunnerTest.dll, found $($assemblies.Count)."
+          }
+
+      - name: Measure ScenarioRunnerTest coverage
+        shell: pwsh
+        run: |
+          $testAssembly = @(
+              Get-ChildItem 'ScenarioRunnerTest\bin' -Recurse -Filter 'ScenarioRunnerTest.dll' -File
+          )[0].FullName
+
+          & .\Script\Measure-ScenarioRunnerTestCoverage.ps1 `
+              -TestAssemblyPath $testAssembly `
+              -RunSettingsPath '.\Script\ScenarioRunnerTestCoverage.runsettings' `
+              -OutputDirectory '.\TestResults\ScenarioRunnerTestCoverage'
+
+          $exitCode = $LASTEXITCODE
+          if ($exitCode -ne 0) {
+              throw "ScenarioRunnerTest coverage script failed with exit code $exitCode (1=test, 2=measurement)."
+          }
+
+      - name: Verify tests and coverage report
+        shell: pwsh
+        run: |
+          $directory = '.\TestResults\ScenarioRunnerTestCoverage'
+          $trxPath = Join-Path $directory 'ScenarioRunnerTest.trx'
+          $coveragePath = Join-Path $directory 'ScenarioRunnerTest.coverage'
+          $coberturaPath = Join-Path $directory 'ScenarioRunnerTest.cobertura.xml'
+          $xmlPath = Join-Path $directory 'ScenarioRunnerTest.coverage.xml'
+          $summaryPath = Join-Path $directory 'ScenarioRunnerCoverageSummary.txt'
+
+          foreach ($path in @($trxPath, $coveragePath, $coberturaPath, $xmlPath, $summaryPath)) {
+              if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                  throw "Required result file was not produced: $path"
+              }
+              if ((Get-Item -LiteralPath $path).Length -eq 0) {
+                  throw "Result file is empty: $path"
+              }
+          }
+
+          [xml]$trx = Get-Content -LiteralPath $trxPath -Raw
+          $counters = $trx.TestRun.ResultSummary.Counters
+          $total = [int]$counters.total
+          $passed = [int]$counters.passed
+          $failed = [int]$counters.failed
+          $notExecuted = [int]$counters.notExecuted
+
+          if ($total -le 0 -or $passed -ne $total -or $failed -ne 0 -or $notExecuted -ne 0) {
+              throw "Invalid test results: total=$total, passed=$passed, failed=$failed, notExecuted=$notExecuted."
+          }
+
+          [xml]$coverage = Get-Content -LiteralPath $coberturaPath -Raw
+          $classes = @($coverage.SelectNodes('//class'))
+          if ($classes.Count -eq 0) {
+              throw 'Cobertura does not contain any source entries.'
+          }
+
+          $unexpected = @($classes | Where-Object {
+              $sourcePath = [string]$_.GetAttribute('filename')
+              $sourcePath -notmatch '(?i)(^|[\\/])ScenarioRunner\.Engine[\\/]'
+          })
+          if ($unexpected.Count -gt 0) {
+              throw "Cobertura contains $($unexpected.Count) entries outside ScenarioRunner.Engine."
+          }
+
+          $summary = Get-Content -LiteralPath $summaryPath -Raw
+          if ($summary -notmatch 'ScenarioRunner\.Engine source files in filtered report:\s*(\d+)') {
+              throw 'Coverage summary does not contain the source file count.'
+          }
+          $fileCount = [int]$Matches[1]
+
+          if ($summary -notmatch 'ScenarioRunner\.Engine lines valid:\s*(\d+)') {
+              throw 'Coverage summary does not contain the measurable line count.'
+          }
+          $valid = [int]$Matches[1]
+
+          if ($summary -notmatch 'ScenarioRunner\.Engine lines covered:\s*(\d+)') {
+              throw 'Coverage summary does not contain the covered line count.'
+          }
+          $covered = [int]$Matches[1]
+
+          if ($fileCount -le 0 -or $valid -le 0 -or $covered -lt 0 -or $covered -gt $valid) {
+              throw "Invalid coverage totals: files=$fileCount, covered=$covered, valid=$valid."
+          }
+          if ($summary -notmatch 'ScenarioRunnerTest/third-party filename refs in report:\s*0\b') {
+              throw 'Unexpected test or third-party source files are present in the report.'
+          }
+
+          # Cobertura's root line totals may include duplicated source lines across classes.
+          # Use the script's file+line deduplicated summary, not the root lines-valid value.
+          $rate = [math]::Round(100 * $covered / $valid, 2)
+          Write-Host "ScenarioRunnerTest: $passed/$total passed. Engine line coverage: $rate% ($covered/$valid)."
+          Write-Host $summary
+
+          @(
+              '## ScenarioRunnerTest Coverage',
+              '',
+              "- Test cases: $passed/$total passed",
+              "- Engine source files: $fileCount",
+              "- Engine line coverage (unique file+line): $rate% ($covered/$valid)",
+              '',
+              '```text',
+              $summary.TrimEnd(),
+              '```'
+          ) | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+
+      - name: Upload ScenarioRunnerTest coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-runner-test-coverage
+          path: TestResults/ScenarioRunnerTestCoverage/
+          if-no-files-found: warn
+          retention-days: 14

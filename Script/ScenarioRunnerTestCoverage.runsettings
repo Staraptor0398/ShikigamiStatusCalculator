@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <CodeCoverage>
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*[\\/]ScenarioRunner\.Engine\.dll$</ModulePath>
+              </Include>
+            </ModulePaths>
+            <Sources>
+              <Include>
+                <Source>.*[\\/]ScenarioRunner\.Engine[\\/].*</Source>
+              </Include>
+              <Exclude>
+                <Source>.*[\\/]ScenarioRunnerTest[\\/].*</Source>
+                <Source>.*[\\/]packages[\\/].*</Source>
+                <Source>.*[\\/]ThirdParty[\\/].*</Source>
+              </Exclude>
+            </Sources>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
