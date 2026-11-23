@@ -1,0 +1,194 @@
+name: GuiTest Coverage
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gui-test-coverage:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+
+      - name: Restore GuiTest packages
+        shell: pwsh
+        run: |
+          msbuild GuiTest\GuiTest.csproj /t:Restore /p:Configuration=Debug /p:Platform=x64
+          if ($LASTEXITCODE -ne 0) {
+              throw "GuiTest restore failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Build GuiTest
+        shell: pwsh
+        run: |
+          msbuild Gui_Test.slnx /m /p:Configuration=Debug /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0
+          if ($LASTEXITCODE -ne 0) {
+              throw "GuiTest build failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Verify coverage inputs
+        shell: pwsh
+        run: |
+          foreach ($path in @(
+              '.\Script\Measure-GuiTestCoverage.ps1',
+              '.\Script\GuiTestCoverage.runsettings'
+          )) {
+              if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                  throw "Required coverage input was not found: $path"
+              }
+          }
+
+          $assemblies = @(Get-ChildItem 'GuiTest\bin' -Recurse -Filter 'GuiTest.dll' -File)
+          if ($assemblies.Count -ne 1) {
+              throw "Expected one GuiTest.dll, found $($assemblies.Count)."
+          }
+
+          $guiExe = @(Get-ChildItem 'GuiTest\bin' -Recurse -Filter 'Gui.exe' -File)
+          if ($guiExe.Count -ne 1) {
+              throw "Expected one Gui.exe alongside GuiTest output, found $($guiExe.Count)."
+          }
+
+      - name: Measure GuiTest coverage
+        shell: pwsh
+        run: |
+          $testAssembly = @(
+              Get-ChildItem 'GuiTest\bin' -Recurse -Filter 'GuiTest.dll' -File
+          )[0].FullName
+
+          & .\Script\Measure-GuiTestCoverage.ps1 `
+              -TestAssemblyPath $testAssembly `
+              -RunSettingsPath '.\Script\GuiTestCoverage.runsettings' `
+              -OutputDirectory '.\TestResults\GuiTestCoverage'
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "GuiTest coverage script failed with exit code $LASTEXITCODE (1=test, 2=measurement)."
+          }
+
+      - name: Verify tests and coverage report
+        shell: pwsh
+        run: |
+          $directory = '.\TestResults\GuiTestCoverage'
+          $trxPath = Join-Path $directory 'GuiTest.trx'
+          $coveragePath = Join-Path $directory 'GuiTest.coverage'
+          $coberturaPath = Join-Path $directory 'GuiTest.cobertura.xml'
+          $xmlPath = Join-Path $directory 'GuiTest.coverage.xml'
+          $summaryPath = Join-Path $directory 'GuiCoverageSummary.txt'
+
+          foreach ($path in @($trxPath, $coveragePath, $coberturaPath, $xmlPath, $summaryPath)) {
+              if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+                  throw "Required result file was not produced: $path"
+              }
+              if ((Get-Item -LiteralPath $path).Length -eq 0) {
+                  throw "Result file is empty: $path"
+              }
+          }
+
+          [xml]$trx = Get-Content -LiteralPath $trxPath -Raw
+          $counters = $trx.TestRun.ResultSummary.Counters
+          $total = [int]$counters.total
+          $passed = [int]$counters.passed
+          $failed = [int]$counters.failed
+          $notExecuted = [int]$counters.notExecuted
+
+          if ($total -le 0 -or $failed -ne 0 -or $notExecuted -ne 0 -or $passed -ne $total) {
+              throw "Invalid test results: total=$total, passed=$passed, failed=$failed, notExecuted=$notExecuted."
+          }
+
+          [xml]$coverage = Get-Content -LiteralPath $coberturaPath -Raw
+          $classes = @($coverage.SelectNodes('//class'))
+          if ($classes.Count -eq 0) {
+              throw 'Cobertura report contains no source classes.'
+          }
+
+          $unexpected = @($classes | Where-Object {
+              $path = [string]$_.GetAttribute('filename')
+              $path -notmatch '(?i)(^|[\\/])Gui[\\/]' -or
+              $path -match '(?i)(^|[\\/])GuiTest[\\/]'
+          })
+          if ($unexpected.Count -ne 0) {
+              throw "Cobertura contains unexpected source files: $($unexpected.Count)."
+          }
+
+          # Unique filename + line-number counting, matching Measure-GuiTestCoverage.ps1.
+          # The Cobertura root attributes can double-count lines from multiple classes.
+          $perFile = @{}
+          foreach ($classNode in $classes) {
+              $filename = ([string]$classNode.GetAttribute('filename')).Replace('/', '\')
+              if (-not $perFile.ContainsKey($filename)) {
+                  $perFile[$filename] = @{}
+              }
+
+              foreach ($line in $classNode.SelectNodes('.//line')) {
+                  $number = [string]$line.GetAttribute('number')
+                  if (-not $number) { continue }
+                  $hits = 0
+                  [void][int]::TryParse([string]$line.GetAttribute('hits'), [ref]$hits)
+                  if (-not $perFile[$filename].ContainsKey($number) -or
+                      $hits -gt $perFile[$filename][$number]) {
+                      $perFile[$filename][$number] = $hits
+                  }
+              }
+          }
+
+          $valid = 0
+          $covered = 0
+          foreach ($filename in $perFile.Keys) {
+              $hits = @($perFile[$filename].Values)
+              $valid += $hits.Count
+              $covered += @($hits | Where-Object { $_ -gt 0 }).Count
+          }
+          if ($valid -le 0 -or $covered -gt $valid) {
+              throw "Invalid Gui coverage totals: covered=$covered, valid=$valid."
+          }
+
+          $summary = Get-Content -LiteralPath $summaryPath -Raw
+          if ($summary -notmatch 'Gui source files in filtered report:\s*(\d+)' -or
+              [int]$Matches[1] -ne $perFile.Count) {
+              throw 'Gui source file count does not match coverage summary.'
+          }
+          if ($summary -notmatch 'Gui lines valid:\s*(\d+)' -or
+              [int]$Matches[1] -ne $valid) {
+              throw 'Gui valid line count does not match coverage summary.'
+          }
+          if ($summary -notmatch 'Gui lines covered:\s*(\d+)' -or
+              [int]$Matches[1] -ne $covered) {
+              throw 'Gui covered line count does not match coverage summary.'
+          }
+          if ($summary -notmatch 'GuiTest/third-party filename refs in report:\s*0\b') {
+              throw 'Unexpected test or third-party source files are present.'
+          }
+
+          $rate = [math]::Round(100 * $covered / $valid, 2)
+          Write-Host "GuiTest: $passed/$total passed. Gui line coverage: $rate% ($covered/$valid)."
+          Write-Host $summary
+
+          @(
+              '## GuiTest Coverage',
+              '',
+              "- Test cases: $passed/$total passed",
+              "- Gui source files: $($perFile.Count)",
+              "- Gui line coverage: $rate% ($covered/$valid)",
+              '',
+              '```text',
+              $summary.TrimEnd(),
+              '```'
+          ) | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+
+      - name: Upload GuiTest coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gui-test-coverage
+          path: TestResults/GuiTestCoverage/
+          if-no-files-found: warn
+          retention-days: 14

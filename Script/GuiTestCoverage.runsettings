@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <CodeCoverage>
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*[\\/]Gui\.exe$</ModulePath>
+              </Include>
+            </ModulePaths>
+            <Sources>
+              <Include>
+                <Source>.*[\\/]Gui[\\/].*</Source>
+              </Include>
+              <Exclude>
+                <Source>.*[\\/]GuiTest[\\/].*</Source>
+                <Source>.*[\\/]packages[\\/].*</Source>
+                <Source>.*[\\/]ThirdParty[\\/].*</Source>
+              </Exclude>
+            </Sources>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
